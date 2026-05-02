@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model DeviceInventory {
+  id              String   @id @default(uuid())
+  // 基本情報
+  manufacturer    String   // 例: Apple
+  modelName       String   // 例: iPhone 13
+  storage         Int      // 容量(GB) 例: 128
+  color           String   // 例: ミッドナイト
+  
+  // 中古特有の情報
+  conditionRank   String   // 例: S, A, B, C, J
+  batteryHealth   Int?     // 最大容量(%) 例: 85
+  networkStatus   String?  // 利用制限 例: 〇, △, -
+  simUnlocked     Boolean  // SIMロック解除済みか
+  
+  // 販売情報
+  shopName        String   // 例: イオシス, じゃんぱら
+  price           Int      // 価格
+  url             String   // 商品URL（アフィリエイトリンク）
+  isSoldOut       Boolean  @default(false) // 在庫ステータス
+  
+  // メタ情報
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

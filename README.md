@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Used Phone Search (中古スマホ横断検索)
 
-## Getting Started
+日本全国の大手中古スマホショップの在庫を一括で比較・検索できるWebアプリケーションです。
 
-First, run the development server:
+## 技術スタック (Technology Stack)
 
+詳細な開発者向けドキュメントは [docs/tech_stack.md](./docs/tech_stack.md) を参照してください。
+
+### Frontend
+- **Framework**: Next.js 15 (App Router)
+- **Styling**: Tailwind CSS 4
+- **Features**: 無限スクロール、ショップ別フィルタリング、価格順ソート
+
+### Database & ORM
+- **Database**: PostgreSQL (Docker Compose)
+- **ORM**: Prisma
+
+### Data Collection (Scrapers)
+- **Language**: Python 3
+- **Targets**: イオシス (Iosis), ゲオモバイル (Geo Mobile), にこスマ (Nicosuma)
+
+---
+
+## 開発環境の構築 (Setup)
+
+### 1. データベースの起動
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker-compose up -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Frontend (Next.js) の起動
+```bash
+npm install
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. スクレイパーの実行
+```bash
+cd scraper
+# 仮想環境の構築 (初回のみ)
+python -m venv venv
+./venv/Scripts/activate # Windowsの場合
+pip install -r requirements.txt # (requirements.txtがある場合)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# 各スクレイパーの実行
+python iosis_scraper.py
+python geo_scraper.py
+python nicosuma_scraper.py
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## プロジェクト構造 (Project Structure)
+- `app/`: Next.js アプリケーションコード (App Router)
+- `app/api/`: データ取得用APIエンドポイント
+- `scraper/`: Python スクレイパー関連
+- `prisma/`: データベーススキーマ定義
+- `docs/`: 開発ドキュメント
