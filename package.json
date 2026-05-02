@@ -1,6 +1,7 @@
 {
   "name": "used-phone-search",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "大手中古ショップの在庫を一括で検索・比較できるWebアプリケーション",
   "private": true,
   "scripts": {
     "dev": "next dev",

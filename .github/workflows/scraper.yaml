@@ -1,0 +1,39 @@
+name: Phone Inventory Scraper
+
+on:
+  # 定期実行の設定 (UTC時間基準)
+  # 例: 0 */6 * * * は「6時間ごとに実行」
+  schedule:
+    - cron: '0 */6 * * *'
+  
+  # 手動で好きな時に実行できるボタンを追加
+  workflow_dispatch:
+
+jobs:
+  run-scraper:
+    # 無料で使えるUbuntuサーバーを指定
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリのコードを取得
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 をセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          # pipのキャッシュを有効化して次回以降の実行を高速化
+          cache: 'pip'
+
+      - name: 依存ライブラリのインストール
+        run: |
+          cd scraper
+          pip install -r requirements.txt
+
+      - name: スクレイパーの実行
+        env:
+          # Step1で設定したシークレットを環境変数として渡す
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          cd scraper
+          python run_all_scrapers.py
