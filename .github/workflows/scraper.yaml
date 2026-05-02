@@ -18,6 +18,10 @@ jobs:
       - name: リポジトリのコードを取得
         uses: actions/checkout@v4
 
+      - name: .envファイルの作成
+        run: |
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+
       - name: Python 3.11 をセットアップ
         uses: actions/setup-python@v5
         with:
