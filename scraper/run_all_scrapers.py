@@ -66,12 +66,16 @@ def run_scraper(script_name, args=""):
         print(f"[!] Error running {script_name}: {e}")
 
 def main():
-    # 各ショップの取得設定（最大ページ数や最大コレクション数）
-    # ここで数値を変更することで、各スクレイパーの実行量を制御できます。
+    # 環境変数から取得（指定がなければデフォルトの100を使用）
+    # os.environ.get("変数名", デフォルト値)
+    geo_limit = int(os.environ.get("GEO_LIMIT", 100))
+    nicosuma_limit = int(os.environ.get("NICOSUMA_LIMIT", 100))
+    iosis_limit = int(os.environ.get("IOSIS_LIMIT", 100))
+
     config = {
-        "geo_scraper.py": 100,       # 最大20ページ
-        "nicosuma_scraper.py": 100,  # 最初の15個のコレクション（モデル）
-        "iosis_scraper.py": 100       # 最大5ページ
+        "geo_scraper.py": geo_limit,
+        "nicosuma_scraper.py": nicosuma_limit,
+        "iosis_scraper.py": iosis_limit
     }
     
     scrapers = list(config.keys())

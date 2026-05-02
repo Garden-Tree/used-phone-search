@@ -5,6 +5,7 @@ import re
 import requests
 from urllib.parse import urlparse
 import psycopg2
+from psycopg2.extras import execute_values
 from bs4 import BeautifulSoup
 
 def clean_database_url(url: str) -> str:
@@ -12,7 +13,8 @@ def clean_database_url(url: str) -> str:
         return url
     url = url.strip('"').strip("'")
     parsed = urlparse(url)
-    clean_url = f"{parsed.scheme}://{parsed.username}:{parsed.password}@{parsed.hostname}:{parsed.port}{parsed.path}"
+    port = f":{parsed.port}" if parsed.port else ""
+    clean_url = f"{parsed.scheme}://{parsed.username}:{parsed.password}@{parsed.hostname}{port}{parsed.path}"
     return clean_url
 
 def parse_iosis_html(html_content):
@@ -207,15 +209,12 @@ def main():
                 "id", "manufacturer", "modelName", "storage", "color",
                 "conditionRank", "batteryHealth", "networkStatus", "simUnlocked",
                 "shopName", "price", "url", "isSoldOut", "createdAt", "updatedAt"
-            ) VALUES (
-                gen_random_uuid(), %s, %s, %s, %s,
-                %s, %s, %s, %s,
-                %s, %s, %s, %s, NOW(), NOW()
-            )
+            ) VALUES %s
         """
         
-        for item in items:
-            cur.execute(insert_query, (
+        # バルクインサート用のデータ作成
+        values = [
+            (
                 item['manufacturer'],
                 item['modelName'],
                 item['storage'],
@@ -228,7 +227,14 @@ def main():
                 item['price'],
                 item['url'],
                 False
-            ))
+            )
+            for item in items
+        ]
+        
+        # gen_random_uuid() と NOW() を含めるためのテンプレート
+        template = "(gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())"
+        
+        execute_values(cur, insert_query, values, template=template)
             
         conn.commit()
         print("Database update complete! 洗い替え完了。")
