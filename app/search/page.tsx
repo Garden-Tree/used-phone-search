@@ -22,12 +22,21 @@ export default async function SearchPage({
   let devices: Device[] = [];
   
   const whereClause: any = {};
+  let models: string[] = [];
+  
   if (modelQuery) {
-    const queryStr = modelQuery.replace(/iphone\s?/i, '').trim();
-    whereClause.modelName = {
-      contains: queryStr,
-      mode: 'insensitive'
-    };
+    models = modelQuery.split(',').map(m => m.trim()).filter(m => m);
+    if (models.length > 0) {
+      whereClause.OR = models.map(m => {
+        const queryStr = m.replace(/iphone\s?/i, '').trim();
+        return {
+          modelName: {
+            contains: queryStr,
+            mode: 'insensitive'
+          }
+        };
+      });
+    }
   }
   if (shopQuery) {
     whereClause.shopName = shopQuery;
@@ -46,25 +55,29 @@ export default async function SearchPage({
     });
     
     // Apply model-specific filtering if modelQuery is present
-    if (modelQuery) {
-      const lowerQuery = modelQuery.toLowerCase();
-      if (lowerQuery.endsWith('pro')) {
-        devices = devices.filter(d => d.modelName.toLowerCase().includes('pro') && !d.modelName.toLowerCase().includes('max'));
-      } else if (lowerQuery.endsWith('max')) {
-        devices = devices.filter(d => d.modelName.toLowerCase().includes('max'));
-      } else if (lowerQuery.endsWith('plus')) {
-        devices = devices.filter(d => d.modelName.toLowerCase().includes('plus'));
-      } else if (lowerQuery.endsWith('mini')) {
-        devices = devices.filter(d => d.modelName.toLowerCase().includes('mini'));
-      } else if (lowerQuery.match(/\d+e$/)) {
-        devices = devices.filter(d => d.modelName.toLowerCase().match(/\d+e\b/));
-      } else {
-        devices = devices.filter(d => {
-          const lower = d.modelName.toLowerCase();
-          const isEModel = !!lower.match(/\d+e\b/);
-          return !lower.includes('pro') && !lower.includes('max') && !lower.includes('plus') && !lower.includes('mini') && !isEModel;
+    if (models.length > 0) {
+      devices = devices.filter(d => {
+        return models.some(m => {
+          const lowerQuery = m.toLowerCase();
+          const lowerName = d.modelName.toLowerCase();
+          
+          if (lowerQuery.endsWith('pro')) {
+            return lowerName.includes('pro') && !lowerName.includes('max');
+          } else if (lowerQuery.endsWith('max')) {
+            return lowerName.includes('max');
+          } else if (lowerQuery.endsWith('plus')) {
+            return lowerName.includes('plus');
+          } else if (lowerQuery.endsWith('mini')) {
+            return lowerName.includes('mini');
+          } else if (lowerQuery.match(/\d+e$/)) {
+            return !!lowerName.match(/\d+e\b/);
+          } else {
+            const isEModel = !!lowerName.match(/\d+e\b/);
+            return !lowerName.includes('pro') && !lowerName.includes('max') && !lowerName.includes('plus') && !lowerName.includes('mini') && !isEModel;
+          }
         });
-      }
+      });
+
       
       // Limit to 20 for initial view
       devices = devices.slice(0, 20);
