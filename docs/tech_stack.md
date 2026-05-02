@@ -3,7 +3,7 @@
 このドキュメントでは、中古スマホ横断検索プロジェクトで使用されている技術スタックの詳細について記述します。
 
 ## フロントエンド (Frontend)
-- **フレームワーク**: [Next.js 15 (App Router)](https://nextjs.org/)
+- **フレームワーク**: [Next.js 16 (App Router)](https://nextjs.org/)
 - **ライブラリ**: [React 19](https://react.dev/)
 - **スタイリング**: [Tailwind CSS 4](https://tailwindcss.com/)
 - **言語**: [TypeScript](https://www.typescriptlang.org/)

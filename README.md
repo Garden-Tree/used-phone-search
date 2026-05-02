@@ -2,54 +2,26 @@
 
 日本全国の大手中古スマホショップの在庫を一括で比較・検索できるWebアプリケーションです。
 
+## 主な機能 (Key Features)
+
+- 🔍 **横断検索**: イオシス、ゲオモバイル、にこスマなど、大手中古ショップの在庫を一括検索
+- ⚡ **高速な操作感**: Next.js 16 と無限スクロールによる、ストレスのない商品閲覧
+- 🎯 **詳細フィルタ**: ショップ、コンディション（ランク）、価格帯、容量などでの絞り込み
+- 📊 **リアルタイム収集**: Python スクレイパーにより、各ショップの最新在庫を定期的に同期
+
 ## 技術スタック (Technology Stack)
 
-詳細な開発者向けドキュメントは [docs/tech_stack.md](./docs/tech_stack.md) を参照してください。
+- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS 4
+- **Database**: PostgreSQL (Prisma ORM)
+- **Scraper**: Python 3 (BeautifulSoup, curl_cffi)
 
-### Frontend
-- **Framework**: Next.js 15 (App Router)
-- **Styling**: Tailwind CSS 4
-- **Features**: 無限スクロール、ショップ別フィルタリング、価格順ソート
-
-### Database & ORM
-- **Database**: PostgreSQL (Docker Compose)
-- **ORM**: Prisma
-
-### Data Collection (Scrapers)
-- **Language**: Python 3
-- **Targets**: イオシス (Iosis), ゲオモバイル (Geo Mobile), にこスマ (Nicosuma)
+> 💡 技術的な詳細については [docs/tech_stack.md](./docs/tech_stack.md) を参照してください。
 
 ---
 
-## 開発環境の構築 (Setup)
+## セットアップ (Setup)
 
-詳細な手順については [docs/setup.md](./docs/setup.md) を参照してください。
-以下は簡易的な手順です。
-
-### 1. データベースの起動
-```bash
-docker-compose up -d
-```
-
-### 2. Frontend (Next.js) の起動
-```bash
-npm install
-npm run dev
-```
-
-### 3. スクレイパーの実行
-```bash
-cd scraper
-# 仮想環境の構築 (初回のみ)
-python -m venv venv
-./venv/Scripts/activate # Windowsの場合
-pip install -r requirements.txt # (requirements.txtがある場合)
-
-# 各スクレイパーの実行
-python iosis_scraper.py
-python geo_scraper.py
-python nicosuma_scraper.py
-```
+開発環境の構築手順については、[セットアップガイド (docs/setup.md)](./docs/setup.md) を参照してください。
 
 ---
 
