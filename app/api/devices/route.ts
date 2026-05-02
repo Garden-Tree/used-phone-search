@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { DeviceInventory } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
 
   const whereClause: any = {};
   let models: string[] = [];
-  
+
   if (modelQuery) {
     models = modelQuery.split(',').map(m => m.trim()).filter(m => m);
     if (models.length > 0) {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
       });
     }
   }
-  
+
   if (shopQuery && shopQuery !== 'all') {
     whereClause.shopName = shopQuery;
   }
@@ -72,10 +73,10 @@ export async function GET(request: NextRequest) {
     // Note: To handle the complex manual filtering while still supporting pagination,
     // we fetch a larger batch and filter it. For a real production app, 
     // these filters should be implemented in the database query directly or via a search engine.
-    
+
     // For now, we'll fetch more than requested to account for manual filtering
-    const fetchTake = modelQuery ? take * 5 : take; 
-    
+    const fetchTake = modelQuery ? take * 5 : take;
+
     let devices = await prisma.deviceInventory.findMany({
       where: whereClause,
       orderBy: [
@@ -86,11 +87,11 @@ export async function GET(request: NextRequest) {
     });
 
     if (models.length > 0) {
-      devices = devices.filter(d => {
+      devices = (devices as DeviceInventory[]).filter((d: DeviceInventory) => {
         return models.some(m => {
           const lowerQuery = m.toLowerCase();
           const lowerName = d.modelName.toLowerCase();
-          
+
           if (lowerQuery.endsWith('pro')) {
             return lowerName.includes('pro') && !lowerName.includes('max');
           } else if (lowerQuery.endsWith('max')) {
@@ -108,7 +109,7 @@ export async function GET(request: NextRequest) {
         });
       });
 
-      
+
       // Limit to requested 'take' after filtering
       devices = devices.slice(0, take);
     }
