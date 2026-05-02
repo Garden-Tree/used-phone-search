@@ -2,7 +2,7 @@ import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { Device } from "@/app/components/DeviceCard";
 import SortSelect from "@/app/components/SortSelect";
-import ShopFilter from "@/app/components/ShopFilter";
+import FilterPanel from "@/app/components/FilterPanel";
 import InfiniteDeviceList from "@/app/components/InfiniteDeviceList";
 
 export default async function SearchPage({
@@ -14,6 +14,13 @@ export default async function SearchPage({
   const modelQuery = params.model as string | undefined;
   const shopQuery = params.shop as string | undefined;
   const sortParam = params.sort as string | undefined;
+  
+  // Advanced filter params
+  const minPrice = params.minPrice as string | undefined;
+  const maxPrice = params.maxPrice as string | undefined;
+  const storage = params.storage as string | undefined;
+  const rank = params.rank as string | undefined;
+  const minBattery = params.minBattery as string | undefined;
   
   // Default sort is price ascending
   const currentSort = sortParam === 'price_desc' ? 'price_desc' : 'price_asc';
@@ -38,8 +45,37 @@ export default async function SearchPage({
       });
     }
   }
-  if (shopQuery) {
+  
+  if (shopQuery && shopQuery !== 'all') {
     whereClause.shopName = shopQuery;
+  }
+
+  // Apply numeric filters
+  if (minPrice || maxPrice) {
+    whereClause.price = {};
+    if (minPrice) whereClause.price.gte = parseInt(minPrice);
+    if (maxPrice) whereClause.price.lte = parseInt(maxPrice);
+  }
+
+  if (storage) {
+    whereClause.storage = parseInt(storage);
+  }
+
+  if (rank) {
+    whereClause.conditionRank = rank;
+  }
+
+  if (minBattery) {
+    const batteryVal = parseInt(minBattery);
+    whereClause.AND = [
+      ...(whereClause.AND || []),
+      {
+        OR: [
+          { batteryHealth: { gte: batteryVal } },
+          { conditionRank: 'S' }
+        ]
+      }
+    ];
   }
 
   try {
@@ -122,13 +158,8 @@ export default async function SearchPage({
             )}
           </div>
 
-          {/* Shop Filter */}
-          <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-zinc-800">
-            <div className="flex flex-col gap-3">
-              <span className="text-sm font-semibold text-slate-500 dark:text-zinc-400">ショップで絞り込む:</span>
-              <ShopFilter currentShop={shopQuery} />
-            </div>
-          </div>
+          {/* Filter Panel */}
+          <FilterPanel />
         </div>
 
         {devices.length === 0 ? (
@@ -139,9 +170,6 @@ export default async function SearchPage({
         ) : (
           <InfiniteDeviceList 
             initialDevices={devices} 
-            model={modelQuery} 
-            shop={shopQuery} 
-            sort={currentSort} 
           />
         )}
       </main>

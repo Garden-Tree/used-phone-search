@@ -1,43 +1,38 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import DeviceCard, { Device } from './DeviceCard';
 
 interface InfiniteDeviceListProps {
   initialDevices: Device[];
-  model?: string;
-  shop?: string;
-  sort?: string;
 }
 
 export default function InfiniteDeviceList({
   initialDevices,
-  model,
-  shop,
-  sort,
 }: InfiniteDeviceListProps) {
+  const searchParams = useSearchParams();
   const [devices, setDevices] = useState<Device[]>(initialDevices);
   const [skip, setSkip] = useState(initialDevices.length);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialDevices.length >= 20);
   const observerTarget = useRef<HTMLDivElement>(null);
 
+  const searchParamsString = searchParams.toString();
+
   // Reset when search parameters change (except when triggered by initialDevices update)
   useEffect(() => {
     setDevices(initialDevices);
     setSkip(initialDevices.length);
     setHasMore(initialDevices.length >= 20);
-  }, [initialDevices, model, shop, sort]);
+  }, [initialDevices, searchParamsString]);
 
   const loadMore = async () => {
     if (loading || !hasMore) return;
     setLoading(true);
 
     try {
-      const params = new URLSearchParams();
-      if (model) params.set('model', model);
-      if (shop) params.set('shop', shop);
-      if (sort) params.set('sort', sort);
+      const params = new URLSearchParams(searchParamsString);
       params.set('skip', skip.toString());
       params.set('take', '20');
 
@@ -87,7 +82,7 @@ export default function InfiniteDeviceList({
       if (target) observer.unobserve(target);
       observer.disconnect();
     };
-  }, [hasMore, loading, skip, model, shop, sort]);
+  }, [hasMore, loading, skip, searchParamsString]);
 
   return (
     <div className="space-y-12">

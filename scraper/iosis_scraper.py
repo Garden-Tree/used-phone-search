@@ -92,12 +92,19 @@ def parse_iosis_html(html_content):
                 if color_part:
                     color = color_part
                     
+        battery_health = None
+        if "80%以上" in raw_name:
+            battery_health = 80
+        elif "80%未満" in raw_name or "バッテリー劣化" in raw_name:
+            battery_health = 79
+            
         items.append({
             'manufacturer': 'Apple',
             'modelName': model_name,
             'storage': storage,
             'color': color,
             'conditionRank': rank,
+            'batteryHealth': battery_health,
             'networkStatus': network,
             'simUnlocked': sim_unlocked,
             'price': price,
@@ -214,7 +221,7 @@ def main():
                 item['storage'],
                 item['color'],
                 item['conditionRank'],
-                None,
+                item.get('batteryHealth'),
                 item['networkStatus'],
                 item['simUnlocked'],
                 item['shopName'],

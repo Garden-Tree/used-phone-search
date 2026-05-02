@@ -9,6 +9,13 @@ export async function GET(request: NextRequest) {
   const skip = parseInt(searchParams.get("skip") || "0");
   const take = parseInt(searchParams.get("take") || "20");
 
+  // Advanced filters
+  const minPrice = searchParams.get("minPrice");
+  const maxPrice = searchParams.get("maxPrice");
+  const storage = searchParams.get("storage");
+  const rank = searchParams.get("rank");
+  const minBattery = searchParams.get("minBattery");
+
   const isDesc = sortParam === 'price_desc';
 
   const whereClause: any = {};
@@ -28,8 +35,37 @@ export async function GET(request: NextRequest) {
       });
     }
   }
-  if (shopQuery) {
+  
+  if (shopQuery && shopQuery !== 'all') {
     whereClause.shopName = shopQuery;
+  }
+
+  // Apply numeric filters
+  if (minPrice || maxPrice) {
+    whereClause.price = {};
+    if (minPrice) whereClause.price.gte = parseInt(minPrice);
+    if (maxPrice) whereClause.price.lte = parseInt(maxPrice);
+  }
+
+  if (storage) {
+    whereClause.storage = parseInt(storage);
+  }
+
+  if (rank) {
+    whereClause.conditionRank = rank;
+  }
+
+  if (minBattery) {
+    const batteryVal = parseInt(minBattery);
+    whereClause.AND = [
+      ...(whereClause.AND || []),
+      {
+        OR: [
+          { batteryHealth: { gte: batteryVal } },
+          { conditionRank: 'S' }
+        ]
+      }
+    ];
   }
 
   try {

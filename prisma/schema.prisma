@@ -29,4 +29,11 @@ model DeviceInventory {
   // メタ情報
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([modelName])
+  @@index([price])
+  @@index([shopName])
+  @@index([conditionRank])
+  @@index([storage])
+  @@index([batteryHealth])
 }

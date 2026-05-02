@@ -59,6 +59,27 @@ const IPHONE_CATALOG = [
     gradient: "from-red-500 to-rose-600",
     badges: ["指紋認証", "ホームボタン"]
   },
+  {
+    series: "iPhone X Series",
+    description: "ベゼルレスデザインへの大きな進化",
+    models: ["iPhone X", "iPhone XR", "iPhone XS", "iPhone XS Max"],
+    gradient: "from-zinc-500 to-slate-600",
+    badges: ["Face ID", "有機EL"]
+  },
+  {
+    series: "iPhone 8 Series",
+    description: "ワイヤレス充電に対応した完成形",
+    models: ["iPhone 8", "iPhone 8 Plus"],
+    gradient: "from-stone-400 to-gray-500",
+    badges: ["指紋認証", "ワイヤレス充電"]
+  },
+  {
+    series: "iPhone 7 Series",
+    description: "初めての耐水性能とApple Pay対応",
+    models: ["iPhone 7", "iPhone 7 Plus"],
+    gradient: "from-neutral-400 to-zinc-500",
+    badges: ["指紋認証", "耐水性能"]
+  },
 ];
 
 export default function Home() {
