@@ -129,9 +129,9 @@ def scrape_iosis(max_pages=20):
             print(f"  Page {page_num}: Error - {e}")
             return []
     
-    # 最大5並列でページ取得
+    # 最大15並列でページ取得（高速化）
     all_items = []
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=15) as executor:
         futures = {executor.submit(fetch_page, i): i for i in range(1, max_pages + 1)}
         for future in as_completed(futures):
             items = future.result()
@@ -144,9 +144,16 @@ def scrape_iosis(max_pages=20):
 def main():
     print("--- イオシス スクレイピング開始 ---")
     
+    max_pages = 5
+    if len(sys.argv) > 1:
+        try:
+            max_pages = int(sys.argv[1])
+        except ValueError:
+            pass
+            
     # 1. データのスクレイピング
     try:
-        items = scrape_iosis(max_pages=5)
+        items = scrape_iosis(max_pages=max_pages)
     except Exception as e:
         print(f"Scraping failed: {e}")
         sys.exit(1)

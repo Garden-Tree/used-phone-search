@@ -1,11 +1,19 @@
+"""
+ゲオモバイル (ec.geo-online.co.jp) スクレイパー
+- curl_cffi を使用してブラウザのTLSフィンガープリントを模倣しWAFを回避
+- Playwright不要で高速に動作
+"""
 import os
 import sys
 import time
 import re
+import random
 from urllib.parse import urlparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import psycopg2
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
+from curl_cffi import requests
+
 
 def clean_database_url(url: str) -> str:
     """PrismaのDATABASE_URLからpsycopg2用に不要なパラメータを削除する"""
@@ -15,6 +23,7 @@ def clean_database_url(url: str) -> str:
     parsed = urlparse(url)
     clean_url = f"{parsed.scheme}://{parsed.username}:{parsed.password}@{parsed.hostname}:{parsed.port}{parsed.path}"
     return clean_url
+
 
 def parse_geo_html(html_content):
     """HTMLから商品情報を抽出する"""
@@ -57,14 +66,30 @@ def parse_geo_html(html_content):
         carrier = carrier_tag.text if carrier_tag else ''
         sim_unlocked = 'SIMフリー' in carrier or 'ロック解除' in name_tag.text
         
-        raw_name = name_tag.text.replace('【中古】', '').strip()
-        m = re.match(r'([a-zA-Z0-9\s]+)(?:\[[^\]]+\])?\s+([^\s]+)\s+(.+)', raw_name)
-        if m:
-            model_name = m.group(1).strip()
-            color = m.group(3).replace('【安心保…', '').replace('【安心保証…', '').replace('【安心保証】', '').strip()
-        else:
+        # 商品名のクリーンアップ
+        raw_name = name_tag.text.replace('【中古】', '').replace('【安心保証】', '').strip()
+        
+        # モデル名と色の抽出
+        # 形式例: iPhone13[128GB] SIMフリー ピンク
+        # 形式例: iPhoneSE 第2世代[64GB] au ホワイト
+        model_name = raw_name
+        color = '不明'
+        
+        if '[' in raw_name and ']' in raw_name:
             model_name = raw_name.split('[')[0].strip()
-            color = '不明'
+            after_storage = raw_name.split(']')[-1].strip()
+            if after_storage:
+                # 最後の単語を色とみなす（例: "SIMフリー ピンク" -> "ピンク", "au ブラック" -> "ブラック"）
+                parts = after_storage.split()
+                color = parts[-1]
+                # 「安心保証」などが残っている場合の最終防衛ライン
+                color = color.replace('【安心保証】', '').replace('【安心保…', '').strip()
+        else:
+            # [GB] がない場合
+            parts = raw_name.split()
+            if len(parts) > 1:
+                color = parts[-1]
+                model_name = " ".join(parts[:-1])
             
         items.append({
             'manufacturer': 'Apple',
@@ -81,77 +106,74 @@ def parse_geo_html(html_content):
         
     return items
 
-import random
-import time
 
-def scrape_geo_page(page_num, browser_type):
-    """1ページ分だけ取得する（ブラウザ起動・終了を含む）"""
+def scrape_geo_page(page_num, session):
+    """1ページ分のデータを取得する"""
     url = f"https://ec.geo-online.co.jp/shop/goods/search.aspx?flg=gkb02&search.x=0&tree=1001&ps=50&p={page_num}"
     print(f"Navigating to page {page_num}: {url}")
     
-    with browser_type.launch(headless=False) as browser:
-        context = browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            viewport={'width': 1280, 'height': 800}
-        )
-        page = context.new_page()
-        try:
-            page.goto(url, wait_until="domcontentloaded", timeout=60000)
-            page.wait_for_timeout(random.randint(5000, 8000))
-            
-            # 商品名のセレクタが出るまで待機
-            try:
-                page.wait_for_selector(".itemName", timeout=25000)
-            except:
-                print(f"  Timeout waiting for .itemName on page {page_num}.")
-                return [], False
-            
-            html_content = page.content()
-            items = parse_geo_html(html_content)
-            
-            has_next = page.query_selector("a[rel='next']") is not None
-            return items, has_next
-        except Exception as e:
-            print(f"  Error on page {page_num}: {e}")
+    try:
+        response = session.get(url, timeout=15)
+        if response.status_code != 200:
+            print(f"  HTTP {response.status_code} on page {page_num}")
             return [], False
+        
+        html_content = response.text
+        items = parse_geo_html(html_content)
+        
+        # 次のページの存在判定
+        soup = BeautifulSoup(html_content, 'html.parser')
+        has_next = soup.find('a', rel='next') is not None
+        
+        return items, has_next
+    except Exception as e:
+        print(f"  Error on page {page_num}: {e}")
+        return [], False
 
-def scrape_geo_mobile():
-    """ゲオモバイルからiPhoneの商品データを取得
-    """
-    print("Starting Geo Mobile Scraper (Per-page browser restart mode)...")
+
+def scrape_geo_mobile(max_pages=20):
+    """ゲオモバイルからiPhoneの商品データを取得（curl_cffi版）"""
+    print(f"Starting Geo Mobile Scraper (curl_cffi mode) with max_pages={max_pages}...")
     all_items = []
     
-    with sync_playwright() as p:
-        page_num = 1
-        while True:
-            items, has_next = scrape_geo_page(page_num, p.chromium)
-            
-            if not items:
-                print(f"  No items found on page {page_num}. Stopping.")
-                break
+    session = requests.Session(impersonate="chrome124")
+    
+    MAX_PAGES = max_pages
+    MAX_WORKERS = 15  # 並列数を増やして高速化（旧: 3）
+    
+    all_items = []
+    
+    def fetch_worker(p):
+        items, _ = scrape_geo_page(p, session)
+        # 高速化のため待機時間を最小限に短縮
+        time.sleep(random.uniform(0.05, 0.15))
+        return items
+
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = [executor.submit(fetch_worker, p) for p in range(1, MAX_PAGES + 1)]
+        for future in as_completed(futures):
+            try:
+                items = future.result()
+                if items:
+                    all_items.extend(items)
+            except Exception as e:
+                print(f"Worker error: {e}")
                 
-            all_items.extend(items)
-            print(f"  Found {len(items)} items on page {page_num}. (Total: {len(all_items)})")
-            
-            if not has_next:
-                print("  Reached the last page.")
-                break
-            
-            page_num += 1
-            if page_num > 10: # 動作確認のため10ページまでにする
-                break
-                
-            # 次のページへ行く前に少し休む
-            time.sleep(random.uniform(0.5, 3))
-            
     print(f"Finished scraping. Total items found: {len(all_items)}")
     return all_items
 
 def main():
     print("--- ゲオモバイル スクレイピング開始 ---")
     
+    max_pages = 20
+    if len(sys.argv) > 1:
+        try:
+            max_pages = int(sys.argv[1])
+        except ValueError:
+            pass
+            
     try:
-        items = scrape_geo_mobile()
+        items = scrape_geo_mobile(max_pages=max_pages)
     except Exception as e:
         print(f"Scraping failed: {e}")
         sys.exit(1)

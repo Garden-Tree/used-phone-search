@@ -192,17 +192,21 @@ def scrape_nicosuma_collection(collection_handle):
     return items
 
 
-def scrape_nicosuma():
+def scrape_nicosuma(max_collections=None):
     """全コレクションを並列スクレイピングし、URLベースで重複排除"""
-    print("=== にこスマ スクレイピング開始 ===")
+    print(f"=== にこスマ スクレイピング開始 (max_collections={max_collections}) ===")
     all_items = []
     seen_urls = set()
+    
+    target_collections = IPHONE_COLLECTIONS
+    if max_collections:
+        target_collections = IPHONE_COLLECTIONS[:max_collections]
 
-    # 最大5並列でフェッチ（サーバー負荷を考慮）
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    # 最大15並列でフェッチ（高速化）
+    with ThreadPoolExecutor(max_workers=15) as executor:
         future_to_collection = {
             executor.submit(scrape_nicosuma_collection, col): col
-            for col in IPHONE_COLLECTIONS
+            for col in target_collections
         }
 
         for future in as_completed(future_to_collection):
@@ -229,9 +233,16 @@ def scrape_nicosuma():
 def main():
     print("--- にこスマ スクレイピング開始 ---")
 
+    max_collections = None
+    if len(sys.argv) > 1:
+        try:
+            max_collections = int(sys.argv[1])
+        except ValueError:
+            pass
+            
     # 1. データのスクレイピング
     try:
-        items = scrape_nicosuma()
+        items = scrape_nicosuma(max_collections=max_collections)
     except Exception as e:
         print(f"Scraping failed: {e}")
         sys.exit(1)
