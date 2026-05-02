@@ -23,6 +23,9 @@
 
 ## 開発環境の構築 (Setup)
 
+詳細な手順については [docs/setup.md](./docs/setup.md) を参照してください。
+以下は簡易的な手順です。
+
 ### 1. データベースの起動
 ```bash
 docker-compose up -d
