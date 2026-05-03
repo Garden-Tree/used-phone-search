@@ -71,11 +71,15 @@ def main():
     geo_limit = int(os.environ.get("GEO_LIMIT", 100))
     nicosuma_limit = int(os.environ.get("NICOSUMA_LIMIT", 100))
     iosis_limit = int(os.environ.get("IOSIS_LIMIT", 100))
+    mmoba_limit = int(os.environ.get("MMOBA_LIMIT", 100))
+    daiwan_limit = int(os.environ.get("DAIWAN_LIMIT", 100))
 
     config = {
         "geo_scraper.py": geo_limit,
         "nicosuma_scraper.py": nicosuma_limit,
-        "iosis_scraper.py": iosis_limit
+        "iosis_scraper.py": iosis_limit,
+        "mmoba_scraper.py": mmoba_limit,
+        "daiwan_scraper.py": daiwan_limit
     }
     
     scrapers = list(config.keys())

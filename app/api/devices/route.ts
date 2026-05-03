@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { DeviceInventory } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
+// 1時間ごとに自動更新（デバッグのために一時無効化）
+// export const revalidate = 60 * 60;
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const modelQuery = searchParams.get("model");
@@ -17,7 +20,17 @@ export async function GET(request: NextRequest) {
   const rank = searchParams.get("rank");
   const minBattery = searchParams.get("minBattery");
 
-  const isDesc = sortParam === 'price_desc';
+  const currentSort = sortParam || 'price_asc';
+  
+  const getOrderBy = () => {
+    switch (currentSort) {
+      case 'price_desc': return { price: 'desc' as const };
+      case 'battery_desc': return { batteryHealth: 'desc' as const };
+      case 'battery_asc': return { batteryHealth: 'asc' as const };
+      case 'price_asc':
+      default: return { price: 'asc' as const };
+    }
+  };
 
   const whereClause: any = {};
   let models: string[] = [];
@@ -80,7 +93,8 @@ export async function GET(request: NextRequest) {
     let devices = await prisma.deviceInventory.findMany({
       where: whereClause,
       orderBy: [
-        { price: isDesc ? 'desc' : 'asc' }
+        getOrderBy(),
+        { price: 'asc' }
       ],
       skip: skip,
       take: fetchTake,

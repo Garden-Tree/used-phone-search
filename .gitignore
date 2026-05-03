@@ -58,3 +58,6 @@ scraper/venv/
 
 # Database / Docker volumes
 .docker-data/
+
+#scratch
+scratch/

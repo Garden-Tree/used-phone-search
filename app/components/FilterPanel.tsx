@@ -5,12 +5,14 @@ import { useState, useEffect } from 'react';
 import { Filter, ChevronDown, ChevronUp, X } from 'lucide-react';
 
 const STORAGE_OPTIONS = [64, 128, 256, 512, 1024];
-const RANK_OPTIONS = ['S', 'A', 'B', 'C'];
+const RANK_OPTIONS = ['S', 'A', 'B', 'C', 'D'];
 const SHOPS = [
   { id: 'all', name: 'すべて' },
   { id: 'イオシス', name: 'イオシス' },
   { id: 'ゲオモバイル', name: 'ゲオモバイル' },
   { id: 'にこスマ', name: 'にこスマ' },
+  { id: 'エムモバ', name: 'エムモバ' },
+  { id: 'ダイワンテレコム', name: 'ダイワンテレコム' },
 ];
 
 export default function FilterPanel() {
@@ -76,20 +78,20 @@ export default function FilterPanel() {
   ).length;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-sm border border-slate-100 dark:border-zinc-800 overflow-hidden transition-all duration-300">
+    <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-300">
       {/* Header / Summary */}
       <div 
-        className="p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors"
+        className="p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 dark:bg-blue-500/10 rounded-xl text-blue-600 dark:text-blue-400">
+          <div className="p-2 bg-blue-100 rounded-xl text-blue-600">
             <Filter className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-800 dark:text-zinc-100">詳細フィルター</h3>
+            <h3 className="font-bold text-slate-800">詳細フィルター</h3>
             {activeFiltersCount > 0 && (
-              <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+              <p className="text-xs text-blue-600 font-medium">
                 {activeFiltersCount}個のフィルター適用中
               </p>
             )}
@@ -109,12 +111,12 @@ export default function FilterPanel() {
       </div>
 
       {/* Expanded Content */}
-      <div className={`border-t border-slate-50 dark:border-zinc-800 transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+      <div className={`border-t border-slate-50 transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
         <div className="p-6 space-y-8">
           
           {/* Shop Selection (Integrated) */}
           <div className="space-y-3">
-            <label className="text-sm font-bold text-slate-500 dark:text-zinc-400 flex items-center gap-2">
+            <label className="text-sm font-bold text-slate-500 flex items-center gap-2">
               ショップ
             </label>
             <div className="flex flex-wrap gap-2">
@@ -127,7 +129,7 @@ export default function FilterPanel() {
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
                       isActive
                         ? 'bg-blue-600 border-blue-600 text-white shadow-md'
-                        : 'bg-slate-50 dark:bg-zinc-800 border-slate-100 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:border-blue-200'
+                        : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-blue-200'
                     }`}
                   >
                     {shop.name}
@@ -139,7 +141,7 @@ export default function FilterPanel() {
 
           {/* Price Range */}
           <div className="space-y-3">
-            <label className="text-sm font-bold text-slate-500 dark:text-zinc-400">
+            <label className="text-sm font-bold text-slate-500">
               価格帯 (円)
             </label>
             <div className="flex items-center gap-3">
@@ -148,7 +150,7 @@ export default function FilterPanel() {
                 placeholder="最小"
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
               <span className="text-slate-400">~</span>
               <input
@@ -156,11 +158,11 @@ export default function FilterPanel() {
                 placeholder="最大"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               />
               <button 
                 onClick={handleApplyPrice}
-                className="bg-slate-800 dark:bg-zinc-100 text-white dark:text-zinc-900 px-4 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity"
+                className="bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity"
               >
                 適用
               </button>
@@ -170,7 +172,7 @@ export default function FilterPanel() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Storage */}
             <div className="space-y-3">
-              <label className="text-sm font-bold text-slate-500 dark:text-zinc-400">
+              <label className="text-sm font-bold text-slate-500">
                 容量
               </label>
               <div className="flex flex-wrap gap-2">
@@ -184,7 +186,7 @@ export default function FilterPanel() {
                       className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
                         isActive
                           ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
-                          : 'bg-slate-50 dark:bg-zinc-800 border-slate-100 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
+                          : 'bg-slate-50 border-slate-100 text-slate-600'
                       }`}
                     >
                       {label}
@@ -196,7 +198,7 @@ export default function FilterPanel() {
 
             {/* Rank */}
             <div className="space-y-3">
-              <label className="text-sm font-bold text-slate-500 dark:text-zinc-400">
+              <label className="text-sm font-bold text-slate-500">
                 状態ランク
               </label>
               <div className="flex flex-wrap gap-2">
@@ -209,7 +211,7 @@ export default function FilterPanel() {
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
                         isActive
                           ? 'bg-emerald-600 border-emerald-600 text-white shadow-md'
-                          : 'bg-slate-50 dark:bg-zinc-800 border-slate-100 dark:border-zinc-700 text-slate-600 dark:text-zinc-400'
+                          : 'bg-slate-50 border-slate-100 text-slate-600'
                       }`}
                     >
                       {rank}
@@ -222,7 +224,7 @@ export default function FilterPanel() {
 
           {/* Battery */}
           <div className="space-y-3">
-            <label className="text-sm font-bold text-slate-500 dark:text-zinc-400">
+            <label className="text-sm font-bold text-slate-500">
               その他
             </label>
             <div className="flex flex-wrap gap-4">
@@ -234,10 +236,10 @@ export default function FilterPanel() {
                     onChange={() => toggleValue('minBattery', '80')}
                     className="peer sr-only"
                   />
-                  <div className="w-10 h-6 bg-slate-200 dark:bg-zinc-700 rounded-full peer-checked:bg-blue-600 transition-colors"></div>
+                  <div className="w-10 h-6 bg-slate-200 rounded-full peer-checked:bg-blue-600 transition-colors"></div>
                   <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
                 </div>
-                <span className="text-sm font-semibold text-slate-600 dark:text-zinc-300 group-hover:text-blue-600 transition-colors">
+                <span className="text-sm font-semibold text-slate-600 group-hover:text-blue-600 transition-colors">
                   バッテリー80%以上
                 </span>
               </label>

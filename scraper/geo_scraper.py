@@ -26,6 +26,48 @@ def clean_database_url(url: str) -> str:
     clean_url = f"{parsed.scheme}://{parsed.username}:{parsed.password}@{parsed.hostname}{port}{parsed.path}"
     return clean_url
 
+def is_iphone_13_or_later(model_name):
+    """iPhone 13以降（SE 第3世代含む）か判定する。2021年10月以降発売モデルは原則SIMロックなし。"""
+    # 13, 14, 15, 16 シリーズ
+    if re.search(r'iPhone\s?(1[3-9])', model_name, re.IGNORECASE):
+        return True
+    # SE 第3世代
+    if "SE" in model_name and "第3世代" in model_name:
+        return True
+    return False
+
+def fetch_geo_detail(session, item):
+    """個別ページから利用制限情報を取得する"""
+    if not item['url']:
+        return item
+    
+    # URLが相対パスの場合はベースURLを追加
+    detail_url = item['url']
+    if detail_url.startswith('/'):
+        detail_url = "https://ec.geo-online.co.jp" + detail_url
+        item['url'] = detail_url
+        
+    try:
+        # 負荷軽減のため少し待機（並列実行されるため合計時間は抑えられる）
+        time.sleep(random.uniform(0.05, 0.2))
+        resp = session.get(detail_url, timeout=10)
+        if resp.status_code == 200:
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            # スペック表から「ネットワーク利用制限」を探す
+            # ゲオの詳細は table の th に項目名、td に値が入っている形式が多い
+            rows = soup.find_all('tr')
+            for row in rows:
+                th = row.find('th')
+                td = row.find('td')
+                if th and td and 'ネットワーク利用制限' in th.text:
+                    status = td.text.strip()
+                    # ▲ を △ に変換
+                    item['networkStatus'] = status.replace('▲', '△')
+                    break
+    except Exception as e:
+        print(f"  Error fetching detail {detail_url}: {e}")
+        
+    return item
 
 def parse_geo_html(html_content):
     """HTMLから商品情報を抽出する"""
@@ -54,7 +96,8 @@ def parse_geo_html(html_content):
             price = 0
             
         condition_tag = li.find(class_='labelSituation')
-        condition = condition_tag.text.replace('状態', '') if condition_tag else '不明'
+        m_rank = re.search(r'([SABCDJ])', condition_tag.text) if condition_tag else None
+        condition = m_rank.group(1) if m_rank else '不明'
         
         capacity_tag = li.find(class_='labelCapacity')
         capacity_str = capacity_tag.text if capacity_tag else ''
@@ -66,6 +109,13 @@ def parse_geo_html(html_content):
                 
         carrier_tag = li.find(class_='itemCarrier')
         carrier = carrier_tag.text if carrier_tag else ''
+        
+        # 利用制限の推測
+        # 一覧ページに記号がないため、SIMフリーの場合は「-」、それ以外は一旦「〇」とする
+        network_status = "〇"
+        if "SIMフリー" in carrier:
+            network_status = "-"
+            
         sim_unlocked = 'SIMフリー' in carrier or 'ロック解除' in name_tag.text
         
         # 商品名のクリーンアップ
@@ -92,6 +142,14 @@ def parse_geo_html(html_content):
             if len(parts) > 1:
                 color = parts[-1]
                 model_name = " ".join(parts[:-1])
+        
+        # iPhone 13以降のルール (model_name確定後に判定)
+        if is_iphone_13_or_later(model_name):
+            sim_unlocked = True
+            
+        # キャリア名の正規化
+        if carrier == "SIMフリー" or not carrier:
+            carrier = "国内版SIMフリー"
             
         items.append({
             'manufacturer': 'Apple',
@@ -99,8 +157,9 @@ def parse_geo_html(html_content):
             'storage': storage,
             'color': color,
             'conditionRank': condition,
-            'networkStatus': carrier,
+            'networkStatus': network_status,
             'simUnlocked': sim_unlocked,
+            'carrier': carrier,
             'price': price,
             'url': url,
             'shopName': 'ゲオモバイル'
@@ -122,6 +181,11 @@ def scrape_geo_page(page_num, session):
         
         html_content = response.text
         items = parse_geo_html(html_content)
+        
+        # 個別詳細ページから利用制限を取得（並列実行）
+        if items:
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                items = list(executor.map(lambda x: fetch_geo_detail(session, x), items))
         
         # 次のページの存在判定
         soup = BeautifulSoup(html_content, 'html.parser')
@@ -147,8 +211,6 @@ def scrape_geo_mobile(max_pages=20):
     
     def fetch_worker(p):
         items, _ = scrape_geo_page(p, session)
-        # 高速化のため待機時間を最小限に短縮
-        time.sleep(random.uniform(0.05, 0.15))
         return items
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -187,7 +249,7 @@ def main():
     env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
     db_url = None
     try:
-        with open(env_path, 'r') as f:
+        with open(env_path, 'r', encoding='utf-8') as f:
             for line in f:
                 if line.startswith('DATABASE_URL='):
                     db_url = line.split('=', 1)[1].strip()
@@ -216,7 +278,7 @@ def main():
         insert_query = """
             INSERT INTO "DeviceInventory" (
                 "id", "manufacturer", "modelName", "storage", "color",
-                "conditionRank", "batteryHealth", "networkStatus", "simUnlocked",
+                "conditionRank", "batteryHealth", "networkStatus", "simUnlocked", "carrier",
                 "shopName", "price", "url", "isSoldOut", "createdAt", "updatedAt"
             ) VALUES %s
         """
@@ -229,9 +291,10 @@ def main():
                 item['storage'],
                 item['color'],
                 item['conditionRank'],
-                None,
+                100 if item.get('conditionRank') in ['S', '未使用品'] else None,
                 item['networkStatus'],
                 item['simUnlocked'],
+                item['carrier'],
                 item['shopName'],
                 item['price'],
                 item['url'],
@@ -241,7 +304,7 @@ def main():
         ]
         
         # gen_random_uuid() と NOW() を含めるためのテンプレート
-        template = "(gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())"
+        template = "(gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())"
         
         execute_values(cur, insert_query, values, template=template)
             

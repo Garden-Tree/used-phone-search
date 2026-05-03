@@ -26,6 +26,15 @@ def clean_database_url(url: str) -> str:
     clean_url = f"{parsed.scheme}://{parsed.username}:{parsed.password}@{parsed.hostname}{port}{parsed.path}"
     return clean_url
 
+def is_iphone_13_or_later(model_name):
+    """iPhone 13以降（SE 第3世代含む）か判定する。2021年10月以降発売モデルは原則SIMロックなし。"""
+    # 13, 14, 15, 16 シリーズ
+    if re.search(r'iPhone\s?(1[3-9])', model_name, re.IGNORECASE):
+        return True
+    # SE 第3世代
+    if "SE" in model_name and "第3世代" in model_name:
+        return True
+    return False
 
 # にこスマでスクレイピング対象とするiPhoneコレクション
 IPHONE_COLLECTIONS = [
@@ -110,10 +119,14 @@ def extract_products_from_page(html_content):
 
         # グレード
         grade = meta.get("grade", "不明")
+        if grade:
+            grade = grade.strip()
 
         # バッテリー
         battery = meta.get("battery")
-        if battery is not None:
+        if grade == 'S' or grade == '未使用品':
+            battery = 100
+        elif battery is not None:
             try:
                 battery = int(battery)
             except (ValueError, TypeError):
@@ -121,17 +134,15 @@ def extract_products_from_page(html_content):
 
         # ネットワーク / SIMロック
         mno = meta.get("mno", "")
-        sim_unlocked = True
-        if "SIMフリー" in mno or "SIMfree" in mno.lower():
-            network = "SIMフリー"
-        elif "docomo" in mno.lower():
-            network = "docomo"
-        elif "au" in mno.lower():
-            network = "au"
-        elif "softbank" in mno.lower():
-            network = "SoftBank"
-        else:
-            network = mno if mno else "SIMフリー"
+        sim_unlocked = True # にこスマは基本SIMフリー/ロック解除済み
+        
+        # 利用制限の判定
+        # にこスマは販路が不明なため、利用制限もNone（Null）とする
+        network_status = None
+            
+        # iPhone 13以降のルール
+        if is_iphone_13_or_later(model_name):
+            sim_unlocked = True
 
         # 価格
         price = product.get("price", 0)
@@ -146,6 +157,9 @@ def extract_products_from_page(html_content):
         total_inventory = product.get("totalInventory")
         is_sold_out = total_inventory == 0
 
+        # にこスマは販路が不明なため、carrierはNone（Null）とする
+        mno = None
+            
         items.append({
             "manufacturer": "Apple",
             "modelName": model_name,
@@ -153,8 +167,9 @@ def extract_products_from_page(html_content):
             "color": color,
             "conditionRank": grade,
             "batteryHealth": battery,
-            "networkStatus": network,
+            "networkStatus": network_status,
             "simUnlocked": sim_unlocked,
+            "carrier": mno,
             "price": price,
             "url": url,
             "shopName": "にこスマ",
@@ -257,7 +272,7 @@ def main():
     env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
     db_url = None
     try:
-        with open(env_path, "r") as f:
+        with open(env_path, "r", encoding="utf-8") as f:
             for line in f:
                 if line.startswith("DATABASE_URL="):
                     db_url = line.split("=", 1)[1].strip()
@@ -291,7 +306,7 @@ def main():
         insert_query = """
             INSERT INTO "DeviceInventory" (
                 "id", "manufacturer", "modelName", "storage", "color",
-                "conditionRank", "batteryHealth", "networkStatus", "simUnlocked",
+                "conditionRank", "batteryHealth", "networkStatus", "simUnlocked", "carrier",
                 "shopName", "price", "url", "isSoldOut", "createdAt", "updatedAt"
             ) VALUES %s
         """
@@ -307,6 +322,7 @@ def main():
                 item["batteryHealth"],
                 item["networkStatus"],
                 item["simUnlocked"],
+                item["carrier"],
                 item["shopName"],
                 item["price"],
                 item["url"],
@@ -316,7 +332,7 @@ def main():
         ]
         
         # gen_random_uuid() と NOW() を含めるためのテンプレート
-        template = "(gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())"
+        template = "(gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())"
         
         execute_values(cur, insert_query, values, template=template)
 

@@ -17,6 +17,16 @@ def clean_database_url(url: str) -> str:
     clean_url = f"{parsed.scheme}://{parsed.username}:{parsed.password}@{parsed.hostname}{port}{parsed.path}"
     return clean_url
 
+def is_iphone_13_or_later(model_name):
+    """iPhone 13以降（SE 第3世代含む）か判定する。2021年10月以降発売モデルは原則SIMロックなし。"""
+    # 13, 14, 15, 16 シリーズ
+    if re.search(r'iPhone\s?(1[3-9])', model_name, re.IGNORECASE):
+        return True
+    # SE 第3世代
+    if "SE" in model_name and "第3世代" in model_name:
+        return True
+    return False
+
 def parse_iosis_html(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
     items = []
@@ -30,12 +40,14 @@ def parse_iosis_html(html_content):
         a_tag = li.select_one("a[href^='/items/smartphone/']")
         url = "https://iosys.co.jp" + a_tag['href'] if a_tag else ""
         
-        name_input = li.select_one("input[name='name']")
-        raw_name = name_input['value'] if name_input else ""
+        # 商品名の取得
+        # input[name='name'] よりも p.name の方が情報が豊富な場合がある
+        name_p = li.select_one("p.name")
+        raw_name = name_p.text.strip() if name_p else ""
+        
         if not raw_name:
-            name_h3 = li.select_one("h3.name")
-            if name_h3:
-                raw_name = name_h3.text.strip()
+            name_input = li.select_one("input[name='name']")
+            raw_name = name_input['value'] if name_input else ""
                 
         rank_input = li.select_one("input[name='rank']")
         rank_raw = rank_input['value'] if rank_input else ""
@@ -76,14 +88,49 @@ def parse_iosis_html(html_content):
         if m_gen and "世代" not in model_name:
             model_name += f" ({m_gen.group(1)})"
             
-        if "au" in raw_name.lower(): network = "au"
-        elif "docomo" in raw_name.lower(): network = "docomo"
-        elif "softbank" in raw_name.lower(): network = "SoftBank"
-        elif "楽天" in raw_name: network = "楽天モバイル"
-        elif "国内版" in raw_name: network = "国内版SIMフリー"
-        else: network = "SIMフリー"
+        if "au" in raw_name.lower():
+            network_label = "au"
+        elif "docomo" in raw_name.lower():
+            network_label = "docomo"
+        elif "softbank" in raw_name.lower():
+            network_label = "SoftBank"
+        elif "楽天" in raw_name:
+            network_label = "楽天モバイル"
+        elif "国内版" in raw_name:
+            network_label = "Apple"
+        else:
+            network_label = None # 特定のキャリア指定がない場合はNone
         
-        if "ロック解除" in raw_name or "SIMフリー" in raw_name:
+        # 利用制限記号の抽出
+        # 【ネットワーク利用制限〇】 や ネットワーク利用制限(〇) のパターンに対応に対応
+        network_status = "-"
+        m_status = re.search(r'ネットワーク利用制限[\(]?([〇△▲×－\-])[\)]?', raw_name)
+        if m_status:
+            status_char = m_status.group(1)
+            # 記号の正規化
+            if status_char == '▲':
+                network_status = '△'
+            elif status_char == '－':
+                network_status = '-'
+            else:
+                network_status = status_char
+        elif network_label == "Apple":
+            # 国内版(Apple)は利用制限なし(None)
+            network_status = None
+        elif network_label is None and "SIMフリー" in raw_name:
+            # キャリア指定なしのSIMフリーも利用制限なし(None)
+            network_status = None
+        else:
+            # キャリア品、またはキャリア不明品はデフォルトで"-"
+            network_status = "-"
+        
+        # SIMロック解除判定
+        sim_unlocked = False
+        if "ロック解除" in raw_name or "SIMフリー" in raw_name or "国内版" in raw_name:
+            sim_unlocked = True
+        
+        # iPhone 13以降のルール
+        if is_iphone_13_or_later(model_name):
             sim_unlocked = True
             
         if m_storage:
@@ -94,11 +141,13 @@ def parse_iosis_html(html_content):
                 if color_part:
                     color = color_part
                     
-        battery_health = None
-        if "80%以上" in raw_name:
-            battery_health = 80
+        # イオシスでは「80%未満」の表記がない商品は、原則「80%以上」扱い
+        if rank == 'S':
+            battery_health = 100
         elif "80%未満" in raw_name or "バッテリー劣化" in raw_name:
             battery_health = 79
+        else:
+            battery_health = 80
             
         items.append({
             'manufacturer': 'Apple',
@@ -107,8 +156,9 @@ def parse_iosis_html(html_content):
             'color': color,
             'conditionRank': rank,
             'batteryHealth': battery_health,
-            'networkStatus': network,
+            'networkStatus': network_status,
             'simUnlocked': sim_unlocked,
+            'carrier': network_label,
             'price': price,
             'url': url,
             'shopName': 'イオシス'
@@ -131,6 +181,8 @@ def scrape_iosis(max_pages=20):
         try:
             response = requests.get(search_url, headers=headers, timeout=10)
             response.raise_for_status()
+            # エンコーディングを明示的に指定
+            response.encoding = 'utf-8'
             items = parse_iosis_html(response.text)
             print(f"  Page {page_num}: {len(items)} items")
             return items
@@ -175,7 +227,7 @@ def main():
     env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
     db_url = None
     try:
-        with open(env_path, 'r') as f:
+        with open(env_path, 'r', encoding='utf-8') as f:
             for line in f:
                 if line.startswith('DATABASE_URL='):
                     db_url = line.split('=', 1)[1].strip()
@@ -207,7 +259,7 @@ def main():
         insert_query = """
             INSERT INTO "DeviceInventory" (
                 "id", "manufacturer", "modelName", "storage", "color",
-                "conditionRank", "batteryHealth", "networkStatus", "simUnlocked",
+                "conditionRank", "batteryHealth", "networkStatus", "simUnlocked", "carrier",
                 "shopName", "price", "url", "isSoldOut", "createdAt", "updatedAt"
             ) VALUES %s
         """
@@ -223,6 +275,7 @@ def main():
                 item.get('batteryHealth'),
                 item['networkStatus'],
                 item['simUnlocked'],
+                item['carrier'],
                 item['shopName'],
                 item['price'],
                 item['url'],
@@ -232,7 +285,7 @@ def main():
         ]
         
         # gen_random_uuid() と NOW() を含めるためのテンプレート
-        template = "(gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())"
+        template = "(gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())"
         
         execute_values(cur, insert_query, values, template=template)
             

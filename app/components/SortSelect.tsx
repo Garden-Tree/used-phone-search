@@ -20,10 +20,12 @@ export default function SortSelect({ currentSort }: { currentSort: string }) {
       id="sort"
       value={currentSort}
       onChange={handleSortChange}
-      className="bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 shadow-sm transition-colors cursor-pointer outline-none"
+      className="bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 shadow-sm transition-colors cursor-pointer outline-none"
     >
       <option value="price_asc">価格が安い順</option>
       <option value="price_desc">価格が高い順</option>
+      <option value="battery_desc">バッテリー残量が多い順</option>
+      <option value="battery_asc">バッテリー残量が少ない順</option>
     </select>
   );
 }

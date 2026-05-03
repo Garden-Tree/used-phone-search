@@ -99,7 +99,7 @@ export default function InfiniteDeviceList({
         >
           <div className="flex flex-col items-center gap-4">
             <div className="w-8 h-8 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
-            <span className="text-sm font-medium text-slate-500 dark:text-zinc-400 animate-pulse">
+            <span className="text-sm font-medium text-slate-500 animate-pulse">
               在庫をさらに読み込み中...
             </span>
           </div>
@@ -107,8 +107,8 @@ export default function InfiniteDeviceList({
       )}
 
       {!hasMore && devices.length > 0 && (
-        <div className="text-center py-16 border-t border-slate-100 dark:border-zinc-800/50 mt-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 text-sm font-medium">
+        <div className="text-center py-16 border-t border-slate-100 mt-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 text-slate-500 text-sm font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
             </svg>

@@ -22,9 +22,18 @@ export default async function SearchPage({
   const rank = params.rank as string | undefined;
   const minBattery = params.minBattery as string | undefined;
   
-  // Default sort is price ascending
-  const currentSort = sortParam === 'price_desc' ? 'price_desc' : 'price_asc';
-  const isDesc = currentSort === 'price_desc';
+  // Sort configuration
+  const currentSort = (sortParam as string) || 'price_asc';
+  
+  const getOrderBy = () => {
+    switch (currentSort) {
+      case 'price_desc': return { price: 'desc' as const };
+      case 'battery_desc': return { batteryHealth: 'desc' as const };
+      case 'battery_asc': return { batteryHealth: 'asc' as const };
+      case 'price_asc':
+      default: return { price: 'asc' as const };
+    }
+  };
 
   let devices: Device[] = [];
   
@@ -85,7 +94,8 @@ export default async function SearchPage({
     devices = await prisma.deviceInventory.findMany({
       where: whereClause,
       orderBy: [
-        { price: isDesc ? 'desc' : 'asc' }
+        getOrderBy(),
+        { price: 'asc' } // Secondary sort by price
       ],
       take: initialTake,
     });
@@ -124,13 +134,13 @@ export default async function SearchPage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-50 font-sans">
-      <header className="bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 sticky top-0 z-10 shadow-sm">
+    <div className="min-h-screen bg-white text-slate-900 font-sans">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+          <Link href="/" className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
             &larr; Used Phone Search
           </Link>
-          <div className="text-sm font-medium text-slate-500 dark:text-zinc-400">
+          <div className="text-sm font-medium text-slate-500">
             {modelQuery ? `Results for "${modelQuery}"` : shopQuery ? `Results for "${shopQuery}"` : "Search"}
           </div>
         </div>
@@ -140,17 +150,17 @@ export default async function SearchPage({
         <div className="mb-8 flex flex-col gap-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">
+              <h1 className="text-3xl font-extrabold text-slate-900 mb-2">
                 {modelQuery || shopQuery || "Search Results"}
               </h1>
-              <p className="text-slate-600 dark:text-zinc-400">
+              <p className="text-slate-600">
                 在庫を表示しています。スクロールでさらに読み込みます。
               </p>
             </div>
             
             {(devices.length > 0 || shopQuery || modelQuery) && (
               <div className="flex items-center gap-2">
-                <label htmlFor="sort" className="text-sm font-medium text-slate-600 dark:text-zinc-400">
+                <label htmlFor="sort" className="text-sm font-medium text-slate-600">
                   並び替え:
                 </label>
                 <SortSelect currentSort={currentSort} />
@@ -163,9 +173,9 @@ export default async function SearchPage({
         </div>
 
         {devices.length === 0 ? (
-          <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-3xl shadow-sm border border-slate-200 dark:border-zinc-800">
-            <p className="text-slate-500 dark:text-zinc-400 text-lg">在庫が見つかりませんでした。</p>
-            <p className="text-sm text-slate-400 dark:text-zinc-500 mt-2">条件を変更して検索してみてください。</p>
+          <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-200">
+            <p className="text-slate-500 text-lg">在庫が見つかりませんでした。</p>
+            <p className="text-sm text-slate-400 mt-2">条件を変更して検索してみてください。</p>
           </div>
         ) : (
           <InfiniteDeviceList 

@@ -19,6 +19,14 @@ on:
         description: 'イオシスの取得数'
         required: true
         default: '100'
+      mmoba_limit:
+        description: 'エムモバの取得数'
+        required: true
+        default: '100'
+      daiwan_limit:
+        description: 'ダイワンテレコムの取得数'
+        required: true
+        default: '100'
 
 jobs:
   run-scraper:
@@ -50,6 +58,8 @@ jobs:
           GEO_LIMIT: ${{ inputs.geo_limit || '100' }}
           NICOSUMA_LIMIT: ${{ inputs.nicosuma_limit || '100' }}
           IOSIS_LIMIT: ${{ inputs.iosis_limit || '100' }}
+          MMOBA_LIMIT: ${{ inputs.mmoba_limit || '100' }}
+          DAIWAN_LIMIT: ${{ inputs.daiwan_limit || '100' }}
         run: |
           cd scraper
           python run_all_scrapers.py

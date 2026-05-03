@@ -19,6 +19,7 @@ model DeviceInventory {
   batteryHealth   Int?     // 最大容量(%) 例: 85
   networkStatus   String?  // 利用制限 例: 〇, △, -
   simUnlocked     Boolean  // SIMロック解除済みか
+  carrier         String?  // 元の販売元 例: docomo, au, Apple
   
   // 販売情報
   shopName        String   // 例: イオシス, じゃんぱら
@@ -36,4 +37,5 @@ model DeviceInventory {
   @@index([conditionRank])
   @@index([storage])
   @@index([batteryHealth])
+  @@index([carrier])
 }
