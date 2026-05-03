@@ -68,13 +68,35 @@ export default async function SearchPage({
     models = modelQuery.split(',').map(m => m.trim()).filter(m => m);
     if (models.length > 0) {
       whereClause.OR = models.map(m => {
-        const queryStr = m.replace(/iphone\s?/i, '').trim();
-        return {
-          modelName: {
-            contains: queryStr,
-            mode: 'insensitive'
-          }
-        };
+        const lowerM = m.toLowerCase();
+        const modelIdentifier = lowerM
+          .replace(/iphone\s?/i, '')
+          .replace(/\s(pro\smax|pro|plus|mini)$/i, '')
+          .trim();
+        
+        const baseConditions: any[] = [
+          { modelName: { contains: modelIdentifier, mode: 'insensitive' } }
+        ];
+
+        if (lowerM.endsWith('pro max')) {
+          baseConditions.push({ modelName: { contains: 'max', mode: 'insensitive' } });
+          baseConditions.push({ modelName: { contains: 'pro', mode: 'insensitive' } });
+        } else if (lowerM.endsWith('pro')) {
+          baseConditions.push({ modelName: { contains: 'pro', mode: 'insensitive' } });
+          baseConditions.push({ NOT: { modelName: { contains: 'max', mode: 'insensitive' } } });
+        } else if (lowerM.endsWith('plus')) {
+          baseConditions.push({ modelName: { contains: 'plus', mode: 'insensitive' } });
+        } else if (lowerM.endsWith('mini')) {
+          baseConditions.push({ modelName: { contains: 'mini', mode: 'insensitive' } });
+        } else {
+          // Base model: Must not contain any of the suffix keywords
+          baseConditions.push({ NOT: { modelName: { contains: 'pro', mode: 'insensitive' } } });
+          baseConditions.push({ NOT: { modelName: { contains: 'max', mode: 'insensitive' } } });
+          baseConditions.push({ NOT: { modelName: { contains: 'plus', mode: 'insensitive' } } });
+          baseConditions.push({ NOT: { modelName: { contains: 'mini', mode: 'insensitive' } } });
+        }
+        
+        return { AND: baseConditions };
       });
     }
   }
@@ -96,6 +118,11 @@ export default async function SearchPage({
 
   if (rank) {
     whereClause.conditionRank = rank;
+  }
+
+  // If sorting by battery, exclude items with unknown battery (null)
+  if (currentSort === 'battery_desc' || currentSort === 'battery_asc') {
+    whereClause.batteryHealth = { not: null };
   }
 
   if (minBattery) {
@@ -124,30 +151,38 @@ export default async function SearchPage({
       take: initialTake,
     });
 
-    // Apply model-specific filtering if modelQuery is present
+    // Apply model-specific filtering secondary check (JS) for extra safety
     if (models.length > 0) {
       devices = devices.filter(d => {
         return models.some(m => {
           const lowerQuery = m.toLowerCase();
           const lowerName = d.modelName.toLowerCase();
+          
+          // Basic verification that the device name contains the core model identifier
+          const modelIdentifier = lowerQuery
+            .replace(/iphone\s?/i, '')
+            .replace(/\s(pro\smax|pro|plus|mini)$/i, '')
+            .trim();
+            
+          // Handle cases like "iphone13" (iosis) vs "iphone 13"
+          const normalizedName = lowerName.replace(/\s/g, '');
+          const normalizedQuery = modelIdentifier.replace(/\s/g, '');
+          
+          if (!normalizedName.includes(normalizedQuery)) return false;
 
-          if (lowerQuery.endsWith('pro')) {
+          if (lowerQuery.endsWith('pro max')) {
+            return lowerName.includes('max') && lowerName.includes('pro');
+          } else if (lowerQuery.endsWith('pro')) {
             return lowerName.includes('pro') && !lowerName.includes('max');
-          } else if (lowerQuery.endsWith('max')) {
-            return lowerName.includes('max');
           } else if (lowerQuery.endsWith('plus')) {
             return lowerName.includes('plus');
           } else if (lowerQuery.endsWith('mini')) {
             return lowerName.includes('mini');
-          } else if (lowerQuery.match(/\d+e$/)) {
-            return !!lowerName.match(/\d+e\b/);
           } else {
-            const isEModel = !!lowerName.match(/\d+e\b/);
-            return !lowerName.includes('pro') && !lowerName.includes('max') && !lowerName.includes('plus') && !lowerName.includes('mini') && !isEModel;
+            return !lowerName.includes('pro') && !lowerName.includes('max') && !lowerName.includes('plus') && !lowerName.includes('mini');
           }
         });
       });
-
 
       // Limit to 20 for initial view
       devices = devices.slice(0, 20);
