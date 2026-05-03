@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "中古スマホ横断検索",
+  title: "中古スマホ一括検索",
   description: "大手中古スマホショップの在庫を一括で検索・比較できるWebアプリケーション",
 };
 

@@ -58,29 +58,34 @@ export default function Home() {
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-200 pb-20">
 
       {/* 1. Hero Section */}
-      <section className="relative pt-20 pb-12 md:pt-32 md:pb-20 overflow-hidden">
+      <section className="relative pt-4 pb-4 md:pt-8 md:pb-8 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
         <div className="max-w-6xl mx-auto px-4 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mb-6 ring-1 ring-inset ring-blue-500/20">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-            リアルタイム在庫横断検索
-          </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-            あなたにぴったりの <br className="hidden md:block" />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-              中古iPhoneを見つけよう
-            </span>
+
+
+          <h1 className="text-4xl md:text-7xl font-black tracking-tighter mb-1 leading-tight text-slate-900">
+            中古スマホ一括検索
           </h1>
-          <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-10">
+
+          <div className="mb-12">
+            <a href="https://gadelog.com" target="_blank" rel="noopener noreferrer" className="text-xs font-black text-slate-400 hover:text-blue-600 transition-colors tracking-[0.3em] uppercase">
+              POWERED BY GADELOG.COM
+            </a>
+          </div>
+
+          <p className="text-xl md:text-4xl font-bold text-slate-700 mb-4 tracking-tight">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+              あなたにピッタリの中古スマホを見つけよう
+            </span>
+          </p>
+
+          <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6">
             日本全国の大手中古スマホショップの価格、状態ランク、容量を一括比較。<br className="hidden md:block" />
             欲しいモデルの最安値を一瞬で見つけ出します。
           </p>
 
           {/* New Search CTA */}
-          <div className="max-w-xl mx-auto mb-12">
+          <div className="max-w-4xl mx-auto mb-12">
             <form action="/search" method="GET" className="relative group">
               <input
                 type="text"
@@ -104,36 +109,34 @@ export default function Home() {
           </div>
 
           {/* Partner Logos Section */}
-          <div className="pt-4 border-t border-slate-100 max-w-lg mx-auto">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">提携・比較対象ショップ</p>
-            <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 grayscale opacity-60">
-              <div className="flex items-center gap-1.5 grayscale">
-                <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black italic">I</div>
-                <span className="text-sm font-black tracking-tighter text-slate-900">IOSYS</span>
-              </div>
-              <div className="flex items-center gap-1.5 grayscale">
-                <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">G</div>
-                <span className="text-sm font-black tracking-tighter text-slate-900">GEO MOBILE</span>
-              </div>
-              <div className="flex items-center gap-1.5 grayscale">
-                <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">N</div>
-                <span className="text-sm font-black tracking-tighter text-slate-900">NICO SUMA</span>
-              </div>
-              <div className="flex items-center gap-1.5 grayscale">
-                <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">M</div>
-                <span className="text-sm font-black tracking-tighter text-slate-900">M-MOBA</span>
-              </div>
-              <div className="flex items-center gap-1.5 grayscale">
-                <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">D</div>
-                <span className="text-sm font-black tracking-tighter text-slate-900 uppercase">Daiwan</span>
-              </div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">提携・比較対象ショップ</p>
+          <div className="flex flex-wrap justify-center items-center gap-x-6 md:gap-x-10 gap-y-4 grayscale opacity-60">
+            <div className="flex items-center gap-1.5 grayscale">
+              <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black italic">I</div>
+              <span className="text-sm font-black tracking-tighter text-slate-900">IOSYS</span>
+            </div>
+            <div className="flex items-center gap-1.5 grayscale">
+              <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">G</div>
+              <span className="text-sm font-black tracking-tighter text-slate-900">GEO MOBILE</span>
+            </div>
+            <div className="flex items-center gap-1.5 grayscale">
+              <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">N</div>
+              <span className="text-sm font-black tracking-tighter text-slate-900">NICO SUMA</span>
+            </div>
+            <div className="flex items-center gap-1.5 grayscale">
+              <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">M</div>
+              <span className="text-sm font-black tracking-tighter text-slate-900">M-MOBA</span>
+            </div>
+            <div className="flex items-center gap-1.5 grayscale">
+              <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">D</div>
+              <span className="text-sm font-black tracking-tighter text-slate-900 uppercase">Daiwan</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* 2. Shortcuts Section */}
-      <section className="max-w-6xl mx-auto px-4 mb-16 relative z-10">
+      <section className="max-w-6xl mx-auto px-4 mb-8 relative z-10">
         <div className="flex flex-col gap-4">
           <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2 mb-2">
             <Sparkles className="w-6 h-6 text-amber-500" />
@@ -149,9 +152,6 @@ export default function Home() {
                 <BatteryCharging className="w-24 h-24" />
               </div>
               <div className="relative z-10">
-                <div className="bg-white/20 inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 backdrop-blur-sm border border-white/10">
-                  <ShieldCheck className="w-6 h-6 text-white" />
-                </div>
                 <h3 className="text-xl font-bold mb-2 leading-tight">迷ったらこれ！<br />長く使えるコスパ最強</h3>
                 <p className="text-blue-100 text-xs md:text-sm mb-6 font-medium">対象: iPhone 13, 14</p>
                 <div className="inline-flex items-center text-sm font-bold bg-white text-blue-600 px-4 py-2 rounded-full group-hover:bg-blue-50 transition-colors shadow-sm">
@@ -166,9 +166,6 @@ export default function Home() {
                 <Zap className="w-24 h-24" />
               </div>
               <div className="relative z-10">
-                <div className="bg-white/20 inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 backdrop-blur-sm border border-white/10">
-                  <Fingerprint className="w-6 h-6 text-white" />
-                </div>
                 <h3 className="text-xl font-bold mb-2 leading-tight">予算重視！<br />とにかく安く使える</h3>
                 <p className="text-emerald-100 text-xs md:text-sm mb-6 font-medium">対象: iPhone 11, 12, SE (第2/第3世代)</p>
                 <div className="inline-flex items-center text-sm font-bold bg-white text-emerald-600 px-4 py-2 rounded-full group-hover:bg-emerald-50 transition-colors shadow-sm">
@@ -183,9 +180,6 @@ export default function Home() {
                 <Camera className="w-24 h-24" />
               </div>
               <div className="relative z-10">
-                <div className="bg-white/20 inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 backdrop-blur-sm border border-white/10">
-                  <Camera className="w-6 h-6 text-white" />
-                </div>
                 <h3 className="text-xl font-bold mb-2 leading-tight">オールドコンデジ代わりに📸<br />エモい写真</h3>
                 <p className="text-amber-100 text-xs md:text-sm mb-6 font-medium">対象: iPhone 7, 8, X</p>
                 <div className="inline-flex items-center text-sm font-bold bg-white text-amber-600 px-4 py-2 rounded-full group-hover:bg-amber-50 transition-colors shadow-sm">
@@ -257,6 +251,15 @@ export default function Home() {
           ))}
         </div>
       </main>
+
+      <footer className="max-w-6xl mx-auto px-4 mt-8 pt-8 border-t border-slate-100 text-center">
+        <p className="text-sm text-slate-400 font-medium">
+          &copy; {new Date().getFullYear()} 中古スマホ一括検索
+        </p>
+        <p className="text-xs text-slate-300 mt-2">
+          powered by <a href="https://gadelog.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors font-bold underline underline-offset-2">gadelog.com</a>
+        </p>
+      </footer>
 
       {/* Hide scrollbar styles for the horizontal scroll section */}
       <style dangerouslySetInnerHTML={{

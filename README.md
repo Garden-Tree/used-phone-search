@@ -1,19 +1,21 @@
-# Used Phone Search (中古スマホ横断検索)
+# Used Phone Search (中古スマホ一括検索)
 
 日本全国の大手中古スマホショップの在庫を一括で比較・検索できるWebアプリケーションです。
 
 ## 主な機能 (Key Features)
 
-- 🔍 **横断検索**: イオシス、ゲオモバイル、にこスマなど、大手中古ショップの在庫を一括検索
-- ⚡ **高速な操作感**: Next.js 16 と無限スクロールによる、ストレスのない商品閲覧
-- 🎯 **詳細フィルタ**: ショップ、コンディション（ランク）、価格帯、容量などでの絞り込み
-- 📊 **リアルタイム収集**: Python スクレイパーにより、各ショップの最新在庫を定期的に同期
+- 🔍 **横断一括検索**: イオシス、ゲオモバイル、にこスマ、ダイワンテレコム、エムモバの大手5ショップを網羅
+- ⚡ **高速な操作感**: Next.js 16 (App Router) と無限スクロールによる、ストレスのない商品閲覧
+- 🎯 **高度なフィルタ**: 価格帯、ストレージ容量、状態ランク、バッテリー残量による詳細な絞り込み
+- 📊 **多角的なソート**: 価格の安い順・高い順に加え、バッテリー最大容量順での並び替えに対応
+- 🔄 **データ正規化**: 各ショップで異なるランク表記やキャリア情報を独自ロジックで正規化
+- 📱 **レスポンシブデザイン**: PC、タブレット、スマートフォンすべてのデバイスに最適化
 
 ## 技術スタック (Technology Stack)
 
-- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS 4
+- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS 4, Lucide React
 - **Database**: PostgreSQL (Prisma ORM)
-- **Scraper**: Python 3 (BeautifulSoup, curl_cffi)
+- **Scraper**: Python 3 (BeautifulSoup4, curl_cffi, psycopg2)
 
 > 💡 技術的な詳細については [docs/tech_stack.md](./docs/tech_stack.md) を参照してください。
 
@@ -26,8 +28,8 @@
 ---
 
 ## プロジェクト構造 (Project Structure)
-- `app/`: Next.js アプリケーションコード (App Router)
+- `app/`: Next.js アプリケーションコード
 - `app/api/`: データ取得用APIエンドポイント
-- `scraper/`: Python スクレイパー関連
+- `scraper/`: 各ショップ向け Python スクレイパー
 - `prisma/`: データベーススキーマ定義
 - `docs/`: 開発ドキュメント

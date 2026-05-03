@@ -4,6 +4,30 @@ import { Device } from "@/app/components/DeviceCard";
 import SortSelect from "@/app/components/SortSelect";
 import FilterPanel from "@/app/components/FilterPanel";
 import InfiniteDeviceList from "@/app/components/InfiniteDeviceList";
+import { ChevronLeft } from "lucide-react";
+import type { Metadata } from 'next';
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}): Promise<Metadata> {
+  const params = await searchParams;
+  const modelQuery = params.model as string | undefined;
+  const shopQuery = params.shop as string | undefined;
+  
+  let title = "中古スマホ一括検索";
+  if (modelQuery) {
+    title = `${modelQuery} の検索結果 - ${title}`;
+  } else if (shopQuery && shopQuery !== 'all') {
+    title = `${shopQuery} の在庫一覧 - ${title}`;
+  }
+
+  return { 
+    title,
+    description: "🔍 **一括検索**: イオシス、ゲオモバイル、にこスマなど、大手中古ショップの在庫を一括検索\n⚡ **高速な操作感**: Next.js 16 と無限スクロールによる、ストレスのない商品閲覧\n🎯 **詳細フィルタ**: ショップ、コンディション（ランク）、価格帯、容量などでの絞り込み\n📊 **リアルタイム収集**: Python スクレイパーにより、各ショップの最新在庫を定期的に同期"
+  };
+}
 
 export default async function SearchPage({
   searchParams,
@@ -14,17 +38,17 @@ export default async function SearchPage({
   const modelQuery = params.model as string | undefined;
   const shopQuery = params.shop as string | undefined;
   const sortParam = params.sort as string | undefined;
-  
+
   // Advanced filter params
   const minPrice = params.minPrice as string | undefined;
   const maxPrice = params.maxPrice as string | undefined;
   const storage = params.storage as string | undefined;
   const rank = params.rank as string | undefined;
   const minBattery = params.minBattery as string | undefined;
-  
+
   // Sort configuration
   const currentSort = (sortParam as string) || 'price_asc';
-  
+
   const getOrderBy = () => {
     switch (currentSort) {
       case 'price_desc': return { price: 'desc' as const };
@@ -36,10 +60,10 @@ export default async function SearchPage({
   };
 
   let devices: Device[] = [];
-  
+
   const whereClause: any = {};
   let models: string[] = [];
-  
+
   if (modelQuery) {
     models = modelQuery.split(',').map(m => m.trim()).filter(m => m);
     if (models.length > 0) {
@@ -54,7 +78,7 @@ export default async function SearchPage({
       });
     }
   }
-  
+
   if (shopQuery && shopQuery !== 'all') {
     whereClause.shopName = shopQuery;
   }
@@ -99,14 +123,14 @@ export default async function SearchPage({
       ],
       take: initialTake,
     });
-    
+
     // Apply model-specific filtering if modelQuery is present
     if (models.length > 0) {
       devices = devices.filter(d => {
         return models.some(m => {
           const lowerQuery = m.toLowerCase();
           const lowerName = d.modelName.toLowerCase();
-          
+
           if (lowerQuery.endsWith('pro')) {
             return lowerName.includes('pro') && !lowerName.includes('max');
           } else if (lowerQuery.endsWith('max')) {
@@ -124,11 +148,11 @@ export default async function SearchPage({
         });
       });
 
-      
+
       // Limit to 20 for initial view
       devices = devices.slice(0, 20);
     }
-    
+
   } catch (error) {
     console.error("Failed to fetch search results:", error);
   }
@@ -136,17 +160,27 @@ export default async function SearchPage({
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-            &larr; Used Phone Search
-          </Link>
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center">
+            <Link href="/" className="group flex items-center mr-1 text-slate-400 hover:text-blue-600 transition-all hover:-translate-x-1" aria-label="Go back">
+              <ChevronLeft className="w-8 h-8 -ml-2" />
+            </Link>
+            <div className="flex flex-col">
+              <Link href="/" className="text-xl font-extrabold tracking-tight text-slate-900 leading-none mb-1">
+                中古スマホ一括検索
+              </Link>
+              <a href="https://gadelog.com" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-slate-400 hover:text-blue-600 transition-colors tracking-tighter uppercase leading-none">
+                powered by gadelog.com
+              </a>
+            </div>
+          </div>
           <div className="text-sm font-medium text-slate-500">
             {modelQuery ? `Results for "${modelQuery}"` : shopQuery ? `Results for "${shopQuery}"` : "Search"}
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-6">
         <div className="mb-8 flex flex-col gap-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
@@ -157,7 +191,7 @@ export default async function SearchPage({
                 在庫を表示しています。スクロールでさらに読み込みます。
               </p>
             </div>
-            
+
             {(devices.length > 0 || shopQuery || modelQuery) && (
               <div className="flex items-center gap-2">
                 <label htmlFor="sort" className="text-sm font-medium text-slate-600">
@@ -178,11 +212,19 @@ export default async function SearchPage({
             <p className="text-sm text-slate-400 mt-2">条件を変更して検索してみてください。</p>
           </div>
         ) : (
-          <InfiniteDeviceList 
-            initialDevices={devices} 
+          <InfiniteDeviceList
+            initialDevices={devices}
           />
         )}
       </main>
+      <footer className="max-w-6xl mx-auto px-4 mt-12 pb-12 text-center border-t border-slate-100 pt-8">
+        <p className="text-sm text-slate-400 font-medium">
+          &copy; {new Date().getFullYear()} 中古スマホ一括検索
+        </p>
+        <p className="text-xs text-slate-300 mt-2">
+          powered by <a href="https://gadelog.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors font-bold underline underline-offset-2">gadelog.com</a>
+        </p>
+      </footer>
     </div>
   );
 }
