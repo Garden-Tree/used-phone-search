@@ -23,7 +23,7 @@ export default function DeviceCard({ device }: { device: Device }) {
   const renderStatusBadges = () => {
     const carrier = device.carrier;
     const isDomesticSimFree = carrier === '国内版SIMフリー' || carrier === 'Apple';
-    
+
     // 1. パターンA（Apple直販 / 国内版SIMフリーの場合）
     if (isDomesticSimFree) {
       return (
@@ -35,10 +35,10 @@ export default function DeviceCard({ device }: { device: Device }) {
 
     const hasCarrier = carrier && carrier !== '不明';
     const networkStatus = device.networkStatus || '不明';
-    
+
     // 「版」が既に含まれているかチェック
     const carrierName = hasCarrier ? (carrier.endsWith('版') ? carrier : `${carrier}版`) : '';
-    
+
     return (
       <div className="flex flex-wrap gap-1.5">
         {device.simUnlocked ? (
@@ -52,7 +52,7 @@ export default function DeviceCard({ device }: { device: Device }) {
             {hasCarrier ? `SIMロック（${carrierName}）` : 'SIMロックあり'}
           </span>
         )}
-        
+
         {/* 利用制限バッジ（不明・null以外の場合のみ表示） */}
         {device.networkStatus && device.networkStatus !== '不明' && (
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200">
@@ -85,13 +85,12 @@ export default function DeviceCard({ device }: { device: Device }) {
   };
 
   return (
-    <a 
+    <a
       href={device.isSoldOut ? '#' : getAffiliateUrl(device)}
       target={device.isSoldOut ? '_self' : '_blank'}
       rel="noopener noreferrer"
-      className={`group relative bg-white rounded-[2rem] p-6 shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-200/60 hover:-translate-y-1.5 flex flex-col h-full overflow-hidden ${
-        device.isSoldOut ? 'cursor-not-allowed' : 'cursor-pointer'
-      }`}
+      className={`group relative bg-white rounded-[2rem] p-6 shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-200/60 hover:-translate-y-1.5 flex flex-col h-full overflow-hidden ${device.isSoldOut ? 'cursor-not-allowed' : 'cursor-pointer'
+        }`}
     >
       {/* Top Section: Rank & Battery */}
       <div className="flex items-center justify-between mb-5">
@@ -100,11 +99,10 @@ export default function DeviceCard({ device }: { device: Device }) {
             Rank {device.conditionRank}
           </span>
           {device.batteryHealth !== null ? (
-            <span className={`px-4 py-2 text-sm font-bold rounded-full ring-1 ring-inset ${
-              device.batteryHealth >= 80 
-                ? 'bg-emerald-50 text-emerald-600 ring-emerald-500/20' 
-                : 'bg-rose-50 text-rose-600 ring-rose-500/20'
-            }`}>
+            <span className={`px-4 py-2 text-sm font-bold rounded-full ring-1 ring-inset ${device.batteryHealth >= 80
+              ? 'bg-emerald-50 text-emerald-600 ring-emerald-500/20'
+              : 'bg-rose-50 text-rose-600 ring-rose-500/20'
+              }`}>
               {(() => {
                 if (device.batteryHealth === 100) return '🔋 100%';
                 if (device.shopName === 'イオシス' || device.shopName === 'ダイワンテレコム') {
@@ -150,7 +148,7 @@ export default function DeviceCard({ device }: { device: Device }) {
             {device.shopName}
           </p>
         </div>
-        
+
         <div className="flex items-center gap-4 ml-auto">
           <div className="flex items-baseline gap-1">
             <span className="text-lg font-bold text-red-600">¥</span>
@@ -158,15 +156,14 @@ export default function DeviceCard({ device }: { device: Device }) {
               {device.price.toLocaleString()}
             </span>
           </div>
-          
+
           {/* Transition Icon */}
-          <div className={`flex items-center justify-center w-10 h-10 rounded-full transition-all ${
-            device.isSoldOut 
-              ? 'bg-slate-50 text-slate-200' 
-              : 'bg-slate-50 text-slate-400 group-hover:bg-blue-600 group-hover:text-white shadow-sm'
-          }`}>
+          <div className={`flex items-center justify-center w-10 h-10 rounded-full transition-all ${device.isSoldOut
+            ? 'bg-slate-50 text-slate-200'
+            : 'bg-slate-50 text-slate-400 group-hover:bg-blue-600 group-hover:text-white shadow-sm'
+            }`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+              <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
             </svg>
           </div>
         </div>
@@ -178,15 +175,19 @@ export default function DeviceCard({ device }: { device: Device }) {
 // アフィリエイトリンクの生成ヘルパー
 function getAffiliateUrl(device: Device): string {
   if (device.shopName === 'ゲオモバイル') {
-    const a8mat = '45IED7+DQR8HE+4J34+BW0YB';
+    const a8mat = '45IED7+DQR996+4J34+BW0YB';
     return `https://px.a8.net/svt/ejp?a8mat=${a8mat}&a8ejpredirect=${encodeURIComponent(device.url)}`;
   }
   if (device.shopName === 'にこスマ') {
-    const a8mat = '45IED7+DCGTYQ+4O7U+BW0YB';
+    const a8mat = '45IED7+DCGUQI+4O7U+BW0YB';
     return `https://px.a8.net/svt/ejp?a8mat=${a8mat}&a8ejpredirect=${encodeURIComponent(device.url)}`;
   }
   if (device.shopName === 'エムモバ') {
-    const a8mat = '45IED7+DB9YR6+5I5M+HUD03';
+    const a8mat = '45IED7+DB9ZIY+5I5M+HUD03';
+    return `https://px.a8.net/svt/ejp?a8mat=${a8mat}&a8ejpredirect=${encodeURIComponent(device.url)}`;
+  }
+  if (device.shopName === 'ダイワンテレコム') {
+    const a8mat = '45IED7+DD2ACA+3I5Y+ZPD5F';
     return `https://px.a8.net/svt/ejp?a8mat=${a8mat}&a8ejpredirect=${encodeURIComponent(device.url)}`;
   }
   return device.url;
