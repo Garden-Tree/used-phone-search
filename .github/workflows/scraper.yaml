@@ -54,8 +54,8 @@ jobs:
       - name: スクレイパーの実行
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          # フォームからの入力値を渡す。定期実行(cron)の時は空になるので '100' をフォールバックとして渡す
-          GEO_LIMIT: ${{ inputs.geo_limit || '100' }}
+          # フォームからの入力値を渡す。定期実行(cron)の時は空になるのでゲオは0、他は '100' をフォールバックとして渡す
+          GEO_LIMIT: ${{ inputs.geo_limit || '0' }}
           NICOSUMA_LIMIT: ${{ inputs.nicosuma_limit || '100' }}
           IOSIS_LIMIT: ${{ inputs.iosis_limit || '100' }}
           MMOBA_LIMIT: ${{ inputs.mmoba_limit || '100' }}
