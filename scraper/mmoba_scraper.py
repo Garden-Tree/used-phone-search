@@ -101,14 +101,14 @@ def parse_mmoba_html(html_content, headers):
             
         # Model Name
         # Handle "iPhone14" -> "iPhone 14", "12mini" -> "12 mini"
-        m_model = re.search(r'(iPhone\s?(\d+|X[SR]?|SE|8|7|17)\s?(Pro\sMax|Pro|Plus|mini)?)', raw_name, re.IGNORECASE)
+        m_model = re.search(r'(iPhone\s?(\d+e?|X[SR]?|SE|8|7)\s?(Pro\sMax|Pro|Plus|mini)?)', raw_name, re.IGNORECASE)
         if m_model:
             full_model = m_model.group(1).strip()
-            # Normalize: iPhone[space]Number[space]Suffix
-            # 1. iPhone[space]Number
-            full_model = re.sub(r'iPhone\s?(\d+|X[SR]?|SE|8|7|17)', r'iPhone \1', full_model, flags=re.IGNORECASE)
-            # 2. Number[space]Suffix
-            full_model = re.sub(r'(\d+|X[SR]?|SE|8|7|17)\s?(Pro\sMax|Pro|Plus|mini)', r'\1 \2', full_model, flags=re.IGNORECASE)
+            # 正規化: iPhone[スペース]モデル番号[スペース]サフィックス
+            # 1. iPhone[スペース]モデル番号
+            full_model = re.sub(r'iPhone\s?(\d+e?|X[SR]?|SE|8|7)', r'iPhone \1', full_model, flags=re.IGNORECASE)
+            # 2. モデル番号[スペース]サフィックス
+            full_model = re.sub(r'(\d+e?|X[SR]?|SE|8|7)\s?(Pro\sMax|Pro|Plus|mini)', r'\1 \2', full_model, flags=re.IGNORECASE)
             model_name = full_model
             
             # SE generation normalization

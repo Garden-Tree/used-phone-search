@@ -145,6 +145,11 @@ export async function GET(request: NextRequest) {
           
           if (!normalizedName.includes(normalizedQuery)) return false;
 
+          // ベースモデル名が厳密に一致することを確認（例: "iphone17" が "iphone17e" にマッチしないようにする）
+          const baseName = normalizedName.replace(/pro|max|plus|mini/g, '');
+          const expectedBase = 'iphone' + normalizedQuery;
+          if (baseName !== expectedBase) return false;
+
           if (lowerQuery.endsWith('pro max')) {
             return lowerName.includes('max') && lowerName.includes('pro');
           } else if (lowerQuery.endsWith('pro')) {
