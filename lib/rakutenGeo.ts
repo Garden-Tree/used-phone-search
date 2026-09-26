@@ -32,6 +32,9 @@ const NAME_RE = /iPhone\s?([^[]+?)\s*\[(\d+)(GB|TB)\]\s*(.*)$/;
 const CARRIERS: [string, string][] = [
   ["SoftBank/Y!mobile", "SoftBank"],
   ["au/UQ mobile", "au"],
+  ["au/UQmobile", "au"],
+  ["UQモバイル", "au"],
+  ["Y!mobile", "SoftBank"],
   ["SIMフリー", "国内版SIMフリー"],
   ["楽天モバイル", "楽天モバイル"],
   ["SoftBank", "SoftBank"],
