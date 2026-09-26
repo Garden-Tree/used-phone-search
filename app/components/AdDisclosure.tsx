@@ -14,6 +14,11 @@ export default function AdDisclosure({ compact = false }: { compact?: boolean })
       ※ 当サイトはアフィリエイト広告（A8.net 等）を利用しており、リンク経由で商品が購入された場合に報酬を受け取ることがあります。
       <br className="hidden md:block" />
       価格・在庫状況は取得時点のものです。最新情報は各ショップのページでご確認ください。
+      <br />
+      {/* 楽天ウェブサービス利用規約に基づくクレジット表記 */}
+      <a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">
+        Supported by Rakuten Developers
+      </a>
     </p>
   );
 }

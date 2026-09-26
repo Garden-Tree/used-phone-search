@@ -1,4 +1,5 @@
 import React from 'react';
+import { RAKUTEN_GEO_SHOP, rakutenAffiliateUrl } from '@/lib/rakutenGeo';
 
 // Define the type for the device object
 export type Device = {
@@ -21,7 +22,8 @@ export type Device = {
 export default function DeviceCard({ device }: { device: Device }) {
   const href = getAffiliateUrl(device);
   // アフィリエイトリンクには Google のガイドラインに従い sponsored を付与する
-  const rel = href !== device.url ? 'sponsored noopener noreferrer' : 'noopener noreferrer';
+  const isAffiliate = href !== device.url || /\.afl\.rakuten\.co\.jp\//.test(href);
+  const rel = isAffiliate ? 'sponsored noopener noreferrer' : 'noopener noreferrer';
 
   // キャリア・SIMロック状態のバッジ表示ロジック
   const renderStatusBadges = () => {
@@ -193,6 +195,9 @@ function getAffiliateUrl(device: Device): string {
   if (device.shopName === 'ダイワンテレコム') {
     const a8mat = '45IED7+DD2ACA+3I5Y+ZPD5F';
     return `https://px.a8.net/svt/ejp?a8mat=${a8mat}&a8ejpredirect=${encodeURIComponent(device.url)}`;
+  }
+  if (device.shopName === RAKUTEN_GEO_SHOP) {
+    return rakutenAffiliateUrl(device.url);
   }
   return device.url;
 }
