@@ -50,7 +50,8 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: `/search${canonicalQs ? `?${canonicalQs}` : ''}` },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: `/search${canonicalQs ? `?${canonicalQs}` : ''}` },
+    // openGraph を上書きするとトップの共通 OGP 画像が引き継がれないので明示する
+    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: `/search${canonicalQs ? `?${canonicalQs}` : ''}`, images: ['/opengraph-image'] },
     robots: isFiltered ? { index: false, follow: true } : undefined,
   };
 }
