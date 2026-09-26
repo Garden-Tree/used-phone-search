@@ -50,4 +50,42 @@ export const IPHONE_CATALOG = [
   }
 ];
 
+// iOS 26 非対応だが中古在庫が多い旧モデル（モデル別ページのみ用意）
+export const LEGACY_SERIES = [
+  { series: "iPhone X / XS / XR", models: ["iPhone XS", "iPhone XS Max", "iPhone XR", "iPhone X"] },
+  { series: "iPhone 8 / 7", models: ["iPhone 8", "iPhone 8 Plus", "iPhone 7", "iPhone 7 Plus"] },
+];
+
 export const ALL_CATALOG_MODELS = IPHONE_CATALOG.flatMap((s) => s.models);
+
+/** モデル別ページを持つ全モデル（新しい順） */
+export const ALL_PAGE_MODELS = [...ALL_CATALOG_MODELS, ...LEGACY_SERIES.flatMap((s) => s.models)];
+
+const ORDINAL: Record<string, string> = { "1": "1st", "2": "2nd", "3": "3rd" };
+
+/** "iPhone 15 Pro Max" → "iphone-15-pro-max"、"iPhone SE (第3世代)" → "iphone-se-3rd-gen" */
+export function modelToSlug(model: string): string {
+  return model
+    .toLowerCase()
+    .replace(/\(第(\d)世代\)/, (_, n: string) => `${ORDINAL[n] ?? `${n}th`}-gen`)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+export function slugToModel(slug: string): string | undefined {
+  return ALL_PAGE_MODELS.find((m) => modelToSlug(m) === slug);
+}
+
+export function modelPagePath(model: string): string {
+  return `/iphone/${modelToSlug(model)}`;
+}
+
+/** 同じシリーズの他モデル */
+export function siblingModels(model: string): string[] {
+  const group = [...IPHONE_CATALOG, ...LEGACY_SERIES].find((s) => s.models.includes(model));
+  return group ? group.models.filter((m) => m !== model) : [];
+}
+
+export function seriesOf(model: string) {
+  return IPHONE_CATALOG.find((s) => s.models.includes(model));
+}

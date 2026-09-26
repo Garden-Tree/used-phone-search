@@ -1,12 +1,12 @@
 import type { MetadataRoute } from "next";
-import { ALL_CATALOG_MODELS } from "@/lib/catalog";
+import { ALL_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
 import { SITE_URL } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  const modelPages: MetadataRoute.Sitemap = ALL_CATALOG_MODELS.map((model) => ({
-    url: `${SITE_URL}/search?model=${encodeURIComponent(model)}`,
+  const modelPages: MetadataRoute.Sitemap = ALL_PAGE_MODELS.map((model) => ({
+    url: `${SITE_URL}${modelPagePath(model)}`,
     lastModified: now,
     changeFrequency: "daily",
     priority: 0.8,

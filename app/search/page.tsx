@@ -1,13 +1,15 @@
-import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { Device } from "@/app/components/DeviceCard";
 import SortSelect from "@/app/components/SortSelect";
 import FilterPanel from "@/app/components/FilterPanel";
 import InfiniteDeviceList from "@/app/components/InfiniteDeviceList";
 import AdDisclosure from "@/app/components/AdDisclosure";
+import SiteHeader from "@/app/components/SiteHeader";
+import SiteFooter from "@/app/components/SiteFooter";
 import { buildOrderBy, buildWhere, filterByModels, splitModelQuery } from "@/lib/deviceSearch";
 import { SITE_NAME } from "@/lib/site";
-import { ChevronLeft } from "lucide-react";
+import { ALL_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
+import Link from "next/link";
 import type { Metadata } from 'next';
 
 type SearchParamsRecord = { [key: string]: string | string[] | undefined };
@@ -64,6 +66,10 @@ export default async function SearchPage({
   // Sort configuration
   const currentSort = (sortParam as string) || 'price_asc';
   const models = splitModelQuery(modelQuery);
+  // 単一モデル検索なら価格まとめページへ誘導する
+  const pageModel = models.length === 1
+    ? ALL_PAGE_MODELS.find((m) => m.toLowerCase() === models[0].toLowerCase())
+    : undefined;
 
   let devices: Device[] = [];
 
@@ -95,26 +101,7 @@ export default async function SearchPage({
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center">
-            <Link href="/" className="group flex items-center mr-1 text-slate-400 hover:text-blue-600 transition-all hover:-translate-x-1" aria-label="トップページへ戻る">
-              <ChevronLeft className="w-8 h-8 -ml-2" />
-            </Link>
-            <div className="flex flex-col">
-              <Link href="/" className="text-xl font-extrabold tracking-tight text-slate-900 leading-none mb-1">
-                中古スマホ一括検索
-              </Link>
-              <a href="https://gadelog.com" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-slate-400 hover:text-blue-600 transition-colors tracking-tighter uppercase leading-none">
-                powered by gadelog.com
-              </a>
-            </div>
-          </div>
-          <div className="text-sm font-medium text-slate-500">
-            {modelQuery || shopQuery ? "検索結果" : "在庫一覧"}
-          </div>
-        </div>
-      </header>
+      <SiteHeader label={modelQuery || shopQuery ? "検索結果" : "在庫一覧"} />
 
       <main className="max-w-6xl mx-auto px-4 py-6">
         <div className="mb-8 flex flex-col gap-6">
@@ -126,6 +113,11 @@ export default async function SearchPage({
               <p className="text-slate-600">
                 在庫を表示しています。スクロールでさらに読み込みます。
               </p>
+              {pageModel && (
+                <Link href={modelPagePath(pageModel)} className="inline-block mt-2 text-sm font-bold text-blue-600 hover:underline underline-offset-4">
+                  {pageModel}の容量別・ランク別の最安値まとめを見る &rarr;
+                </Link>
+              )}
             </div>
 
             {(devices.length > 0 || shopQuery || modelQuery) && (
@@ -155,15 +147,7 @@ export default async function SearchPage({
           />
         )}
       </main>
-      <footer className="max-w-6xl mx-auto px-4 mt-12 pb-12 text-center border-t border-slate-100 pt-8">
-        <AdDisclosure />
-        <p className="text-sm text-slate-400 font-medium">
-          &copy; {new Date().getFullYear()} 中古スマホ一括検索
-        </p>
-        <p className="text-xs text-slate-300 mt-2">
-          powered by <a href="https://gadelog.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors font-bold underline underline-offset-2">gadelog.com</a>
-        </p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

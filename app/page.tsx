@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Smartphone, BatteryCharging, Camera, Sparkles, Zap, Fingerprint, ShieldCheck, Search } from "lucide-react";
-import { IPHONE_CATALOG } from "@/lib/catalog";
+import { IPHONE_CATALOG, modelPagePath } from "@/lib/catalog";
 import AdDisclosure from "@/app/components/AdDisclosure";
 
 
@@ -185,7 +185,7 @@ export default function Home() {
                   {seriesGroup.models.map((model) => (
                     <Link
                       key={model}
-                      href={`/search?model=${encodeURIComponent(model)}`}
+                      href={modelPagePath(model)}
                       className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors group/link border border-transparent hover:border-slate-100"
                     >
                       <span className="text-sm font-medium text-slate-700 group-hover/link:text-blue-600 transition-colors">
