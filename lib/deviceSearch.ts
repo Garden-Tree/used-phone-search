@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
 // モデル名の「バリエーション」を表す語（この集合が一致するものだけをヒットさせる）
 const VARIANT_WORDS = ["pro", "max", "plus", "mini"] as const;
@@ -57,7 +58,8 @@ export function splitModelQuery(modelQuery: string | null | undefined): string[]
 }
 
 export type SearchParams = {
-  models: string[];
+  /** resolveModelNames の結果。undefined ならモデルで絞り込まない */
+  modelNames?: string[];
   shop?: string | null;
   sort?: string | null;
   minPrice?: string | null;
@@ -73,37 +75,23 @@ function toInt(v: string | null | undefined): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-const contains = (s: string): Prisma.DeviceInventoryWhereInput => ({
-  modelName: { contains: s, mode: "insensitive" },
-});
-
 /**
- * 1モデル分のDB条件。できるだけDB側で絞り込み（取得件数の無駄を減らす）、
- * 表記ゆれ由来の境界判定（"16" と "16e" など）は matchesModel で行う
+ * 検索クエリに該当する、DB 上の実際のモデル名の一覧を返す。
+ * DB のモデル名は表記ゆれ込みでも100種類程度なので、全種類を取得して matchesModel で厳密に照合し、
+ * 結果を modelName IN (...) として DB に渡す。こうすると絞り込みが DB だけで完結し、
+ * ページ送り（skip/take）が正確になる（"iPhone 17" の検索で安い 17e が上位を埋めて0件になる問題の対策）
  */
-function modelWhere(query: string): Prisma.DeviceInventoryWhereInput {
-  const { core, variants, generation } = parseModel(query);
-  if (!core) return contains("iphone");
-
-  // "iphone" を前置することで "7" が "17" に部分一致しないようにする
-  const conds: Prisma.DeviceInventoryWhereInput[] = [
-    { OR: [contains(`iphone ${core}`), contains(`iphone${core}`)] },
-  ];
-  for (const v of VARIANT_WORDS) {
-    conds.push(variants.has(v) ? contains(v) : { NOT: contains(v) });
-  }
-  if (generation) {
-    const n = generation.replace(/\D/g, "");
-    conds.push({ OR: [contains(`第${n}`), contains(`第 ${n}`), contains(`se${n}`)] });
-  }
-  return { AND: conds };
+export async function resolveModelNames(models: string[]): Promise<string[] | undefined> {
+  if (models.length === 0) return undefined;
+  const rows = await prisma.deviceInventory.findMany({ distinct: ["modelName"], select: { modelName: true } });
+  return rows.map((r) => r.modelName).filter((name) => models.some((m) => matchesModel(m, name)));
 }
 
 /** DB側の絞り込み条件 */
 export function buildWhere(p: SearchParams): Prisma.DeviceInventoryWhereInput {
   const and: Prisma.DeviceInventoryWhereInput[] = [];
 
-  if (p.models.length > 0) and.push({ OR: p.models.map(modelWhere) });
+  if (p.modelNames) and.push({ modelName: { in: p.modelNames } });
 
   if (p.shop && p.shop !== "all") and.push({ shopName: p.shop });
 
@@ -139,10 +127,6 @@ export function buildOrderBy(sort: string | null | undefined): Prisma.DeviceInve
       default: return { price: "asc" };
     }
   })();
-  return [primary, { price: "asc" }];
-}
-
-export function filterByModels<T extends { modelName: string }>(devices: T[], models: string[]): T[] {
-  if (models.length === 0) return devices;
-  return devices.filter((d) => models.some((m) => matchesModel(m, d.modelName)));
+  // 同じ価格の商品が多いので、最後に id で順序を確定させてページ送りを安定させる
+  return [primary, { price: "asc" }, { id: "asc" }];
 }

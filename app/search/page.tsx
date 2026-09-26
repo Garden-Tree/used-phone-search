@@ -6,7 +6,7 @@ import InfiniteDeviceList from "@/app/components/InfiniteDeviceList";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
-import { buildOrderBy, buildWhere, filterByModels, splitModelQuery } from "@/lib/deviceSearch";
+import { buildOrderBy, buildWhere, resolveModelNames, splitModelQuery } from "@/lib/deviceSearch";
 import { SITE_NAME } from "@/lib/site";
 import { ALL_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
 import Link from "next/link";
@@ -16,6 +16,8 @@ type SearchParamsRecord = { [key: string]: string | string[] | undefined };
 
 // インデックス対象にするパラメータ（これ以外が付いた絞り込み・並び替えページは重複コンテンツになるため noindex）
 const INDEXABLE_PARAMS = ['model', 'shop'];
+
+const PAGE_SIZE = 20;
 
 export async function generateMetadata({
   searchParams,
@@ -72,28 +74,25 @@ export default async function SearchPage({
     : undefined;
 
   let devices: Device[] = [];
+  let totalCount = 0;
 
   try {
-    // Initial fetch - fetch a bit more than 20 to account for manual filtering
-    const initialTake = models.length > 0 ? 100 : 20;
-
-    devices = await prisma.deviceInventory.findMany({
-      where: buildWhere({
-        models,
-        shop: shopQuery,
-        sort: currentSort,
-        minPrice: params.minPrice as string | undefined,
-        maxPrice: params.maxPrice as string | undefined,
-        storage: params.storage as string | undefined,
-        rank: params.rank as string | undefined,
-        minBattery: params.minBattery as string | undefined,
-      }),
-      orderBy: buildOrderBy(currentSort),
-      take: initialTake,
+    // 絞り込みはすべて DB 側で行う（続きは InfiniteDeviceList が /api/devices から skip/take で取得する）
+    const where = buildWhere({
+      modelNames: await resolveModelNames(models),
+      shop: shopQuery,
+      sort: currentSort,
+      minPrice: params.minPrice as string | undefined,
+      maxPrice: params.maxPrice as string | undefined,
+      storage: params.storage as string | undefined,
+      rank: params.rank as string | undefined,
+      minBattery: params.minBattery as string | undefined,
     });
 
-    // Limit to 20 for initial view
-    devices = filterByModels(devices, models).slice(0, 20);
+    [devices, totalCount] = await Promise.all([
+      prisma.deviceInventory.findMany({ where, orderBy: buildOrderBy(currentSort), take: PAGE_SIZE }),
+      prisma.deviceInventory.count({ where }),
+    ]);
   } catch (error) {
     console.error("Failed to fetch search results:", error);
   }
@@ -111,7 +110,7 @@ export default async function SearchPage({
                 {modelQuery ? `${modelQuery} の中古在庫` : shopQuery ? `${shopQuery} の中古在庫` : "中古スマホ在庫一覧"}
               </h1>
               <p className="text-slate-600">
-                在庫を表示しています。スクロールでさらに読み込みます。
+                在庫 {totalCount.toLocaleString()}件。スクロールでさらに読み込みます。
               </p>
               {pageModel && (
                 <Link href={modelPagePath(pageModel)} className="inline-block mt-2 text-sm font-bold text-blue-600 hover:underline underline-offset-4">
@@ -143,7 +142,10 @@ export default async function SearchPage({
           </div>
         ) : (
           <InfiniteDeviceList
+            // 検索条件が変わったら作り直して、前の条件の読み込み状態を持ち越さない
+            key={JSON.stringify(params)}
             initialDevices={devices}
+            totalCount={totalCount}
           />
         )}
       </main>
