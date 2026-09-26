@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Smartphone, BatteryCharging, Camera, Sparkles, Zap, Fingerprint, ShieldCheck, Search } from "lucide-react";
 import { IPHONE_CATALOG, modelPagePath } from "@/lib/catalog";
 import { comparePath } from "@/lib/compare";
+import { pickPath } from "@/lib/picks";
 import AdDisclosure from "@/app/components/AdDisclosure";
 
 
@@ -111,7 +112,7 @@ export default function Home() {
           <div className="flex overflow-x-auto pb-6 -mx-4 px-4 md:grid md:grid-cols-3 md:overflow-visible md:pb-0 md:mx-0 md:px-0 gap-4 md:gap-6 snap-x hide-scrollbar">
 
             {/* Shortcut 1 */}
-            <Link href="/search?model=iPhone%2013,iPhone%2014" className="snap-start min-w-[280px] md:min-w-0 group flex-1 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2rem] p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+            <Link href={pickPath("cospa")} className="snap-start min-w-[280px] md:min-w-0 group flex-1 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2rem] p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform duration-500">
                 <BatteryCharging className="w-24 h-24" />
               </div>
@@ -125,7 +126,7 @@ export default function Home() {
             </Link>
 
             {/* Shortcut 2 */}
-            <Link href="/search?model=iPhone%2011,iPhone%2012,iPhone%20SE%20(第2世代),iPhone%20SE%20(第3世代)" className="snap-start min-w-[280px] md:min-w-0 group flex-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+            <Link href={pickPath("budget")} className="snap-start min-w-[280px] md:min-w-0 group flex-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform duration-500">
                 <Zap className="w-24 h-24" />
               </div>
@@ -139,7 +140,7 @@ export default function Home() {
             </Link>
 
             {/* Shortcut 3 */}
-            <Link href="/search?model=iPhone%207,iPhone%208,iPhone%20X" className="snap-start min-w-[280px] md:min-w-0 group flex-1 bg-gradient-to-br from-amber-500 to-orange-500 rounded-[2rem] p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+            <Link href={pickPath("camera")} className="snap-start min-w-[280px] md:min-w-0 group flex-1 bg-gradient-to-br from-amber-500 to-orange-500 rounded-[2rem] p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform duration-500">
                 <Camera className="w-24 h-24" />
               </div>
