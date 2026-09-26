@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
     inputs:
       geo_limit:
-        description: 'ゲオの取得数'
+        description: 'ゲオの取得数（ゲオはWAFで弾かれるため通常は0。ゲオの在庫は楽天API経由で取得している）'
         required: true
-        default: '100'
+        default: '0'
       nicosuma_limit:
         description: 'にこスマの取得数'
         required: true

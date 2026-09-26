@@ -61,3 +61,7 @@ scraper/venv/
 
 #scratch
 scratch/
+# 楽天同期スクリプトの秘密情報とログ
+rakuten-sync/config.php
+rakuten-sync/*.log
+rakuten-sync/sample.json
