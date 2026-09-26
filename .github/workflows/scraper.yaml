@@ -63,3 +63,18 @@ jobs:
         run: |
           cd scraper
           python run_all_scrapers.py
+
+      # スクレイピング結果から当日の価格推移を記録（モデル別ページのグラフ用）
+      - name: Node.js をセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Node.js の依存ライブラリのインストール
+        run: npm ci
+
+      - name: 価格推移の記録
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run snapshot:prices

@@ -39,3 +39,18 @@ model DeviceInventory {
   @@index([batteryHealth])
   @@index([carrier])
 }
+
+// モデル別の価格推移（1日1レコード / モデル × 容量）。storage = 0 は全容量の集計
+model PriceSnapshot {
+  id          String   @id @default(uuid())
+  date        DateTime @db.Date // JST の日付
+  modelSlug   String   // 例: iphone-15-pro
+  storage     Int      // 容量(GB)。0 = 全容量
+  minPrice    Int
+  medianPrice Int
+  count       Int
+  updatedAt   DateTime @updatedAt
+
+  @@unique([date, modelSlug, storage])
+  @@index([modelSlug, storage, date])
+}

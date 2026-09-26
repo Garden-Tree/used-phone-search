@@ -15,6 +15,8 @@ import {
   slugToModel,
 } from "@/lib/catalog";
 import { getModelStats, type PriceRow } from "@/lib/modelStats";
+import { getPriceHistory } from "@/lib/priceHistory";
+import PriceHistoryChart from "@/app/components/PriceHistoryChart";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 // スクレイパーは6時間ごとに実行されるため、1時間ごとに再生成すれば十分新しい
@@ -97,7 +99,7 @@ export default async function ModelPage({ params }: Props) {
   const model = slugToModel(slug);
   if (!model) notFound();
 
-  const stats = await getModelStats(model);
+  const [stats, history] = await Promise.all([getModelStats(model), getPriceHistory(slug)]);
   const series = seriesOf(model);
   const siblings = siblingModels(model);
   const path = modelPagePath(model);
@@ -173,6 +175,11 @@ export default async function ModelPage({ params }: Props) {
               <p className={`text-2xl font-black tracking-tight ${s.accent ? "text-red-600" : "text-slate-800"}`}>{s.value}</p>
             </div>
           ))}
+        </section>
+
+        <section className="mb-10 rounded-3xl border border-slate-200 p-5 md:p-6">
+          <h2 className="text-lg md:text-xl font-bold mb-3">{model} 中古の最安値の推移</h2>
+          <PriceHistoryChart history={history} model={model} />
         </section>
 
         {stats.count === 0 ? (

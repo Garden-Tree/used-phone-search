@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "snapshot:prices": "tsx scripts/snapshot-prices.ts"
   },
   "dependencies": {
     "@next/third-parties": "^16.2.4",
@@ -32,6 +33,7 @@
     "prisma": "^7.8.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

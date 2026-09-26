@@ -1,7 +1,6 @@
 import { cache } from "react";
-import prisma from "@/lib/prisma";
 import type { Device } from "@/app/components/DeviceCard";
-import { buildWhere, filterByModels } from "@/lib/deviceSearch";
+import { fetchModelInventory, summarizePrices } from "@/lib/modelInventory";
 
 export type PriceRow = { key: string; minPrice: number; count: number };
 
@@ -40,23 +39,18 @@ function groupMin(devices: Device[], keyOf: (d: Device) => string): PriceRow[] {
  * generateMetadata とページ本体で同じ集計を使うため cache で重複クエリを防ぐ
  */
 export const getModelStats = cache(async (model: string): Promise<ModelStats> => {
-  const rows = await prisma.deviceInventory.findMany({
-    where: { AND: [buildWhere({ models: [model] }), { isSoldOut: false }] },
-    orderBy: { price: "asc" },
-  });
-  const devices: Device[] = filterByModels(rows, [model]);
-
-  const prices = devices.map((d) => d.price); // price 昇順
-  const lastUpdated = rows.reduce<Date | null>(
-    (max, r) => (!max || r.updatedAt > max ? r.updatedAt : max),
+  const devices = await fetchModelInventory(model);
+  const summary = summarizePrices(devices.map((d) => d.price));
+  const lastUpdated = devices.reduce<Date | null>(
+    (max, d) => (!max || d.updatedAt > max ? d.updatedAt : max),
     null,
   );
 
   return {
     count: devices.length,
-    minPrice: prices[0] ?? null,
-    maxPrice: prices[prices.length - 1] ?? null,
-    medianPrice: prices.length ? prices[Math.floor(prices.length / 2)] : null,
+    minPrice: summary?.minPrice ?? null,
+    maxPrice: devices.at(-1)?.price ?? null,
+    medianPrice: summary?.medianPrice ?? null,
     shopCount: new Set(devices.map((d) => d.shopName)).size,
     lastUpdated,
     byStorage: groupMin(devices, (d) => String(d.storage)).sort((a, b) => Number(a.key) - Number(b.key)),
