@@ -24,7 +24,7 @@
 | --- | --- | --- |
 | DB 接続 | Vercel `DATABASE_URL`（Production/Preview）、GitHub Secrets `DATABASE_URL`、ローカル `.env` | Neon（`ep-shy-sunset-...ap-southeast-1`）。**本番と同じ DB** |
 | サイトURL | Vercel `NEXT_PUBLIC_SITE_URL=https://used.gadelog.com` | |
-| GA4 | Vercel `NEXT_PUBLIC_GA_ID=G-B9JJ58M3KX` | 詳細は `measurement.md` |
+| GA4 | Vercel `NEXT_PUBLIC_GA_ID=G-YV3ZR0N6B1`（プロパティ 556047315） | 詳細は `measurement.md` |
 | 楽天の受け口 | Vercel `RAKUTEN_INGEST_SECRET` とサーバーの `~/rakuten-sync/config.php` の `ingest_secret`（同じ値） | Secret 型。Claude は扱わない |
 | 楽天API | サーバーの `config.php`（アプリID・Access Key） | アプリ「中古スマホ一括検索」・Backend・許可IP 210.157.79.113 |
 | サーバー | シンレンタルサーバー sv3112（サーバーID wp760415、gadelog.com と共用） | ファイルマネージャ・Cron 設定はサーバーパネル |

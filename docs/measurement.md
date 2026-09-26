@@ -6,24 +6,29 @@
 
 | 項目 | 値 | 備考 |
 | --- | --- | --- |
-| GA4 測定ID | `G-B9JJ58M3KX` | Vercel `NEXT_PUBLIC_GA_ID`（Production のみ）。`@next/third-parties` で読み込み |
-| GA4 プロパティ | **343220884**（アカウント 207926838・ストリーム「gadelog.com」4298291677） | gadelog.com と同じストリーム。**要確認**（下記） |
+| GA4 測定ID | **`G-YV3ZR0N6B1`**（2026-09-27〜） | Vercel `NEXT_PUBLIC_GA_ID`（Production のみ）。`@next/third-parties` で読み込み。変更したら再デプロイが必要 |
+| GA4 プロパティ | **556047315「used.gadelog.com（中古スマホ一括検索）」**（アカウント 207926838 GardenTree・ストリーム 15850141203） | used 専用。タイムゾーン日本・通貨 円・拡張計測オン（離脱クリック含む） |
 | Search Console | URL プレフィックス `https://used.gadelog.com/`（HTML タグで所有権確認・2026-09-27） | sitemap `https://used.gadelog.com/sitemap.xml` 送信済み（初回 41 URL → 現在 94） |
 | 構造化データ | 機種別: Product（AggregateOffer）+ BreadcrumbList／比較: BreadcrumbList | リッチリザルトテストで確認可能 |
 | OGP | 機種別・比較は専用画像（1時間ごとに再生成）、その他は共通画像 | X の投稿画面に URL を貼ると確認できる |
 
-### 要確認：GA4 プロパティの食い違い（2026-09-27 発見）
+### GA4 プロパティの経緯（2026-09-27）
 
-- ブログの計測（`../blog-surporter/docs/measurement-setup.md`）は GA4 プロパティ **346953485**（gadelog.com - GA4）を読んでいる
-- このサイトに入れた測定ID は、Chrome でログイン中のアカウントの **343220884** のストリームのもの
-- 346953485 と 343220884 が別物なら、used のデータはブログの `sync.mjs --ga` に出てこない
-- 対応案：346953485 側に used 用（または共通）のウェブストリームを作り、その測定ID に差し替える。
-  **差し替えると過去データは旧プロパティに残る**ので、早めに決める
+| プロパティ | 名前 | 測定ID | 状態 |
+| --- | --- | --- | --- |
+| 343220884 | gadelog.com | `G-B9JJ58M3KX` | **ブログ本体**（Site Kit の Google タグ `GT-NN6ZF72` 経由）。ブログの `.env.local` の `GA4_PROPERTY_ID` もこれ |
+| 346953485 | gadelog.com - GA4 | `G-7955FRXN7V` | **一度もデータを受信していない空のプロパティ**。ブログの `docs/measurement-setup.md` の記載はこれを指しているが誤り |
+| 556047315 | used.gadelog.com（中古スマホ一括検索） | `G-YV3ZR0N6B1` | **used 専用**（9/27 作成） |
+
+- 公開直後（9/26〜27）は used もブログと同じ `G-B9JJ58M3KX` に送っていた。ブログの sync はホスト名で絞らないため、
+  PV・流入元・アフィリエイトのクリック（linkClicks）が混ざる。used 専用プロパティに分離した
+- 9/26〜27 の used のデータはブログのプロパティ（343220884）に残っている（ホスト名 used.gadelog.com で見られる）
+- Google タグ設定では「ウェブサイトで検出された Google タグを使用」を選ばない（ブログのタグと統合され、ブログの PV まで入る）
 
 ## 見方
 
-### GA4（used のデータだけを見る）
-- ストリームがブログと共通なので、レポートは **ホスト名 = used.gadelog.com** で絞る
+### GA4
+- used 専用プロパティなので絞り込みは不要
 - 見るもの：ページ別 PV（`/iphone/*`・`/compare/*`・`/pick/*`・`/search`）、流入元（organic / X / gadelog.com からの参照）、
   アフィリエイトのクリック（外部リンクのクリック。GA4 の拡張計測「離脱クリック」で `hb.afl.rakuten.co.jp`・`px.a8.net`）
 
