@@ -174,7 +174,7 @@ export default function Home() {
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
             <Smartphone className="w-6 h-6 text-slate-500" />
-            シリーズから探す（iOS26対応モデル）
+            シリーズから探す（iOS 27対応モデル）
           </h2>
         </div>
 

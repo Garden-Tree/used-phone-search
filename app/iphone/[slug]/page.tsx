@@ -69,28 +69,27 @@ function PriceTable({ title, rows, labelOf, hrefOf }: {
   return (
     <section className="bg-white rounded-3xl border border-slate-200 overflow-hidden">
       <h2 className="px-5 py-4 text-base font-bold text-slate-800 bg-slate-50 border-b border-slate-100">{title}</h2>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-xs text-slate-400">
-            <th className="text-left font-semibold px-5 py-2"></th>
-            <th className="text-right font-semibold px-5 py-2">最安値</th>
-            <th className="text-right font-semibold px-5 py-2">在庫数</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.key} className="border-t border-slate-100 hover:bg-slate-50">
-              <td className="px-5 py-3 font-bold text-slate-700">
-                <Link href={hrefOf(r.key)} className="hover:text-blue-600 underline-offset-4 hover:underline">
-                  {labelOf(r.key)}
-                </Link>
-              </td>
-              <td className="px-5 py-3 text-right font-black text-red-600">{yen(r.minPrice)}</td>
-              <td className="px-5 py-3 text-right text-slate-500">{r.count}件</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* 行全体をリンクにする（ホバーで色が変わる範囲 = 押せる範囲） */}
+      <div className="text-sm">
+        <div className="grid grid-cols-[1fr_auto_4.5rem_1rem] gap-x-4 px-5 py-2 text-xs font-semibold text-slate-400">
+          <span></span>
+          <span className="text-right">最安値</span>
+          <span className="text-right">在庫数</span>
+          <span></span>
+        </div>
+        {rows.map((r) => (
+          <Link
+            key={r.key}
+            href={hrefOf(r.key)}
+            className="group grid grid-cols-[1fr_auto_4.5rem_1rem] gap-x-4 items-center px-5 py-3 border-t border-slate-100 hover:bg-blue-50 focus-visible:bg-blue-50 focus-visible:outline-none transition-colors"
+          >
+            <span className="font-bold text-slate-700 group-hover:text-blue-600">{labelOf(r.key)}</span>
+            <span className="text-right font-black text-red-600">{yen(r.minPrice)}</span>
+            <span className="text-right text-slate-500">{r.count.toLocaleString()}件</span>
+            <span className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-transform" aria-hidden>›</span>
+          </Link>
+        ))}
+      </div>
     </section>
   );
 }
@@ -168,7 +167,7 @@ export default async function ModelPage({ params }: Props) {
           {[
             { label: "最安値", value: stats.minPrice !== null ? yen(stats.minPrice) : "-", accent: true },
             { label: "価格の中央値", value: stats.medianPrice !== null ? yen(stats.medianPrice) : "-" },
-            { label: "在庫数", value: `${stats.count}件` },
+            { label: "在庫数", value: `${stats.count.toLocaleString()}件` },
             { label: "取扱ショップ", value: `${stats.shopCount}店` },
           ].map((s) => (
             <div key={s.label} className="rounded-2xl border border-slate-200 p-4">

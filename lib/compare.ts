@@ -9,10 +9,11 @@ const GENERATIONS = [11, 12, 13, 14, 15, 16, 17];
 function buildPairs(): [string, string][] {
   const pairs: [string, string][] = [];
 
-  // 同じグレードの隣り合う世代（13 と 14、15 Pro と 16 Pro など）
-  for (const suffix of ["", " Pro", " Pro Max"]) {
-    for (let i = 0; i < GENERATIONS.length - 1; i++) {
-      pairs.push([`iPhone ${GENERATIONS[i]}${suffix}`, `iPhone ${GENERATIONS[i + 1]}${suffix}`]);
+  // 同じグレードの隣り合う世代（13 と 14、15 Pro と 16 Pro など）。
+  // Pro / Pro Max は 18 まで出ている（無印の 18 は 2027年春予定）
+  for (const [suffix, gens] of [["", GENERATIONS], [" Pro", [...GENERATIONS, 18]], [" Pro Max", [...GENERATIONS, 18]]] as const) {
+    for (let i = 0; i < gens.length - 1; i++) {
+      pairs.push([`iPhone ${gens[i]}${suffix}`, `iPhone ${gens[i + 1]}${suffix}`]);
     }
   }
 
@@ -20,6 +21,7 @@ function buildPairs(): [string, string][] {
   for (const g of [12, 13, 14, 15, 16, 17]) {
     pairs.push([`iPhone ${g}`, `iPhone ${g} Pro`], [`iPhone ${g} Pro`, `iPhone ${g} Pro Max`]);
   }
+  pairs.push(["iPhone 18 Pro", "iPhone 18 Pro Max"]);
   for (const g of [14, 15, 16]) pairs.push([`iPhone ${g}`, `iPhone ${g} Plus`]);
 
   // よく迷われる組み合わせ

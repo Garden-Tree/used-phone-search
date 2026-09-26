@@ -83,8 +83,22 @@ function toInt(v: string | null | undefined): number | undefined {
  */
 export async function resolveModelNames(models: string[]): Promise<string[] | undefined> {
   if (models.length === 0) return undefined;
-  const rows = await prisma.deviceInventory.findMany({ distinct: ["modelName"], select: { modelName: true } });
-  return rows.map((r) => r.modelName).filter((name) => models.some((m) => matchesModel(m, name)));
+  const names = await allModelNames();
+  return names.filter((name) => models.some((m) => matchesModel(m, name)));
+}
+
+// モデル名の一覧はスクレイピング時（6時間ごと）にしか増減しないので、数分間メモリに保持する
+const MODEL_NAMES_TTL_MS = 5 * 60 * 1000;
+let modelNamesCache: { names: string[]; expiresAt: number } | null = null;
+
+async function allModelNames(): Promise<string[]> {
+  if (modelNamesCache && modelNamesCache.expiresAt > Date.now()) return modelNamesCache.names;
+  // findMany の distinct は全行を取得してから JS 側で重複を除くため遅い（約1.8万行で数秒）。
+  // groupBy は SQL の GROUP BY になり、DB 側で集約される
+  const rows = await prisma.deviceInventory.groupBy({ by: ["modelName"] });
+  const names = rows.map((r) => r.modelName);
+  modelNamesCache = { names, expiresAt: Date.now() + MODEL_NAMES_TTL_MS };
+  return names;
 }
 
 /** DB側の絞り込み条件 */
