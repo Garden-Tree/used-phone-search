@@ -28,6 +28,11 @@ on:
         required: true
         default: '100'
 
+# 自分自身を有効化し直すステップで actions: write が必要
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
@@ -66,15 +71,27 @@ jobs:
 
       # スクレイピング結果から当日の価格推移を記録（モデル別ページのグラフ用）
       - name: Node.js をセットアップ
+        if: ${{ !cancelled() }}
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
 
       - name: Node.js の依存ライブラリのインストール
+        if: ${{ !cancelled() }}
         run: npm ci
 
+      # 一部のショップの取得に失敗しても、取れた分で価格推移は記録する（ジョブ自体は失敗のまま通知される）
       - name: 価格推移の記録
+        if: ${{ !cancelled() }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run snapshot:prices
+
+      # GitHub は 60 日間リポジトリに動きがないと定期実行を自動で無効化する（2026/08 に実際に停止した）。
+      # 実行のたびにワークフローを有効化し直して、無効化までの期限を延ばす
+      - name: 定期実行の自動停止を防ぐ
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/scraper.yaml/enable"

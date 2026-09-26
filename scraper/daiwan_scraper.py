@@ -261,7 +261,7 @@ def main():
         
     if not items:
         print("No items found. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
     db_url = None
@@ -329,6 +329,7 @@ def main():
     except Exception as e:
         if conn: conn.rollback()
         print(f"Database error: {e}")
+        sys.exit(1)
     finally:
         if conn:
             cur.close()
