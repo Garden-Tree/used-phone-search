@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import psycopg2
+from db_guard import ensure_safe_to_replace
 from psycopg2.extras import execute_values
 
 
@@ -297,6 +298,8 @@ def main():
         conn.autocommit = False
 
         # 古いにこスマのデータを削除
+        ensure_safe_to_replace(cur, 'にこスマ', len(items))
+
         print("Deleting old 'にこスマ' data...")
         cur.execute(
             'DELETE FROM "DeviceInventory" WHERE "shopName" = %s', ("にこスマ",)

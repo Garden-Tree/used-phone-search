@@ -19,6 +19,10 @@ export type Device = {
 };
 
 export default function DeviceCard({ device }: { device: Device }) {
+  const href = getAffiliateUrl(device);
+  // アフィリエイトリンクには Google のガイドラインに従い sponsored を付与する
+  const rel = href !== device.url ? 'sponsored noopener noreferrer' : 'noopener noreferrer';
+
   // キャリア・SIMロック状態のバッジ表示ロジック
   const renderStatusBadges = () => {
     const carrier = device.carrier;
@@ -86,9 +90,9 @@ export default function DeviceCard({ device }: { device: Device }) {
 
   return (
     <a
-      href={device.isSoldOut ? '#' : getAffiliateUrl(device)}
+      href={device.isSoldOut ? '#' : href}
       target={device.isSoldOut ? '_self' : '_blank'}
-      rel="noopener noreferrer"
+      rel={rel}
       className={`group relative bg-white rounded-[2rem] p-6 shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-200/60 hover:-translate-y-1.5 flex flex-col h-full overflow-hidden ${device.isSoldOut ? 'cursor-not-allowed' : 'cursor-pointer'
         }`}
     >

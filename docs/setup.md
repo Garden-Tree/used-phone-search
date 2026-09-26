@@ -25,6 +25,13 @@ cd used-phone-search
 DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/used_phone_db?schema=public"
 ```
 
+本番環境（Vercel 等）では以下も設定してください。
+
+| 変数名 | 用途 |
+|---|---|
+| `NEXT_PUBLIC_SITE_URL` | 本番URL（例: `https://example.com`）。sitemap / canonical / OGP の絶対URLに使用。未設定時は `http://localhost:3000` |
+| `NEXT_PUBLIC_GA_ID` | Google Analytics 4 の測定ID（例: `G-XXXXXXXXXX`）。未設定時は GA を読み込まない |
+
 ## 3. データベースの起動とスキーマ同期
 
 Dockerを使用してデータベースを起動します。
@@ -82,4 +89,5 @@ python run_all_scrapers.py
 
 - **データベースに接続できない**: `docker ps` でコンテナが動いているか確認し、`.env` の `DATABASE_URL` が正しいかチェックしてください。
 - **スクレイピングでエラーが出る**: 一部のショップ（ゲオなど）は強力なWAFを導入しているため、短時間に大量のリクエストを送るとIP制限がかかる場合があります。その場合は `MAX_PAGES` を減らすか、時間を置いて実行してください。
+- **「洗い替えを中止しました」と表示される**: 取得件数が既存データの50%未満だったため、在庫データの消失を防ぐ安全装置が作動しています（`scraper/db_guard.py`）。意図的に件数を減らした場合は `FORCE_REPLACE=1` を付けて実行してください。比率は `MIN_REPLACE_RATIO` で変更できます。
 - **Next.js のビルドエラー**: `node_modules` を一度削除して `npm install` をやり直してください。

@@ -5,6 +5,7 @@ import re
 import requests
 from urllib.parse import urlparse
 import psycopg2
+from db_guard import ensure_safe_to_replace
 from psycopg2.extras import execute_values
 from bs4 import BeautifulSoup
 
@@ -252,6 +253,8 @@ def main():
         conn.autocommit = False
         
         # 古いイオシスのデータを削除
+        ensure_safe_to_replace(cur, 'イオシス', len(items))
+
         print("Deleting old 'イオシス' data...")
         cur.execute("DELETE FROM \"DeviceInventory\" WHERE \"shopName\" = %s", ('イオシス',))
         

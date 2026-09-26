@@ -11,9 +11,12 @@ import random
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import psycopg2
+from db_guard import ensure_safe_to_replace
 from psycopg2.extras import execute_values
 from bs4 import BeautifulSoup
 from curl_cffi import requests
+
+STOP_SCRAPING = False
 
 
 def clean_database_url(url: str) -> str:
@@ -38,6 +41,10 @@ def is_iphone_13_or_later(model_name):
 
 def fetch_geo_detail(session, item):
     """個別ページから利用制限情報を取得する"""
+    global STOP_SCRAPING
+    if STOP_SCRAPING:
+        return item
+
     if not item['url']:
         return item
     
@@ -48,8 +55,8 @@ def fetch_geo_detail(session, item):
         item['url'] = detail_url
         
     try:
-        # 負荷軽減のため少し待機（並列実行されるため合計時間は抑えられる）
-        time.sleep(random.uniform(0.05, 0.2))
+        # WAF回避・負荷軽減のため待機時間を長めに設定（低速化）
+        time.sleep(random.uniform(1.0, 2.5))
         resp = session.get(detail_url, timeout=10)
         if resp.status_code == 200:
             soup = BeautifulSoup(resp.text, 'html.parser')
@@ -64,8 +71,13 @@ def fetch_geo_detail(session, item):
                     # ▲ を △ に変換
                     item['networkStatus'] = status.replace('▲', '△')
                     break
+        else:
+            STOP_SCRAPING = True
+            print(f"  --> HTTP {resp.status_code} fetching detail. Stopping.")
     except Exception as e:
         print(f"  Error fetching detail {detail_url}: {e}")
+        STOP_SCRAPING = True
+        print("  --> Timeout/Error detected in detail fetching. Stopping further scraping.")
         
     return item
 
@@ -170,6 +182,10 @@ def parse_geo_html(html_content):
 
 def scrape_geo_page(page_num, session):
     """1ページ分のデータを取得する"""
+    global STOP_SCRAPING
+    if STOP_SCRAPING:
+        return [], False
+
     url = f"https://ec.geo-online.co.jp/shop/goods/search.aspx?flg=gkb02&search.x=0&tree=1001&ps=50&p={page_num}"
     print(f"Navigating to page {page_num}: {url}")
     
@@ -177,15 +193,20 @@ def scrape_geo_page(page_num, session):
         response = session.get(url, timeout=15)
         if response.status_code != 200:
             print(f"  HTTP {response.status_code} on page {page_num}")
+            STOP_SCRAPING = True
             return [], False
         
         html_content = response.text
         items = parse_geo_html(html_content)
         
-        # 個別詳細ページから利用制限を取得（並列実行）
+        # 個別詳細ページから利用制限を取得
         if items:
-            with ThreadPoolExecutor(max_workers=10) as executor:
-                items = list(executor.map(lambda x: fetch_geo_detail(session, x), items))
+            updated_items = []
+            for item in items:
+                if STOP_SCRAPING:
+                    break
+                updated_items.append(fetch_geo_detail(session, item))
+            items = updated_items
         
         # 次のページの存在判定
         soup = BeautifulSoup(html_content, 'html.parser')
@@ -194,6 +215,7 @@ def scrape_geo_page(page_num, session):
         return items, has_next
     except Exception as e:
         print(f"  Error on page {page_num}: {e}")
+        STOP_SCRAPING = True
         return [], False
 
 
@@ -204,24 +226,24 @@ def scrape_geo_mobile(max_pages=20):
     
     session = requests.Session(impersonate="chrome124")
     
-    MAX_PAGES = max_pages
-    MAX_WORKERS = 15  # 並列数を増やして高速化（旧: 3）
+    global STOP_SCRAPING
+    STOP_SCRAPING = False
     
-    all_items = []
-    
-    def fetch_worker(p):
-        items, _ = scrape_geo_page(p, session)
-        return items
-
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = [executor.submit(fetch_worker, p) for p in range(1, MAX_PAGES + 1)]
-        for future in as_completed(futures):
-            try:
-                items = future.result()
-                if items:
-                    all_items.extend(items)
-            except Exception as e:
-                print(f"Worker error: {e}")
+    for page_num in range(1, max_pages + 1):
+        if STOP_SCRAPING:
+            print("Scraping stopped due to an error/timeout. Exiting page loop.")
+            break
+            
+        if page_num > 1:
+            time.sleep(random.uniform(2.0, 4.0))
+            
+        items, has_next = scrape_geo_page(page_num, session)
+        if items:
+            all_items.extend(items)
+            
+        if STOP_SCRAPING or not has_next:
+            print(f"Stopping after page {page_num} (has_next={has_next}, STOP_SCRAPING={STOP_SCRAPING}).")
+            break
                 
     print(f"Finished scraping. Total items found: {len(all_items)}")
     return all_items
@@ -271,6 +293,8 @@ def main():
         cur = conn.cursor()
         conn.autocommit = False
         
+        ensure_safe_to_replace(cur, 'ゲオモバイル', len(items))
+
         print("Deleting old 'ゲオモバイル' data...")
         cur.execute("DELETE FROM \"DeviceInventory\" WHERE \"shopName\" = %s", ('ゲオモバイル',))
         

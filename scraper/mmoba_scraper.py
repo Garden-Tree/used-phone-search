@@ -5,6 +5,7 @@ import re
 import requests
 from urllib.parse import urlparse
 import psycopg2
+from db_guard import ensure_safe_to_replace
 from psycopg2.extras import execute_values
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
@@ -280,6 +281,8 @@ def main():
         
         conn.autocommit = False
         
+        ensure_safe_to_replace(cur, 'エムモバ', len(items))
+
         print("Deleting old 'エムモバ' data...")
         cur.execute("DELETE FROM \"DeviceInventory\" WHERE \"shopName\" = %s", ('エムモバ',))
         
