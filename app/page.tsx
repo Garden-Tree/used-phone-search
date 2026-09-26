@@ -1,57 +1,8 @@
 import Link from "next/link";
 import { Smartphone, BatteryCharging, Camera, Sparkles, Zap, Fingerprint, ShieldCheck, Search } from "lucide-react";
+import { IPHONE_CATALOG, modelPagePath } from "@/lib/catalog";
+import AdDisclosure from "@/app/components/AdDisclosure";
 
-// Catalog data with badges
-const IPHONE_CATALOG = [
-  {
-    series: "iPhone 17 Series",
-    models: ["iPhone 17", "iPhone 17e", "iPhone Air", "iPhone 17 Pro", "iPhone 17 Pro Max"],
-    gradient: "from-fuchsia-500 to-pink-500",
-    badges: ["ProMotion（120Hz）", "eSIMのみ", "センターフレームフロントカメラ"]
-  },
-  {
-    series: "iPhone 16 Series",
-    models: ["iPhone 16", "iPhone 16e", "iPhone 16 Plus", "iPhone 16 Pro", "iPhone 16 Pro Max"],
-    gradient: "from-purple-500 to-indigo-500",
-    badges: ["Apple Intelligence", "アクションボタン", "カメラコントロール"]
-  },
-  {
-    series: "iPhone 15 Series",
-    models: ["iPhone 15", "iPhone 15 Plus", "iPhone 15 Pro", "iPhone 15 Pro Max"],
-    gradient: "from-blue-500 to-cyan-500",
-    badges: ["Type-C", "Dynamic Island"]
-  },
-  {
-    series: "iPhone 14 Series",
-    models: ["iPhone 14", "iPhone 14 Plus", "iPhone 14 Pro", "iPhone 14 Pro Max"],
-    gradient: "from-emerald-500 to-teal-500",
-    badges: ["衝突事故検知", "衛星通信", "アクションモード"]
-  },
-  {
-    series: "iPhone 13 Series",
-    models: ["iPhone 13", "iPhone 13 mini", "iPhone 13 Pro", "iPhone 13 Pro Max"],
-    gradient: "from-rose-500 to-pink-500",
-    badges: ["ノッチ小型化", "センサーシフト光学式手ぶれ補正", "シネマティックモード"]
-  },
-  {
-    series: "iPhone 12 Series",
-    models: ["iPhone 12", "iPhone 12 mini", "iPhone 12 Pro", "iPhone 12 Pro Max"],
-    gradient: "from-amber-500 to-orange-500",
-    badges: ["フラットデザイン", "5G対応", "MagSafe"]
-  },
-  {
-    series: "iPhone 11 Series",
-    models: ["iPhone 11", "iPhone 11 Pro", "iPhone 11 Pro Max"],
-    gradient: "from-slate-500 to-gray-500",
-    badges: ["iOS 26対応", "超広角カメラ", "12MPフロントカメラ"]
-  },
-  {
-    series: "iPhone SE Series",
-    models: ["iPhone SE (第3世代)", "iPhone SE (第2世代)"],
-    gradient: "from-red-500 to-rose-600",
-    badges: ["Touch ID（指紋認証）", "ホームボタン"]
-  }
-];
 
 export default function Home() {
   return (
@@ -234,7 +185,7 @@ export default function Home() {
                   {seriesGroup.models.map((model) => (
                     <Link
                       key={model}
-                      href={`/search?model=${encodeURIComponent(model)}`}
+                      href={modelPagePath(model)}
                       className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors group/link border border-transparent hover:border-slate-100"
                     >
                       <span className="text-sm font-medium text-slate-700 group-hover/link:text-blue-600 transition-colors">
@@ -253,6 +204,7 @@ export default function Home() {
       </main>
 
       <footer className="max-w-6xl mx-auto px-4 mt-8 pt-8 border-t border-slate-100 text-center">
+        <AdDisclosure />
         <p className="text-sm text-slate-400 font-medium">
           &copy; {new Date().getFullYear()} 中古スマホ一括検索
         </p>
