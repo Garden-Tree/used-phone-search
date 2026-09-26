@@ -111,11 +111,13 @@ def parse_daiwan_item(item, headers):
         val = int(m_storage.group(1))
         storage = val * 1024 if m_storage.group(2) == 'TB' else val
         
-    m_model = re.search(r'(iPhone\s?(\d+|X[SR]?|SE|8|7|17)\s?(Pro\sMax|Pro|Plus|mini)?)', raw_name, re.IGNORECASE)
+    m_model = re.search(r'(iPhone\s?(\d+e?|X[SR]?|SE|8|7)\s?(Pro\sMax|Pro|Plus|mini)?)', raw_name, re.IGNORECASE)
     if m_model:
         full_model = m_model.group(1).strip()
-        full_model = re.sub(r'iPhone\s?(\d+|X[SR]?|SE|8|7|17)', r'iPhone \1', full_model, flags=re.IGNORECASE)
-        full_model = re.sub(r'(\d+|X[SR]?|SE|8|7|17)\s?(Pro\sMax|Pro|Plus|mini)', r'\1 \2', full_model, flags=re.IGNORECASE)
+        # iPhoneとモデル番号の間にスペースを挿入
+        full_model = re.sub(r'iPhone\s?(\d+e?|X[SR]?|SE|8|7)', r'iPhone \1', full_model, flags=re.IGNORECASE)
+        # モデル番号とPro/Maxなどの間にスペースを挿入
+        full_model = re.sub(r'(\d+e?|X[SR]?|SE|8|7)\s?(Pro\sMax|Pro|Plus|mini)', r'\1 \2', full_model, flags=re.IGNORECASE)
         model_name = full_model
         
         if "SE3" in raw_name or ("SE" in model_name and "第3世代" in raw_name):

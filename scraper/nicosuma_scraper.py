@@ -42,6 +42,7 @@ IPHONE_COLLECTIONS = [
     # iPhone 17 Series
     "iphone-17-pro-max",
     "iphone-17-pro",
+    "iphone-17e",
     "iphone-17",
     "iphone-air",
     # iPhone 16 Series
