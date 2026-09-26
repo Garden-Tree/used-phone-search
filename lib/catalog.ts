@@ -1,5 +1,13 @@
-// iOS 26 対応モデルのカタログ（トップページ・sitemap で共有）
+// iOS 27（2026年9月配信）対応モデルのカタログ（トップページ・sitemap で共有）。
+// iOS 27 は iOS 26 と同じく iPhone 11 以降・SE 第2/第3世代が対象。
+// iPhone 18 / 18e（2027年春予定）と折りたたみの iPhone Duo（2026/10/23 発売）は中古在庫が出てから追加する
 export const IPHONE_CATALOG = [
+  {
+    series: "iPhone 18 Series",
+    models: ["iPhone 18 Pro", "iPhone 18 Pro Max"],
+    gradient: "from-orange-500 to-red-500",
+    badges: ["A20 Pro（2nm）", "可変絞りカメラ", "Apple Intelligence"]
+  },
   {
     series: "iPhone 17 Series",
     models: ["iPhone 17", "iPhone 17e", "iPhone Air", "iPhone 17 Pro", "iPhone 17 Pro Max"],
@@ -40,7 +48,7 @@ export const IPHONE_CATALOG = [
     series: "iPhone 11 Series",
     models: ["iPhone 11", "iPhone 11 Pro", "iPhone 11 Pro Max"],
     gradient: "from-slate-500 to-gray-500",
-    badges: ["iOS 26対応", "超広角カメラ", "12MPフロントカメラ"]
+    badges: ["iOS 27対応", "超広角カメラ", "12MPフロントカメラ"]
   },
   {
     series: "iPhone SE Series",
@@ -50,7 +58,7 @@ export const IPHONE_CATALOG = [
   }
 ];
 
-// iOS 26 非対応だが中古在庫が多い旧モデル（モデル別ページのみ用意）
+// iOS 26 / 27 非対応だが中古在庫が多い旧モデル（モデル別ページのみ用意）
 export const LEGACY_SERIES = [
   { series: "iPhone X / XS / XR", models: ["iPhone XS", "iPhone XS Max", "iPhone XR", "iPhone X"] },
   { series: "iPhone 8 / 7", models: ["iPhone 8", "iPhone 8 Plus", "iPhone 7", "iPhone 7 Plus"] },
