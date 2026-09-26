@@ -1,8 +1,21 @@
 import Link from "next/link";
 import { Smartphone, BatteryCharging, Camera, Sparkles, Zap, Fingerprint, ShieldCheck, Search } from "lucide-react";
 import { IPHONE_CATALOG, modelPagePath } from "@/lib/catalog";
+import { comparePath } from "@/lib/compare";
 import AdDisclosure from "@/app/components/AdDisclosure";
 
+
+// トップページに並べる比較（lib/compare.ts の COMPARE_PAIRS に含まれる組のみ）
+const FEATURED_COMPARES: [string, string][] = [
+  ["iPhone 13", "iPhone 14"],
+  ["iPhone 14", "iPhone 15"],
+  ["iPhone 15", "iPhone 16"],
+  ["iPhone 15", "iPhone 15 Pro"],
+  ["iPhone 16e", "iPhone 16"],
+  ["iPhone 17", "iPhone Air"],
+  ["iPhone SE (第2世代)", "iPhone SE (第3世代)"],
+  ["iPhone SE (第3世代)", "iPhone 13 mini"],
+];
 
 export default function Home() {
   return (
@@ -140,6 +153,19 @@ export default function Home() {
             </Link>
 
           </div>
+        </div>
+      </section>
+
+      {/* よく比較される機種 */}
+      <section className="max-w-6xl mx-auto px-4 mb-10 relative z-10">
+        <h2 className="text-xl md:text-2xl font-bold mb-4">よく比較される機種</h2>
+        <div className="flex flex-wrap gap-2">
+          {FEATURED_COMPARES.map(([a, b]) => (
+            <Link key={comparePath(a, b)} href={comparePath(a, b)}
+              className="px-4 py-2.5 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors shadow-sm">
+              {a} <span className="text-slate-400 font-medium">vs</span> {b}
+            </Link>
+          ))}
         </div>
       </section>
 

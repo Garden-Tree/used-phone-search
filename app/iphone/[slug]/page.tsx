@@ -15,6 +15,7 @@ import {
   slugToModel,
 } from "@/lib/catalog";
 import { getModelStats, type PriceRow } from "@/lib/modelStats";
+import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -220,6 +221,21 @@ export default async function ModelPage({ params }: Props) {
             <div className="flex flex-wrap gap-2">
               {series.badges.map((b) => (
                 <span key={b} className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white text-slate-600 border border-slate-200">{b}</span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* このモデルを含む比較 */}
+        {comparesFor(model).length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-lg font-bold mb-3">{model}と他モデルの中古価格を比較</h2>
+            <div className="flex flex-wrap gap-2">
+              {comparesFor(model).map(([x, y]) => (
+                <Link key={comparePath(x, y)} href={comparePath(x, y)}
+                  className="px-4 py-2 rounded-xl text-sm font-bold bg-blue-50 border border-blue-100 text-blue-700 hover:border-blue-300 transition-colors">
+                  {x} vs {y}
+                </Link>
               ))}
             </div>
           </section>
