@@ -251,7 +251,7 @@ def main():
         
     if not items:
         print("No items found. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     # 2. Database connection
     env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
@@ -325,6 +325,7 @@ def main():
         if conn:
             conn.rollback()
         print(f"Database error: {e}")
+        sys.exit(1)
     finally:
         if conn:
             cur.close()

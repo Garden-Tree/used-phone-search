@@ -13,6 +13,9 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
+# 失敗したスクリプト名（スレッドから追記する）
+FAILED = []
+
 def run_scraper(script_name, args=""):
     print(f"[*] Starting {script_name} with args: {args}...")
     start_time = time.time()
@@ -61,9 +64,11 @@ def run_scraper(script_name, args=""):
             print(f"[+] {script_name} finished successfully in {elapsed:.1f}s")
         else:
             print(f"[!] {script_name} failed with exit code {process.returncode}")
-            
+            FAILED.append(script_name)
+
     except Exception as e:
         print(f"[!] Error running {script_name}: {e}")
+        FAILED.append(script_name)
 
 def main():
     # 環境変数から取得（指定がなければデフォルトの100を使用）
@@ -100,6 +105,11 @@ def main():
         
     total_elapsed = time.time() - start_all
     print(f"\n=== All scrapers completed in {total_elapsed:.1f}s ===")
+
+    # 1つでも失敗したら非0で終了し、GitHub Actions を失敗扱いにして通知を飛ばす
+    if FAILED:
+        print(f"[!] Failed scrapers: {', '.join(FAILED)}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     # scraper ディレクトリに移動してから実行することを想定
