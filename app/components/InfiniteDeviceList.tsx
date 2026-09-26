@@ -1,88 +1,75 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import DeviceCard, { Device } from './DeviceCard';
+
+const PAGE_SIZE = 20;
 
 interface InfiniteDeviceListProps {
   initialDevices: Device[];
+  totalCount: number;
 }
 
-export default function InfiniteDeviceList({
-  initialDevices,
-}: InfiniteDeviceListProps) {
+/**
+ * 検索結果の無限スクロール。検索条件が変わったときは親が key を変えて作り直すので、
+ * ここでは「今の条件の続きを読む」ことだけを扱う
+ */
+export default function InfiniteDeviceList({ initialDevices, totalCount }: InfiniteDeviceListProps) {
   const searchParams = useSearchParams();
   const [devices, setDevices] = useState<Device[]>(initialDevices);
-  const [skip, setSkip] = useState(initialDevices.length);
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(initialDevices.length >= 20);
+  const [error, setError] = useState(false);
+  const loadingRef = useRef(false); // IntersectionObserver の連続発火で二重に読み込まないためのガード
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  const searchParamsString = searchParams.toString();
+  const hasMore = devices.length < totalCount && !error;
 
-  // Reset when search parameters change (except when triggered by initialDevices update)
-  useEffect(() => {
-    setDevices(initialDevices);
-    setSkip(initialDevices.length);
-    setHasMore(initialDevices.length >= 20);
-  }, [initialDevices, searchParamsString]);
-
-  const loadMore = async () => {
-    if (loading || !hasMore) return;
+  const loadMore = useCallback(async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
 
     try {
-      const params = new URLSearchParams(searchParamsString);
-      params.set('skip', skip.toString());
-      params.set('take', '20');
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('skip', String(devices.length));
+      params.set('take', String(PAGE_SIZE));
 
       const response = await fetch(`/api/devices?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch');
-      
       const newDevices: Device[] = await response.json();
 
       if (newDevices.length === 0) {
-        setHasMore(false);
+        // 取得中に在庫が入れ替わった場合など。これ以上は読まない
+        setError(true);
       } else {
         setDevices((prev) => {
-          // Prevent duplicates just in case
-          const existingIds = new Set(prev.map(d => d.id));
-          const uniqueNewDevices = newDevices.filter(d => !existingIds.has(d.id));
-          return [...prev, ...uniqueNewDevices];
+          const existingIds = new Set(prev.map((d) => d.id));
+          return [...prev, ...newDevices.filter((d) => !existingIds.has(d.id))];
         });
-        setSkip((prev) => prev + newDevices.length);
-        if (newDevices.length < 20) {
-          setHasMore(false);
-        }
       }
-    } catch (error) {
-      console.error('Failed to load more devices:', error);
-      setHasMore(false);
+    } catch (e) {
+      console.error('Failed to load more devices:', e);
+      setError(true);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
-  };
+  }, [searchParams, devices.length]);
 
   useEffect(() => {
     const target = observerTarget.current;
-    if (!target) return;
+    if (!target || !hasMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore();
-        }
+        if (entries[0].isIntersecting) loadMore();
       },
-      { threshold: 0.1, rootMargin: '200px' } // Load earlier
+      { rootMargin: '200px' }, // 少し手前から読み込む
     );
-
     observer.observe(target);
-
-    return () => {
-      if (target) observer.unobserve(target);
-      observer.disconnect();
-    };
-  }, [hasMore, loading, skip, searchParamsString]);
+    return () => observer.disconnect();
+  }, [hasMore, loadMore]);
 
   return (
     <div className="space-y-12">
@@ -93,26 +80,34 @@ export default function InfiniteDeviceList({
       </div>
 
       {hasMore && (
-        <div 
-          ref={observerTarget} 
-          className="flex justify-center py-12"
-        >
+        <div ref={observerTarget} className="flex justify-center py-12">
           <div className="flex flex-col items-center gap-4">
             <div className="w-8 h-8 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
             <span className="text-sm font-medium text-slate-500 animate-pulse">
-              在庫をさらに読み込み中...
+              {loading ? '在庫をさらに読み込み中...' : `${devices.length.toLocaleString()} / ${totalCount.toLocaleString()}件`}
             </span>
           </div>
         </div>
       )}
 
-      {!hasMore && devices.length > 0 && (
+      {error && devices.length < totalCount && (
+        <div className="text-center py-8">
+          <button
+            onClick={() => { setError(false); }}
+            className="px-6 py-3 rounded-full bg-slate-900 text-white text-sm font-bold hover:bg-blue-600 transition-colors"
+          >
+            読み込みに失敗しました。もう一度試す
+          </button>
+        </div>
+      )}
+
+      {!hasMore && !error && devices.length > 0 && (
         <div className="text-center py-16 border-t border-slate-100 mt-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 text-slate-500 text-sm font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
             </svg>
-            すべての在庫を表示しました（合計 {devices.length} 件）
+            すべての在庫を表示しました（合計 {devices.length.toLocaleString()} 件）
           </div>
         </div>
       )}

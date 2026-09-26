@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { buildWhere, filterByModels } from "@/lib/deviceSearch";
+import { buildWhere, resolveModelNames } from "@/lib/deviceSearch";
 
 /**
  * 1モデル分の販売中在庫（価格昇順）。モデル別ページと価格推移の記録で共有する。
@@ -7,10 +7,10 @@ import { buildWhere, filterByModels } from "@/lib/deviceSearch";
  */
 export async function fetchModelInventory(model: string) {
   const rows = await prisma.deviceInventory.findMany({
-    where: { AND: [buildWhere({ models: [model] }), { isSoldOut: false }] },
+    where: { AND: [buildWhere({ modelNames: await resolveModelNames([model]) }), { isSoldOut: false }] },
     orderBy: { price: "asc" },
   });
-  return filterByModels(rows, [model]);
+  return rows;
 }
 
 /** 昇順ソート済みの価格から最安値・中央値・件数を求める */
