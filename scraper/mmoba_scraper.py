@@ -1,23 +1,9 @@
-import os
-import sys
 import time
 import re
 import requests
-from urllib.parse import urlparse
-import psycopg2
-from db_guard import ensure_safe_to_replace
-from psycopg2.extras import execute_values
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
-
-def clean_database_url(url: str) -> str:
-    if not url:
-        return url
-    url = url.strip('"').strip("'")
-    parsed = urlparse(url)
-    port = f":{parsed.port}" if parsed.port else ""
-    clean_url = f"{parsed.scheme}://{parsed.username}:{parsed.password}@{parsed.hostname}{port}{parsed.path}"
-    return clean_url
+from common import run_scraper
 
 def get_detail_info(url, headers):
     try:
@@ -232,107 +218,6 @@ def scrape_mmoba(max_pages=10):
     print(f"Finished scraping. Total items found: {len(all_items)}")
     return all_items
 
-def main():
-    print("--- エムモバ スクレイピング開始 ---")
-    
-    max_pages = 20
-    if len(sys.argv) > 1:
-        try:
-            max_pages = int(sys.argv[1])
-        except ValueError:
-            pass
-            
-    # 1. Scraping
-    try:
-        items = scrape_mmoba(max_pages=max_pages)
-    except Exception as e:
-        print(f"Scraping failed: {e}")
-        sys.exit(1)
-        
-    if not items:
-        print("No items found. Exiting.")
-        sys.exit(1)
 
-    # 2. Database connection
-    env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
-    db_url = None
-    try:
-        with open(env_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                if line.startswith('DATABASE_URL='):
-                    db_url = line.split('=', 1)[1].strip()
-                    break
-    except Exception as e:
-        print(f"Failed to read .env file: {e}")
-        sys.exit(1)
-        
-    if not db_url:
-        print("DATABASE_URL not found in .env")
-        sys.exit(1)
-        
-    clean_url = clean_database_url(db_url)
-    
-    # 3. Database Update
-    conn = None
-    try:
-        print("Connecting to PostgreSQL...")
-        conn = psycopg2.connect(clean_url)
-        cur = conn.cursor()
-        
-        conn.autocommit = False
-        
-        ensure_safe_to_replace(cur, 'エムモバ', len(items))
-
-        print("Deleting old 'エムモバ' data...")
-        cur.execute("DELETE FROM \"DeviceInventory\" WHERE \"shopName\" = %s", ('エムモバ',))
-        
-        print(f"Inserting {len(items)} new items...")
-        insert_query = """
-            INSERT INTO "DeviceInventory" (
-                "id", "manufacturer", "modelName", "storage", "color",
-                "conditionRank", "batteryHealth", "networkStatus", "simUnlocked", "carrier",
-                "shopName", "price", "url", "isSoldOut", "createdAt", "updatedAt"
-            ) VALUES %s
-        """
-        
-        values = [
-            (
-                item['manufacturer'],
-                item['modelName'],
-                item['storage'],
-                item['color'],
-                item['conditionRank'],
-                item.get('batteryHealth'),
-                item['networkStatus'],
-                item['simUnlocked'],
-                item['carrier'],
-                item['shopName'],
-                item['price'],
-                item['url'],
-                False
-            )
-            for item in items
-        ]
-        
-        template = "(gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())"
-        
-        execute_values(cur, insert_query, values, template=template)
-            
-        conn.commit()
-        print("Database update complete!")
-        
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        print(f"Database error: {e}")
-        sys.exit(1)
-    finally:
-        if conn:
-            cur.close()
-            conn.close()
-            print("Database connection closed.")
-            
-    print("--- スクレイピング処理完了 ---")
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    run_scraper("エムモバ", lambda limit: scrape_mmoba(max_pages=limit), 20)

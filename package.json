@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "snapshot:prices": "tsx scripts/snapshot-prices.ts"
+    "snapshot:prices": "tsx scripts/snapshot-prices.ts",
+    "normalize:ipad": "tsx scripts/normalize-ipad-models.ts",
+    "test:normalize": "tsx scripts/test-normalizers.ts"
   },
   "dependencies": {
     "@next/third-parties": "^16.2.4",

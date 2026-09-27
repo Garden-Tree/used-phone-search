@@ -9,6 +9,7 @@ import { modelPagePath, seriesOf } from "@/lib/catalog";
 import { getModelStats } from "@/lib/modelStats";
 import { PICKS, findPick, pickPath, pickSearchHref } from "@/lib/picks";
 import { SITE_NAME } from "@/lib/site";
+import { yen } from "@/lib/format";
 
 // 静的に生成して CDN から配信する（検索ページと違い、休止明けでも待たされない）。在庫は1時間ごとに更新
 export const revalidate = 3600;
@@ -20,7 +21,6 @@ export function generateStaticParams() {
 
 type Props = { params: Promise<{ slug: string }> };
 
-const yen = (n: number) => `${n.toLocaleString()}円`;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

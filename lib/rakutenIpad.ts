@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import type { RakutenGeoItem } from "@/lib/rakutenGeo";
+import { batteryOf, carrierOf, rankOf, stripPartNumber, toStorage, type RakutenItem } from "@/lib/rakutenCommon";
 import { canonicalIpadModel } from "@/lib/ipadCatalog";
 
 /**
@@ -7,35 +7,11 @@ import { canonicalIpadModel } from "@/lib/ipadCatalog";
  * 機種名は lib/ipadCatalog.ts の正式名にそろえる。読み取れないもの（アクセサリなど）は null
  */
 
-type Item = RakutenGeoItem & { batt?: number | null; car?: string | null };
+type Item = RakutenItem;
 type Row = Prisma.DeviceInventoryCreateManyInput;
 
 /** Wi-Fi モデルの carrier の値（DeviceCard が「Wi-Fiモデル」と表示する） */
 export const WIFI_MODEL = "Wi-Fiモデル";
-
-const RANKS = new Set(["S", "A", "B", "C", "D", "J"]);
-
-function toStorage(size: string, unit: string): number {
-  return unit === "TB" ? Number(size) * 1024 : Number(size);
-}
-
-function battery(item: Item): number | null {
-  return typeof item.batt === "number" && item.batt > 0 && item.batt <= 100 ? item.batt : null;
-}
-
-/** 「docomo」「auロック解除SIMフリー」「SIMフリー」などを他ショップと揃えた表記にする */
-function carrierOf(raw: string): string | null {
-  if (/docomo|ドコモ/i.test(raw)) return "docomo";
-  if (/SoftBank|ソフトバンク|Y!mobile/i.test(raw)) return "SoftBank";
-  if (/\bau\b|au\/|UQ|^au/i.test(raw)) return "au";
-  if (/楽天/.test(raw)) return "楽天モバイル";
-  if (/海外/.test(raw)) return "海外版SIMフリー";
-  if (/国内版|SIMフリー/.test(raw)) return "国内版SIMフリー";
-  return null;
-}
-
-// 色の後ろの型番（MK2L3J/A・MXE42J／A）以降を落とす
-const stripPartNumber = (s: string) => s.replace(/\s*[A-Z0-9]{4,6}(?:J|ZA|LL|CH)?[／/]A.*$/, "").trim();
 
 function row(item: Item, fields: Omit<Row, "manufacturer" | "price" | "url" | "isSoldOut" | "networkStatus">): Row {
   return { manufacturer: "Apple", networkStatus: null, price: item.price, url: item.url, isSoldOut: false, ...fields };
@@ -58,8 +34,8 @@ export function normalizeJanparaIpad(shopName: string, item: Item): Row | null {
     modelName,
     storage: toStorage(size, unit),
     color: stripPartNumber(restRaw).replace(/\s*(標準ガラス|Nano-textureガラス)$/, "") || "-",
-    conditionRank: condition === "未使用" ? "S" : rankRaw && RANKS.has(rankRaw) ? rankRaw : "不明",
-    batteryHealth: battery(item),
+    conditionRank: rankOf(rankRaw, condition === "未使用"),
+    batteryHealth: batteryOf(item),
     simUnlocked: wifi || /SIMフリー|解除/.test(simLabel),
     carrier: wifi ? WIFI_MODEL : carrierOf(carrierLabel),
     shopName,
@@ -84,8 +60,8 @@ export function normalizeSofmapIpad(shopName: string, item: Item): Row | null {
     modelName,
     storage: toStorage(size, unit),
     color: stripPartNumber(restRaw).replace(/\s*(Wi-?Fi|SIMフリー).*$/, "") || "-",
-    conditionRank: condition === "未使用" ? "S" : item.rank && RANKS.has(item.rank) ? item.rank : "不明",
-    batteryHealth: battery(item),
+    conditionRank: rankOf(item.rank, condition === "未使用"),
+    batteryHealth: batteryOf(item),
     simUnlocked: wifi || /SIMフリー|解除/.test(carrierSource),
     carrier: wifi ? WIFI_MODEL : carrierOf(carrierSource),
     shopName,
@@ -112,7 +88,7 @@ export function normalizeGeoIpad(shopName: string, item: Item): Row | null {
     modelName,
     storage: toStorage(size, unit),
     color: color.trim() || "-",
-    conditionRank: item.rank && RANKS.has(item.rank) ? item.rank : "不明",
+    conditionRank: rankOf(item.rank),
     batteryHealth: null, // ゲオの楽天店はバッテリーの記載がない
     simUnlocked: wifi || unlocked || carrierMatch?.[1] === "SIMフリー",
     carrier: wifi ? WIFI_MODEL : carrierMatch ? carrierOf(carrierMatch[1]) : null,

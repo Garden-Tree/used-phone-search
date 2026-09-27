@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { rankOf, toStorage, type RakutenItem } from "@/lib/rakutenCommon";
 
 /** 楽天API経由で取り込むゲオモバイルの在庫のショップ名 */
 export const RAKUTEN_GEO_SHOP = "ゲオモバイル（楽天市場店）";
@@ -6,24 +7,6 @@ export const RAKUTEN_GEO_SHOP = "ゲオモバイル（楽天市場店）";
 /** 旧スクレイパー（ec.geo-online.co.jp）で取り込んでいたゲオのショップ名 */
 export const LEGACY_GEO_SHOP = "ゲオモバイル";
 
-// 楽天アフィリエイトID（公開情報。楽天ウェブサービスのアプリ管理画面に表示される）
-const RAKUTEN_AFFILIATE_ID = "5356a96f.f87a73cf.5356a970.2f9f146a";
-
-/** 楽天の商品URLを楽天アフィリエイト経由のURLにする */
-export function rakutenAffiliateUrl(itemUrl: string): string {
-  const u = encodeURIComponent(itemUrl);
-  return `https://hb.afl.rakuten.co.jp/hgc/${RAKUTEN_AFFILIATE_ID}/?pc=${u}&m=${u}`;
-}
-
-/** rakuten-sync/fetch.php が送ってくる1商品 */
-export type RakutenGeoItem = {
-  code: string;
-  name: string;
-  price: number;
-  url: string;
-  rank: string | null;
-  nw: string | null;
-};
 
 // 商品名の例: 【中古】【安心保証】 iPhone15 Pro[512GB] SIMロック解除 docomo ブルーチタニウム
 const NAME_RE = /iPhone\s?([^[]+?)\s*\[(\d+)(GB|TB)\]\s*(.*)$/;
@@ -44,8 +27,6 @@ const CARRIERS: [string, string][] = [
   ["au", "au"],
 ];
 
-const RANKS = new Set(["S", "A", "B", "C", "D", "J"]);
-
 const NETWORK_STATUS: Record<string, string> = { "○": "〇", "〇": "〇", "△": "△", "×": "×", "－": "-", "-": "-" };
 
 /** 2021年秋以降発売のモデルは SIM ロックなしで販売されている */
@@ -58,13 +39,13 @@ function isSimLockFreeEra(model: string): boolean {
 /**
  * 楽天の商品1件を DeviceInventory の行にする。iPhone 本体として読み取れないものは null
  */
-export function normalizeRakutenGeoItem(item: RakutenGeoItem): Prisma.DeviceInventoryCreateManyInput | null {
+export function normalizeRakutenGeoItem(item: RakutenItem): Prisma.DeviceInventoryCreateManyInput | null {
   const m = item.name.match(NAME_RE);
   if (!m || !item.url || !(item.price > 0)) return null;
 
   const [, modelPart, size, unit, restRaw] = m;
   const modelName = `iPhone ${modelPart.trim()}`;
-  const storage = unit === "TB" ? Number(size) * 1024 : Number(size);
+  const storage = toStorage(size, unit);
 
   let rest = restRaw.trim();
   const unlocked = rest.startsWith("SIMロック解除");
@@ -74,7 +55,7 @@ export function normalizeRakutenGeoItem(item: RakutenGeoItem): Prisma.DeviceInve
   const carrier = carrierEntry ? carrierEntry[1] : null;
   const color = carrierEntry ? rest.slice(carrierEntry[0].length).trim() : rest;
 
-  const rank = item.rank && RANKS.has(item.rank) ? item.rank : "不明";
+  const rank = rankOf(item.rank);
   const networkStatus = item.nw ? NETWORK_STATUS[item.nw] ?? null : null;
 
   return {

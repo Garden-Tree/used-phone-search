@@ -1,11 +1,11 @@
 import type { Prisma } from "@prisma/client";
-import { LEGACY_GEO_SHOP, RAKUTEN_GEO_SHOP, normalizeRakutenGeoItem, type RakutenGeoItem } from "@/lib/rakutenGeo";
+import { LEGACY_GEO_SHOP, RAKUTEN_GEO_SHOP, normalizeRakutenGeoItem } from "@/lib/rakutenGeo";
+import type { RakutenItem } from "@/lib/rakutenCommon";
 import { RAKUTEN_JANPARA_SHOP, normalizeJanparaItem } from "@/lib/rakutenJanpara";
 import { RAKUTEN_SOFMAP_SHOP, normalizeSofmapItem } from "@/lib/rakutenSofmap";
 import { normalizeGeoIpad, normalizeJanparaIpad, normalizeSofmapIpad } from "@/lib/rakutenIpad";
 
-/** rakuten-sync/fetch.php が送ってくる1商品（batt・car は商品説明から読めたときだけ） */
-export type RakutenItem = RakutenGeoItem & { batt?: number | null; car?: string | null };
+export type { RakutenItem };
 
 type RakutenShop = {
   /** DeviceInventory.shopName */

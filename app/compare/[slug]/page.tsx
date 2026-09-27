@@ -9,6 +9,7 @@ import { modelPagePath, seriesOf } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath, compareSlug, comparesFor, slugToPair } from "@/lib/compare";
 import { getModelStats, type ModelStats, type PriceRow } from "@/lib/modelStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { yen, storageLabel } from "@/lib/format";
 
 // モデル別ページと同じく1時間ごとに再生成
 export const revalidate = 3600;
@@ -20,8 +21,6 @@ export function generateStaticParams() {
 
 type Props = { params: Promise<{ slug: string }> };
 
-const yen = (n: number) => `${n.toLocaleString()}円`;
-const storageLabel = (gb: string) => (Number(gb) >= 1024 ? `${Number(gb) / 1024}TB` : `${gb}GB`);
 const RANK_ORDER = ["S", "A", "B", "C", "D", "J"];
 
 /** 2モデルの最安値の差から、ひと言まとめを作る */

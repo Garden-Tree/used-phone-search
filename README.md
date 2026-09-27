@@ -6,7 +6,7 @@
 
 - 🔍 **横断一括検索**: イオシス、ゲオモバイル（楽天市場店）、じゃんぱら（楽天市場店）、ソフマップ（楽天市場店）、にこスマ、ダイワンテレコム、エムモバの大手7ショップを網羅
 - 📄 **機種別ページ** (`/iphone/[slug]` 41機種・`/ipad/[slug]` 32機種): 相場（中央値）・最安値・容量別/ランク別/ショップ別の最安値・価格推移グラフ・最安在庫
-- 📱 **iPad 一覧** (`/ipad`): iPad・mini・Air・Pro を機種別に（iPad は楽天3店のみ）
+- 📱 **iPad 一覧** (`/ipad`): iPad・mini・Air・Pro を機種別に（iPad はイオシス・にこスマ・楽天3店の5社）
 - 💴 **予算別ページ** (`/budget/under-N`): 1万〜10万円以下で買える機種を新しい順に（7ページ）
 - ⚖️ **比較ページ** (`/compare/[slug]`): 「iPhone 13 と 14 はどっちがお得？」を実データで比較（48組）
 - 🎯 **目的別ページ** (`/pick/[slug]`): コスパ・予算・カメラ用途から探す
@@ -47,7 +47,7 @@
 ## プロジェクト構造 (Project Structure)
 - `app/`: Next.js アプリケーション（`iphone/`・`ipad/`・`compare/`・`pick/`・`budget/`・`search/`・`api/`）
 - `lib/`: 検索・集計・カタログ・比較の組・楽天の正規化など（ファイルごとの役割は [docs/tech_stack.md](./docs/tech_stack.md) の「コードの地図」）
-- `scraper/`: 各ショップ向け Python スクレイパー（GitHub Actions で実行）
+- `scraper/`: 各ショップ向け Python スクレイパー（GitHub Actions で実行）。DB への書き込みは `common.py` に共通化
 - `rakuten-sync/`: 楽天API の取得スクリプト（シンレンタルサーバーに設置）
-- `scripts/`: 価格推移の記録など
+- `scripts/`: 価格推移の記録・iPad の機種名の正規化・読み取りの回帰テスト（`npm run test:normalize`）
 - `prisma/`: データベーススキーマ定義

@@ -9,6 +9,7 @@ import { modelPagePath } from "@/lib/catalog";
 import { BUDGETS, budgetLabel, budgetPath, budgetSlug, slugToBudget } from "@/lib/budgets";
 import { cheapestUnder, getBudgetModels } from "@/lib/budgetStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { yen } from "@/lib/format";
 
 // 静的に生成して CDN から配信する。在庫は1時間ごとに更新
 export const revalidate = 3600;
@@ -20,7 +21,6 @@ export function generateStaticParams() {
 
 type Props = { params: Promise<{ slug: string }> };
 
-const yen = (n: number) => `${n.toLocaleString()}円`;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

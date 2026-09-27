@@ -20,6 +20,7 @@ import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { yen, storageLabel } from "@/lib/format";
 
 // スクレイパーは6時間ごとに実行されるため、1時間ごとに再生成すれば十分新しい
 export const revalidate = 3600;
@@ -33,8 +34,6 @@ export function generateStaticParams() {
 
 type Props = { params: Promise<{ slug: string }> };
 
-const yen = (n: number) => `${n.toLocaleString()}円`;
-const storageLabel = (gb: string) => (Number(gb) >= 1024 ? `${Number(gb) / 1024}TB` : `${gb}GB`);
 const searchHref = (model: string, extra: Record<string, string> = {}) =>
   `/search?${new URLSearchParams({ model, ...extra }).toString()}`;
 
@@ -45,8 +44,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const stats = await getModelStats(model);
   const title = `${model} 中古の相場・最安値【毎日更新】`;
-  // iPad は楽天市場の3店（ゲオ・じゃんぱら・ソフマップ）だけから取り込んでいる
-  const shops = isIpad(model) ? "ゲオモバイル・じゃんぱら・ソフマップ（楽天市場店）" : "イオシス、ゲオモバイル、じゃんぱら、にこスマなど大手中古ショップ";
+  // iPad はエムモバ・ダイワンテレコム以外の5店から取り込んでいる
+  const shops = isIpad(model) ? "イオシス・にこスマ・ゲオモバイル・じゃんぱら・ソフマップ" : "イオシス、ゲオモバイル、じゃんぱら、にこスマなど大手中古ショップ";
   const description = stats.minPrice !== null
     ? `${model}の中古相場（中央値）は${yen(stats.medianPrice ?? stats.minPrice)}、最安値は${yen(stats.minPrice)}。${stats.shopCount}ショップ・${stats.count}件の在庫を容量・状態ランク別に比較。${shops}の価格を毎日更新。`
     : `${model}の中古在庫を${shops}から一括比較。容量・状態ランク別の最安値をまとめています。`;
@@ -158,7 +157,7 @@ export default async function ModelPage({ params }: Props) {
           {model} 中古の相場・最安値
         </h1>
         <p className="text-slate-500 text-sm mb-4">
-          {isIpad(model) ? "ゲオモバイル・じゃんぱら・ソフマップ（楽天市場店）" : "大手中古ショップ7社"}の在庫をまとめて比較しています。
+          {isIpad(model) ? "大手中古ショップ5社" : "大手中古ショップ7社"}の在庫をまとめて比較しています。
           {stats.lastUpdated && (
             <>最終更新: {stats.lastUpdated.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", dateStyle: "medium", timeStyle: "short" })}</>
           )}

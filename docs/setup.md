@@ -92,6 +92,6 @@ python run_all_scrapers.py
 - **ゲオ・じゃんぱら・ソフマップの在庫について**: 楽天市場店の在庫を楽天市場の商品検索APIで取得しています（ゲオの公式ECは自動アクセスを拒否しているため）。楽天アプリは許可IP制なので、**手元のPCからは API を呼べません**。取得はシンレンタルサーバー（固定IP。楽天アプリの許可IPに登録済み）の cron で `rakuten-sync/fetch.php` を実行し、`/api/ingest/rakuten` に送信する構成です。秘密の値はサーバーの `rakuten-sync/config.php` と Vercel の `RAKUTEN_INGEST_SECRET` にあり、Git には含めていません。動作ログはサーバーの `rakuten-sync/fetch.log` を参照してください。商品名の読み取りを変えたときは、楽天の公開ページから商品名をコピーして `normalize*` 関数に通して確認します（手順は `docs/operations.md`）。
 - **価格推移のグラフが表示されない**: `PriceSnapshot` テーブルに2日分以上の記録が必要です。記録は GitHub Actions のスクレイパー実行後に `npm run snapshot:prices` で自動的に行われます（手動実行も可能。同じ日に複数回実行しても上書きされるだけです）。スキーマ変更後は `npx prisma db push` を忘れずに実行してください。
 - **スクレイパーの定期実行が止まっている**: GitHub は公開リポジトリで60日間コミットがないと、定期実行（schedule）を自動で無効にします。Actions タブで「Phone Inventory Scraper」を再度有効にしてください。
-- **「洗い替えを中止しました」と表示される**: 取得件数が既存データの50%未満だったため、在庫データの消失を防ぐ安全装置が作動しています（`scraper/db_guard.py`）。意図的に件数を減らした場合は `FORCE_REPLACE=1` を付けて実行してください。比率は `MIN_REPLACE_RATIO` で変更できます。
+- **「洗い替えを中止しました」と表示される**: 取得件数が既存データの50%未満だったため、在庫データの消失を防ぐ安全装置が作動しています（`scraper/common.py` の `ensure_safe_to_replace`）。意図的に件数を減らした場合は `FORCE_REPLACE=1` を付けて実行してください。比率は `MIN_REPLACE_RATIO` で変更できます。
 - **`npx eslint .` で大量のエラーが出る**: `scraper/venv`（Python 仮想環境）の中身です。`eslint.config.mjs` で除外済み。アプリのコードは `npx eslint app lib scripts` で確認できます。
 - **Next.js のビルドエラー**: `node_modules` を一度削除して `npm install` をやり直してください。

@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { ALL_PAGE_MODELS, modelToSlug, slugToModel } from "@/lib/catalog";
 import { getModelStats } from "@/lib/modelStats";
 import { notoSansJp } from "@/lib/ogFont";
+import { storageLabel } from "@/lib/format";
 
 // モデル別ページと同じく1時間ごとに作り直す（最安値が変わるため）
 export const revalidate = 3600;
@@ -16,7 +17,6 @@ export function generateStaticParams() {
 }
 
 const yen = (n: number) => n.toLocaleString();
-const storageLabel = (gb: string) => (Number(gb) >= 1024 ? `${Number(gb) / 1024}TB` : `${gb}GB`);
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

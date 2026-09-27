@@ -1,6 +1,5 @@
 import React from 'react';
-import { rakutenAffiliateUrl } from '@/lib/rakutenGeo';
-import { RAKUTEN_SHOP_NAMES } from '@/lib/rakutenShops';
+import { affiliateUrl, isAffiliateUrl } from '@/lib/affiliate';
 
 // Define the type for the device object
 export type Device = {
@@ -21,10 +20,8 @@ export type Device = {
 };
 
 export default function DeviceCard({ device }: { device: Device }) {
-  const href = getAffiliateUrl(device);
-  // アフィリエイトリンクには Google のガイドラインに従い sponsored を付与する
-  const isAffiliate = href !== device.url || /\.afl\.rakuten\.co\.jp\//.test(href);
-  const rel = isAffiliate ? 'sponsored noopener noreferrer' : 'noopener noreferrer';
+  const href = affiliateUrl(device.shopName, device.url);
+  const rel = isAffiliateUrl(href) ? 'sponsored noopener noreferrer' : 'noopener noreferrer';
 
   // キャリア・SIMロック状態のバッジ表示ロジック
   const renderStatusBadges = () => {
@@ -189,26 +186,3 @@ export default function DeviceCard({ device }: { device: Device }) {
 }
 
 // アフィリエイトリンクの生成ヘルパー
-function getAffiliateUrl(device: Device): string {
-  if (device.shopName === 'ゲオモバイル') {
-    const a8mat = '45IED7+DQR996+4J34+BW0YB';
-    return `https://px.a8.net/svt/ejp?a8mat=${a8mat}&a8ejpredirect=${encodeURIComponent(device.url)}`;
-  }
-  if (device.shopName === 'にこスマ') {
-    const a8mat = '45IED7+DCGUQI+4O7U+BW0YB';
-    return `https://px.a8.net/svt/ejp?a8mat=${a8mat}&a8ejpredirect=${encodeURIComponent(device.url)}`;
-  }
-  if (device.shopName === 'エムモバ') {
-    const a8mat = '45IED7+DB9ZIY+5I5M+HUD03';
-    return `https://px.a8.net/svt/ejp?a8mat=${a8mat}&a8ejpredirect=${encodeURIComponent(device.url)}`;
-  }
-  if (device.shopName === 'ダイワンテレコム') {
-    const a8mat = '45IED7+DD2ACA+3I5Y+ZPD5F';
-    return `https://px.a8.net/svt/ejp?a8mat=${a8mat}&a8ejpredirect=${encodeURIComponent(device.url)}`;
-  }
-  // 楽天API で取得した商品は、規約上 楽天市場（楽天アフィリエイト）以外へはリンクしない
-  if (RAKUTEN_SHOP_NAMES.has(device.shopName)) {
-    return rakutenAffiliateUrl(device.url);
-  }
-  return device.url;
-}

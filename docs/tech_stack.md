@@ -33,10 +33,11 @@
   - `BeautifulSoup4`: HTML解析用。
   - `curl_cffi`: 難読化やフィンガープリント対策が必要なサイトへのリクエスト用。
   - `psycopg2`: PostgreSQL への高速な一括挿入用。
+- **共通処理** `scraper/common.py`: DB 接続情報の読み込み・洗い替え（安全チェック → DELETE → 一括 INSERT）・main（`run_scraper`）。
+  新しいスクレイパーは「商品の dict のリストを返す関数」を書いて `run_scraper(ショップ名, 関数, 既定の取得数)` を呼ぶだけ。
 - **実装済みスクレイパー**:
-  - `scraper/iosis_scraper.py`: イオシスの在庫情報を取得。キャリア・SIMフリー判定の正規化。
-  - `scraper/geo_scraper.py`: ゲオモバイル公式EC用。**WAF で 403 のため現在は無効（取得数0）**。ゲオは下記の楽天API で取得。
-  - `scraper/nicosuma_scraper.py`: にこスマの在庫情報を取得。
+  - `scraper/iosis_scraper.py`: イオシスの iPhone・iPad。キャリア・SIMフリー判定の正規化。
+  - `scraper/nicosuma_scraper.py`: にこスマの iPhone・iPad（コレクション単位の `__NEXT_DATA__`）。
   - `scraper/daiwan_scraper.py`: ダイワンテレコムの在庫情報を取得。並列処理による詳細取得。
   - `scraper/mmoba_scraper.py`: エムモバの在庫情報を取得。タイトルからの利用制限情報抽出。
 
@@ -58,13 +59,18 @@
 | `priceHistory.ts` | 価格推移の記録（`PriceSnapshot`）と取得 |
 | `compare.ts` / `picks.ts` / `budgets.ts`・`budgetStats.ts` | 比較の組・目的別・予算別ページの定義と集計 |
 | `rakutenShops.ts` | 楽天のショップ登録（shopCode → ショップ名・正規化関数）。`RAKUTEN_SHOP_NAMES` はリンクを楽天アフィリエイトに限る判定にも使う |
-| `rakutenGeo.ts` / `rakutenJanpara.ts` / `rakutenSofmap.ts` | 各店の iPhone の商品名の読み取り。`rakutenAffiliateUrl` は `rakutenGeo.ts` |
+| `rakutenCommon.ts` | 楽天3店の読み取りの共通部品（`RakutenItem` 型・ランク・容量・型番の除去・キャリアの表記） |
+| `rakutenGeo.ts` / `rakutenJanpara.ts` / `rakutenSofmap.ts` | 各店の iPhone の商品名の読み取り |
 | `rakutenIpad.ts` | 3店の iPad の商品名の読み取り |
 | `iphoneModelName.ts` | 機種名の表記ゆれの整え（「SE 第2世代」→「SE (第2世代)」）と、取り込む iPhone 名の妥当性チェック |
+| `affiliate.ts` | リンク先の組み立て（A8 の提携ショップ表 `A8_PROGRAMS`・楽天アフィリエイト）と rel="sponsored" の判定 |
+| `format.ts` | 金額（`yen`）・容量（`storageLabel`）の表示 |
 | `ogFont.ts` | OGP 画像用の日本語フォント（使う文字だけのサブセット） |
 
 - 検索（`/search`・`/api/devices`）は同じ `buildWhere` を使う。機種もショップも指定がなければ iPhone のみ
 - 新しいショップ・機種の追加手順は [operations.md](./operations.md)
+- iPad の機種名は `canonicalIpadModel` の1か所でそろえる。楽天3店は受け口で、イオシス・にこスマは Actions の `npm run normalize:ipad` で
+- 読み取りや照合を変えたら `npm run test:normalize`（商品名の読み取り・iPad の正規化・機種照合の回帰テスト）
 
 ## インフラ・環境構築
 - **コンテナ化**: [Docker Compose](https://docs.docker.com/compose/) を使用して PostgreSQL データベースを管理。
