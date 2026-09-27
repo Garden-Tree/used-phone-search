@@ -17,7 +17,7 @@
 | プロパティ | 名前 | 測定ID | 状態 |
 | --- | --- | --- | --- |
 | 343220884 | gadelog.com | `G-B9JJ58M3KX` | **ブログ本体**（Site Kit の Google タグ `GT-NN6ZF72` 経由）。ブログの `.env.local` の `GA4_PROPERTY_ID` もこれ |
-| 346953485 | gadelog.com - GA4 | `G-7955FRXN7V` | **一度もデータを受信していない空のプロパティ**。ブログの `docs/measurement-setup.md` の記載はこれを指しているが誤り |
+| 346953485 | gadelog.com - GA4 | `G-7955FRXN7V` | **一度もデータを受信していない空のプロパティ**（ブログの `docs/measurement-setup.md` の誤記は 9/27 訂正済み） |
 | 556047315 | used.gadelog.com（中古スマホ一括検索） | `G-YV3ZR0N6B1` | **used 専用**（9/27 作成） |
 
 - 公開直後（9/26〜27）は used もブログと同じ `G-B9JJ58M3KX` に送っていた。ブログの sync はホスト名で絞らないため、
