@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { rankOf, toStorage, type RakutenItem } from "@/lib/rakutenCommon";
+import { networkStatusOf, rankOf, toStorage, type RakutenItem } from "@/lib/rakutenCommon";
 
 /** 楽天API経由で取り込むゲオモバイルの在庫のショップ名 */
 export const RAKUTEN_GEO_SHOP = "ゲオモバイル（楽天市場店）";
@@ -26,8 +26,6 @@ const CARRIERS: [string, string][] = [
   ["SB/YM", "SoftBank"],
   ["au", "au"],
 ];
-
-const NETWORK_STATUS: Record<string, string> = { "○": "〇", "〇": "〇", "△": "△", "×": "×", "－": "-", "-": "-" };
 
 /** 2021年秋以降発売のモデルは SIM ロックなしで販売されている */
 function isSimLockFreeEra(model: string): boolean {
@@ -56,7 +54,7 @@ export function normalizeRakutenGeoItem(item: RakutenItem): Prisma.DeviceInvento
   const color = carrierEntry ? rest.slice(carrierEntry[0].length).trim() : rest;
 
   const rank = rankOf(item.rank);
-  const networkStatus = item.nw ? NETWORK_STATUS[item.nw] ?? null : null;
+  const networkStatus = networkStatusOf(item);
 
   return {
     manufacturer: "Apple",

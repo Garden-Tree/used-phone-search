@@ -49,3 +49,11 @@ export function carrierOf(raw: string): string | null {
   if (/国内版|SIMフリー/.test(raw)) return "国内版SIMフリー";
   return null;
 }
+
+// 商品説明の利用制限の表記（fetch.php の nw）→ 画面の表記
+const NETWORK_STATUS: Record<string, string> = { "○": "〇", "〇": "〇", "△": "△", "×": "×", "✕": "×", "－": "-", "-": "-" };
+
+/** ネットワーク利用制限（読めないときは null。カードにバッジを出さない） */
+export function networkStatusOf(item: RakutenItem): string | null {
+  return item.nw ? NETWORK_STATUS[item.nw] ?? null : null;
+}

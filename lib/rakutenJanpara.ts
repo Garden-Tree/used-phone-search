@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { batteryOf, carrierOf, rankOf, stripPartNumber, toStorage, type RakutenItem } from "@/lib/rakutenCommon";
+import { batteryOf, carrierOf, networkStatusOf, rankOf, stripPartNumber, toStorage, type RakutenItem } from "@/lib/rakutenCommon";
 import { isKnownIphoneModel, normalizeModelPart } from "@/lib/iphoneModelName";
 
 /** 楽天API経由で取り込むじゃんぱらの在庫のショップ名 */
@@ -34,7 +34,7 @@ export function normalizeJanparaItem(item: RakutenItem): Prisma.DeviceInventoryC
     color: color || "-",
     conditionRank: rankOf(rankRaw, condition === "未使用"),
     batteryHealth: batteryOf(item),
-    networkStatus: null,
+    networkStatus: networkStatusOf(item),
     simUnlocked: /SIMフリー|解除/.test(simLabel),
     carrier: carrierOf(carrierLabel),
     shopName: RAKUTEN_JANPARA_SHOP,
