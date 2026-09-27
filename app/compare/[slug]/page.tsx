@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 function Cell({ row }: { row?: PriceRow }) {
   return row ? (
     <>
-      <span className="font-black text-red-600">{yen(row.minPrice)}</span>
+      <span className="font-black text-red-600 whitespace-nowrap">{yen(row.minPrice)}</span>
       <span className="block text-xs text-slate-400">{row.count.toLocaleString()}件</span>
     </>
   ) : (
@@ -93,13 +93,15 @@ function CompareTable({ title, rows, labelOf, a, b }: {
   return (
     <section className="bg-white rounded-3xl border border-slate-200 overflow-hidden mb-6">
       <h2 className="px-5 py-4 text-base font-bold text-slate-800 bg-slate-50 border-b border-slate-100">{title}</h2>
+      {/* スマホ幅では列が収まらないことがあるので、表だけ横にスクロールできるようにする */}
+      <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="text-xs text-slate-500">
-            <th className="text-left font-semibold px-5 py-2"></th>
-            <th className="text-right font-semibold px-5 py-2">{a}</th>
-            <th className="text-right font-semibold px-5 py-2">{b}</th>
-            <th className="text-right font-semibold px-5 py-2">差額</th>
+            <th className="text-left font-semibold pl-4 pr-2 sm:px-5 py-2"></th>
+            <th className="text-right font-semibold px-2 sm:px-5 py-2">{a}</th>
+            <th className="text-right font-semibold px-2 sm:px-5 py-2">{b}</th>
+            <th className="text-right font-semibold pl-2 pr-4 sm:px-5 py-2">差額</th>
           </tr>
         </thead>
         <tbody>
@@ -107,10 +109,10 @@ function CompareTable({ title, rows, labelOf, a, b }: {
             const diff = r.a && r.b ? r.b.minPrice - r.a.minPrice : null;
             return (
               <tr key={r.key} className="border-t border-slate-100">
-                <td className="px-5 py-3 font-bold text-slate-700">{labelOf(r.key)}</td>
-                <td className="px-5 py-3 text-right"><Cell row={r.a} /></td>
-                <td className="px-5 py-3 text-right"><Cell row={r.b} /></td>
-                <td className="px-5 py-3 text-right text-slate-600">
+                <td className="pl-4 pr-2 sm:px-5 py-3 font-bold text-slate-700 whitespace-nowrap">{labelOf(r.key)}</td>
+                <td className="px-2 sm:px-5 py-3 text-right"><Cell row={r.a} /></td>
+                <td className="px-2 sm:px-5 py-3 text-right"><Cell row={r.b} /></td>
+                <td className="pl-2 pr-4 sm:px-5 py-3 text-right text-slate-600 whitespace-nowrap">
                   {diff === null ? "-" : `${diff > 0 ? "+" : diff < 0 ? "-" : "±"}${Math.abs(diff).toLocaleString()}円`}
                 </td>
               </tr>
@@ -118,6 +120,7 @@ function CompareTable({ title, rows, labelOf, a, b }: {
           })}
         </tbody>
       </table>
+      </div>
     </section>
   );
 }
