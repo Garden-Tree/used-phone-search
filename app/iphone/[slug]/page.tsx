@@ -43,9 +43,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!model) return {};
 
   const stats = await getModelStats(model);
-  const title = `${model} 中古の最安値・価格比較`;
+  const title = `${model} 中古の相場・最安値【毎日更新】`;
   const description = stats.minPrice !== null
-    ? `${model}の中古最安値は${yen(stats.minPrice)}。${stats.shopCount}ショップ・${stats.count}件の在庫を容量・状態ランク別に比較。イオシス、ゲオモバイル、にこスマなど大手中古ショップの価格を毎日更新。`
+    ? `${model}の中古相場（中央値）は${yen(stats.medianPrice ?? stats.minPrice)}、最安値は${yen(stats.minPrice)}。${stats.shopCount}ショップ・${stats.count}件の在庫を容量・状態ランク別に比較。イオシス、ゲオモバイル、にこスマなど大手中古ショップの価格を毎日更新。`
     : `${model}の中古在庫を大手中古ショップ5社から一括比較。容量・状態ランク別の最安値をまとめています。`;
   const path = modelPagePath(model);
 
@@ -152,7 +152,7 @@ export default async function ModelPage({ params }: Props) {
         </nav>
 
         <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2">
-          {model} 中古の最安値・価格比較
+          {model} 中古の相場・最安値
         </h1>
         <p className="text-slate-500 text-sm mb-4">
           大手中古ショップ5社の在庫をまとめて比較しています。
