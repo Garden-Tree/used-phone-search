@@ -5,6 +5,36 @@ import { comparePath } from "@/lib/compare";
 import { pickPath } from "@/lib/picks";
 import { BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import AdDisclosure from "@/app/components/AdDisclosure";
+import prisma from "@/lib/prisma";
+
+// ショップごとの在庫数を出すので、1時間ごとに再生成する
+export const revalidate = 3600;
+
+// 比較対象のショップ（表示順）。name は DeviceInventory.shopName
+const SHOPS = [
+  { name: "イオシス", label: "イオシス" },
+  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店" },
+  { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店" },
+  { name: "ソフマップ（楽天市場店）", label: "ソフマップ", note: "楽天市場店" },
+  { name: "にこスマ", label: "にこスマ" },
+  { name: "ダイワンテレコム", label: "ダイワンテレコム" },
+  { name: "エムモバ", label: "エムモバ" },
+];
+
+/** ショップごとの在庫数。DB に届かないときもトップページは出す */
+async function shopCounts(): Promise<Map<string, number>> {
+  try {
+    const rows = await prisma.deviceInventory.groupBy({
+      by: ["shopName"],
+      where: { isSoldOut: false },
+      _count: { _all: true },
+    });
+    return new Map(rows.map((r) => [r.shopName, r._count._all]));
+  } catch (error) {
+    console.error("shop counts failed:", error);
+    return new Map();
+  }
+}
 
 
 // トップページに並べる比較（lib/compare.ts の COMPARE_PAIRS に含まれる組のみ）
@@ -19,7 +49,10 @@ const FEATURED_COMPARES: [string, string][] = [
   ["iPhone SE (第3世代)", "iPhone 13 mini"],
 ];
 
-export default function Home() {
+export default async function Home() {
+  const counts = await shopCounts();
+  const total = SHOPS.reduce((n, s) => n + (counts.get(s.name) ?? 0), 0);
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-200 pb-20">
 
@@ -46,7 +79,7 @@ export default function Home() {
           </p>
 
           <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6">
-            日本全国の大手中古スマホショップの価格、状態ランク、容量を一括比較。<br className="hidden md:block" />
+            大手中古ショップ7社の iPhone・iPad の価格、状態ランク、容量、バッテリーを一括比較。<br className="hidden md:block" />
             欲しいモデルの最安値を一瞬で見つけ出します。
           </p>
 
@@ -74,30 +107,27 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Partner Logos Section */}
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">提携・比較対象ショップ</p>
-          <div className="flex flex-wrap justify-center items-center gap-x-6 md:gap-x-10 gap-y-4 grayscale opacity-60">
-            <div className="flex items-center gap-1.5 grayscale">
-              <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black italic">I</div>
-              <span className="text-sm font-black tracking-tighter text-slate-900">IOSYS</span>
-            </div>
-            <div className="flex items-center gap-1.5 grayscale">
-              <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">G</div>
-              <span className="text-sm font-black tracking-tighter text-slate-900">GEO MOBILE</span>
-            </div>
-            <div className="flex items-center gap-1.5 grayscale">
-              <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">N</div>
-              <span className="text-sm font-black tracking-tighter text-slate-900">NICO SUMA</span>
-            </div>
-            <div className="flex items-center gap-1.5 grayscale">
-              <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">M</div>
-              <span className="text-sm font-black tracking-tighter text-slate-900">M-MOBA</span>
-            </div>
-            <div className="flex items-center gap-1.5 grayscale">
-              <div className="w-6 h-6 bg-slate-800 rounded-lg flex items-center justify-center text-[10px] text-white font-black">D</div>
-              <span className="text-sm font-black tracking-tighter text-slate-900 uppercase">Daiwan</span>
-            </div>
-          </div>
+          {/* 比較対象のショップと在庫数 */}
+          <p className="text-xs font-bold text-slate-400 tracking-[0.15em] mb-4">
+            比較対象の大手中古ショップ {SHOPS.length}社{total > 0 && <>・在庫 {total.toLocaleString()}件（iPhone・iPad）</>}
+          </p>
+          <ul className="flex flex-wrap justify-center gap-2 md:gap-3 max-w-4xl mx-auto">
+            {SHOPS.map((shop) => {
+              const count = counts.get(shop.name);
+              return (
+                <li key={shop.name}>
+                  <Link
+                    href={`/search?${new URLSearchParams({ shop: shop.name }).toString()}`}
+                    className="inline-flex items-baseline gap-1.5 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                  >
+                    <span className="text-sm font-black">{shop.label}</span>
+                    {shop.note && <span className="text-[10px] font-bold text-slate-400">{shop.note}</span>}
+                    {count !== undefined && <span className="text-xs font-bold text-slate-400">{count.toLocaleString()}件</span>}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </section>
 
