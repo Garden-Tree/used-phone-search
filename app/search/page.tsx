@@ -133,7 +133,7 @@ export default async function SearchPage({
           <AdDisclosure compact />
 
           {/* Filter Panel */}
-          <FilterPanel />
+          <FilterPanel key={`${params.minPrice ?? ''}-${params.maxPrice ?? ''}`} />
         </div>
 
         {devices.length === 0 ? (
