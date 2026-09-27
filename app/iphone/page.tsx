@@ -4,19 +4,19 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import PriceDrops from "@/app/components/PriceDrops";
-import { ALL_CATALOG_MODELS, IPHONE_CATALOG, LEGACY_SERIES, isIpad, modelPagePath, modelToSlug } from "@/lib/catalog";
-import { getLatestMarket, getPriceDrops, shortDate, type MarketRow } from "@/lib/marketStats";
+import { ALL_CATALOG_MODELS, ALL_PAGE_MODELS, IPHONE_CATALOG, LEGACY_SERIES, modelPagePath } from "@/lib/catalog";
+import { getModelMarket, getPriceDrops, type ModelMarket } from "@/lib/marketStats";
 import { specOf } from "@/lib/iphoneSpecs";
 import { SHOPS } from "@/lib/shops";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
 
-// 相場は1日1回以上記録される（lib/priceHistory.ts）。1時間ごとに作り直せば十分新しい
+// 機種ページと同じく1時間ごとに作り直す（在庫の取り込みは6時間ごと）
 export const revalidate = 3600;
 
 const TITLE = "中古iPhoneの相場一覧【毎日更新】全機種の中古価格・最安値";
 const DESCRIPTION =
-  `中古iPhoneの相場（中央値）と最安値を全機種まとめて比較。大手中古ショップ${SHOPS.length}社の在庫から毎日更新。安い順ランキング・値下がりした機種も。`;
+  `中古iPhoneの相場（中央値）と最安値を全機種まとめて比較。大手中古ショップ${SHOPS.length}社の在庫から毎日更新。相場が安い順のランキングも。`;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: { title: `${TITLE} | ${SITE_NAME}`, description: DESCRIPTION, url: "/iphone", images: ["/opengraph-image"] },
 };
 
-type Row = { model: string; market?: MarketRow };
+type Row = { model: string; market?: ModelMarket };
 
 function MarketTable({ rows }: { rows: Row[] }) {
   return (
@@ -64,13 +64,10 @@ function MarketTable({ rows }: { rows: Row[] }) {
 }
 
 export default async function IphoneIndexPage() {
-  const [market, allDrops] = await Promise.all([getLatestMarket(), getPriceDrops(7, 20)]);
+  const [market, allDrops] = await Promise.all([getModelMarket(ALL_PAGE_MODELS), getPriceDrops(7, 20)]);
   const drops = allDrops.filter((d) => d.modelSlug.startsWith("iphone")).slice(0, 10);
-  const rowOf = (model: string): Row => ({ model, market: market.get(modelToSlug(model)) });
-
-  const all = [...ALL_CATALOG_MODELS, ...LEGACY_SERIES.flatMap((s) => s.models)].filter((m) => !isIpad(m)).map(rowOf);
-  const total = all.reduce((n, r) => n + (r.market?.count ?? 0), 0);
-  const date = all.find((r) => r.market)?.market?.date;
+  const rowOf = (model: string): Row => ({ model, market: market.get(model) });
+  const total = [...market.values()].reduce((n, r) => n + r.count, 0);
   // 安い順は最新の iOS に対応する機種だけ（旧機種は安くても勧めにくい）。在庫が少ない機種は相場がぶれるので除く
   const cheapest = ALL_CATALOG_MODELS.map(rowOf)
     .filter((r): r is Required<Row> => !!r.market && r.market.count >= 10)
@@ -101,7 +98,7 @@ export default async function IphoneIndexPage() {
         <h1 className="text-2xl md:text-4xl font-extrabold mb-3">中古iPhoneの相場一覧</h1>
         <p className="text-slate-600 mb-4 leading-relaxed">
           大手中古ショップ{SHOPS.length}社の中古iPhone <strong>{total.toLocaleString()}件</strong>から、機種ごとの相場（中央値）と最安値をまとめています。
-          {date && <>（{shortDate(date)} 時点・毎日更新）</>}
+          在庫は6時間ごとに更新しています。
         </p>
         <AdDisclosure compact />
 
@@ -114,7 +111,7 @@ export default async function IphoneIndexPage() {
           </p>
         </details>
 
-        <PriceDrops drops={drops} title="値下がりした中古iPhone（1週間）" />
+        <PriceDrops drops={drops} title="この1週間で値下がりした中古iPhone" />
 
         {cheapest.length > 0 && (
           <section className="my-8">

@@ -217,7 +217,7 @@ export default async function Home() {
 
       {/* 値下がり（1週間分の記録がたまってから出る） */}
       <div className="max-w-6xl mx-auto px-4 relative z-10">
-        <PriceDrops drops={drops} title="今週値下がりした機種" />
+        <PriceDrops drops={drops} title="この1週間で値下がりした機種" />
       </div>
 
       {/* 相場一覧・iPad */}

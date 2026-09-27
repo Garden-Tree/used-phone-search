@@ -5,7 +5,7 @@ import DeviceCard from "@/app/components/DeviceCard";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
-import { modelPagePath, seriesOf } from "@/lib/catalog";
+import { badgesOf, modelPagePath } from "@/lib/catalog";
 import { getModelStats } from "@/lib/modelStats";
 import { PICKS, findPick, pickPath, pickSearchHref } from "@/lib/picks";
 import { SITE_NAME } from "@/lib/site";
@@ -80,8 +80,8 @@ export default async function PickPage({ params }: Props) {
                 {stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし"}
               </p>
               <p className="text-xs text-slate-500 mt-1">{stats.count.toLocaleString()}件の在庫</p>
-              {seriesOf(name) && (
-                <p className="text-[11px] text-slate-400 mt-3 line-clamp-2">{seriesOf(name)!.badges.join("・")}</p>
+              {badgesOf(name).length > 0 && (
+                <p className="text-[11px] text-slate-400 mt-3 line-clamp-2">{badgesOf(name).join("・")}</p>
               )}
               <p className="text-xs font-bold text-blue-600 mt-3">価格まとめを見る &rarr;</p>
             </Link>

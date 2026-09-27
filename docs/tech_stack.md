@@ -58,7 +58,7 @@
 | `deviceSearch.ts` | 検索の中核。`matchesModel`（13 と 13 mini を区別、iPad は正式名なら完全一致）・`resolveModelNames`（DB の実モデル名に解決、5分キャッシュ）・`buildWhere`・`buildOrderBy` |
 | `modelInventory.ts` / `modelStats.ts` | 1機種分の在庫と、機種別ページ用の集計（容量・ランク・ショップ・バッテリー別、容量×ランクの最安値） |
 | `priceHistory.ts` | 価格推移の記録（`PriceSnapshot`）と取得 |
-| `marketStats.ts` | 全機種の相場（`/iphone` の相場一覧）と値下がり（7日前との比較）。`PriceSnapshot` から読むので在庫の行は取り出さない |
+| `marketStats.ts` | 全機種の相場（`/iphone`。いまの在庫から、機種ページと同じ数字）と値下がり（`PriceSnapshot` の7日前との比較） |
 | `iphoneSpecs.ts` | iPhone の基本スペック（発売・チップ・画面・端子・認証）。確かめた機種だけ載せ、無い機種はページ側で省く |
 | `compare.ts` / `picks.ts` / `budgets.ts`・`budgetStats.ts` | 比較の組・目的別・予算別ページの定義と集計。`minPriceByModel` は機種ごとの最安値（トップの機種一覧でも使う） |
 | `rakutenShops.ts` | 楽天のショップ登録（shopCode → ショップ名・正規化関数）。`RAKUTEN_SHOP_NAMES` はリンクを楽天アフィリエイトに限る判定にも使う |

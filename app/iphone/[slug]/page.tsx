@@ -9,6 +9,7 @@ import {
   ALL_CATALOG_MODELS,
   ALL_PAGE_MODELS,
   IPHONE_CATALOG,
+  badgesOf,
   isIpad,
   modelPagePath,
   modelToSlug,
@@ -332,9 +333,9 @@ export default async function ModelPage({ params }: Props) {
         {/* モデルの特徴 */}
         {series && (
           <section className="mb-10 rounded-3xl bg-slate-50 p-6">
-            <h2 className="text-lg font-bold mb-3">{series.series}の特徴</h2>
+            <h2 className="text-lg font-bold mb-3">{model}の特徴</h2>
             <div className="flex flex-wrap gap-2">
-              {series.badges.map((b) => (
+              {badgesOf(model).map((b) => (
                 <span key={b} className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white text-slate-600 border border-slate-200">{b}</span>
               ))}
             </div>

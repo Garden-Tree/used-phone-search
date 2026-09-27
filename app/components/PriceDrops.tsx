@@ -7,8 +7,13 @@ import { storageLabel, yen } from "@/lib/format";
  * 相場（中央値）が下がった機種の一覧（相場一覧・トップ）。記録が足りない・下がった機種がないときは何も出さない
  */
 export default function PriceDrops({ drops, title }: { drops: PriceDrop[]; title: string }) {
-  if (drops.length === 0) return null;
-  const { fromDate, toDate } = drops[0];
+  // カタログから外した機種の記録は出さない（番号が飛ばないよう先に除く）
+  const rows = drops.flatMap((d) => {
+    const model = slugToModel(d.modelSlug);
+    return model ? [{ ...d, model }] : [];
+  });
+  if (rows.length === 0) return null;
+  const { fromDate, toDate } = rows[0];
   return (
     <section className="my-8">
       <h2 className="text-xl md:text-2xl font-bold mb-1">{title}</h2>
@@ -16,9 +21,7 @@ export default function PriceDrops({ drops, title }: { drops: PriceDrop[]; title
         {shortDate(fromDate)} → {shortDate(toDate)} の相場（中央値）の変化。機種ごとに在庫のいちばん多い容量で比べています
       </p>
       <ol className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {drops.map((d, i) => {
-          const model = slugToModel(d.modelSlug);
-          if (!model) return null;
+        {rows.map(({ model, ...d }, i) => {
           return (
             <li key={d.modelSlug}>
               <Link

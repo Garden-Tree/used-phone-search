@@ -5,7 +5,7 @@ import DeviceCard from "@/app/components/DeviceCard";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
-import { modelPagePath, seriesOf } from "@/lib/catalog";
+import { badgesOf, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath, compareSlug, comparesFor, slugToPair } from "@/lib/compare";
 import { getModelStats, type ModelStats, type PriceRow } from "@/lib/modelStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -233,9 +233,9 @@ export default async function ComparePage({ params }: Props) {
                 <div className="flex justify-between"><dt>在庫数</dt><dd className="font-bold">{stats.count.toLocaleString()}件</dd></div>
                 <div className="flex justify-between"><dt>取扱ショップ</dt><dd className="font-bold">{stats.shopCount}店</dd></div>
               </dl>
-              {seriesOf(name) && (
+              {badgesOf(name).length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-4">
-                  {seriesOf(name)!.badges.map((badge) => (
+                  {badgesOf(name).map((badge) => (
                     <span key={badge} className="px-2 py-1 rounded-md text-[10px] md:text-xs font-semibold bg-slate-50 text-slate-600 border border-slate-200">{badge}</span>
                   ))}
                 </div>

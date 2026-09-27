@@ -1,35 +1,26 @@
 import { cache } from "react";
 import prisma from "@/lib/prisma";
 import { ALL_STORAGE } from "@/lib/priceHistory";
+import { minPriceByModel } from "@/lib/budgetStats";
+import { medianPrice, modelWhere } from "@/lib/modelInventory";
 
 /**
- * 全機種の相場（相場一覧・値下がり）。価格推移の記録（PriceSnapshot）から読むので、在庫の行は取り出さない。
- * PriceSnapshot は GitHub Actions のスクレイピング後に毎日記録される（lib/priceHistory.ts）
+ * 全機種の相場（相場一覧・値下がり）。
+ * - 相場一覧はいまの在庫から（機種ページと同じ数字になるように）。機種ごとに集計1回と中央値の1行だけ取り出す
+ * - 値下がりは価格推移の記録（PriceSnapshot。GitHub Actions のスクレイピング後に毎日記録）どうしを比べる
  */
 
-export type MarketRow = {
-  modelSlug: string;
-  date: string;
-  /** 全容量をまとめた相場（中央値）・最安値・件数 */
-  medianPrice: number;
-  minPrice: number;
-  count: number;
-};
+export type ModelMarket = { medianPrice: number; minPrice: number; count: number };
 
-/** いちばん新しい日の、全機種の全容量の相場。記録がない・DB エラーのときは空 */
-export const getLatestMarket = cache(async (): Promise<Map<string, MarketRow>> => {
-  try {
-    const latest = await prisma.priceSnapshot.findFirst({ orderBy: { date: "desc" }, select: { date: true } });
-    if (!latest) return new Map();
-    const rows = await prisma.priceSnapshot.findMany({
-      where: { date: latest.date, storage: ALL_STORAGE },
-      select: { modelSlug: true, date: true, medianPrice: true, minPrice: true, count: true },
-    });
-    return new Map(rows.map((r) => [r.modelSlug, { ...r, date: r.date.toISOString().slice(0, 10) }]));
-  } catch (error) {
-    console.error("latest market failed:", error);
-    return new Map();
+/** いまの在庫の機種ごとの相場（中央値）・最安値・件数。在庫のない機種は入らない */
+export const getModelMarket = cache(async (models: string[]): Promise<Map<string, ModelMarket>> => {
+  const byModel = await minPriceByModel({ isSoldOut: false }, models);
+  const result = new Map<string, ModelMarket>();
+  for (const [model, r] of byModel) {
+    const median = await medianPrice(await modelWhere(model), r.count);
+    result.set(model, { ...r, medianPrice: median ?? r.minPrice });
   }
+  return result;
 });
 
 export type PriceDrop = {

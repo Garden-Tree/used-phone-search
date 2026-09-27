@@ -8,7 +8,7 @@ export const IPHONE_CATALOG = [
     series: "iPhone 18 Series",
     models: ["iPhone 18 Pro", "iPhone 18 Pro Max"],
     gradient: "from-orange-500 to-red-500",
-    badges: ["A20 Pro（2nm）", "可変絞りカメラ", "Apple Intelligence"]
+    badges: ["A20 Pro", "可変絞りカメラ", "Apple Intelligence"]
   },
   {
     series: "iPhone 17 Series",
@@ -103,4 +103,18 @@ export function siblingModels(model: string): string[] {
 
 export function seriesOf(model: string) {
   return IPHONE_CATALOG.find((s) => s.models.includes(model));
+}
+
+// シリーズの特徴のうち、その機種には無いもの（Apple の技術仕様で確認。2026-09-28）
+const NOT_IN_MODEL: Record<string, string[]> = {
+  "iPhone 16e": ["カメラコントロール"],
+  "iPhone 17e": ["ProMotion（120Hz）", "センターフレームフロントカメラ"],
+};
+
+/** 機種の特徴（シリーズの特徴から、その機種に無いものを除く）。機種ページ・比較・目的別で使う */
+export function badgesOf(model: string): string[] {
+  const series = seriesOf(model);
+  if (!series) return [];
+  const excluded = NOT_IN_MODEL[model] ?? [];
+  return series.badges.filter((b) => !excluded.includes(b));
 }
