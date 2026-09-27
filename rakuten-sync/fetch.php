@@ -56,20 +56,28 @@ function fetchPage(array $config, string $shopCode, int $page, int $minPrice, in
         'minPrice'      => $minPrice,
         'maxPrice'      => $maxPrice,
     ]);
-    $ch = curl_init(ENDPOINT . '?' . $query);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 30,
-        CURLOPT_HTTPHEADER     => ['accessKey: ' . $config['rakuten_access_key']],
-    ]);
-    $body = curl_exec($ch);
-    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    // 一時的なエラー（429・5xx・JSON でない応答）は少し待って2回までやり直す
+    for ($attempt = 1; ; $attempt++) {
+        $ch = curl_init(ENDPOINT . '?' . $query);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_HTTPHEADER     => ['accessKey: ' . $config['rakuten_access_key']],
+        ]);
+        $body = curl_exec($ch);
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
 
-    if ($status !== 200 || $body === false) {
-        throw new RuntimeException("Rakuten API error: HTTP {$status} " . substr((string)$body, 0, 300));
+        $data = ($status === 200 && is_string($body)) ? json_decode($body, true) : null;
+        if (is_array($data)) return $data;
+
+        $detail = "HTTP {$status} page={$page} price={$minPrice}-{$maxPrice} " . substr((string)$body, 0, 300);
+        if ($attempt >= 3 || ($status >= 400 && $status < 500 && $status !== 429)) {
+            throw new RuntimeException("Rakuten API error: {$detail}");
+        }
+        logLine("{$shopCode} retry {$attempt}: {$detail}");
+        usleep(3000000 * $attempt);
     }
-    return json_decode($body, true, 512, JSON_THROW_ON_ERROR);
 }
 
 /** API から受け取った1商品を、送信用の小さな形にする */
