@@ -7,7 +7,7 @@
  scraper/run_all_scrapers.py（4店）                 ~/rakuten-sync/fetch.php
    イオシス・にこスマ・エムモバ・ダイワン              楽天市場 商品検索API（ゲオモバイル・じゃんぱら・ソフマップの楽天市場店）
    └→ Neon（DeviceInventory を店ごとに洗い替え）       └→ POST /api/ingest/rakuten?shop=<shopCode>（gzip + Bearer）
- npm run snapshot:prices（価格推移を記録）               └→ Neon（ゲオを洗い替え）
+ npm run snapshot:prices（価格推移を記録）               └→ Neon（ショップごとに洗い替え。iPhone・iPad）
  ワークフローの自己有効化（60日停止の防止）
                                    ↓
               Vercel（used.gadelog.com・Next.js 16）
@@ -34,7 +34,7 @@
 | いつ（日本時間） | どこで | 何を | ログ |
 | --- | --- | --- | --- |
 | 3/9/15/21時 | GitHub Actions `Phone Inventory Scraper` | 4店のスクレイピング → 価格推移の記録 → 自己有効化 | Actions の実行ログ（失敗時は GitHub から通知メール） |
-| 2:40/8:40/14:40/20:40 | サーバー cron | 楽天からゲオ・じゃんぱら・ソフマップを順に取得して送信（1店あたり数分） | `~/rakuten-sync/fetch.log`（行頭に shopCode） |
+| 2:40/8:40/14:40/20:40 | サーバー cron | 楽天からゲオ・じゃんぱら・ソフマップの iPhone・iPad を順に取得して送信（合計約25分） | `~/rakuten-sync/fetch.log`（行頭に shopCode） |
 | 毎日10:00 | サーバー cron | `/api/health` を確認し、問題時のみメール | cron の通知メール |
 | 毎日7:56 | サーバー cron（ブログ用・パネルが自動作成。「WordPressキャッシュ自動削除Cronを表示」で出る） | `wp-content/cache/` の3日より古いファイルを削除 | 出力なし（下記） |
 
@@ -49,10 +49,10 @@
 
 ### 「データ更新に問題があります」メールが来た
 1. メール本文の「問題」を見る（どのショップが何時間止まっているか）
-2. **ゲオ（楽天）以外**が止まっている → GitHub の Actions タブ
+2. **楽天3店以外**（イオシス・にこスマ・エムモバ・ダイワン）が止まっている → GitHub の Actions タブ
    - ワークフローが無効（disabled）なら有効化 → 「Run workflow」で手動実行
    - 失敗しているならログで該当ショップを確認（サイト構造の変更が多い）
-3. **ゲオ（楽天）**が止まっている → サーバーの `~/rakuten-sync/fetch.log`
+3. **楽天3店**（ゲオ・じゃんぱら・ソフマップ）が止まっている → サーバーの `~/rakuten-sync/fetch.log`
    - `HTTP 401/403`：楽天アプリの有効期限・許可IP・Access Key
    - `ingest: HTTP 401`：Vercel とサーバーの `ingest_secret` の不一致
    - `ingest: HTTP 409`：取得件数が既存の50%未満で洗い替え中止（楽天側の一時的な不調が多い。続くなら確認）
@@ -72,6 +72,11 @@
 2. `lib/catalog.ts` にシリーズ・モデルを追加（バッジは公式情報で確認）
 3. 比較ページの組は `lib/compare.ts`（Pro/Pro Max の世代に追加）
 4. 機種別・比較・OGP・sitemap は自動で増える
+
+### 商品名の読み取りを確かめる（楽天API は手元から呼べない）
+- 楽天の公開ページ（`https://search.rakuten.co.jp/search/mall/iPad/?sid=<ショップID>`）から商品名をコピーし、
+  `npx tsx` の使い捨てスクリプトで `RAKUTEN_SHOPS[shopCode].normalize({...})` に通す
+- 本番で試すなら、サーバーの Cron に一時的に `php fetch.php <shopCode>` を追加し、終わったら削除する（`fetch.log` と `/api/health` で確認）
 
 ### 楽天市場のショップを追加する
 1. `lib/rakutenShops.ts` の `RAKUTEN_SHOPS` に shopCode・ショップ名・商品名の解析関数を追加（例: `lib/rakutenJanpara.ts`）

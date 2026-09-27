@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | GA4 測定ID | **`G-YV3ZR0N6B1`**（2026-09-27〜） | Vercel `NEXT_PUBLIC_GA_ID`（Production のみ）。`@next/third-parties` で読み込み。変更したら再デプロイが必要 |
 | GA4 プロパティ | **556047315「used.gadelog.com（中古スマホ一括検索）」**（アカウント 207926838 GardenTree・ストリーム 15850141203） | used 専用。タイムゾーン日本・通貨 円・拡張計測オン（離脱クリック含む） |
-| Search Console | URL プレフィックス `https://used.gadelog.com/`（HTML タグで所有権確認・2026-09-27） | sitemap `https://used.gadelog.com/sitemap.xml` 送信済み（初回 41 URL → 現在 94） |
+| Search Console | URL プレフィックス `https://used.gadelog.com/`（HTML タグで所有権確認・2026-09-27） | sitemap `https://used.gadelog.com/sitemap.xml` 送信済み（初回 41 URL → 9/27 再送信・現在 134） |
 | 構造化データ | 機種別: Product（AggregateOffer）+ BreadcrumbList／比較: BreadcrumbList | リッチリザルトテストで確認可能 |
 | OGP | 機種別・比較は専用画像（1時間ごとに再生成）、その他は共通画像 | X の投稿画面に URL を貼ると確認できる |
 
@@ -29,7 +29,7 @@
 
 ### GA4
 - used 専用プロパティなので絞り込みは不要
-- 見るもの：ページ別 PV（`/iphone/*`・`/compare/*`・`/pick/*`・`/search`）、流入元（organic / X / gadelog.com からの参照）、
+- 見るもの：ページ別 PV（`/iphone/*`・`/ipad/*`・`/compare/*`・`/pick/*`・`/budget/*`・`/search`）、流入元（organic / X / gadelog.com からの参照）、
   アフィリエイトのクリック（外部リンクのクリック。GA4 の拡張計測「離脱クリック」で `hb.afl.rakuten.co.jp`・`px.a8.net`）
 
 ### Search Console

@@ -9,17 +9,18 @@
 - **言語**: [TypeScript](https://www.typescriptlang.org/)
 - **主要コンポーネント**:
   - `InfiniteDeviceList`: Intersection Observer API を使用した段階的読み込み（無限スクロール）の実装。
-  - `FilterPanel`: 価格、ストレージ、ランク、バッテリー状態によるマルチ条件フィルタリング機能。
+  - `FilterPanel`: ショップ・価格・容量・ランク・バッテリー最大容量の絞り込み（URL パラメータ連動）。
   - `SortSelect`: 価格順、バッテリー容量順での動的な並び替え（URLパラメータ連動）。
-  - `DeviceCard`: 各ショップの正規化されたデータの表示、およびアフィリエイトリンクの自動生成（A8・楽天アフィリエイト）。
+  - `DeviceCard`: 在庫1件の表示とアフィリエイトリンクの生成（A8・楽天アフィリエイト）。iPad の Wi-Fi モデルは carrier=「Wi-Fiモデル」。
   - `PriceHistoryChart`: 価格推移の SVG グラフ（容量タブ・ホバーのツールチップ・表表示）。
-- **ページ**: 機種別 `/iphone/[slug]`・比較 `/compare/[slug]`・目的別 `/pick/[slug]` は SSG + ISR（1時間）。検索 `/search` は動的。
+- **ページ**: トップ・機種別 `/iphone/[slug]` `/ipad/[slug]`・iPad 一覧 `/ipad`・比較 `/compare/[slug]`・目的別 `/pick/[slug]`・予算別 `/budget/[slug]` は SSG + ISR（1時間）。検索 `/search` は動的。
+  `/ipad/[slug]` は `/iphone/[slug]/page.tsx` を再エクスポートしている（中身は共通）。
 - **OGP 画像**: `opengraph-image.tsx` + `next/og`。日本語フォントは Google Fonts から使用文字だけのサブセットを取得（`lib/ogFont.ts`）。
 
 ## バックエンド & API
 - **API Routes**: Next.js Route Handlers (`app/api/` 内)
   - `/api/devices`: 在庫データ取得（無限スクロール用）。絞り込みは DB 側で完結（`lib/deviceSearch.ts`）。
-  - `/api/ingest/rakuten`: 楽天API で取得したゲオの在庫の受け口（Bearer 認証・gzip）。
+  - `/api/ingest/rakuten?shop=<shopCode>`: 楽天API で取得した在庫の受け口（Bearer 認証・gzip・ショップ単位で洗い替え）。
   - `/api/health`: データ鮮度の監視用（24時間以上更新なしで 503）。
 - **ORM**: [Prisma](https://www.prisma.io/)
 - **データベース**: [PostgreSQL](https://www.postgresql.org/)（本番は Neon。ローカルは Docker Compose も可）
@@ -39,10 +40,31 @@
   - `scraper/daiwan_scraper.py`: ダイワンテレコムの在庫情報を取得。並列処理による詳細取得。
   - `scraper/mmoba_scraper.py`: エムモバの在庫情報を取得。タイトルからの利用制限情報抽出。
 
-## 楽天API 取り込み（ゲオモバイル楽天市場店）
+## 楽天API 取り込み（ゲオモバイル・じゃんぱら・ソフマップの楽天市場店）
 - `rakuten-sync/fetch.php`（PHP）をシンレンタルサーバー（固定IP）の cron で実行し、楽天市場 商品検索API（2026-07-01版）から取得。
-  1検索3,000件の上限は価格帯の2分割で回避。gzip で `/api/ingest/rakuten` に送信し、`lib/rakutenGeo.ts` で正規化。
+  ショップごとに「iPhone」「iPad」の2語で検索してまとめ、gzip で `/api/ingest/rakuten?shop=<shopCode>` に送信。
+  1検索3,000件の上限は価格帯の2分割で回避。一時エラーは2回までリトライ。1ショップの失敗で他は止めない。
+- 正規化は受け口（TypeScript）側。ショップの登録は `lib/rakutenShops.ts`、商品名の読み取りは下の「コードの地図」。
 - 詳細は [operations.md](./operations.md)。
+
+## コードの地図（lib/）
+
+| ファイル | 役割 |
+| --- | --- |
+| `catalog.ts` | iPhone のカタログ（シリーズ・バッジ）、slug ⇔ 機種名、機種別ページの URL（iPad は `/ipad/`） |
+| `ipadCatalog.ts` | iPad のカタログと `canonicalIpadModel`（店ごとの表記を Apple の正式名にそろえる） |
+| `deviceSearch.ts` | 検索の中核。`matchesModel`（13 と 13 mini を区別、iPad は正式名なら完全一致）・`resolveModelNames`（DB の実モデル名に解決、5分キャッシュ）・`buildWhere`・`buildOrderBy` |
+| `modelInventory.ts` / `modelStats.ts` | 1機種分の在庫と、機種別ページ用の集計（容量・ランク・ショップ別の最安値） |
+| `priceHistory.ts` | 価格推移の記録（`PriceSnapshot`）と取得 |
+| `compare.ts` / `picks.ts` / `budgets.ts`・`budgetStats.ts` | 比較の組・目的別・予算別ページの定義と集計 |
+| `rakutenShops.ts` | 楽天のショップ登録（shopCode → ショップ名・正規化関数）。`RAKUTEN_SHOP_NAMES` はリンクを楽天アフィリエイトに限る判定にも使う |
+| `rakutenGeo.ts` / `rakutenJanpara.ts` / `rakutenSofmap.ts` | 各店の iPhone の商品名の読み取り。`rakutenAffiliateUrl` は `rakutenGeo.ts` |
+| `rakutenIpad.ts` | 3店の iPad の商品名の読み取り |
+| `iphoneModelName.ts` | 機種名の表記ゆれの整え（「SE 第2世代」→「SE (第2世代)」）と、取り込む iPhone 名の妥当性チェック |
+| `ogFont.ts` | OGP 画像用の日本語フォント（使う文字だけのサブセット） |
+
+- 検索（`/search`・`/api/devices`）は同じ `buildWhere` を使う。機種もショップも指定がなければ iPhone のみ
+- 新しいショップ・機種の追加手順は [operations.md](./operations.md)
 
 ## インフラ・環境構築
 - **コンテナ化**: [Docker Compose](https://docs.docker.com/compose/) を使用して PostgreSQL データベースを管理。
