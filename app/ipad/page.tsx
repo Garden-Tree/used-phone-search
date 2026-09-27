@@ -4,7 +4,8 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import prisma from "@/lib/prisma";
-import { modelPagePath } from "@/lib/catalog";
+import { isIpad, modelPagePath } from "@/lib/catalog";
+import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
 import { SITE_NAME } from "@/lib/site";
 import { yen } from "@/lib/format";
@@ -52,6 +53,19 @@ export default async function IpadIndexPage() {
           を機種別にまとめています。機種名から容量別・状態別の最安値へ。
         </p>
         <AdDisclosure compact />
+
+        {/* iPad の比較ページ */}
+        <section className="my-6">
+          <h2 className="text-lg font-bold mb-3">よく比較される iPad</h2>
+          <div className="flex flex-wrap gap-2">
+            {COMPARE_PAIRS.filter(([a]) => isIpad(a)).map(([a, b]) => (
+              <Link key={comparePath(a, b)} href={comparePath(a, b)}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {a} <span className="text-slate-400 font-medium">vs</span> {b}
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {IPAD_CATALOG.map((series) => (
           <section key={series.series} className="my-8">

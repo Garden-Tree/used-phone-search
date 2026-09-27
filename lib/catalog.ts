@@ -80,7 +80,7 @@ const ORDINAL: Record<string, string> = { "1": "1st", "2": "2nd", "3": "3rd" };
 export function modelToSlug(model: string): string {
   return model
     .toLowerCase()
-    .replace(/\(第(\d)世代\)/, (_, n: string) => `${ORDINAL[n] ?? `${n}th`}-gen`)
+    .replace(/\(第(\d+)世代\)/, (_, n: string) => `${ORDINAL[n] ?? `${n}th`}-gen`)
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }

@@ -5,7 +5,7 @@ import DeviceCard from "@/app/components/DeviceCard";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
-import { modelPagePath, seriesOf } from "@/lib/catalog";
+import { isIpad, modelPagePath, seriesOf } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath, compareSlug, comparesFor, slugToPair } from "@/lib/compare";
 import { getModelStats, type ModelStats, type PriceRow } from "@/lib/modelStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     sa.minPrice !== null ? `${a}は${yen(sa.minPrice)}` : null,
     sb.minPrice !== null ? `${b}は${yen(sb.minPrice)}` : null,
   ].filter(Boolean).join("、");
-  const description = `${a}と${b}の中古相場を大手中古ショップ7社の在庫から比較。${prices ? `最安値は${prices}から。` : ""}容量別・状態ランク別の最安値と差額をまとめています。`;
+  const description = `${a}と${b}の中古相場を大手中古ショップ${isIpad(a) ? 5 : 7}社の在庫から比較。${prices ? `最安値は${prices}から。` : ""}容量別・状態ランク別の最安値と差額をまとめています。`;
   const path = comparePath(a, b);
 
   return {

@@ -23,3 +23,12 @@ export async function notoSansJp(text: string) {
     { name: "Noto Sans JP", data: bold, weight: 900 as const, style: "normal" as const },
   ];
 }
+
+/**
+ * 1行に収まる文字サイズ（px）。太字の目安幅: 漢字・かな 1.0em、英数字 0.6em、空白 0.3em。
+ * 長い機種名（「iPad Pro 12.9インチ 第6世代」など）が画像からはみ出さないようにする
+ */
+export function fitFontSize(text: string, maxWidth: number, maxSize: number, minSize = 28): number {
+  const em = Array.from(text).reduce((w, c) => w + (c === " " ? 0.3 : c.charCodeAt(0) > 0x2e80 ? 1 : 0.6), 0);
+  return Math.max(minSize, Math.min(maxSize, Math.floor(maxWidth / em)));
+}
