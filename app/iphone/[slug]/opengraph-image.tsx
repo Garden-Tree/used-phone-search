@@ -1,8 +1,9 @@
 import { ImageResponse } from "next/og";
-import { ALL_PAGE_MODELS, isIpad, modelToSlug, slugToModel } from "@/lib/catalog";
+import { ALL_PAGE_MODELS, modelToSlug, slugToModel } from "@/lib/catalog";
 import { getModelStats } from "@/lib/modelStats";
 import { fitFontSize, notoSansJp } from "@/lib/ogFont";
 import { storageLabel } from "@/lib/format";
+import { shopsFor } from "@/lib/shops";
 
 // モデル別ページと同じく1時間ごとに作り直す（最安値が変わるため）
 export const revalidate = 3600;
@@ -37,7 +38,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const storages = stats.byStorage.slice(0, 4);
 
   const priceText = stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし";
-  const summary = stats.count > 0 ? `${stats.shopCount}ショップ・${stats.count.toLocaleString()}件の在庫を比較` : `大手中古ショップ${isIpad(model) ? 5 : 7}社の在庫を比較`;
+  const summary = stats.count > 0 ? `${stats.shopCount}ショップ・${stats.count.toLocaleString()}件の在庫を比較` : `大手中古ショップ${shopsFor(model).length}社の在庫を比較`;
 
   // 画像内で使う文字をすべて集めてフォントのサブセットを取得する
   const allText = [

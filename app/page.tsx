@@ -1,25 +1,17 @@
 import Link from "next/link";
 import { Smartphone, BatteryCharging, Camera, Sparkles, Zap, Search } from "lucide-react";
-import { IPHONE_CATALOG, modelPagePath } from "@/lib/catalog";
+import { ALL_CATALOG_MODELS, IPHONE_CATALOG, modelPagePath } from "@/lib/catalog";
+import { minPriceByModel } from "@/lib/budgetStats";
+import { yen } from "@/lib/format";
 import { comparePath } from "@/lib/compare";
 import { pickPath } from "@/lib/picks";
 import { BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
-import AdDisclosure from "@/app/components/AdDisclosure";
 import prisma from "@/lib/prisma";
+import { SHOPS } from "@/lib/shops";
+import SiteFooter from "@/app/components/SiteFooter";
 
 // ショップごとの在庫数を出すので、1時間ごとに再生成する
 export const revalidate = 3600;
-
-// 比較対象のショップ（表示順）。name は DeviceInventory.shopName
-const SHOPS = [
-  { name: "イオシス", label: "イオシス" },
-  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店" },
-  { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店" },
-  { name: "ソフマップ（楽天市場店）", label: "ソフマップ", note: "楽天市場店" },
-  { name: "にこスマ", label: "にこスマ" },
-  { name: "ダイワンテレコム", label: "ダイワンテレコム" },
-  { name: "エムモバ", label: "エムモバ" },
-];
 
 /** ショップごとの在庫数。DB に届かないときもトップページは出す */
 async function shopCounts(): Promise<Map<string, number>> {
@@ -36,6 +28,15 @@ async function shopCounts(): Promise<Map<string, number>> {
   }
 }
 
+/** 機種ごとの最安値（機種ページの「最安値」と同じく、ジャンク品も含む）。DB に届かないときは出さない */
+async function modelPrices(): Promise<Map<string, { minPrice: number; count: number }>> {
+  try {
+    return await minPriceByModel({ isSoldOut: false }, ALL_CATALOG_MODELS);
+  } catch (error) {
+    console.error("model prices failed:", error);
+    return new Map();
+  }
+}
 
 // トップページに並べる比較（lib/compare.ts の COMPARE_PAIRS に含まれる組のみ）
 const FEATURED_COMPARES: [string, string][] = [
@@ -50,7 +51,7 @@ const FEATURED_COMPARES: [string, string][] = [
 ];
 
 export default async function Home() {
-  const counts = await shopCounts();
+  const [counts, prices] = await Promise.all([shopCounts(), modelPrices()]);
   const total = SHOPS.reduce((n, s) => n + (counts.get(s.name) ?? 0), 0);
 
   return (
@@ -79,7 +80,7 @@ export default async function Home() {
           </p>
 
           <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6">
-            大手中古ショップ7社の iPhone・iPad の価格、状態ランク、容量、バッテリーを一括比較。<br className="hidden md:block" />
+            大手中古ショップ{SHOPS.length}社の iPhone・iPad の価格、状態ランク、容量、バッテリーを一括比較。<br className="hidden md:block" />
             欲しいモデルの最安値を一瞬で見つけ出します。
           </p>
 
@@ -272,8 +273,13 @@ export default async function Home() {
                       <span className="text-sm font-medium text-slate-700 group-hover/link:text-blue-600 transition-colors">
                         {model}
                       </span>
-                      <span className="text-slate-300 group-hover/link:text-blue-500 transition-colors group-hover/link:translate-x-1 transform duration-200">
-                        &rarr;
+                      <span className="flex items-center gap-2">
+                        {prices.has(model) && (
+                          <span className="text-sm font-bold text-red-600">{yen(prices.get(model)!.minPrice)}〜</span>
+                        )}
+                        <span className="text-slate-300 group-hover/link:text-blue-500 transition-colors group-hover/link:translate-x-1 transform duration-200">
+                          &rarr;
+                        </span>
                       </span>
                     </Link>
                   ))}
@@ -284,15 +290,7 @@ export default async function Home() {
         </div>
       </main>
 
-      <footer className="max-w-6xl mx-auto px-4 mt-8 pt-8 border-t border-slate-100 text-center">
-        <AdDisclosure />
-        <p className="text-sm text-slate-400 font-medium">
-          &copy; {new Date().getFullYear()} 中古スマホ一括検索
-        </p>
-        <p className="text-xs text-slate-300 mt-2">
-          powered by <a href="https://gadelog.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors font-bold underline underline-offset-2">gadelog.com</a>
-        </p>
-      </footer>
+      <SiteFooter />
 
       {/* Hide scrollbar styles for the horizontal scroll section */}
       <style dangerouslySetInnerHTML={{

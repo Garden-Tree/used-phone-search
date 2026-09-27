@@ -8,6 +8,7 @@ import { writeFileSync, readFileSync } from "node:fs";
 import { RAKUTEN_SHOPS } from "@/lib/rakutenShops";
 import { canonicalIpadModel } from "@/lib/ipadCatalog";
 import { matchesModel } from "@/lib/deviceSearch";
+import { SHOPS } from "@/lib/shops";
 const u = "https://item.rakuten.co.jp/x/1/";
 // [shopCode, 商品名, rank, car, batt]（rank・car・batt は fetch.php が商品説明から抜き出す値）
 const CORPUS: [string, string, string | null, string | null, number | null][] = [
@@ -79,6 +80,11 @@ const MATCH_CASES: [string, string, boolean][] = [
 ];
 for (const [q, name, want] of MATCH_CASES) {
   if (matchesModel(q, name) !== want) { failures++; console.log(`照合: "${q}" と "${name}" → ${!want}（期待 ${want}）`); }
+}
+
+// 4. 店の一覧（lib/shops.ts）に楽天の店名がそろっているか（ずれるとトップの件数・絞り込みが 0 件になる）
+for (const { shopName } of Object.values(RAKUTEN_SHOPS)) {
+  if (!SHOPS.some((s) => s.name === shopName)) { failures++; console.log(`店の一覧: lib/shops.ts に「${shopName}」がない`); }
 }
 
 console.log(failures === 0 ? "OK: すべて期待どおり" : `NG: ${failures} 件`);

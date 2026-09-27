@@ -1,5 +1,6 @@
 import React from 'react';
 import { affiliateUrl, isAffiliateUrl } from '@/lib/affiliate';
+import { findShop } from '@/lib/shops';
 
 // Define the type for the device object
 export type Device = {
@@ -118,7 +119,7 @@ export default function DeviceCard({ device }: { device: Device }) {
               }`}>
               {(() => {
                 if (device.batteryHealth === 100) return '🔋 100%';
-                if (device.shopName === 'イオシス' || device.shopName === 'ダイワンテレコム') {
+                if (findShop(device.shopName)?.battery === 'over80') {
                   return device.batteryHealth >= 80 ? '🔋 80%以上' : '🔋 80%未満';
                 }
                 return `🔋 ${device.batteryHealth}%`;

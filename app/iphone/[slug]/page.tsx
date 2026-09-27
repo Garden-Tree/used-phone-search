@@ -15,13 +15,14 @@ import {
   siblingModels,
   slugToModel,
 } from "@/lib/catalog";
-import { getModelStats, type PriceRow } from "@/lib/modelStats";
+import { getBatteryRows, getModelStats, type PriceRow } from "@/lib/modelStats";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
 import InspectionTips from "@/app/components/InspectionTips";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
+import { SHOPS, shopLabels, shopsFor } from "@/lib/shops";
 
 // スクレイパーは6時間ごとに実行されるため、1時間ごとに再生成すれば十分新しい
 export const revalidate = 3600;
@@ -45,8 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const stats = await getModelStats(model);
   const title = `${model} 中古の相場・最安値【毎日更新】`;
-  // iPad はエムモバ・ダイワンテレコム以外の5店から取り込んでいる
-  const shops = isIpad(model) ? "イオシス・にこスマ・ゲオモバイル・じゃんぱら・ソフマップ" : "イオシス、ゲオモバイル、じゃんぱら、にこスマなど大手中古ショップ";
+  const shops = shopLabels(shopsFor(model));
   const description = stats.minPrice !== null
     ? `${model}の中古相場（中央値）は${yen(stats.medianPrice ?? stats.minPrice)}、最安値は${yen(stats.minPrice)}。${stats.shopCount}ショップ・${stats.count}件の在庫を容量・状態ランク別に比較。${shops}の価格を毎日更新。`
     : `${model}の中古在庫を${shops}から一括比較。容量・状態ランク別の最安値をまとめています。`;
@@ -62,11 +62,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function PriceTable({ title, rows, labelOf, hrefOf }: {
+function PriceTable({ title, rows, labelOf, hrefOf, baseline, note }: {
   title: string;
   rows: PriceRow[];
   labelOf: (key: string) => string;
   hrefOf: (key: string) => string;
+  /** 渡すと、最安値の下に「この値段との差」を出す */
+  baseline?: number | null;
+  note?: string;
 }) {
   if (rows.length === 0) return null;
   return (
@@ -87,22 +90,34 @@ function PriceTable({ title, rows, labelOf, hrefOf }: {
             className="group grid grid-cols-[1fr_auto_4.5rem_1rem] gap-x-4 items-center px-5 py-3 border-t border-slate-100 hover:bg-blue-50 focus-visible:bg-blue-50 focus-visible:outline-none transition-colors"
           >
             <span className="font-bold text-slate-700 group-hover:text-blue-600">{labelOf(r.key)}</span>
-            <span className="text-right font-black text-red-600">{yen(r.minPrice)}</span>
+            <span className="text-right">
+              <span className="font-black text-red-600">{yen(r.minPrice)}</span>
+              {baseline != null && (
+                <span className="block text-xs text-slate-400">
+                  {r.minPrice > baseline ? `+${(r.minPrice - baseline).toLocaleString()}円` : "最安値と同じ"}
+                </span>
+              )}
+            </span>
             <span className="text-right text-slate-500">{r.count.toLocaleString()}件</span>
             <span className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-transform" aria-hidden>›</span>
           </Link>
         ))}
       </div>
+      {note && <p className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400 leading-relaxed">{note}</p>}
     </section>
   );
 }
+
+// 店によってバッテリーの表記が違うので、表の数え方を書いておく（lib/shops.ts の battery）
+const labelsWith = (battery: string) => SHOPS.filter((s) => s.battery === battery).map((s) => s.label).join("・");
+const BATTERY_NOTE = `未使用品（ランクS）を含みます。${labelsWith("over80")}は「80%以上」表記のため80%の行だけに、${labelsWith("none")}はバッテリーの記載を取り込めていないため未使用品以外は含みません。`;
 
 export default async function ModelPage({ params }: Props) {
   const { slug } = await params;
   const model = slugToModel(slug);
   if (!model) notFound();
 
-  const [stats, history] = await Promise.all([getModelStats(model), getPriceHistory(slug)]);
+  const [stats, history, batteryRows] = await Promise.all([getModelStats(model), getPriceHistory(slug), getBatteryRows(model)]);
   const series = seriesOf(model);
   const siblings = siblingModels(model);
   const path = modelPagePath(model);
@@ -158,7 +173,7 @@ export default async function ModelPage({ params }: Props) {
           {model} 中古の相場・最安値
         </h1>
         <p className="text-slate-500 text-sm mb-4">
-          {isIpad(model) ? "大手中古ショップ5社" : "大手中古ショップ7社"}の在庫をまとめて比較しています。
+          大手中古ショップ{shopsFor(model).length}社の在庫をまとめて比較しています。
           {stats.lastUpdated && (
             <>最終更新: {stats.lastUpdated.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", dateStyle: "medium", timeStyle: "short" })}</>
           )}
@@ -192,9 +207,12 @@ export default async function ModelPage({ params }: Props) {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
               <PriceTable title="容量別の最安値" rows={stats.byStorage} labelOf={storageLabel}
                 hrefOf={(k) => searchHref(model, { storage: k })} />
+              {/* 多くの店で最大容量は値段に反映されていないので、少し足すだけで状態のよい個体が買えることを見せる */}
+              <PriceTable title="バッテリー最大容量別の最安値" rows={batteryRows} labelOf={(k) => `${k}%以上`}
+                hrefOf={(k) => searchHref(model, { minBattery: k })} baseline={stats.minPrice} note={BATTERY_NOTE} />
               <PriceTable title="状態ランク別の最安値" rows={stats.byRank} labelOf={(k) => `ランク ${k}`}
                 hrefOf={(k) => searchHref(model, { rank: k })} />
               <PriceTable title="ショップ別の最安値" rows={stats.byShop} labelOf={(k) => k}

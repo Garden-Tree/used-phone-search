@@ -10,6 +10,7 @@ import { BUDGETS, budgetLabel, budgetPath, budgetSlug, slugToBudget } from "@/li
 import { cheapestUnder, getBudgetModels } from "@/lib/budgetStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
+import { SHOPS } from "@/lib/shops";
 
 // 静的に生成して CDN から配信する。在庫は1時間ごとに更新
 export const revalidate = 3600;
@@ -31,8 +32,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const label = budgetLabel(max);
   const title = `${label}以下で買える中古iPhone｜予算内でいちばん新しい機種【毎日更新】`;
   const description = newest
-    ? `${label}以下で買える中古iPhoneは${rows.length}機種・${rows.reduce((n, r) => n + r.count, 0).toLocaleString()}件。いちばん新しいのは${newest.model}（${yen(newest.minPrice)}〜）。大手中古ショップ7社の在庫から機種ごとの最安値を比較。`
-    : `${label}以下で買える中古iPhoneを大手中古ショップ7社の在庫から探せます。`;
+    ? `${label}以下で買える中古iPhoneは${rows.length}機種・${rows.reduce((n, r) => n + r.count, 0).toLocaleString()}件。いちばん新しいのは${newest.model}（${yen(newest.minPrice)}〜）。大手中古ショップ${SHOPS.length}社の在庫から機種ごとの最安値を比較。`
+    : `${label}以下で買える中古iPhoneを大手中古ショップ${SHOPS.length}社の在庫から探せます。`;
   const path = budgetPath(max);
   return {
     title,

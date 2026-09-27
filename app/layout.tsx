@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
+import { SHOPS } from "@/lib/shops";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,7 +20,7 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} | 中古iPhoneの最安値を大手7ショップから比較`,
+    default: `${SITE_NAME} | 中古iPhoneの最安値を大手${SHOPS.length}ショップから比較`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,

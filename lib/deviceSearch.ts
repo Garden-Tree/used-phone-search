@@ -113,6 +113,14 @@ async function allModelNames(): Promise<string[]> {
   return names;
 }
 
+/**
+ * バッテリー最大容量が min% 以上。ランクS（未使用品）はバッテリーの表記がなくても含める。
+ * 検索の絞り込み（minBattery）と機種ページの「バッテリー別の最安値」で同じ条件を使う（件数がそろうように）
+ */
+export function minBatteryWhere(min: number): Prisma.DeviceInventoryWhereInput {
+  return { OR: [{ batteryHealth: { gte: min } }, { conditionRank: "S" }] };
+}
+
 /** DB側の絞り込み条件 */
 export function buildWhere(p: SearchParams): Prisma.DeviceInventoryWhereInput {
   const and: Prisma.DeviceInventoryWhereInput[] = [];
@@ -141,7 +149,7 @@ export function buildWhere(p: SearchParams): Prisma.DeviceInventoryWhereInput {
 
   const minBattery = toInt(p.minBattery);
   if (minBattery !== undefined) {
-    and.push({ OR: [{ batteryHealth: { gte: minBattery } }, { conditionRank: "S" }] });
+    and.push(minBatteryWhere(minBattery));
   }
 
   return { AND: and };

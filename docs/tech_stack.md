@@ -52,12 +52,13 @@
 
 | ファイル | 役割 |
 | --- | --- |
+| `shops.ts` | 比較対象の店の一覧（店名・表示名・iPad の有無・バッテリー表記の種類）。店名と店の数はここから作る |
 | `catalog.ts` | iPhone のカタログ（シリーズ・バッジ）、slug ⇔ 機種名、機種別ページの URL（iPad は `/ipad/`） |
 | `ipadCatalog.ts` | iPad のカタログと `canonicalIpadModel`（店ごとの表記を Apple の正式名にそろえる） |
 | `deviceSearch.ts` | 検索の中核。`matchesModel`（13 と 13 mini を区別、iPad は正式名なら完全一致）・`resolveModelNames`（DB の実モデル名に解決、5分キャッシュ）・`buildWhere`・`buildOrderBy` |
-| `modelInventory.ts` / `modelStats.ts` | 1機種分の在庫と、機種別ページ用の集計（容量・ランク・ショップ別の最安値） |
+| `modelInventory.ts` / `modelStats.ts` | 1機種分の在庫と、機種別ページ用の集計（容量・ランク・ショップ・バッテリー別の最安値） |
 | `priceHistory.ts` | 価格推移の記録（`PriceSnapshot`）と取得 |
-| `compare.ts` / `picks.ts` / `budgets.ts`・`budgetStats.ts` | 比較の組・目的別・予算別ページの定義と集計 |
+| `compare.ts` / `picks.ts` / `budgets.ts`・`budgetStats.ts` | 比較の組・目的別・予算別ページの定義と集計。`minPriceByModel` は機種ごとの最安値（トップの機種一覧でも使う） |
 | `rakutenShops.ts` | 楽天のショップ登録（shopCode → ショップ名・正規化関数）。`RAKUTEN_SHOP_NAMES` はリンクを楽天アフィリエイトに限る判定にも使う |
 | `rakutenCommon.ts` | 楽天3店の読み取りの共通部品（`RakutenItem` 型・ランク・容量・型番の除去・キャリアの表記） |
 | `rakutenGeo.ts` / `rakutenJanpara.ts` / `rakutenSofmap.ts` | 各店の iPhone の商品名の読み取り |
@@ -67,7 +68,8 @@
 | `format.ts` | 金額（`yen`）・容量（`storageLabel`）の表示 |
 | `ogFont.ts` | OGP 画像用の日本語フォント（使う文字だけのサブセット） |
 
-- 検索（`/search`・`/api/devices`）は同じ `buildWhere` を使う。機種もショップも指定がなければ iPhone のみ
+- 検索（`/search`・`/api/devices`）は同じ `buildWhere` を使う。機種もショップも指定がなければ iPhone のみ。
+  在庫のない機種名・知らない店名の検索ページは noindex
 - 新しいショップ・機種の追加手順は [operations.md](./operations.md)
 - iPad の機種名は `canonicalIpadModel` の1か所でそろえる。楽天3店は受け口で、イオシス・にこスマは Actions の `npm run normalize:ipad` で
 - 読み取りや照合を変えたら `npm run test:normalize`（商品名の読み取り・iPad の正規化・機種照合の回帰テスト）

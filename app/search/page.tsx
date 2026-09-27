@@ -11,6 +11,7 @@ import { SITE_NAME } from "@/lib/site";
 import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
 import Link from "next/link";
 import type { Metadata } from 'next';
+import { SHOPS, findShop, shopLabels } from "@/lib/shops";
 
 type SearchParamsRecord = { [key: string]: string | string[] | undefined };
 
@@ -30,11 +31,11 @@ export async function generateMetadata({
   const hasShop = !!shopQuery && shopQuery !== 'all';
 
   let title = "中古スマホの在庫一覧・価格比較";
-  let description = `大手中古ショップ7社の中古iPhone在庫を一括比較。価格・状態ランク・容量・バッテリー残量で絞り込めます。`;
+  let description = `大手中古ショップ${SHOPS.length}社の中古iPhone在庫を一括比較。価格・状態ランク・容量・バッテリー残量で絞り込めます。`;
   if (modelQuery) {
     const label = splitModelQuery(modelQuery).join('・');
     title = `${label} 中古の最安値・価格比較${hasShop ? `（${shopQuery}）` : ''}`;
-    description = `${label}の中古在庫を${hasShop ? shopQuery : 'イオシス・ゲオモバイル・じゃんぱら・ソフマップ・にこスマ・エムモバ・ダイワンテレコム'}から一括比較。状態ランク・容量・バッテリー残量で絞り込んで最安値をチェック。`;
+    description = `${label}の中古在庫を${hasShop ? shopQuery : shopLabels()}から一括比較。状態ランク・容量・バッテリー残量で絞り込んで最安値をチェック。`;
   } else if (hasShop) {
     title = `${shopQuery} の中古スマホ在庫一覧`;
     description = `${shopQuery}の中古iPhone在庫を価格・状態ランク・容量・バッテリー残量で絞り込んで比較できます。`;
@@ -45,6 +46,11 @@ export async function generateMetadata({
   if (hasShop) canonical.set('shop', shopQuery);
   const canonicalQs = canonical.toString();
   const isFiltered = Object.keys(params).some((k) => !INDEXABLE_PARAMS.includes(k));
+  // 在庫が1件もない機種名・知らないショップ名のページ（/search?model=適当な文字 など）は中身が空なので登録させない。
+  // 機種名の一覧は resolveModelNames がメモリに持っているので、ここで DB に余計な問い合わせはほぼ増えない
+  const modelNames = modelQuery ? await resolveModelNames(splitModelQuery(modelQuery)).catch(() => undefined) : undefined;
+  const unknownModel = modelNames?.length === 0; // DB に届かないとき（undefined）は判定しない
+  const unknownShop = hasShop && !findShop(shopQuery);
 
   return {
     title,
@@ -52,7 +58,7 @@ export async function generateMetadata({
     alternates: { canonical: `/search${canonicalQs ? `?${canonicalQs}` : ''}` },
     // openGraph を上書きするとトップの共通 OGP 画像が引き継がれないので明示する
     openGraph: { title: `${title} | ${SITE_NAME}`, description, url: `/search${canonicalQs ? `?${canonicalQs}` : ''}`, images: ['/opengraph-image'] },
-    robots: isFiltered ? { index: false, follow: true } : undefined,
+    robots: isFiltered || unknownModel || unknownShop ? { index: false, follow: true } : undefined,
   };
 }
 

@@ -3,19 +3,15 @@
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { Filter, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { SHOPS } from '@/lib/shops';
 
 const STORAGE_OPTIONS = [64, 128, 256, 512, 1024];
 const RANK_OPTIONS = ['S', 'A', 'B', 'C', 'D'];
 const BATTERY_OPTIONS = [80, 85, 90, 95];
-const SHOPS = [
+// 楽天市場店は「じゃんぱら（楽天）」のように短く出す
+const SHOP_OPTIONS = [
   { id: 'all', name: 'すべて' },
-  { id: 'イオシス', name: 'イオシス' },
-  { id: 'ゲオモバイル（楽天市場店）', name: 'ゲオモバイル（楽天）' },
-  { id: 'じゃんぱら（楽天市場店）', name: 'じゃんぱら（楽天）' },
-  { id: 'ソフマップ（楽天市場店）', name: 'ソフマップ（楽天）' },
-  { id: 'にこスマ', name: 'にこスマ' },
-  { id: 'エムモバ', name: 'エムモバ' },
-  { id: 'ダイワンテレコム', name: 'ダイワンテレコム' },
+  ...SHOPS.map((s) => ({ id: s.name, name: s.note ? `${s.label}（楽天）` : s.label })),
 ];
 
 export default function FilterPanel() {
@@ -118,7 +114,7 @@ export default function FilterPanel() {
               ショップ
             </label>
             <div className="flex flex-wrap gap-2">
-              {SHOPS.map((shop) => {
+              {SHOP_OPTIONS.map((shop) => {
                 const isActive = (searchParams.get('shop') || 'all') === shop.id;
                 return (
                   <button

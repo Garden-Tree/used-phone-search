@@ -1,17 +1,17 @@
 import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
+import { SHOPS } from "@/lib/shops";
 
 // トップページ・検索ページなど、個別の画像を持たないページの共通 OGP 画像
-export const alt = "中古スマホ一括検索 | 中古iPhoneの最安値を大手7ショップから比較";
+export const alt = `中古スマホ一括検索 | 中古iPhoneの最安値を大手${SHOPS.length}ショップから比較`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const SHOPS = ["イオシス", "ゲオモバイル", "じゃんぱら", "ソフマップ", "にこスマ", "エムモバ", "ダイワンテレコム"];
 
 export default async function Image() {
   const title = "中古スマホ一括検索";
-  const lead = "中古iPhoneの最安値を、大手7ショップから一括比較";
-  const fonts = await notoSansJp([title, lead, ...SHOPS, "used.gadelog.com"].join(""));
+  const lead = `中古iPhoneの最安値を、大手${SHOPS.length}ショップから一括比較`;
+  const fonts = await notoSansJp([title, lead, ...SHOPS.map((s) => s.label), "used.gadelog.com"].join(""));
 
   return new ImageResponse(
     (
@@ -33,7 +33,7 @@ export default async function Image() {
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", maxWidth: 1000, marginTop: 40 }}>
           {SHOPS.map((shop) => (
             <div
-              key={shop}
+              key={shop.name}
               style={{
                 fontSize: 28,
                 fontWeight: 500,
@@ -44,7 +44,7 @@ export default async function Image() {
                 margin: "8px",
               }}
             >
-              {shop}
+              {shop.label}
             </div>
           ))}
         </div>

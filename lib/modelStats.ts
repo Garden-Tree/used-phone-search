@@ -2,6 +2,7 @@ import { cache } from "react";
 import type { Device } from "@/app/components/DeviceCard";
 import prisma from "@/lib/prisma";
 import { groupMinPrice, medianPrice, modelWhere, type PriceGroup } from "@/lib/modelInventory";
+import { minBatteryWhere } from "@/lib/deviceSearch";
 
 export type PriceRow = PriceGroup;
 
@@ -70,4 +71,26 @@ export const getModelStats = cache(async (model: string): Promise<ModelStats> =>
     byShop: byShop.sort((a, b) => a.minPrice - b.minPrice),
     cheapest,
   };
+});
+
+/** 機種ページの「バッテリー別の最安値」の区切り（検索の絞り込みのボタンと同じ） */
+export const BATTERY_THRESHOLDS = [80, 85, 90, 95];
+
+/**
+ * バッテリー最大容量が 80/85/90/95% 以上の在庫の最安値と件数（key は "90" など）。在庫のない区切りは除く。
+ * 機種ページだけで使うので getModelStats（比較・目的別ページ・OG 画像でも使う）とは分けている
+ */
+export const getBatteryRows = cache(async (model: string): Promise<PriceRow[]> => {
+  const where = await modelWhere(model);
+  const rows = await Promise.all(
+    BATTERY_THRESHOLDS.map(async (min) => {
+      const agg = await prisma.deviceInventory.aggregate({
+        where: { AND: [where, minBatteryWhere(min)] },
+        _min: { price: true },
+        _count: { _all: true },
+      });
+      return { key: String(min), minPrice: agg._min.price ?? 0, count: agg._count._all };
+    }),
+  );
+  return rows.filter((r) => r.count > 0);
 });
