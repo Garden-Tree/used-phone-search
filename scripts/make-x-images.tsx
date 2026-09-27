@@ -2,6 +2,7 @@
  * X（Twitter）の告知用画像（1200x675）を、本番の在庫の数字で作る。投稿の前に取り直す
  *   npm run x:images -- <出力先フォルダ>
  * 1. 告知（在庫件数・ショップ・機種ごとの最安値） 2. iPhone 13 の店ごとの最安値
+ * 3. 3万円以下で買える機種（新しい順） 4. 同じ店・同じ値段・同じランクでもバッテリー最大容量がばらつく例
  * 文面は ideas/x-posts-*.md。DB は集計だけ読む（Neon の転送量に配慮）
  */
 import "dotenv/config";
@@ -9,6 +10,8 @@ import { writeFileSync } from "node:fs";
 import { ImageResponse } from "next/og";
 import prisma from "@/lib/prisma";
 import { getModelStats } from "@/lib/modelStats";
+import { getBudgetModels } from "@/lib/budgetStats";
+import { resolveModelNames } from "@/lib/deviceSearch";
 import { notoSansJp } from "@/lib/ogFont";
 
 const OUT = process.argv[2] ?? ".";
@@ -101,5 +104,103 @@ await save("x-promo-2.png", (
     </div>
   </div>
 ), t2);
+
+// 3. 予算別（3万円以下）
+const BUDGET = 30000;
+const budget = await getBudgetModels(BUDGET);
+const supported = budget.filter((r) => r.supported);
+const budgetTotal = budget.reduce((n, r) => n + r.count, 0);
+const shown = supported.slice(0, 7);
+const t3 = ["3万円以下で買える中古iPhone", "機種", "件", "iOS 27 対応・新しい順", "いちばん新しいのは", "円〜", "ジャンク品を除く", "used.gadelog.com", String(budget.length), budgetTotal.toLocaleString(), ...shown.map((r) => r.model + r.minPrice.toLocaleString() + r.count.toLocaleString())].join("");
+await save("x-promo-3.png", (
+  <div style={{ width: "100%", height: "100%", display: "flex", padding: "48px 80px", background: "#ffffff", fontFamily: "Noto Sans JP", color: "#0f172a" }}>
+    <div style={{ display: "flex", flexDirection: "column", width: 440 }}>
+      <div style={{ fontSize: 44, fontWeight: 900, lineHeight: 1.2, display: "flex", flexDirection: "column" }}>
+        <span style={{ color: "#059669" }}>3万円以下</span><span>で買える</span><span>中古iPhone</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "baseline", marginTop: 28 }}>
+        <span style={{ fontSize: 80, fontWeight: 900, color: "#dc2626", letterSpacing: -2 }}>{String(budget.length)}</span>
+        <span style={{ fontSize: 30, fontWeight: 900, marginLeft: 6 }}>機種</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "baseline" }}>
+        <span style={{ fontSize: 56, fontWeight: 900, color: "#dc2626", letterSpacing: -2 }}>{budgetTotal.toLocaleString()}</span>
+        <span style={{ fontSize: 30, fontWeight: 900, marginLeft: 6 }}>件</span>
+      </div>
+      <div style={{ fontSize: 20, color: "#94a3b8", marginTop: "auto" }}>{`ジャンク品を除く・${now}`}</div>
+      <div style={{ fontSize: 24, fontWeight: 900, color: "#2563eb", marginTop: 6 }}>used.gadelog.com</div>
+    </div>
+    <div style={{ display: "flex", flexDirection: "column", marginLeft: "auto", width: 560, border: "2px solid #e2e8f0", borderRadius: 28, padding: "22px 28px" }}>
+      <div style={{ fontSize: 22, fontWeight: 900, color: "#64748b", marginBottom: 6 }}>iOS 27 対応・新しい順</div>
+      {shown.map((r, i) => (
+        <div key={r.model} style={{ display: "flex", alignItems: "baseline", padding: "10px 0", borderTop: i === 0 ? "none" : "2px solid #f1f5f9" }}>
+          <span style={{ fontSize: 25, fontWeight: 900, color: "#1e293b", whiteSpace: "nowrap" }}>{r.model}</span>
+          <span style={{ fontSize: 18, color: "#94a3b8", marginLeft: 10 }}>{`${r.count.toLocaleString()}件`}</span>
+          <span style={{ fontSize: 26, fontWeight: 900, color: "#dc2626", marginLeft: "auto", whiteSpace: "nowrap" }}>{`${r.minPrice.toLocaleString()}円〜`}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+), t3);
+
+// 4. 同じ店・同じ機種/容量/ランク/値段でも、バッテリー最大容量がばらつく例（いちばん幅の広い組を選ぶ）
+const MODELS = ["iPhone 12", "iPhone 13", "iPhone 14", "iPhone 15"];
+type Pick4 = { model: string; shop: string; rank: string; price: number; storage: number; min: number; max: number; n: number };
+let best: Pick4 | null = null;
+for (const model of MODELS) {
+  const names = await resolveModelNames([model]);
+  const groups = await prisma.deviceInventory.groupBy({
+    by: ["shopName", "conditionRank", "price", "storage"],
+    // イオシス・ダイワンは「80%以上/未満」の区分しかないので除く。64GB は勧めていないので 128GB 以上から選ぶ
+    where: { modelName: { in: names }, isSoldOut: false, storage: { gte: 128 }, batteryHealth: { not: null, lt: 100 }, shopName: { notIn: ["イオシス", "ダイワンテレコム"] } },
+    _count: { _all: true },
+    _min: { batteryHealth: true },
+    _max: { batteryHealth: true },
+  });
+  for (const g of groups) {
+    const n = g._count._all, min = g._min.batteryHealth ?? 0, max = g._max.batteryHealth ?? 0;
+    if (n < 10) continue;
+    if (!best || max - min > best.max - best.min || (max - min === best.max - best.min && n > best.n)) {
+      best = { model, shop: g.shopName, rank: g.conditionRank, price: g.price, storage: g.storage, min, max, n };
+    }
+  }
+}
+if (best) {
+  const names = await resolveModelNames([best.model]);
+  const dist = await prisma.deviceInventory.groupBy({
+    by: ["batteryHealth"],
+    where: { modelName: { in: names }, isSoldOut: false, shopName: best.shop, conditionRank: best.rank, price: best.price, storage: best.storage, batteryHealth: { not: null, lt: 100 } },
+    _count: { _all: true },
+    orderBy: { batteryHealth: "asc" },
+  });
+  const bars: [number, number][] = [];
+  for (let b = best.min; b <= best.max; b++) bars.push([b, dist.find((d) => d.batteryHealth === b)?._count._all ?? 0]);
+  const peak = Math.max(...bars.map(([, c]) => c));
+  const cap = `${best.model} ${best.storage}GB・ランク${best.rank}・${best.price.toLocaleString()}円（同じ店）の${best.n}台`;
+  const t4 = ["同じ値段・同じランクでも", "バッテリー最大容量は", "〜", "%", "台", "値段が同じなら、最大容量が高い1台を選ぶだけで得をする", "中古スマホ店の検品担当として一番伝えたいこと", "used.gadelog.com", cap, now, ...bars.map(([b, c]) => `${b}${c}`)].join("");
+  await save("x-promo-4.png", (
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", padding: "44px 80px", background: "#ffffff", fontFamily: "Noto Sans JP", color: "#0f172a" }}>
+      <div style={{ fontSize: 40, fontWeight: 900 }}>同じ値段・同じランクでも</div>
+      <div style={{ display: "flex", alignItems: "baseline", marginTop: 2 }}>
+        <span style={{ fontSize: 40, fontWeight: 900 }}>バッテリー最大容量は</span>
+        <span style={{ fontSize: 64, fontWeight: 900, color: "#dc2626", marginLeft: 12 }}>{`${best.min}〜${best.max}%`}</span>
+      </div>
+      <div style={{ fontSize: 22, color: "#64748b", marginTop: 4 }}>{cap}</div>
+      <div style={{ display: "flex", alignItems: "flex-end", height: 250, marginTop: 20 }}>
+        {bars.map(([b, c]) => (
+          <div key={b} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, margin: "0 6px" }}>
+            <span style={{ fontSize: 20, fontWeight: 900, color: c ? "#334155" : "#cbd5e1" }}>{`${c}台`}</span>
+            <div style={{ width: "100%", height: Math.max(4, Math.round((c / peak) * 190)), background: b === best!.max ? "#16a34a" : "#94a3b8", borderRadius: 6, marginTop: 4 }} />
+            <span style={{ fontSize: 22, fontWeight: 900, marginTop: 8, color: b === best!.max ? "#16a34a" : "#334155" }}>{`${b}%`}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 26, fontWeight: 900, marginTop: 22 }}>値段が同じなら、最大容量が高い1台を選ぶだけで得をする</div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "auto" }}>
+        <span style={{ fontSize: 20, color: "#94a3b8" }}>{`中古スマホ店の検品担当として一番伝えたいこと・${now}`}</span>
+        <span style={{ fontSize: 22, fontWeight: 900, color: "#2563eb" }}>used.gadelog.com</span>
+      </div>
+    </div>
+  ), t4);
+}
 }
 main().finally(() => prisma.$disconnect());
