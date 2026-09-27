@@ -6,6 +6,7 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import {
+  ALL_CATALOG_MODELS,
   ALL_PAGE_MODELS,
   IPHONE_CATALOG,
   isIpad,
@@ -15,7 +16,8 @@ import {
   siblingModels,
   slugToModel,
 } from "@/lib/catalog";
-import { getBatteryRows, getModelStats, type PriceRow } from "@/lib/modelStats";
+import { getBatteryRows, getModelStats, getStorageRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
+import { SPEC_ROWS, specOf } from "@/lib/iphoneSpecs";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
@@ -108,6 +110,49 @@ function PriceTable({ title, rows, labelOf, hrefOf, baseline, note }: {
   );
 }
 
+/** 容量 × 状態ランクの最安値。セルはその条件の検索結果へ */
+function StorageRankTable({ model, matrix }: { model: string; matrix: StorageRankMatrix }) {
+  if (matrix.storages.length === 0) return null;
+  return (
+    <section className="mb-10 bg-white rounded-3xl border border-slate-200 overflow-hidden">
+      <h2 className="px-5 py-4 text-base font-bold text-slate-800 bg-slate-50 border-b border-slate-100">容量 × 状態ランクの最安値</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-xs text-slate-400">
+              <th className="text-left font-semibold pl-5 pr-2 py-2"></th>
+              {matrix.ranks.map((r) => <th key={r} className="text-right font-semibold px-2 py-2 whitespace-nowrap">ランク {r}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {matrix.storages.map((st) => (
+              <tr key={st} className="border-t border-slate-100">
+                <td className="pl-5 pr-2 py-2.5 font-bold text-slate-700 whitespace-nowrap">{storageLabel(st)}</td>
+                {matrix.ranks.map((r) => {
+                  const cell = matrix.cells.get(`${st}:${r}`);
+                  return (
+                    <td key={r} className="px-2 py-2.5 text-right whitespace-nowrap">
+                      {cell ? (
+                        <Link href={searchHref(model, { storage: String(st), rank: r })} className="group">
+                          <span className="font-black text-red-600 group-hover:underline underline-offset-2">{yen(cell.minPrice)}</span>
+                          <span className="block text-[11px] text-slate-400">{cell.count.toLocaleString()}件</span>
+                        </Link>
+                      ) : (
+                        <span className="text-slate-300">-</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">ランクの基準は店ごとに違います。金額を押すとその条件の在庫一覧へ移ります。</p>
+    </section>
+  );
+}
+
 // 店によってバッテリーの表記が違うので、表の数え方を書いておく（lib/shops.ts の battery）
 const labelsWith = (battery: string) => SHOPS.filter((s) => s.battery === battery).map((s) => s.label).join("・");
 const BATTERY_NOTE = `未使用品（ランクS）を含みます。${labelsWith("over80")}は「80%以上」表記のため80%の行だけに、${labelsWith("none")}はバッテリーの記載を取り込めていないため未使用品以外は含みません。`;
@@ -117,7 +162,15 @@ export default async function ModelPage({ params }: Props) {
   const model = slugToModel(slug);
   if (!model) notFound();
 
-  const [stats, history, batteryRows] = await Promise.all([getModelStats(model), getPriceHistory(slug), getBatteryRows(model)]);
+  const [stats, history, batteryRows, matrix] = await Promise.all([
+    getModelStats(model),
+    getPriceHistory(slug),
+    getBatteryRows(model),
+    getStorageRankMatrix(model),
+  ]);
+  const spec = specOf(model);
+  const listPath = isIpad(model) ? "/ipad" : "/iphone";
+  const listName = isIpad(model) ? "中古iPad" : "中古iPhoneの相場一覧";
   const series = seriesOf(model);
   const siblings = siblingModels(model);
   const path = modelPagePath(model);
@@ -132,7 +185,8 @@ export default async function ModelPage({ params }: Props) {
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
-        { "@type": "ListItem", position: 2, name: `${model} 中古`, item: `${SITE_URL}${path}` },
+        { "@type": "ListItem", position: 2, name: listName, item: `${SITE_URL}${listPath}` },
+        { "@type": "ListItem", position: 3, name: `${model} 中古`, item: `${SITE_URL}${path}` },
       ],
     },
     ...(stats.minPrice !== null && stats.maxPrice !== null
@@ -166,6 +220,8 @@ export default async function ModelPage({ params }: Props) {
         <nav aria-label="パンくずリスト" className="text-xs text-slate-400 mb-4">
           <Link href="/" className="hover:text-blue-600">トップ</Link>
           <span className="mx-2">›</span>
+          <Link href={listPath} className="hover:text-blue-600">{listName}</Link>
+          <span className="mx-2">›</span>
           <span className="text-slate-600">{model}</span>
         </nav>
 
@@ -180,11 +236,22 @@ export default async function ModelPage({ params }: Props) {
         </p>
         <AdDisclosure compact />
 
+        {/* 紹介文（発売・スペックと、いまの中古相場） */}
+        <p className="mt-5 text-slate-700 leading-relaxed">
+          {spec && (
+            <>{model}は{spec.released}発売（{spec.chip}・{spec.display}インチ{spec.panel}・{spec.port}）。</>
+          )}
+          {stats.minPrice !== null && stats.medianPrice !== null && (
+            <>中古の最安値は<strong>{yen(stats.minPrice)}</strong>、相場（在庫の中央値）は<strong>{yen(stats.medianPrice)}</strong>で、{stats.shopCount}ショップに{stats.count.toLocaleString()}件の在庫があります。</>
+          )}
+          {!isIpad(model) && (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
+        </p>
+
         {/* サマリー */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-3 my-6">
           {[
             { label: "最安値", value: stats.minPrice !== null ? yen(stats.minPrice) : "-", accent: true },
-            { label: "価格の中央値", value: stats.medianPrice !== null ? yen(stats.medianPrice) : "-" },
+            { label: "相場（中央値）", value: stats.medianPrice !== null ? yen(stats.medianPrice) : "-" },
             { label: "在庫数", value: `${stats.count.toLocaleString()}件` },
             { label: "取扱ショップ", value: `${stats.shopCount}店` },
           ].map((s) => (
@@ -194,6 +261,9 @@ export default async function ModelPage({ params }: Props) {
             </div>
           ))}
         </section>
+        <p className="-mt-3 mb-8 text-xs text-slate-400">
+          相場＝販売中の在庫を安い順に並べた真ん中の値。最安値は1台だけの特価やジャンク品のことが多いので、買う値段の目安には相場を見てください。
+        </p>
 
         <section className="mb-10 rounded-3xl border border-slate-200 p-5 md:p-6">
           <h2 className="text-lg md:text-xl font-bold mb-3">{model} 中古の最安値の推移</h2>
@@ -219,6 +289,8 @@ export default async function ModelPage({ params }: Props) {
                 hrefOf={(k) => searchHref(model, { shop: k })} />
             </div>
 
+            <StorageRankTable model={model} matrix={matrix} />
+
             <section className="mb-10">
               <h2 className="text-xl md:text-2xl font-bold mb-4">いま一番安い{model}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -237,6 +309,21 @@ export default async function ModelPage({ params }: Props) {
         {/* 運営者（検品担当）の視点。iPhone のみ */}
         {!isIpad(model) && (
           <InspectionTips model={model} has64GB={stats.byStorage.some((r) => r.key === "64")} />
+        )}
+
+        {/* 基本スペック（確かめた機種だけ。lib/iphoneSpecs.ts） */}
+        {spec && (
+          <section className="mb-6 rounded-3xl border border-slate-200 p-5 md:p-6">
+            <h2 className="text-lg font-bold mb-3">{model}の基本スペック</h2>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+              {SPEC_ROWS.map((r) => (
+                <div key={r.label} className="contents">
+                  <dt className="text-slate-400 font-bold">{r.label}</dt>
+                  <dd className="text-slate-800">{r.value(spec)}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         )}
 
         {/* モデルの特徴 */}

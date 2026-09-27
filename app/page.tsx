@@ -9,6 +9,8 @@ import { BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import prisma from "@/lib/prisma";
 import { SHOPS } from "@/lib/shops";
 import SiteFooter from "@/app/components/SiteFooter";
+import PriceDrops from "@/app/components/PriceDrops";
+import { getPriceDrops } from "@/lib/marketStats";
 
 // ショップごとの在庫数を出すので、1時間ごとに再生成する
 export const revalidate = 3600;
@@ -51,7 +53,7 @@ const FEATURED_COMPARES: [string, string][] = [
 ];
 
 export default async function Home() {
-  const [counts, prices] = await Promise.all([shopCounts(), modelPrices()]);
+  const [counts, prices, drops] = await Promise.all([shopCounts(), modelPrices(), getPriceDrops(7, 6)]);
   const total = SHOPS.reduce((n, s) => n + (counts.get(s.name) ?? 0), 0);
 
   return (
@@ -213,7 +215,22 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* iPad */}
+      {/* 値下がり（1週間分の記録がたまってから出る） */}
+      <div className="max-w-6xl mx-auto px-4 relative z-10">
+        <PriceDrops drops={drops} title="今週値下がりした機種" />
+      </div>
+
+      {/* 相場一覧・iPad */}
+      <section className="max-w-6xl mx-auto px-4 mb-4 relative z-10">
+        <Link href="/iphone"
+          className="group flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-6 py-5 hover:border-blue-300 hover:bg-blue-50 transition-colors">
+          <div>
+            <p className="text-lg md:text-xl font-bold text-slate-800 group-hover:text-blue-600">中古iPhoneの相場一覧を見る</p>
+            <p className="text-xs md:text-sm text-slate-500 mt-1">全機種の相場（中央値）・最安値・安い順ランキング</p>
+          </div>
+          <span className="text-2xl text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-transform" aria-hidden>›</span>
+        </Link>
+      </section>
       <section className="max-w-6xl mx-auto px-4 mb-10 relative z-10">
         <Link href="/ipad"
           className="group flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-6 py-5 hover:border-blue-300 hover:bg-blue-50 transition-colors">

@@ -94,3 +94,42 @@ export const getBatteryRows = cache(async (model: string): Promise<PriceRow[]> =
   );
   return rows.filter((r) => r.count > 0);
 });
+
+export type StorageRankMatrix = {
+  /** 容量(GB)の昇順 */
+  storages: number[];
+  /** RANK_ORDER の順（在庫のあるランクだけ） */
+  ranks: string[];
+  /** `${storage}:${rank}` → 最安値と件数 */
+  cells: Map<string, PriceRow>;
+};
+
+/**
+ * 容量 × 状態ランクの最安値（機種ページの表）。DB で (容量, ランク) ごとに集計するので、返る行は組み合わせの数だけ
+ */
+export const getStorageRankMatrix = cache(async (model: string): Promise<StorageRankMatrix> => {
+  const where = await modelWhere(model);
+  const rows = await prisma.deviceInventory.groupBy({
+    by: ["storage", "conditionRank"],
+    where,
+    _min: { price: true },
+    _count: { _all: true },
+  });
+  const cells = new Map<string, PriceRow>();
+  for (const r of rows) {
+    const rank = r.conditionRank.toUpperCase();
+    const key = `${r.storage}:${rank}`;
+    const cur = cells.get(key);
+    const price = r._min.price ?? 0;
+    if (!cur) cells.set(key, { key: rank, minPrice: price, count: r._count._all });
+    else {
+      cur.count += r._count._all;
+      cur.minPrice = Math.min(cur.minPrice, price);
+    }
+  }
+  const storages = [...new Set(rows.map((r) => r.storage))].sort((a, b) => a - b);
+  const ranks = [...new Set(rows.map((r) => r.conditionRank.toUpperCase()))].sort(
+    (a, b) => (RANK_ORDER.indexOf(a) + 99) % 99 - (RANK_ORDER.indexOf(b) + 99) % 99,
+  );
+  return { storages, ranks, cells };
+});
