@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Smartphone, BatteryCharging, Camera, Sparkles, Zap, Fingerprint, ShieldCheck, Search } from "lucide-react";
+import { Smartphone, BatteryCharging, Camera, Sparkles, Zap, Search } from "lucide-react";
 import { IPHONE_CATALOG, modelPagePath } from "@/lib/catalog";
 import { comparePath } from "@/lib/compare";
 import { pickPath } from "@/lib/picks";
+import { BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import AdDisclosure from "@/app/components/AdDisclosure";
 
 
@@ -153,6 +154,17 @@ export default function Home() {
               </div>
             </Link>
 
+          </div>
+
+          {/* 予算別ページ */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-bold text-slate-500 mr-1">予算で探す:</span>
+            {BUDGETS.map((max) => (
+              <Link key={max} href={budgetPath(max)}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {budgetLabel(max)}以下
+              </Link>
+            ))}
           </div>
         </div>
       </section>

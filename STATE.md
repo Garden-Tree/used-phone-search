@@ -48,7 +48,7 @@
 ユーザー gadelog.com の記事（used-iphone-inspection-guide など）から機種別・比較ページへリンク
 ユーザー gadelog.com の WordPress 更新（CVE-2026-87902 注意喚起・9/24）
 ユーザー サーバーの rakuten-sync/sample.json 削除
-候補   楽天API でじゃんぱら等を追加／予算別ページ／iPad・Android（大）。競合比較は ideas/2026-09-26.md
+候補   iPad・Android（大）／検品チェックポイント（要ユーザー確認）／値下がりページ。競合比較は ideas/
 ```
 
 ## 期限のあるもの

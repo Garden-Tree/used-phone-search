@@ -1,11 +1,12 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Filter, ChevronDown, ChevronUp, X } from 'lucide-react';
 
 const STORAGE_OPTIONS = [64, 128, 256, 512, 1024];
 const RANK_OPTIONS = ['S', 'A', 'B', 'C', 'D'];
+const BATTERY_OPTIONS = [80, 85, 90, 95];
 const SHOPS = [
   { id: 'all', name: 'すべて' },
   { id: 'イオシス', name: 'イオシス' },
@@ -24,15 +25,10 @@ export default function FilterPanel() {
 
   const [isOpen, setIsOpen] = useState(false);
   
-  // Local state for inputs to avoid immediate navigation on every keystroke
+  // 入力中は URL を変えないよう手元に持つ。URL 側が変わったとき（ブラウザの戻るなど）は、
+  // 呼び出し側が key に価格を渡して作り直すことで同期する
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '');
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '');
-
-  // Sync local state with URL when URL changes (e.g. browser back button)
-  useEffect(() => {
-    setMinPrice(searchParams.get('minPrice') || '');
-    setMaxPrice(searchParams.get('maxPrice') || '');
-  }, [searchParams]);
 
   const updateParams = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -227,25 +223,27 @@ export default function FilterPanel() {
           {/* Battery */}
           <div className="space-y-3">
             <label className="text-sm font-bold text-slate-500">
-              その他
+              バッテリー最大容量
             </label>
-            <div className="flex flex-wrap gap-4">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <div className="relative flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={searchParams.get('minBattery') === '80'}
-                    onChange={() => toggleValue('minBattery', '80')}
-                    className="peer sr-only"
-                  />
-                  <div className="w-10 h-6 bg-slate-200 rounded-full peer-checked:bg-blue-600 transition-colors"></div>
-                  <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
-                </div>
-                <span className="text-sm font-semibold text-slate-600 group-hover:text-blue-600 transition-colors">
-                  バッテリー80%以上
-                </span>
-              </label>
+            <div className="flex flex-wrap gap-2">
+              {BATTERY_OPTIONS.map((val) => {
+                const isActive = searchParams.get('minBattery') === String(val);
+                return (
+                  <button
+                    key={val}
+                    onClick={() => toggleValue('minBattery', String(val))}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                      isActive
+                        ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                        : 'bg-slate-50 border-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {val}%以上
+                  </button>
+                );
+              })}
             </div>
+            <p className="text-xs text-slate-400">値段に差が出にくいのに使い心地を大きく左右するので、まず見たい項目です。未使用品（ランクS）は常に含みます</p>
           </div>
 
         </div>
