@@ -54,12 +54,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [a, b] = pair;
   const [sa, sb] = await Promise.all([getModelStats(a), getModelStats(b)]);
 
-  const title = `${a} と ${b} 中古はどっちがお得？価格比較`;
+  const title = `${a} と ${b} 中古はどっちがお得？相場・価格比較`;
   const prices = [
     sa.minPrice !== null ? `${a}は${yen(sa.minPrice)}` : null,
     sb.minPrice !== null ? `${b}は${yen(sb.minPrice)}` : null,
   ].filter(Boolean).join("、");
-  const description = `${a}と${b}の中古価格を大手中古ショップ5社の在庫から比較。${prices ? `最安値は${prices}から。` : ""}容量別・状態ランク別の最安値と差額をまとめています。`;
+  const description = `${a}と${b}の中古相場を大手中古ショップ5社の在庫から比較。${prices ? `最安値は${prices}から。` : ""}容量別・状態ランク別の最安値と差額をまとめています。`;
   const path = comparePath(a, b);
 
   return {
