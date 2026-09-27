@@ -7,13 +7,14 @@ import prisma from "@/lib/prisma";
 import { modelPagePath } from "@/lib/catalog";
 import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
 import { SITE_NAME } from "@/lib/site";
+import { yen } from "@/lib/format";
 
 // iPad の機種一覧。在庫は1時間ごとに更新
 export const revalidate = 3600;
 
 const TITLE = "中古iPadの相場・最安値を機種別に比較【毎日更新】";
 const DESCRIPTION =
-  "中古iPad（iPad・iPad mini・iPad Air・iPad Pro）の最安値と在庫数を機種別に比較。ゲオモバイル・じゃんぱら・ソフマップの在庫から毎日更新。";
+  "中古iPad（iPad・iPad mini・iPad Air・iPad Pro）の最安値と在庫数を機種別に比較。イオシス・にこスマ・ゲオモバイル・じゃんぱら・ソフマップの在庫から毎日更新。";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -22,7 +23,6 @@ export const metadata: Metadata = {
   openGraph: { title: `${TITLE} | ${SITE_NAME}`, description: DESCRIPTION, url: "/ipad", images: ["/opengraph-image"] },
 };
 
-const yen = (n: number) => `${n.toLocaleString()}円`;
 
 export default async function IpadIndexPage() {
   // iPad のモデル名は取り込み時に正式名へそろえているので、そのまま GROUP BY で集計できる
@@ -48,7 +48,7 @@ export default async function IpadIndexPage() {
 
         <h1 className="text-2xl md:text-4xl font-extrabold mb-3">中古iPadの相場・最安値</h1>
         <p className="text-slate-600 mb-4 leading-relaxed">
-          ゲオモバイル・じゃんぱら・ソフマップ（いずれも楽天市場店）の中古iPad <strong>{total.toLocaleString()}件</strong>
+          イオシス・にこスマ・ゲオモバイル・じゃんぱら・ソフマップの中古iPad <strong>{total.toLocaleString()}件</strong>
           を機種別にまとめています。機種名から容量別・状態別の最安値へ。
         </p>
         <AdDisclosure compact />

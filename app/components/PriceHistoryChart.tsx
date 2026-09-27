@@ -2,6 +2,10 @@
 
 import { useMemo, useState } from 'react';
 import type { PriceHistory, PricePoint } from '@/lib/priceHistory';
+import { yen, storageLabel as gbLabel } from "@/lib/format";
+
+// 価格推移の storage=0 は「全容量」の集計
+const storageLabel = (gb: number) => (gb === 0 ? "全容量" : gbLabel(gb));
 
 // グラフの寸法（viewBox 座標。幅は親要素に合わせて伸縮する）
 const W = 640;
@@ -10,8 +14,6 @@ const PAD = { top: 16, right: 16, bottom: 28, left: 64 };
 const PLOT_W = W - PAD.left - PAD.right;
 const PLOT_H = H - PAD.top - PAD.bottom;
 
-const yen = (n: number) => `${n.toLocaleString()}円`;
-const storageLabel = (gb: number) => (gb === 0 ? '全容量' : gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`);
 const shortDate = (iso: string) => {
   const [, m, d] = iso.split('-');
   return `${Number(m)}/${Number(d)}`;

@@ -10,7 +10,7 @@ import { RAKUTEN_SHOPS, type RakutenItem } from "@/lib/rakutenShops";
  * ショップは ?shop=<楽天の shopCode>（省略時はゲオモバイル）で指定する。
  */
 
-// 取得件数が既存の何割未満なら洗い替えを中止するか（scraper/db_guard.py と同じ考え方）
+// 取得件数が既存の何割未満なら洗い替えを中止するか（scraper/common.py の ensure_safe_to_replace と同じ考え方）
 const MIN_REPLACE_RATIO = 0.5;
 const MIN_EXISTING_TO_CHECK = 20;
 const INSERT_CHUNK = 1000;

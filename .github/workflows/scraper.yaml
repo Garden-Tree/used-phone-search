@@ -7,10 +7,6 @@ on:
   # 手動実行時にブラウザで数値を入力できる「フォーム」を作成
   workflow_dispatch:
     inputs:
-      geo_limit:
-        description: 'ゲオの取得数（ゲオはWAFで弾かれるため通常は0。ゲオの在庫は楽天API経由で取得している）'
-        required: true
-        default: '0'
       nicosuma_limit:
         description: 'にこスマの取得数'
         required: true
@@ -59,8 +55,7 @@ jobs:
       - name: スクレイパーの実行
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          # フォームからの入力値を渡す。定期実行(cron)の時は空になるのでゲオは0、他は '100' をフォールバックとして渡す
-          GEO_LIMIT: ${{ inputs.geo_limit || '0' }}
+          # フォームからの入力値を渡す。定期実行(cron)の時は空になるので '100' をフォールバックとして渡す
           NICOSUMA_LIMIT: ${{ inputs.nicosuma_limit || '100' }}
           IOSIS_LIMIT: ${{ inputs.iosis_limit || '100' }}
           MMOBA_LIMIT: ${{ inputs.mmoba_limit || '100' }}
@@ -80,6 +75,13 @@ jobs:
       - name: Node.js の依存ライブラリのインストール
         if: ${{ !cancelled() }}
         run: npm ci
+
+      # にこスマ・イオシスの iPad は店の表記のまま入るので、lib/ipadCatalog.ts の正式名にそろえる
+      - name: iPad の機種名をそろえる
+        if: ${{ !cancelled() }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run normalize:ipad
 
       # 一部のショップの取得に失敗しても、取れた分で価格推移は記録する（ジョブ自体は失敗のまま通知される）
       - name: 価格推移の記録

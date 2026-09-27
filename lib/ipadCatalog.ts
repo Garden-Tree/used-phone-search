@@ -59,8 +59,10 @@ export function canonicalIpadModel(raw: string): string | null {
   if (!/iPad/i.test(s)) return null;
 
   const line = s.match(/iPad\s*(Pro|Air|mini)/i)?.[1]?.toLowerCase() ?? "";
-  const size = s.match(/(\d{1,2}(?:\.\d)?)\s*インチ/)?.[1] ?? null;
-  const gen = Number(s.match(/第\s*(\d+)\s*世代/)?.[1] ?? NaN);
+  // 「11インチ」「11-inch」（にこスマ）「12.9インチ」
+  const size = s.match(/(\d{1,2}(?:\.\d)?)\s*(?:インチ|-?\s*inch)/i)?.[1] ?? null;
+  // 「第5世代」「第 5 世代」、イオシスの「iPad Air5」
+  const gen = Number(s.match(/第\s*(\d+)\s*世代/)?.[1] ?? s.match(/iPad\s*(?:Air|mini)\s?(\d)\b/i)?.[1] ?? NaN);
   const chipRaw = s.match(/\b(A17\s*Pro|A1\d|M[1-5])\b/)?.[1] ?? null;
   const chip = chipRaw ? chipRaw.replace(/\s+/, " ") : null;
 

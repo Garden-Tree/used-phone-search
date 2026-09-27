@@ -4,38 +4,13 @@
 - ページネーションは ?cb_page=N パラメータ
 - metafield に model, storage, color, grade, battery, mno が構造化されている
 """
-import os
-import sys
-import time
 import re
 import json
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from urllib.parse import urlparse
 from bs4 import BeautifulSoup
-import psycopg2
-from db_guard import ensure_safe_to_replace
-from psycopg2.extras import execute_values
+from common import WIFI_MODEL, run_scraper, is_iphone_13_or_later
 
-
-def clean_database_url(url: str) -> str:
-    if not url:
-        return url
-    url = url.strip('"').strip("'")
-    parsed = urlparse(url)
-    port = f":{parsed.port}" if parsed.port else ""
-    clean_url = f"{parsed.scheme}://{parsed.username}:{parsed.password}@{parsed.hostname}{port}{parsed.path}"
-    return clean_url
-
-def is_iphone_13_or_later(model_name):
-    """iPhone 13以降（SE 第3世代含む）か判定する。2021年10月以降発売モデルは原則SIMロックなし。"""
-    # 13, 14, 15, 16 シリーズ
-    if re.search(r'iPhone\s?(1[3-9])', model_name, re.IGNORECASE):
-        return True
-    # SE 第3世代
-    if "SE" in model_name and "第3世代" in model_name:
-        return True
-    return False
 
 # にこスマでスクレイピング対象とするiPhoneコレクション
 IPHONE_COLLECTIONS = [
@@ -79,6 +54,31 @@ IPHONE_COLLECTIONS = [
     # iPhone SE
     "iphone-se-2nd-gen",
 ]
+
+# にこスマの iPad コレクション（機種名は npm run normalize:ipad で lib/ipadCatalog.ts の正式名にそろえる）。
+# カタログにない古い機種（iPad Air 2・mini 4 など）は取らない
+IPAD_COLLECTIONS = [
+    "ipad-pro-13-inch-m4", "ipad-pro-11-inch-m4",
+    "ipad-pro-12dot9-inch-6th-gen", "ipad-pro-11-inch-4gen",
+    "ipad-pro-12dot9-inch-5th-gen", "ipad-pro-11-inch-3rd-gen",
+    "ipad-pro-12dot9-inch-4th-gen", "ipad-pro-11-inch-2nd-gen",
+    "ipad-pro-12dot9-inch-3rd-gen", "ipad-pro-11-inch",
+    "ipad-pro-10dot5-inch", "ipad-pro-9dot7-inch",
+    "ipad-air-13-inch-m3", "ipad-air-11-inch-m3", "ipad-air-13-inch-m2", "ipad-air-11-inch-m2",
+    "ipad-air-5th-gen", "ipad-air-4th-gen", "ipad-air-3",
+    "ipad-mini-7th-gen", "ipad-mini-6th-gen", "ipad-mini-5th-gen",
+    "ipad-11th-gen", "ipad-10gen", "ipad-9th-gen", "ipad-8th-gen", "ipad-7th-gen", "ipad-6th-gen",
+]
+
+# iPad の mno（販路）→ 他ショップと揃えた carrier
+IPAD_CARRIERS = {
+    "Wi-Fiモデル": WIFI_MODEL,
+    "NTTドコモ": "docomo",
+    "au": "au",
+    "ソフトバンク": "SoftBank",
+    "SIMフリー版": "国内版SIMフリー",
+    "楽天モバイル": "楽天モバイル",
+}
 
 
 def extract_products_from_page(html_content):
@@ -159,8 +159,9 @@ def extract_products_from_page(html_content):
         total_inventory = product.get("totalInventory")
         is_sold_out = total_inventory == 0
 
-        # にこスマは販路が不明なため、carrierはNone（Null）とする
-        mno = None
+        # iPhone は販路が不明なため carrier は None（Null）。iPad は Wi-Fi/セルラーの区別に必要なので mno から入れる
+        is_ipad = model_name.startswith("iPad")
+        mno = IPAD_CARRIERS.get(mno) if is_ipad else None
             
         items.append({
             "manufacturer": "Apple",
@@ -183,7 +184,7 @@ def extract_products_from_page(html_content):
     return items, has_more
 
 
-def scrape_nicosuma_collection(collection_handle):
+def scrape_nicosuma_collection(collection_handle, category="iphone"):
     """1つのコレクション(例: iphone-15)の全商品をスクレイピング
     にこスマの__NEXT_DATA__は1ページ目で全商品を返すためページネーション不要"""
     headers = {
@@ -191,7 +192,7 @@ def scrape_nicosuma_collection(collection_handle):
         "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
     }
 
-    url = f"https://www.nicosuma.com/iphone/{collection_handle}"
+    url = f"https://www.nicosuma.com/{category}/{collection_handle}"
     print(f"  Fetching: {url}")
     try:
         response = requests.get(url, headers=headers, timeout=15)
@@ -217,15 +218,16 @@ def scrape_nicosuma(max_collections=None):
     all_items = []
     seen_urls = set()
     
-    target_collections = IPHONE_COLLECTIONS
+    # (カテゴリ, コレクション) の組。max_collections はテスト用に先頭から絞る
+    target_collections = [("iphone", c) for c in IPHONE_COLLECTIONS] + [("ipad", c) for c in IPAD_COLLECTIONS]
     if max_collections:
-        target_collections = IPHONE_COLLECTIONS[:max_collections]
+        target_collections = target_collections[:max_collections]
 
     # 最大15並列でフェッチ（高速化）
     with ThreadPoolExecutor(max_workers=15) as executor:
         future_to_collection = {
-            executor.submit(scrape_nicosuma_collection, col): col
-            for col in target_collections
+            executor.submit(scrape_nicosuma_collection, handle, category): f"{category}/{handle}"
+            for category, handle in target_collections
         }
 
         for future in as_completed(future_to_collection):
@@ -249,113 +251,5 @@ def scrape_nicosuma(max_collections=None):
     return all_items
 
 
-def main():
-    print("--- にこスマ スクレイピング開始 ---")
-
-    max_collections = None
-    if len(sys.argv) > 1:
-        try:
-            max_collections = int(sys.argv[1])
-        except ValueError:
-            pass
-            
-    # 1. データのスクレイピング
-    try:
-        items = scrape_nicosuma(max_collections=max_collections)
-    except Exception as e:
-        print(f"Scraping failed: {e}")
-        sys.exit(1)
-
-    if not items:
-        print("No items found. Exiting.")
-        sys.exit(1)
-
-    # 2. データベース接続
-    env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
-    db_url = None
-    try:
-        with open(env_path, "r", encoding="utf-8") as f:
-            for line in f:
-                if line.startswith("DATABASE_URL="):
-                    db_url = line.split("=", 1)[1].strip()
-                    break
-    except Exception as e:
-        print(f"Failed to read .env file: {e}")
-        sys.exit(1)
-
-    if not db_url:
-        print("DATABASE_URL not found in .env")
-        sys.exit(1)
-
-    clean_url = clean_database_url(db_url)
-
-    # 3. データベースの更新 (洗い替え方式)
-    conn = None
-    try:
-        print("Connecting to PostgreSQL...")
-        conn = psycopg2.connect(clean_url)
-        cur = conn.cursor()
-
-        conn.autocommit = False
-
-        # 古いにこスマのデータを削除
-        ensure_safe_to_replace(cur, 'にこスマ', len(items))
-
-        print("Deleting old 'にこスマ' data...")
-        cur.execute(
-            'DELETE FROM "DeviceInventory" WHERE "shopName" = %s', ("にこスマ",)
-        )
-
-        print(f"Inserting {len(items)} new items...")
-        insert_query = """
-            INSERT INTO "DeviceInventory" (
-                "id", "manufacturer", "modelName", "storage", "color",
-                "conditionRank", "batteryHealth", "networkStatus", "simUnlocked", "carrier",
-                "shopName", "price", "url", "isSoldOut", "createdAt", "updatedAt"
-            ) VALUES %s
-        """
-        
-        # バルクインサート用のデータ作成
-        values = [
-            (
-                item["manufacturer"],
-                item["modelName"],
-                item["storage"],
-                item["color"],
-                item["conditionRank"],
-                item["batteryHealth"],
-                item["networkStatus"],
-                item["simUnlocked"],
-                item["carrier"],
-                item["shopName"],
-                item["price"],
-                item["url"],
-                item["isSoldOut"],
-            )
-            for item in items
-        ]
-        
-        # gen_random_uuid() と NOW() を含めるためのテンプレート
-        template = "(gen_random_uuid(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())"
-        
-        execute_values(cur, insert_query, values, template=template)
-
-        conn.commit()
-        print("Database update complete! 洗い替え完了。")
-
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        print(f"Database error occurred. Rollback executed: {e}")
-        sys.exit(1)
-    finally:
-        if conn:
-            cur.close()
-            conn.close()
-            print("Database connection closed.")
-
-    print("--- スクレイピング処理完了 ---")
-
-
 if __name__ == "__main__":
-    main()
+    run_scraper("にこスマ", lambda limit: scrape_nicosuma(max_collections=limit), None)

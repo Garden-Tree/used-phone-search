@@ -71,21 +71,16 @@ def run_scraper(script_name, args=""):
         FAILED.append(script_name)
 
 def main():
-    # 環境変数から取得（指定がなければデフォルトの100を使用）
-    # os.environ.get("変数名", デフォルト値)
-    geo_limit = int(os.environ.get("GEO_LIMIT", 100))
-    nicosuma_limit = int(os.environ.get("NICOSUMA_LIMIT", 100))
-    iosis_limit = int(os.environ.get("IOSIS_LIMIT", 100))
-    mmoba_limit = int(os.environ.get("MMOBA_LIMIT", 100))
-    daiwan_limit = int(os.environ.get("DAIWAN_LIMIT", 100))
+    # 各ショップの取得数（ページ数など）。環境変数で上書きでき、0 ならそのショップは実行しない。
+    # ゲオは公式ECが自動アクセスを拒否しているため、楽天API（rakuten-sync/）で取得している
+    limits = {
+        "nicosuma_scraper.py": int(os.environ.get("NICOSUMA_LIMIT", 100)),
+        "iosis_scraper.py": int(os.environ.get("IOSIS_LIMIT", 100)),
+        "mmoba_scraper.py": int(os.environ.get("MMOBA_LIMIT", 100)),
+        "daiwan_scraper.py": int(os.environ.get("DAIWAN_LIMIT", 100)),
+    }
+    config = {script: limit for script, limit in limits.items() if limit > 0}
 
-    config = {}
-    if geo_limit > 0: config["geo_scraper.py"] = geo_limit
-    if nicosuma_limit > 0: config["nicosuma_scraper.py"] = nicosuma_limit
-    if iosis_limit > 0: config["iosis_scraper.py"] = iosis_limit
-    if mmoba_limit > 0: config["mmoba_scraper.py"] = mmoba_limit
-    if daiwan_limit > 0: config["daiwan_scraper.py"] = daiwan_limit
-    
     scrapers = list(config.keys())
     
     print(f"=== Starting parallel execution of {len(scrapers)} scrapers ===")
