@@ -62,6 +62,11 @@
 - スクレイパーも楽天の受け口も「件数が既存の50%未満なら洗い替えを中止」する。意図的に減らしたときは
   スクレイパーは `FORCE_REPLACE=1`、受け口は `?force=1`
 
+### iPad の機種名
+- 楽天3店の iPad は `lib/ipadCatalog.ts` の `canonicalIpadModel` で Apple の正式名にそろえる（チップ⇔世代の対応表込み）。
+  カタログにない機種・画面サイズが書かれていない M 系 Air は取り込まない。新しい iPad が出たら `IPAD_CATALOG` に追加
+- 検索は機種の指定がなければ iPhone のみ（`buildWhere`）。iPad は `/ipad` と機種別ページから
+
 ### 新しい iPhone が出た
 1. 中古在庫が出たのを確認（楽天のゲオ店が早い）
 2. `lib/catalog.ts` にシリーズ・モデルを追加（バッジは公式情報で確認）
