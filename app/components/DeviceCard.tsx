@@ -154,15 +154,13 @@ export default function DeviceCard({ device }: { device: Device }) {
         {renderStatusBadges()}
       </div>
 
-      {/* Price & Shop */}
-      <div className="mt-auto pt-5 border-t border-slate-100 flex items-center justify-between gap-4">
-        <div className="flex-shrink-0">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            {device.shopName}
-          </p>
-        </div>
+      {/* 楽天の店名（「じゃんぱら（楽天市場店）」など）は長く、横に並べると価格が見切れるので、店名を価格の上の行に置く */}
+      <div className="mt-auto pt-5 border-t border-slate-100">
+        <p className="mb-1 text-xs font-bold text-slate-400 tracking-wide break-words">
+          {device.shopName}
+        </p>
 
-        <div className="flex items-center gap-4 ml-auto">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-1">
             <span className="text-lg font-bold text-red-600">¥</span>
             <span className="text-3xl font-black text-red-600 tracking-tighter">
@@ -171,7 +169,7 @@ export default function DeviceCard({ device }: { device: Device }) {
           </div>
 
           {/* Transition Icon */}
-          <div className={`flex items-center justify-center w-10 h-10 rounded-full transition-all ${device.isSoldOut
+          <div className={`flex flex-shrink-0 items-center justify-center w-10 h-10 rounded-full transition-all ${device.isSoldOut
             ? 'bg-slate-50 text-slate-200'
             : 'bg-slate-50 text-slate-400 group-hover:bg-blue-600 group-hover:text-white shadow-sm'
             }`}>
