@@ -46,7 +46,7 @@
 
 ```
 9/28   上の確認台帳 9/28 分（Claude に「確認して」で可）
-ユーザー ブログからのリンク（案: `ideas/blog-links-2026-09-27.md`。wp 796 はいつでも、1922 は 10/3 以降）
+ユーザー ブログからのリンク（`ideas/blog-links-2026-09-27.md`。1922 は 10/3〜）
 ユーザー gadelog.com の WordPress 更新（CVE-2026-87902 注意喚起・9/24）
 ユーザー サーバーの rakuten-sync/sample.json 削除
 候補   Android（大）／値下がりページ（10/26〜）
