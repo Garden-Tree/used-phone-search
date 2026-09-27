@@ -41,7 +41,7 @@
 
 - **A8 イオシス 審査待ち**（blog-surporter の STATE より）。承認されたら `DeviceCard.tsx` の `getAffiliateUrl` にイオシスを追加
 - 楽天の取り込みは総件数の約88%（同価格の並び順が不安定なため）。改善は取得時間2倍とのトレードオフで保留
-- Vercel Hobby の商用利用可否（上記）
+- **Vercel からの移行**（Hobby 規約上アフィリエイト主目的は商用）：案 A Pro $20／B Cloudflare／C シンサーバー静的化。比較は `ideas/2026-09-26.md` 末尾
 
 ## 次にやる（順序）
 
