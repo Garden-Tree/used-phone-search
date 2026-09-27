@@ -5,7 +5,7 @@
 ```
 [GitHub Actions 6時間ごと 3/9/15/21時]            [シンレンタルサーバー cron 2:40/8:40/14:40/20:40]
  scraper/run_all_scrapers.py（4店）                 ~/rakuten-sync/fetch.php
-   イオシス・にこスマ・エムモバ・ダイワン              楽天市場 商品検索API（ゲオモバイル・じゃんぱらの楽天市場店）
+   イオシス・にこスマ・エムモバ・ダイワン              楽天市場 商品検索API（ゲオモバイル・じゃんぱら・ソフマップの楽天市場店）
    └→ Neon（DeviceInventory を店ごとに洗い替え）       └→ POST /api/ingest/rakuten?shop=<shopCode>（gzip + Bearer）
  npm run snapshot:prices（価格推移を記録）               └→ Neon（ゲオを洗い替え）
  ワークフローの自己有効化（60日停止の防止）
@@ -34,7 +34,7 @@
 | いつ（日本時間） | どこで | 何を | ログ |
 | --- | --- | --- | --- |
 | 3/9/15/21時 | GitHub Actions `Phone Inventory Scraper` | 4店のスクレイピング → 価格推移の記録 → 自己有効化 | Actions の実行ログ（失敗時は GitHub から通知メール） |
-| 2:40/8:40/14:40/20:40 | サーバー cron | 楽天からゲオ・じゃんぱらを順に取得して送信（1店あたり数分） | `~/rakuten-sync/fetch.log`（行頭に shopCode） |
+| 2:40/8:40/14:40/20:40 | サーバー cron | 楽天からゲオ・じゃんぱら・ソフマップを順に取得して送信（1店あたり数分） | `~/rakuten-sync/fetch.log`（行頭に shopCode） |
 | 毎日10:00 | サーバー cron | `/api/health` を確認し、問題時のみメール | cron の通知メール |
 | 毎日7:56 | サーバー cron（ブログ用・パネルが自動作成。「WordPressキャッシュ自動削除Cronを表示」で出る） | `wp-content/cache/` の3日より古いファイルを削除 | 出力なし（下記） |
 

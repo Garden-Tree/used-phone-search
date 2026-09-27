@@ -36,7 +36,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const storages = stats.byStorage.slice(0, 4);
 
   const priceText = stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし";
-  const summary = stats.count > 0 ? `${stats.shopCount}ショップ・${stats.count.toLocaleString()}件の在庫を比較` : "大手中古ショップ6社の在庫を比較";
+  const summary = stats.count > 0 ? `${stats.shopCount}ショップ・${stats.count.toLocaleString()}件の在庫を比較` : "大手中古ショップ7社の在庫を比較";
 
   // 画像内で使う文字をすべて集めてフォントのサブセットを取得する
   const allText = [

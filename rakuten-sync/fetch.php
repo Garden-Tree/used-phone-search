@@ -1,6 +1,6 @@
 <?php
 /**
- * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら）の iPhone 在庫を取得し、
+ * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone 在庫を取得し、
  * used.gadelog.com の受け口（/api/ingest/rakuten?shop=<shopCode>）へショップごとに送信する。
  *
  * シンレンタルサーバー（固定IP: 楽天アプリの許可IPに登録済み）の cron から実行する。
@@ -21,7 +21,7 @@ $onlyShops = array_values(array_filter($args, fn($a) => $a !== '--dry'));
 
 const ENDPOINT = 'https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701';
 // 取り込むショップ（楽天の shopCode）。受け口 lib/rakutenShops.ts の RAKUTEN_SHOPS と揃える
-const SHOP_CODES = ['geo-mobile', 'janpara'];
+const SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop'];
 const HITS = 30;              // 1ページの最大件数
 const MAX_PAGES = 100;        // API の上限（1検索あたり最大 3,000 件）
 const INTERVAL_US = 1100000;  // 登録した QPS=1 を守るため 1.1 秒間隔
@@ -76,9 +76,15 @@ function fetchPage(array $config, string $shopCode, int $page, int $minPrice, in
 function compactItem(array $item): array
 {
     $caption = (string)($item['itemCaption'] ?? '');
-    preg_match('/【程度】\s*([^\s【]+)/u', $caption, $rank);
+    // ランク: ゲオは「【程度】A」、ソフマップは「〔商品ランクA〕」
+    if (!preg_match('/【程度】\s*([^\s【]+)/u', $caption, $rank)) {
+        preg_match('/〔商品ランク\s*([A-Z])〕/u', $caption, $rank);
+    }
+    // キャリア: ソフマップは「〔キャリア〕docomoロック解除SIMフリー」
+    preg_match('/〔キャリア〕\s*([^〔\s]+)/u', $caption, $car);
     preg_match('/ネットワーク利用制限確認【([^】]*)】/u', $caption, $nw);
-    preg_match('/バッテリー(?:最大容量|容量|の状態)?\s*[：:]?\s*(\d{2,3})\s*[%％]/u', $caption, $batt);
+    // バッテリー最大容量: 「最大容量：82％」「バッテリー最大容量 85%」など
+    preg_match('/最大容量\s*[：:]?\s*(\d{2,3})\s*[%％]/u', $caption, $batt);
     return [
         'code'  => (string)($item['itemCode'] ?? ''),
         'name'  => (string)($item['itemName'] ?? ''),
@@ -87,6 +93,7 @@ function compactItem(array $item): array
         'rank'  => $rank[1] ?? null,
         'nw'    => $nw[1] ?? null,
         'batt'  => isset($batt[1]) ? (int)$batt[1] : null,
+        'car'   => $car[1] ?? null,
     ];
 }
 

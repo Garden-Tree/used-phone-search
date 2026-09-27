@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import type { RakutenGeoItem } from "@/lib/rakutenGeo";
+import { isKnownIphoneModel, normalizeModelPart } from "@/lib/iphoneModelName";
 
 /** 楽天API経由で取り込むじゃんぱらの在庫のショップ名 */
 export const RAKUTEN_JANPARA_SHOP = "じゃんぱら（楽天市場店）";
@@ -25,16 +26,6 @@ const CARRIERS: Record<string, string> = {
 
 const RANKS = new Set(["S", "A", "B", "C", "D", "J"]);
 
-/** "SE（第3世代）" → "SE (第3世代)"、"12 mini" はそのまま */
-function normalizeModelPart(part: string): string {
-  return part
-    .replace(/（/g, "(")
-    .replace(/）/g, ")")
-    .replace(/\s*\(/g, " (")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 /**
  * じゃんぱら楽天市場店の商品1件を DeviceInventory の行にする。iPhone 本体として読み取れないものは null
  */
@@ -44,6 +35,7 @@ export function normalizeJanparaItem(item: RakutenGeoItem & { batt?: number | nu
 
   const [, condition, carrierLabel, simLabel, modelPart, size, unit, restRaw, rankRaw] = m;
   const modelName = `iPhone ${normalizeModelPart(modelPart)}`;
+  if (!isKnownIphoneModel(modelName)) return null;
   const storage = unit === "TB" ? Number(size) * 1024 : Number(size);
 
   // 色の後ろの型番（MGDP3J/A など）と「（後期型番）」などの注記を落とす
