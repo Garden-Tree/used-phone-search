@@ -102,7 +102,7 @@ export default async function Home() {
             </form>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               <Link href="/search" className="text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors underline underline-offset-4">
-                すべての在庫から探す &rarr;
+                iPhone の在庫をすべて見る &rarr;
               </Link>
             </div>
           </div>

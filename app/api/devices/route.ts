@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { buildOrderBy, buildWhere, resolveModelNames, splitModelQuery } from "@/lib/deviceSearch";
 
-// 1時間ごとに自動更新（デバッグのために一時無効化）
-// export const revalidate = 60 * 60;
-
 const MAX_TAKE = 50;
 
 export async function GET(request: NextRequest) {

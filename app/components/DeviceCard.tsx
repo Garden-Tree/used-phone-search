@@ -51,7 +51,6 @@ export default function DeviceCard({ device }: { device: Device }) {
     }
 
     const hasCarrier = carrier && carrier !== '不明';
-    const networkStatus = device.networkStatus || '不明';
 
     // 「版」が既に含まれているかチェック
     const carrierName = hasCarrier ? (carrier.endsWith('版') ? carrier : `${carrier}版`) : '';
