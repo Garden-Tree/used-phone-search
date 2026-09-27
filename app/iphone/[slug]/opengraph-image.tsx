@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
-import { ALL_PAGE_MODELS, modelToSlug, slugToModel } from "@/lib/catalog";
+import { ALL_PAGE_MODELS, isIpad, modelToSlug, slugToModel } from "@/lib/catalog";
 import { getModelStats } from "@/lib/modelStats";
-import { notoSansJp } from "@/lib/ogFont";
+import { fitFontSize, notoSansJp } from "@/lib/ogFont";
 import { storageLabel } from "@/lib/format";
 
 // モデル別ページと同じく1時間ごとに作り直す（最安値が変わるため）
@@ -24,7 +24,8 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const stats = await getModelStats(model);
   // 画像では括弧を外して1行に収める（"iPhone SE (第3世代)" → "iPhone SE 第3世代"）
   const displayName = model.replace(/\s*\((.+)\)/, " $1");
-  const nameFontSize = displayName.length > 14 ? 60 : 76;
+  // 左の列（約680px）に1行で収める
+  const nameFontSize = fitFontSize(displayName, 680, 76);
 
   const updated = (stats.lastUpdated ?? new Date()).toLocaleDateString("ja-JP", {
     timeZone: "Asia/Tokyo",
@@ -36,7 +37,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const storages = stats.byStorage.slice(0, 4);
 
   const priceText = stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし";
-  const summary = stats.count > 0 ? `${stats.shopCount}ショップ・${stats.count.toLocaleString()}件の在庫を比較` : "大手中古ショップ7社の在庫を比較";
+  const summary = stats.count > 0 ? `${stats.shopCount}ショップ・${stats.count.toLocaleString()}件の在庫を比較` : `大手中古ショップ${isIpad(model) ? 5 : 7}社の在庫を比較`;
 
   // 画像内で使う文字をすべて集めてフォントのサブセットを取得する
   const allText = [

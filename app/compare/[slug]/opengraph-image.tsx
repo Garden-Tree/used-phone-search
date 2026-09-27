@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { COMPARE_PAIRS, compareSlug, slugToPair } from "@/lib/compare";
 import { getModelStats } from "@/lib/modelStats";
-import { notoSansJp } from "@/lib/ogFont";
+import { fitFontSize, notoSansJp } from "@/lib/ogFont";
 
 export const revalidate = 3600;
 export const dynamicParams = false;
@@ -16,9 +16,8 @@ export function generateStaticParams() {
 
 // 画像では括弧を外して1行に収める（"iPhone SE (第3世代)" → "iPhone SE 第3世代"）
 const display = (model: string) => model.replace(/\s*\((.+)\)/, " $1");
-// 表示幅の目安（漢字・かなは英数字の約1.8倍の幅）。カードからはみ出さない文字サイズを選ぶ
-const nameFontSize = (name: string) =>
-  Array.from(name).reduce((w, c) => w + (c.charCodeAt(0) > 0x2e80 ? 1.8 : 1), 0) > 15 ? 42 : 54;
+// カード（内側 約380px）からはみ出さない文字サイズ
+const nameFontSize = (name: string) => fitFontSize(name, 380, 54);
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

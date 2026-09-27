@@ -1,7 +1,7 @@
-import { ALL_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
+import { ALL_DEVICE_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
 
 /**
- * 比較ページを作る組み合わせ。「iPhone 13 14 中古 どっち」のように検索されやすいものに絞る。
+ * 比較ページを作る組み合わせ。「iPhone 13 14 中古 どっち」のように検索されやすいものに絞る（iPad も含む）。
  * 各ペアは [古い/下位モデル, 新しい/上位モデル] の順で書く（URL もこの順になる）
  */
 const GENERATIONS = [11, 12, 13, 14, 15, 16, 17];
@@ -40,8 +40,26 @@ function buildPairs(): [string, string][] {
     ["iPhone SE (第3世代)", "iPhone 16e"],
   );
 
+  // iPad（「買い替えるなら新しい方か」「Air と Pro どっち」で迷われる組）
+  pairs.push(
+    ["iPad (第9世代)", "iPad (第10世代)"],
+    ["iPad (第10世代)", "iPad (A16)"],
+    ["iPad (A16)", "iPad Air 11インチ (M3)"],
+    ["iPad (第10世代)", "iPad Air (第5世代)"],
+    ["iPad mini (第6世代)", "iPad mini (A17 Pro)"],
+    ["iPad mini (第6世代)", "iPad (第10世代)"],
+    ["iPad Air (第4世代)", "iPad Air (第5世代)"],
+    ["iPad Air (第5世代)", "iPad Air 11インチ (M2)"],
+    ["iPad Air 11インチ (M2)", "iPad Air 11インチ (M3)"],
+    ["iPad Air 11インチ (M3)", "iPad Air 11インチ (M4)"],
+    ["iPad Air 11インチ (M2)", "iPad Pro 11インチ (M4)"],
+    ["iPad Pro 11インチ (第4世代)", "iPad Pro 11インチ (M4)"],
+    ["iPad Pro 11インチ (M4)", "iPad Pro 11インチ (M5)"],
+    ["iPad Pro 12.9インチ (第6世代)", "iPad Pro 13インチ (M4)"],
+  );
+
   // カタログに無いモデルを含む組は除外（表記ミスの防止）
-  return pairs.filter(([a, b]) => ALL_PAGE_MODELS.includes(a) && ALL_PAGE_MODELS.includes(b));
+  return pairs.filter(([a, b]) => ALL_DEVICE_PAGE_MODELS.includes(a) && ALL_DEVICE_PAGE_MODELS.includes(b));
 }
 
 export const COMPARE_PAIRS: [string, string][] = buildPairs();
