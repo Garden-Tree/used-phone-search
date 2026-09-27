@@ -1,5 +1,6 @@
 import React from 'react';
-import { RAKUTEN_GEO_SHOP, rakutenAffiliateUrl } from '@/lib/rakutenGeo';
+import { rakutenAffiliateUrl } from '@/lib/rakutenGeo';
+import { RAKUTEN_SHOP_NAMES } from '@/lib/rakutenShops';
 
 // Define the type for the device object
 export type Device = {
@@ -196,7 +197,8 @@ function getAffiliateUrl(device: Device): string {
     const a8mat = '45IED7+DD2ACA+3I5Y+ZPD5F';
     return `https://px.a8.net/svt/ejp?a8mat=${a8mat}&a8ejpredirect=${encodeURIComponent(device.url)}`;
   }
-  if (device.shopName === RAKUTEN_GEO_SHOP) {
+  // 楽天API で取得した商品は、規約上 楽天市場（楽天アフィリエイト）以外へはリンクしない
+  if (RAKUTEN_SHOP_NAMES.has(device.shopName)) {
     return rakutenAffiliateUrl(device.url);
   }
   return device.url;

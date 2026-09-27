@@ -5,8 +5,8 @@
 ```
 [GitHub Actions 6時間ごと 3/9/15/21時]            [シンレンタルサーバー cron 2:40/8:40/14:40/20:40]
  scraper/run_all_scrapers.py（4店）                 ~/rakuten-sync/fetch.php
-   イオシス・にこスマ・エムモバ・ダイワン              楽天市場 商品検索API（ゲオモバイル楽天市場店）
-   └→ Neon（DeviceInventory を店ごとに洗い替え）       └→ POST /api/ingest/rakuten（gzip + Bearer）
+   イオシス・にこスマ・エムモバ・ダイワン              楽天市場 商品検索API（ゲオモバイル・じゃんぱら・ソフマップの楽天市場店）
+   └→ Neon（DeviceInventory を店ごとに洗い替え）       └→ POST /api/ingest/rakuten?shop=<shopCode>（gzip + Bearer）
  npm run snapshot:prices（価格推移を記録）               └→ Neon（ゲオを洗い替え）
  ワークフローの自己有効化（60日停止の防止）
                                    ↓
@@ -34,7 +34,7 @@
 | いつ（日本時間） | どこで | 何を | ログ |
 | --- | --- | --- | --- |
 | 3/9/15/21時 | GitHub Actions `Phone Inventory Scraper` | 4店のスクレイピング → 価格推移の記録 → 自己有効化 | Actions の実行ログ（失敗時は GitHub から通知メール） |
-| 2:40/8:40/14:40/20:40 | サーバー cron | 楽天からゲオを取得して送信（約6分） | `~/rakuten-sync/fetch.log` |
+| 2:40/8:40/14:40/20:40 | サーバー cron | 楽天からゲオ・じゃんぱら・ソフマップを順に取得して送信（1店あたり数分） | `~/rakuten-sync/fetch.log`（行頭に shopCode） |
 | 毎日10:00 | サーバー cron | `/api/health` を確認し、問題時のみメール | cron の通知メール |
 | 毎日7:56 | サーバー cron（ブログ用・パネルが自動作成。「WordPressキャッシュ自動削除Cronを表示」で出る） | `wp-content/cache/` の3日より古いファイルを削除 | 出力なし（下記） |
 
@@ -68,9 +68,15 @@
 3. 比較ページの組は `lib/compare.ts`（Pro/Pro Max の世代に追加）
 4. 機種別・比較・OGP・sitemap は自動で増える
 
+### 楽天市場のショップを追加する
+1. `lib/rakutenShops.ts` の `RAKUTEN_SHOPS` に shopCode・ショップ名・商品名の解析関数を追加（例: `lib/rakutenJanpara.ts`）
+2. `rakuten-sync/fetch.php` の `SHOP_CODES` に shopCode を追加 → サーバーへ上書きアップロード
+3. `FilterPanel.tsx` のショップ一覧と、サイト説明文（`lib/site.ts` など）の店舗数を更新
+4. 規約上、リンクは楽天アフィリエイトのみ（`DeviceCard.tsx` は `RAKUTEN_SHOP_NAMES` で自動判定）
+
 ### 楽天の取得スクリプトを更新する
 - リポジトリの `rakuten-sync/fetch.php` を編集 → サーバーのファイルマネージャで `~/rakuten-sync/` に上書きアップロード
-- `config.php` は上書きしない。お試しは `php fetch.php --dry`（先頭3ページを `sample.json` に保存）
+- `config.php` は上書きしない。お試しは `php fetch.php --dry janpara`（先頭3ページを `sample-janpara.json` に保存）。`php fetch.php janpara` で1店だけ送信
 
 ### DB スキーマを変える
 - `prisma/schema.prisma` を編集 → `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` で差分を確認 → `npx prisma db push`

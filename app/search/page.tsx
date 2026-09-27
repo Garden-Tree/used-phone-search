@@ -30,11 +30,11 @@ export async function generateMetadata({
   const hasShop = !!shopQuery && shopQuery !== 'all';
 
   let title = "中古スマホの在庫一覧・価格比較";
-  let description = `大手中古ショップ5社の中古iPhone在庫を一括比較。価格・状態ランク・容量・バッテリー残量で絞り込めます。`;
+  let description = `大手中古ショップ7社の中古iPhone在庫を一括比較。価格・状態ランク・容量・バッテリー残量で絞り込めます。`;
   if (modelQuery) {
     const label = splitModelQuery(modelQuery).join('・');
     title = `${label} 中古の最安値・価格比較${hasShop ? `（${shopQuery}）` : ''}`;
-    description = `${label}の中古在庫を${hasShop ? shopQuery : 'イオシス・ゲオモバイル・にこスマ・エムモバ・ダイワンテレコム'}から一括比較。状態ランク・容量・バッテリー残量で絞り込んで最安値をチェック。`;
+    description = `${label}の中古在庫を${hasShop ? shopQuery : 'イオシス・ゲオモバイル・じゃんぱら・ソフマップ・にこスマ・エムモバ・ダイワンテレコム'}から一括比較。状態ランク・容量・バッテリー残量で絞り込んで最安値をチェック。`;
   } else if (hasShop) {
     title = `${shopQuery} の中古スマホ在庫一覧`;
     description = `${shopQuery}の中古iPhone在庫を価格・状態ランク・容量・バッテリー残量で絞り込んで比較できます。`;

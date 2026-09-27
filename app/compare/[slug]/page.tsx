@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     sa.minPrice !== null ? `${a}は${yen(sa.minPrice)}` : null,
     sb.minPrice !== null ? `${b}は${yen(sb.minPrice)}` : null,
   ].filter(Boolean).join("、");
-  const description = `${a}と${b}の中古相場を大手中古ショップ5社の在庫から比較。${prices ? `最安値は${prices}から。` : ""}容量別・状態ランク別の最安値と差額をまとめています。`;
+  const description = `${a}と${b}の中古相場を大手中古ショップ7社の在庫から比較。${prices ? `最安値は${prices}から。` : ""}容量別・状態ランク別の最安値と差額をまとめています。`;
   const path = comparePath(a, b);
 
   return {
