@@ -29,6 +29,12 @@ const MAX_REQUESTS = 1000;    // 暴走防止（1ショップあたり）
 
 $requestCount = 0;
 
+/** ログ用に先頭だけ切り出す（UTF-8 の文字の途中で切らない） */
+function cutUtf8(string $s, int $bytes): string
+{
+    return function_exists('mb_strcut') ? mb_strcut($s, 0, $bytes, 'UTF-8') : substr($s, 0, $bytes);
+}
+
 function logLine(string $message): void
 {
     file_put_contents(__DIR__ . '/fetch.log', date('Y-m-d H:i:s') . ' ' . $message . PHP_EOL, FILE_APPEND);
@@ -71,7 +77,7 @@ function fetchPage(array $config, string $shopCode, int $page, int $minPrice, in
         $data = ($status === 200 && is_string($body)) ? json_decode($body, true) : null;
         if (is_array($data)) return $data;
 
-        $detail = "HTTP {$status} page={$page} price={$minPrice}-{$maxPrice} " . mb_strcut((string)$body, 0, 300, 'UTF-8');
+        $detail = "HTTP {$status} page={$page} price={$minPrice}-{$maxPrice} " . cutUtf8((string)$body, 300);
         if ($attempt >= 3 || ($status >= 400 && $status < 500 && $status !== 429)) {
             throw new RuntimeException("Rakuten API error: {$detail}");
         }
@@ -171,7 +177,7 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
     $body = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    logLine("{$shopCode} ingest: HTTP {$status} " . mb_strcut((string)$body, 0, 500, 'UTF-8'));
+    logLine("{$shopCode} ingest: HTTP {$status} " . cutUtf8((string)$body, 500));
     return $status === 200;
 }
 
