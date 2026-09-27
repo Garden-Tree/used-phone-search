@@ -19,7 +19,7 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} | 中古iPhoneの最安値を大手5ショップから比較`,
+    default: `${SITE_NAME} | 中古iPhoneの最安値を大手6ショップから比較`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,

@@ -2,16 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { gunzipSync } from "node:zlib";
 import { timingSafeEqual } from "node:crypto";
 import prisma from "@/lib/prisma";
-import {
-  LEGACY_GEO_SHOP,
-  RAKUTEN_GEO_SHOP,
-  normalizeRakutenGeoItem,
-  type RakutenGeoItem,
-} from "@/lib/rakutenGeo";
+import { RAKUTEN_SHOPS, type RakutenItem } from "@/lib/rakutenShops";
 
 /**
  * シンレンタルサーバーの rakuten-sync/fetch.php から、楽天API で取得した
- * ゲオモバイル楽天市場店の在庫を受け取り、DeviceInventory を洗い替えする。
+ * 楽天市場店の在庫を受け取り、そのショップの DeviceInventory を洗い替えする。
+ * ショップは ?shop=<楽天の shopCode>（省略時はゲオモバイル）で指定する。
  */
 
 // 取得件数が既存の何割未満なら洗い替えを中止するか（scraper/db_guard.py と同じ考え方）
@@ -33,7 +29,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  let items: RakutenGeoItem[];
+  const shopCode = request.nextUrl.searchParams.get("shop") ?? "geo-mobile";
+  const shop = RAKUTEN_SHOPS[shopCode];
+  if (!shop) {
+    return NextResponse.json({ error: "unknown shop", shop: shopCode }, { status: 400 });
+  }
+
+  let items: RakutenItem[];
   try {
     const raw = Buffer.from(await request.arrayBuffer());
     const json = request.headers.get("content-type")?.includes("gzip") ? gunzipSync(raw).toString("utf8") : raw.toString("utf8");
@@ -43,10 +45,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid body", detail: String(error) }, { status: 400 });
   }
 
-  const rows = items.map(normalizeRakutenGeoItem).filter((r) => r !== null);
-  const skipped = items.filter((item) => normalizeRakutenGeoItem(item) === null);
+  const rows = items.map(shop.normalize).filter((r) => r !== null);
+  const skipped = items.filter((item) => shop.normalize(item) === null);
 
-  const existing = await prisma.deviceInventory.count({ where: { shopName: RAKUTEN_GEO_SHOP } });
+  const existing = await prisma.deviceInventory.count({ where: { shopName: shop.shopName } });
   const force = request.nextUrl.searchParams.get("force") === "1";
   if (!force && existing >= MIN_EXISTING_TO_CHECK && rows.length < existing * MIN_REPLACE_RATIO) {
     return NextResponse.json(
@@ -57,8 +59,8 @@ export async function POST(request: NextRequest) {
 
   await prisma.$transaction(
     async (tx) => {
-      // 旧スクレイパーで取り込んだ古いゲオの在庫も、楽天経由の在庫に置き換える
-      await tx.deviceInventory.deleteMany({ where: { shopName: { in: [RAKUTEN_GEO_SHOP, LEGACY_GEO_SHOP] } } });
+      // 旧スクレイパーで取り込んだ古い在庫（旧ゲオなど）も、楽天経由の在庫に置き換える
+      await tx.deviceInventory.deleteMany({ where: { shopName: { in: [shop.shopName, ...shop.alsoReplace] } } });
       for (let i = 0; i < rows.length; i += INSERT_CHUNK) {
         await tx.deviceInventory.createMany({ data: rows.slice(i, i + INSERT_CHUNK) });
       }
@@ -67,6 +69,7 @@ export async function POST(request: NextRequest) {
   );
 
   return NextResponse.json({
+    shop: shop.shopName,
     received: items.length,
     inserted: rows.length,
     skipped: skipped.length,
