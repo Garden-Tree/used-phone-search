@@ -19,6 +19,7 @@ import { getModelStats, type PriceRow } from "@/lib/modelStats";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
+import InspectionTips from "@/app/components/InspectionTips";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
 
@@ -213,6 +214,11 @@ export default async function ModelPage({ params }: Props) {
               </div>
             </section>
           </>
+        )}
+
+        {/* 運営者（検品担当）の視点。iPhone のみ */}
+        {!isIpad(model) && (
+          <InspectionTips model={model} has64GB={stats.byStorage.some((r) => r.key === "64")} />
         )}
 
         {/* モデルの特徴 */}
