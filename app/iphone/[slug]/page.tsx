@@ -17,7 +17,7 @@ import {
   slugToModel,
 } from "@/lib/catalog";
 import { getBatteryRows, getModelStats, getStorageRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
-import { SPEC_ROWS, specOf } from "@/lib/iphoneSpecs";
+import { SPEC_ROWS, specOf, specUrl } from "@/lib/iphoneSpecs";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
@@ -323,6 +323,9 @@ export default async function ModelPage({ params }: Props) {
                 </div>
               ))}
             </dl>
+            <p className="mt-3 text-xs text-slate-400">
+              出典: <a href={specUrl(spec)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">Apple「{model} - 技術仕様」</a>
+            </p>
           </section>
         )}
 
