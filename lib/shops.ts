@@ -18,14 +18,14 @@ export type Shop = {
   /**
    * バッテリー最大容量の表記。
    * exact: 数値（85% など）／ over80: 「80%以上」「80%未満」だけ（DB には 80・79、未使用品は 100）／
-   * none: 取り込めていない（null。未使用品だけ 100 のことがある）。2026/9/27 時点の DB の値の分布で決めた
+   * none: 取り込めていない（null。未使用品だけ 100 のことがある）。2026/9/28 時点の DB の値の分布で決めた（じゃんぱらは 9/27 夜の取り込みから数値あり）
    */
   battery: "exact" | "over80" | "none";
 };
 
 export const SHOPS: Shop[] = [
   { name: "イオシス", label: "イオシス", ipad: true, battery: "over80" },
-  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", ipad: true, battery: "none" },
+  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", ipad: true, battery: "exact" },
   { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店", ipad: true, battery: "none" },
   { name: "ソフマップ（楽天市場店）", label: "ソフマップ", note: "楽天市場店", ipad: true, battery: "exact" },
   { name: "にこスマ", label: "にこスマ", ipad: true, battery: "exact" },
