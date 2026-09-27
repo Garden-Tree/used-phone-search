@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // スクレイパーの Python 仮想環境（中の JS はこのプロジェクトのコードではない）
+    "scraper/venv/**",
   ]),
 ]);
 
