@@ -11,7 +11,8 @@
     "postinstall": "prisma generate",
     "snapshot:prices": "tsx scripts/snapshot-prices.ts",
     "normalize:ipad": "tsx scripts/normalize-ipad-models.ts",
-    "test:normalize": "tsx scripts/test-normalizers.ts"
+    "test:normalize": "tsx scripts/test-normalizers.ts",
+    "x:images": "tsx scripts/make-x-images.tsx"
   },
   "dependencies": {
     "@next/third-parties": "^16.2.4",
