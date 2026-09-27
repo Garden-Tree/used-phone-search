@@ -99,8 +99,11 @@ function compactItem(array $item): array
     // キャリア: ソフマップは「〔キャリア〕docomoロック解除SIMフリー」
     preg_match('/〔キャリア〕\s*([^〔\s]+)/u', $caption, $car);
     preg_match('/ネットワーク利用制限確認【([^】]*)】/u', $caption, $nw);
-    // バッテリー最大容量: 「最大容量：82％」「バッテリー最大容量 85%」など
-    preg_match('/最大容量\s*[：:]?\s*(\d{2,3})\s*[%％]/u', $caption, $batt);
+    // バッテリー最大容量: 「最大容量：82％」「バッテリー最大容量 85%」など。
+    // じゃんぱらは備考の「バッテリー容量：81%（03月時点）」（「最大容量」の語がない）
+    if (!preg_match('/最大容量\s*[：:]?\s*(\d{2,3})\s*[%％]/u', $caption, $batt)) {
+        preg_match('/バッテリー容量\s*[：:]?\s*(\d{2,3})\s*[%％]/u', $caption, $batt);
+    }
     return [
         'code'  => (string)($item['itemCode'] ?? ''),
         'name'  => (string)($item['itemName'] ?? ''),
