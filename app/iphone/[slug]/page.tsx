@@ -106,7 +106,7 @@ export default async function ModelPage({ params }: Props) {
 
   // 前後のシリーズへの導線
   const seriesIdx = series ? IPHONE_CATALOG.indexOf(series) : -1;
-  const neighborSeries = [IPHONE_CATALOG[seriesIdx - 1], IPHONE_CATALOG[seriesIdx + 1]].filter(Boolean);
+  const neighborSeries = seriesIdx >= 0 ? [IPHONE_CATALOG[seriesIdx - 1], IPHONE_CATALOG[seriesIdx + 1]].filter(Boolean) : [];
 
   const jsonLd = [
     {

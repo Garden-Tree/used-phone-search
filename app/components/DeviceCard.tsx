@@ -29,6 +29,16 @@ export default function DeviceCard({ device }: { device: Device }) {
   // キャリア・SIMロック状態のバッジ表示ロジック
   const renderStatusBadges = () => {
     const carrier = device.carrier;
+
+    // iPad の Wi-Fi モデル（SIM を使わない）
+    if (carrier === 'Wi-Fiモデル') {
+      return (
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200">
+          Wi-Fiモデル
+        </span>
+      );
+    }
+
     const isDomesticSimFree = carrier === '国内版SIMフリー' || carrier === 'Apple';
 
     // 1. パターンA（Apple直販 / 国内版SIMフリーの場合）
