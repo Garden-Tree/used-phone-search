@@ -1,3 +1,5 @@
+import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
+
 // iOS 27（2026年9月配信）対応モデルのカタログ（トップページ・sitemap で共有）。
 // iOS 27 は iOS 26 と同じく iPhone 11 以降・SE 第2/第3世代が対象。
 // iPhone 18 / 18e（2027年春予定）と折りたたみの iPhone Duo（2026/10/23 発売）は中古在庫が出てから追加する
@@ -66,8 +68,11 @@ export const LEGACY_SERIES = [
 
 export const ALL_CATALOG_MODELS = IPHONE_CATALOG.flatMap((s) => s.models);
 
-/** モデル別ページを持つ全モデル（新しい順） */
+/** モデル別ページを持つ全 iPhone（新しい順） */
 export const ALL_PAGE_MODELS = [...ALL_CATALOG_MODELS, ...LEGACY_SERIES.flatMap((s) => s.models)];
+
+/** モデル別ページを持つ全機種（iPhone ＋ iPad）。価格推移の記録・sitemap・slug の解決に使う */
+export const ALL_DEVICE_PAGE_MODELS = [...ALL_PAGE_MODELS, ...IPAD_MODELS];
 
 const ORDINAL: Record<string, string> = { "1": "1st", "2": "2nd", "3": "3rd" };
 
@@ -81,16 +86,18 @@ export function modelToSlug(model: string): string {
 }
 
 export function slugToModel(slug: string): string | undefined {
-  return ALL_PAGE_MODELS.find((m) => modelToSlug(m) === slug);
+  return ALL_DEVICE_PAGE_MODELS.find((m) => modelToSlug(m) === slug);
 }
 
+export const isIpad = (model: string) => /^iPad/.test(model);
+
 export function modelPagePath(model: string): string {
-  return `/iphone/${modelToSlug(model)}`;
+  return `/${isIpad(model) ? "ipad" : "iphone"}/${modelToSlug(model)}`;
 }
 
 /** 同じシリーズの他モデル */
 export function siblingModels(model: string): string[] {
-  const group = [...IPHONE_CATALOG, ...LEGACY_SERIES].find((s) => s.models.includes(model));
+  const group = [...IPHONE_CATALOG, ...LEGACY_SERIES, ...IPAD_CATALOG].find((s) => s.models.includes(model));
   return group ? group.models.filter((m) => m !== model) : [];
 }
 

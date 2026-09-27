@@ -8,7 +8,7 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import { buildOrderBy, buildWhere, resolveModelNames, splitModelQuery } from "@/lib/deviceSearch";
 import { SITE_NAME } from "@/lib/site";
-import { ALL_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
+import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
 import Link from "next/link";
 import type { Metadata } from 'next';
 
@@ -71,7 +71,7 @@ export default async function SearchPage({
   const models = splitModelQuery(modelQuery);
   // 単一モデル検索なら価格まとめページへ誘導する
   const pageModel = models.length === 1
-    ? ALL_PAGE_MODELS.find((m) => m.toLowerCase() === models[0].toLowerCase())
+    ? ALL_DEVICE_PAGE_MODELS.find((m) => m.toLowerCase() === models[0].toLowerCase())
     : undefined;
 
   let devices: Device[] = [];

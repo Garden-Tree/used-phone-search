@@ -39,6 +39,11 @@ function parseModel(name: string): ParsedModel {
 
 /** 検索クエリ（1モデル）と在庫のモデル名が同一モデルかを厳密に判定する */
 export function matchesModel(query: string, modelName: string): boolean {
+  // iPad は取り込み時に lib/ipadCatalog.ts の正式名にそろえているので完全一致で判定する
+  // （トークン判定だと「iPad Pro 11インチ (M4)」が「iPad Pro 12.9インチ」にも当たってしまう）
+  if (/^\s*ipad/i.test(query) || /^ipad/i.test(modelName)) {
+    return query.trim().toLowerCase() === modelName.trim().toLowerCase();
+  }
   const q = parseModel(query);
   if (!q.core) return true;
 
@@ -105,7 +110,9 @@ async function allModelNames(): Promise<string[]> {
 export function buildWhere(p: SearchParams): Prisma.DeviceInventoryWhereInput {
   const and: Prisma.DeviceInventoryWhereInput[] = [];
 
+  // 機種の指定がなければ iPhone だけ（iPad は機種を指定したときだけ出す）
   if (p.modelNames) and.push({ modelName: { in: p.modelNames } });
+  else and.push({ modelName: { startsWith: "iPhone" } });
 
   if (p.shop && p.shop !== "all") and.push({ shopName: p.shop });
 

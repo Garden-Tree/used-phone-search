@@ -182,6 +182,18 @@ export default function Home() {
         </div>
       </section>
 
+      {/* iPad */}
+      <section className="max-w-6xl mx-auto px-4 mb-10 relative z-10">
+        <Link href="/ipad"
+          className="group flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-6 py-5 hover:border-blue-300 hover:bg-blue-50 transition-colors">
+          <div>
+            <p className="text-lg md:text-xl font-bold text-slate-800 group-hover:text-blue-600">中古iPadの最安値を見る</p>
+            <p className="text-xs md:text-sm text-slate-500 mt-1">iPad・iPad mini・iPad Air・iPad Pro を機種別に比較</p>
+          </div>
+          <span className="text-2xl text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-transform" aria-hidden>›</span>
+        </Link>
+      </section>
+
       {/* 3. Catalog Grid Section */}
       <main className="max-w-6xl mx-auto px-4 relative z-10">
         <div className="flex items-center justify-between mb-8">

@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { ALL_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
+import { ALL_DEVICE_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
 import { fetchModelInventory, summarizePrices } from "@/lib/modelInventory";
 
 /** 全容量をまとめた集計を表す storage の値 */
@@ -19,7 +19,7 @@ export function jstToday(now = new Date()): Date {
  */
 export async function recordPriceSnapshots(date = jstToday()) {
   let written = 0;
-  for (const model of ALL_PAGE_MODELS) {
+  for (const model of ALL_DEVICE_PAGE_MODELS) {
     const devices = await fetchModelInventory(model);
     const byStorage = new Map<number, number[]>([[ALL_STORAGE, []]]);
     for (const d of devices) {

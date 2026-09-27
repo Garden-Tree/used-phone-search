@@ -1,6 +1,6 @@
 <?php
 /**
- * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone 在庫を取得し、
+ * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone・iPad 在庫を取得し、
  * used.gadelog.com の受け口（/api/ingest/rakuten?shop=<shopCode>）へショップごとに送信する。
  *
  * シンレンタルサーバー（固定IP: 楽天アプリの許可IPに登録済み）の cron から実行する。
@@ -22,6 +22,8 @@ $onlyShops = array_values(array_filter($args, fn($a) => $a !== '--dry'));
 const ENDPOINT = 'https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701';
 // 取り込むショップ（楽天の shopCode）。受け口 lib/rakutenShops.ts の RAKUTEN_SHOPS と揃える
 const SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop'];
+// 1ショップ分として、この検索語の結果をまとめて送る（受け口はショップ単位で洗い替えるため）
+const KEYWORDS = ['iPhone', 'iPad'];
 const HITS = 30;              // 1ページの最大件数
 const MAX_PAGES = 100;        // API の上限（1検索あたり最大 3,000 件）
 const INTERVAL_US = 1100000;  // 登録した QPS=1 を守るため 1.1 秒間隔
@@ -40,7 +42,7 @@ function logLine(string $message): void
     file_put_contents(__DIR__ . '/fetch.log', date('Y-m-d H:i:s') . ' ' . $message . PHP_EOL, FILE_APPEND);
 }
 
-function fetchPage(array $config, string $shopCode, int $page, int $minPrice, int $maxPrice): array
+function fetchPage(array $config, string $shopCode, string $keyword, int $page, int $minPrice, int $maxPrice): array
 {
     global $requestCount;
     if (++$requestCount > MAX_REQUESTS) {
@@ -53,7 +55,7 @@ function fetchPage(array $config, string $shopCode, int $page, int $minPrice, in
     $query = http_build_query([
         'applicationId' => $config['rakuten_app_id'],
         'shopCode'      => $shopCode,
-        'keyword'       => 'iPhone',
+        'keyword'       => $keyword,
         'hits'          => HITS,
         'page'          => $page,
         'availability'  => 1,
@@ -114,28 +116,28 @@ function compactItem(array $item): array
 /**
  * 価格帯 [min, max] の在庫を集める。3,000 件を超える帯は半分に割って再帰的に取得する
  */
-function collectRange(array $config, string $shopCode, int $min, int $max, array &$items): void
+function collectRange(array $config, string $shopCode, string $keyword, int $min, int $max, array &$items): void
 {
-    $first = fetchPage($config, $shopCode, 1, $min, $max);
+    $first = fetchPage($config, $shopCode, $keyword, 1, $min, $max);
     $count = (int)($first['count'] ?? 0);
 
     if ($count > HITS * MAX_PAGES && $max - $min > 1) {
         $mid = intdiv($min + $max, 2);
-        collectRange($config, $shopCode, $min, $mid, $items);
-        collectRange($config, $shopCode, $mid + 1, $max, $items);
+        collectRange($config, $shopCode, $keyword, $min, $mid, $items);
+        collectRange($config, $shopCode, $keyword, $mid + 1, $max, $items);
         return;
     }
 
     $pageCount = min((int)($first['pageCount'] ?? 1), MAX_PAGES);
     for ($page = 1; $page <= $pageCount; $page++) {
-        $res = $page === 1 ? $first : fetchPage($config, $shopCode, $page, $min, $max);
+        $res = $page === 1 ? $first : fetchPage($config, $shopCode, $keyword, $page, $min, $max);
         foreach ($res['Items'] ?? $res['items'] ?? [] as $item) {
             $item = $item['Item'] ?? $item;
             $compact = compactItem($item);
             if ($compact['code'] !== '') $items[$compact['code']] = $compact;
         }
     }
-    logLine("{$shopCode} range {$min}-{$max}: count={$count}, pages={$pageCount}");
+    logLine("{$shopCode} {$keyword} range {$min}-{$max}: count={$count}, pages={$pageCount}");
 }
 
 /** 1ショップ分を取得して受け口へ送る。成功なら true */
@@ -147,7 +149,7 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
 
     if ($dryRun) {
         for ($page = 1; $page <= 3; $page++) {
-            $res = fetchPage($config, $shopCode, $page, 1, 999999);
+            $res = fetchPage($config, $shopCode, KEYWORDS[0], $page, 1, 999999);
             foreach ($res['Items'] ?? $res['items'] ?? [] as $item) {
                 $items[] = compactItem($item['Item'] ?? $item);
             }
@@ -157,7 +159,9 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
         return true;
     }
 
-    collectRange($config, $shopCode, 1, 999999, $items);
+    foreach (KEYWORDS as $keyword) {
+        collectRange($config, $shopCode, $keyword, 1, 999999, $items);
+    }
     $items = array_values($items);
     logLine("{$shopCode} fetched " . count($items) . " items with {$requestCount} requests");
 
