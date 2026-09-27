@@ -8,6 +8,7 @@ import AdDisclosure from "@/app/components/AdDisclosure";
 import {
   ALL_PAGE_MODELS,
   IPHONE_CATALOG,
+  isIpad,
   modelPagePath,
   modelToSlug,
   seriesOf,
@@ -18,6 +19,7 @@ import { getModelStats, type PriceRow } from "@/lib/modelStats";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
+import InspectionTips from "@/app/components/InspectionTips";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 // スクレイパーは6時間ごとに実行されるため、1時間ごとに再生成すれば十分新しい
@@ -211,6 +213,11 @@ export default async function ModelPage({ params }: Props) {
               </div>
             </section>
           </>
+        )}
+
+        {/* 運営者（検品担当）の視点。iPhone のみ */}
+        {!isIpad(model) && (
+          <InspectionTips model={model} has64GB={stats.byStorage.some((r) => r.key === "64")} />
         )}
 
         {/* モデルの特徴 */}
