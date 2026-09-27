@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { ALL_DEVICE_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
-import { fetchModelInventory, summarizePrices } from "@/lib/modelInventory";
+import { groupMinPrice, medianPrice, modelWhere } from "@/lib/modelInventory";
 
 /** 全容量をまとめた集計を表す storage の値 */
 export const ALL_STORAGE = 0;
@@ -20,21 +20,32 @@ export function jstToday(now = new Date()): Date {
 export async function recordPriceSnapshots(date = jstToday()) {
   let written = 0;
   for (const model of ALL_DEVICE_PAGE_MODELS) {
-    const devices = await fetchModelInventory(model);
-    const byStorage = new Map<number, number[]>([[ALL_STORAGE, []]]);
-    for (const d of devices) {
-      byStorage.get(ALL_STORAGE)!.push(d.price);
-      if (!byStorage.has(d.storage)) byStorage.set(d.storage, []);
-      byStorage.get(d.storage)!.push(d.price); // devices は価格昇順なので各配列も昇順
-    }
+    const where = await modelWhere(model);
+    const groups = await groupMinPrice(where, "storage");
+    if (groups.length === 0) continue; // 在庫ゼロのモデルは記録しない
+
+    // 全容量（storage = 0）と容量ごと。中央値はそれぞれ1件だけ取り出す
+    const targets = [
+      {
+        storage: ALL_STORAGE,
+        where,
+        minPrice: Math.min(...groups.map((g) => g.minPrice)),
+        count: groups.reduce((n, g) => n + g.count, 0),
+      },
+      ...groups.map((g) => ({
+        storage: Number(g.key),
+        where: { AND: [where, { storage: Number(g.key) }] },
+        minPrice: g.minPrice,
+        count: g.count,
+      })),
+    ];
 
     const modelSlug = modelToSlug(model);
-    for (const [storage, prices] of byStorage) {
-      const summary = summarizePrices(prices);
-      if (!summary) continue;
+    for (const t of targets) {
+      const summary = { minPrice: t.minPrice, medianPrice: (await medianPrice(t.where, t.count)) ?? t.minPrice, count: t.count };
       await prisma.priceSnapshot.upsert({
-        where: { date_modelSlug_storage: { date, modelSlug, storage } },
-        create: { date, modelSlug, storage, ...summary },
+        where: { date_modelSlug_storage: { date, modelSlug, storage: t.storage } },
+        create: { date, modelSlug, storage: t.storage, ...summary },
         update: summary,
       });
       written++;
