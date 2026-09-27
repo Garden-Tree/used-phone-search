@@ -71,7 +71,7 @@ function fetchPage(array $config, string $shopCode, int $page, int $minPrice, in
         $data = ($status === 200 && is_string($body)) ? json_decode($body, true) : null;
         if (is_array($data)) return $data;
 
-        $detail = "HTTP {$status} page={$page} price={$minPrice}-{$maxPrice} " . substr((string)$body, 0, 300);
+        $detail = "HTTP {$status} page={$page} price={$minPrice}-{$maxPrice} " . mb_strcut((string)$body, 0, 300, 'UTF-8');
         if ($attempt >= 3 || ($status >= 400 && $status < 500 && $status !== 429)) {
             throw new RuntimeException("Rakuten API error: {$detail}");
         }
@@ -171,7 +171,7 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
     $body = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    logLine("{$shopCode} ingest: HTTP {$status} " . substr((string)$body, 0, 500));
+    logLine("{$shopCode} ingest: HTTP {$status} " . mb_strcut((string)$body, 0, 500, 'UTF-8'));
     return $status === 200;
 }
 
