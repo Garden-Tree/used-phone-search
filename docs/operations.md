@@ -92,6 +92,15 @@
 - `prisma/schema.prisma` を編集 → `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` で差分を確認 → `npx prisma db push`
 - **ローカルの `.env` は本番 DB を指している**。破壊的な差分（DROP・型変更）は実行前にユーザーに確認する
 
+## Neon の無料枠（データ転送量 月5GB）
+
+- 2026-09-27 に 88%（4.4GB）の警告。原因は機種別・比較・目的別ページと OGP 画像の再生成のたびに、機種の在庫を全件取り出して JS で集計していたこと
+  （ビルドのたびに全ページ分が走るので、PR が多い日に急増）。PR #28 で DB 側の集計（groupBy/aggregate）＋最大7行の取得に変更
+- **在庫の行をまとめて取り出す処理を書かない**。集計は `lib/modelInventory.ts` の `groupMinPrice`・`medianPrice` を使う
+- ローカルの `next build` も `.env` の本番 DB を使う（全ページ分のクエリが走る）。確認はなるべく Vercel のプレビューで
+- 使用量は Neon の管理画面（Billing / Usage）。上限を超えるとその月は DB が止まり、検索・取り込み・ページの再生成が失敗する
+  （静的ページは前回生成分が表示され続ける）
+
 ## デプロイ
 
 - `main` への push で Vercel が本番デプロイ。PR ごとにプレビュー
