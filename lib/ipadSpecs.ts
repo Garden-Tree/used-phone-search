@@ -20,7 +20,7 @@ const k = (
   port: IphoneSpec["port"], auth: IphoneSpec["auth"], sp: string,
 ): IphoneSpec => ({ ...s(released, chip, display, panel, port, auth, sp), url: `https://support.apple.com/kb/${sp}?locale=ja_JP` });
 
-const TB = "USB-C（Thunderbolt）" as const;
+const TB = "Thunderbolt / USB 4" as const;
 const HOME = "Touch ID（ホームボタン）" as const;
 const TOP = "Touch ID（トップボタン）" as const;
 
@@ -29,9 +29,9 @@ export const IPAD_SPECS: Record<string, IphoneSpec> = {
   "iPad Pro 11インチ (M5)": s("2025年", "M5", 11, "有機EL", TB, "Face ID", "125406"),
   "iPad Pro 13インチ (M4)": s("2024年", "M4", 13, "有機EL", TB, "Face ID", "119891"),
   "iPad Pro 11インチ (M4)": s("2024年", "M4", 11, "有機EL", TB, "Face ID", "119892"),
-  "iPad Pro 12.9インチ (第6世代)": k("2022年", "M2", 12.9, "液晶（ミニLED）", TB, "Face ID", "SP883"),
+  "iPad Pro 12.9インチ (第6世代)": k("2022年", "M2", 12.9, "ミニLED液晶", TB, "Face ID", "SP883"),
   "iPad Pro 11インチ (第4世代)": k("2022年", "M2", 11, "液晶", TB, "Face ID", "SP882"),
-  "iPad Pro 12.9インチ (第5世代)": k("2021年", "M1", 12.9, "液晶（ミニLED）", TB, "Face ID", "SP844"),
+  "iPad Pro 12.9インチ (第5世代)": k("2021年", "M1", 12.9, "ミニLED液晶", TB, "Face ID", "SP844"),
   "iPad Pro 11インチ (第3世代)": k("2021年", "M1", 11, "液晶", TB, "Face ID", "SP843"),
   "iPad Pro 12.9インチ (第4世代)": k("2020年", "A12Z Bionic", 12.9, "液晶", "USB-C", "Face ID", "SP815"),
   "iPad Pro 11インチ (第2世代)": k("2020年", "A12Z Bionic", 11, "液晶", "USB-C", "Face ID", "SP814"),

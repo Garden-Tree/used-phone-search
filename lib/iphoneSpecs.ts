@@ -18,8 +18,8 @@ export type IphoneSpec = {
    * 画面の種類（Super Retina / XDR・OLED ＝ 有機EL、Liquid Retina・Retina HD ＝ 液晶）。
    * iPad Pro の Liquid Retina XDR（12.9インチ 第5/6世代）はミニLEDバックライトの液晶
    */
-  panel: "有機EL" | "液晶" | "液晶（ミニLED）";
-  port: "Lightning" | "USB-C" | "USB-C（Thunderbolt）";
+  panel: "有機EL" | "液晶" | "ミニLED液晶";
+  port: "Lightning" | "USB-C" | "Thunderbolt / USB 4";
   /** iPad は Touch ID の位置（ホームボタン／トップボタン）まで書く */
   auth: "Face ID" | "Touch ID" | "Touch ID（ホームボタン）" | "Touch ID（トップボタン）";
   /** Apple の技術仕様ページの番号 */
