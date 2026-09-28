@@ -35,7 +35,7 @@ export const SHOPS: Shop[] = [
   { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", ipad: true, battery: "exact",
     warranty: "商品ごと（iPhone は多くが1ヶ月）", redRom: "永久保証", guaranteeUrl: "https://www.janpara.co.jp/contents/faq/" },
   { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店", ipad: true, battery: "none",
-    warranty: "到着後30日以内の返品・交換", redRom: "期間の記載なし", guaranteeUrl: "https://www.rakuten.co.jp/geo-mobile/info.html" },
+    warranty: "到着後30日以内の返品・交換", redRom: "永久保証（期間を問わず交換・返金）", guaranteeUrl: "https://www.rakuten.ne.jp/gold/geo-mobile/info_henpin.html" },
   { name: "ソフマップ（楽天市場店）", label: "ソフマップ", note: "楽天市場店", ipad: true, battery: "exact",
     warranty: "返品保証10日間", redRom: "到着から3年以内は返品可", guaranteeUrl: "https://www.rakuten.co.jp/akiba-u-shop/info.html" },
   { name: "にこスマ", label: "にこスマ", ipad: true, battery: "exact",
