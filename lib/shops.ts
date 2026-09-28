@@ -21,16 +21,29 @@ export type Shop = {
    * none: 取り込めていない（null。未使用品だけ 100 のことがある）。2026/9/28 時点の DB の値の分布で決めた（じゃんぱらは 9/27 夜の取り込みから数値あり）
    */
   battery: "exact" | "over80" | "none";
+  /** 故障・初期不良の保証（短く。詳しくは guaranteeUrl） */
+  warranty: string;
+  /** ネットワーク利用制限（赤ロム）の保証 */
+  redRom: string;
+  /** 保証の出典（各店の公式ページ）。2026-09-28 に確認 */
+  guaranteeUrl: string;
 };
 
 export const SHOPS: Shop[] = [
-  { name: "イオシス", label: "イオシス", ipad: true, battery: "over80" },
-  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", ipad: true, battery: "exact" },
-  { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店", ipad: true, battery: "none" },
-  { name: "ソフマップ（楽天市場店）", label: "ソフマップ", note: "楽天市場店", ipad: true, battery: "exact" },
-  { name: "にこスマ", label: "にこスマ", ipad: true, battery: "exact" },
-  { name: "ダイワンテレコム", label: "ダイワンテレコム", ipad: false, battery: "over80" },
-  { name: "エムモバ", label: "エムモバ", ipad: false, battery: "none" },
+  { name: "イオシス", label: "イオシス", ipad: true, battery: "over80",
+    warranty: "3ヶ月（ランクにより最大6ヶ月）", redRom: "保証期間に関わらず対象", guaranteeUrl: "https://iosys.co.jp/guide/support/guarantee.html" },
+  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", ipad: true, battery: "exact",
+    warranty: "商品ごと（iPhone は多くが1ヶ月）", redRom: "永久保証", guaranteeUrl: "https://www.janpara.co.jp/contents/faq/" },
+  { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店", ipad: true, battery: "none",
+    warranty: "到着後30日以内の返品・交換", redRom: "期間の記載なし", guaranteeUrl: "https://www.rakuten.co.jp/geo-mobile/info.html" },
+  { name: "ソフマップ（楽天市場店）", label: "ソフマップ", note: "楽天市場店", ipad: true, battery: "exact",
+    warranty: "返品保証10日間", redRom: "到着から3年以内は返品可", guaranteeUrl: "https://www.rakuten.co.jp/akiba-u-shop/info.html" },
+  { name: "にこスマ", label: "にこスマ", ipad: true, battery: "exact",
+    warranty: "1年間の返品・交換", redRom: "永久保証", guaranteeUrl: "https://www.nicosuma.com/about/shopping-guide" },
+  { name: "ダイワンテレコム", label: "ダイワンテレコム", ipad: false, battery: "over80",
+    warranty: "1年間の全額返金（初期不良）", redRom: "無期限で同等品と交換", guaranteeUrl: "https://www.dai-one.jp/guide/warranty/" },
+  { name: "エムモバ", label: "エムモバ", ipad: false, battery: "none",
+    warranty: "1ヶ月（レビュー投稿で1年に延長）", redRom: "保証期間に関わらず交換・返金", guaranteeUrl: "https://ec.emcom.site/pages/guarantee" },
 ];
 
 export const IPAD_SHOPS = SHOPS.filter((s) => s.ipad);

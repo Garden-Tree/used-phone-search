@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
-import prisma from "@/lib/prisma";
+import { getModelMarket } from "@/lib/marketStats";
 import { isIpad, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
@@ -16,7 +16,7 @@ export const revalidate = 3600;
 
 const TITLE = "中古iPadの相場・最安値を機種別に比較【毎日更新】";
 const DESCRIPTION =
-  `中古iPad（iPad・iPad mini・iPad Air・iPad Pro）の最安値と在庫数を機種別に比較。${shopLabels(IPAD_SHOPS)}の在庫から毎日更新。`;
+  `中古iPad（iPad・iPad mini・iPad Air・iPad Pro）の相場（中央値）・最安値・在庫数を機種別に比較。${shopLabels(IPAD_SHOPS)}の在庫から毎日更新。`;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -27,15 +27,9 @@ export const metadata: Metadata = {
 
 
 export default async function IpadIndexPage() {
-  // iPad のモデル名は取り込み時に正式名へそろえているので、そのまま GROUP BY で集計できる
-  const groups = await prisma.deviceInventory.groupBy({
-    by: ["modelName"],
-    where: { isSoldOut: false, modelName: { in: IPAD_MODELS } },
-    _min: { price: true },
-    _count: { _all: true },
-  });
-  const stats = new Map(groups.map((g) => [g.modelName, { min: g._min.price, count: g._count._all }]));
-  const total = groups.reduce((n, g) => n + g._count._all, 0);
+  // 相場（中央値）・最安値・件数。/iphone・機種ページと同じ集計
+  const stats = await getModelMarket(IPAD_MODELS);
+  const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
@@ -78,10 +72,15 @@ export default async function IpadIndexPage() {
                   <Link
                     key={model}
                     href={modelPagePath(model)}
-                    className={`grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 hover:bg-blue-50 transition-colors items-center ${i > 0 ? "border-t border-slate-100" : ""}`}
+                    className={`grid grid-cols-[1fr_auto_auto_auto] gap-x-4 px-5 py-3 hover:bg-blue-50 transition-colors items-center ${i > 0 ? "border-t border-slate-100" : ""}`}
                   >
                     <span className="font-bold text-slate-800">{model} <span className="text-slate-300">›</span></span>
-                    <span className="text-right font-black text-red-600">{s?.min ? yen(s.min) : <span className="text-slate-300 font-normal text-sm">在庫なし</span>}</span>
+                    <span className="text-right">
+                      {s && <><span className="block text-[10px] text-slate-400">相場</span><span className="font-black text-slate-800">{yen(s.medianPrice)}</span></>}
+                    </span>
+                    <span className="text-right">
+                      {s ? <><span className="block text-[10px] text-slate-400">最安値</span><span className="font-black text-red-600">{yen(s.minPrice)}</span></> : <span className="text-slate-300 font-normal text-sm">在庫なし</span>}
+                    </span>
                     <span className="text-right w-16 text-sm text-slate-500">{(s?.count ?? 0).toLocaleString()}件</span>
                   </Link>
                 );

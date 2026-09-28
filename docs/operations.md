@@ -81,7 +81,8 @@
 ### 楽天市場のショップを追加する
 1. `lib/rakutenShops.ts` の `RAKUTEN_SHOPS` に shopCode・ショップ名・商品名の解析関数を追加（例: `lib/rakutenJanpara.ts`）
 2. `rakuten-sync/fetch.php` の `SHOP_CODES` に shopCode を追加 → サーバーへ上書きアップロード
-3. `lib/shops.ts` の `SHOPS` に1行足す（トップの在庫数・絞り込み・OG 画像・説明文の店舗数はここから作られる。バッテリー表記の種類もここ）。
+3. `lib/shops.ts` の `SHOPS` に1行足す（トップの在庫数・絞り込み・OG 画像・説明文の店舗数はここから作られる。バッテリー表記の種類、
+   保証・赤ロムの扱いと出典 URL もここ。保証は**その店の公式ページで確かめてから**書く）。
    店名が楽天の shopName とずれていないかは `npm run test:normalize` が確かめる
 4. 規約上、リンクは楽天アフィリエイトのみ（`DeviceCard.tsx` は `RAKUTEN_SHOP_NAMES` で自動判定）
 

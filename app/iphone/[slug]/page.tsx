@@ -25,7 +25,7 @@ import PriceHistoryChart from "@/app/components/PriceHistoryChart";
 import InspectionTips from "@/app/components/InspectionTips";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
-import { SHOPS, shopLabels, shopsFor } from "@/lib/shops";
+import { SHOPS, findShop, shopLabels, shopsFor } from "@/lib/shops";
 
 // スクレイパーは6時間ごとに実行されるため、1時間ごとに再生成すれば十分新しい
 export const revalidate = 3600;
@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function PriceTable({ title, rows, labelOf, hrefOf, baseline, note }: {
+function PriceTable({ title, rows, labelOf, hrefOf, baseline, note, subOf }: {
   title: string;
   rows: PriceRow[];
   labelOf: (key: string) => string;
@@ -73,6 +73,8 @@ function PriceTable({ title, rows, labelOf, hrefOf, baseline, note }: {
   /** 渡すと、最安値の下に「この値段との差」を出す */
   baseline?: number | null;
   note?: string;
+  /** 行の名前の下に小さく添える補足 */
+  subOf?: (key: string) => string | undefined;
 }) {
   if (rows.length === 0) return null;
   return (
@@ -92,7 +94,10 @@ function PriceTable({ title, rows, labelOf, hrefOf, baseline, note }: {
             href={hrefOf(r.key)}
             className="group grid grid-cols-[1fr_auto_4.5rem_1rem] gap-x-4 items-center px-5 py-3 border-t border-slate-100 hover:bg-blue-50 focus-visible:bg-blue-50 focus-visible:outline-none transition-colors"
           >
-            <span className="font-bold text-slate-700 group-hover:text-blue-600">{labelOf(r.key)}</span>
+            <span className="min-w-0">
+              <span className="block font-bold text-slate-700 group-hover:text-blue-600">{labelOf(r.key)}</span>
+              {subOf?.(r.key) && <span className="block text-[11px] text-slate-400 leading-snug">{subOf(r.key)}</span>}
+            </span>
             <span className="text-right">
               <span className="font-black text-red-600">{yen(r.minPrice)}</span>
               {baseline != null && (
@@ -287,6 +292,8 @@ export default async function ModelPage({ params }: Props) {
               <PriceTable title="状態ランク別の最安値" rows={stats.byRank} labelOf={(k) => `ランク ${k}`}
                 hrefOf={(k) => searchHref(model, { rank: k })} />
               <PriceTable title="ショップ別の最安値" rows={stats.byShop} labelOf={(k) => k}
+                subOf={(k) => { const s = findShop(k); return s && `保証: ${s.warranty}／赤ロム: ${s.redRom}`; }}
+                note="保証は各店の公式ページで確認した内容です（詳しくは「このサイトについて」）。"
                 hrefOf={(k) => searchHref(model, { shop: k })} />
             </div>
 

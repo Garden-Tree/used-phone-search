@@ -98,6 +98,31 @@ export default function AboutPage() {
             </table>
           </div>
           <p>バッテリーで絞り込むと、数値の載っていない店の在庫は（未使用品を除いて）対象外になります。</p>
+          <p className="pt-2">保証（故障・初期不良）と、ネットワーク利用制限（赤ロム）になった場合の扱いも店ごとに違います。各店の公式ページで確認した内容です（2026年9月28日時点）。</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border border-slate-200 rounded-xl">
+              <thead className="bg-slate-50 text-slate-500 text-xs">
+                <tr>
+                  <th className="text-left font-semibold px-3 py-2">ショップ</th>
+                  <th className="text-left font-semibold px-3 py-2">保証</th>
+                  <th className="text-left font-semibold px-3 py-2">赤ロム</th>
+                </tr>
+              </thead>
+              <tbody>
+                {SHOPS.map((s) => (
+                  <tr key={s.name} className="border-t border-slate-100">
+                    <td className="px-3 py-2 font-bold whitespace-nowrap">
+                      <a href={s.guaranteeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{s.label}</a>
+                      {s.note && <span className="block text-[10px] text-slate-400">{s.note}</span>}
+                    </td>
+                    <td className="px-3 py-2">{s.warranty}</td>
+                    <td className="px-3 py-2">{s.redRom}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p>保証の条件（対象外になる場合など）は店ごとに細かく決まっています。購入前に各店のページ（店名のリンク）で確認してください。</p>
         </Section>
 
         <Section id="ads" title="広告について">
