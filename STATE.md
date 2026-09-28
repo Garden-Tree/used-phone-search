@@ -46,7 +46,8 @@
 ユーザー ブログからのリンク（`ideas/blog-links-2026-09-27.md`。1922 は 10/3〜）
 ユーザー gadelog.com の WordPress 更新（CVE-2026-87902 注意喚起・9/24）
 ユーザー サーバーの rakuten-sync/sample.json 削除
-候補   Android（大）／値下がりページ（10/26〜）
+ユーザー PR「相場一覧・値下がり・スペック」確認→マージ（`ideas/2026-09-28-competitors.md`）
+候補   Android（大）
 ```
 
 ## 期限のあるもの

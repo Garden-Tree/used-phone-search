@@ -9,13 +9,14 @@ import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
 import { SITE_NAME } from "@/lib/site";
 import { yen } from "@/lib/format";
+import { IPAD_SHOPS, shopLabels } from "@/lib/shops";
 
 // iPad の機種一覧。在庫は1時間ごとに更新
 export const revalidate = 3600;
 
 const TITLE = "中古iPadの相場・最安値を機種別に比較【毎日更新】";
 const DESCRIPTION =
-  "中古iPad（iPad・iPad mini・iPad Air・iPad Pro）の最安値と在庫数を機種別に比較。イオシス・にこスマ・ゲオモバイル・じゃんぱら・ソフマップの在庫から毎日更新。";
+  `中古iPad（iPad・iPad mini・iPad Air・iPad Pro）の最安値と在庫数を機種別に比較。${shopLabels(IPAD_SHOPS)}の在庫から毎日更新。`;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -49,7 +50,7 @@ export default async function IpadIndexPage() {
 
         <h1 className="text-2xl md:text-4xl font-extrabold mb-3">中古iPadの相場・最安値</h1>
         <p className="text-slate-600 mb-4 leading-relaxed">
-          イオシス・にこスマ・ゲオモバイル・じゃんぱら・ソフマップの中古iPad <strong>{total.toLocaleString()}件</strong>
+          {shopLabels(IPAD_SHOPS)}の中古iPad <strong>{total.toLocaleString()}件</strong>
           を機種別にまとめています。機種名から容量別・状態別の最安値へ。
         </p>
         <AdDisclosure compact />

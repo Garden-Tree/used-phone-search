@@ -5,12 +5,13 @@ import DeviceCard from "@/app/components/DeviceCard";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
-import { modelPagePath, seriesOf } from "@/lib/catalog";
+import { badgesOf, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath, compareSlug, comparesFor, slugToPair } from "@/lib/compare";
 import { getModelStats, type ModelStats, type PriceRow } from "@/lib/modelStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
 import { shopsFor } from "@/lib/shops";
+import { SPEC_ROWS, specOf, specUrl } from "@/lib/iphoneSpecs";
 
 // モデル別ページと同じく1時間ごとに再生成
 export const revalidate = 3600;
@@ -126,6 +127,48 @@ function CompareTable({ title, rows, labelOf, a, b }: {
   );
 }
 
+/** 2機種のスペックの違い（両方のスペックを確かめてある機種どうしのときだけ。違う項目は太字） */
+function SpecTable({ a, b }: { a: string; b: string }) {
+  const sa = specOf(a);
+  const sb = specOf(b);
+  if (!sa || !sb) return null;
+  return (
+    <section className="bg-white rounded-3xl border border-slate-200 overflow-hidden mb-10">
+      <h2 className="px-5 py-4 text-base font-bold text-slate-800 bg-slate-50 border-b border-slate-100">スペックの違い</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-xs text-slate-500">
+              <th className="text-left font-semibold pl-4 pr-2 sm:px-5 py-2"></th>
+              <th className="text-left font-semibold px-2 sm:px-5 py-2">{a}</th>
+              <th className="text-left font-semibold pl-2 pr-4 sm:px-5 py-2">{b}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {SPEC_ROWS.map((r) => {
+              const va = r.value(sa);
+              const vb = r.value(sb);
+              const diff = va !== vb ? "font-bold text-slate-900" : "text-slate-500";
+              return (
+                <tr key={r.label} className="border-t border-slate-100">
+                  <td className="pl-4 pr-2 sm:px-5 py-2.5 font-bold text-slate-400 whitespace-nowrap">{r.label}</td>
+                  <td className={`px-2 sm:px-5 py-2.5 ${diff}`}>{va}</td>
+                  <td className={`pl-2 pr-4 sm:px-5 py-2.5 ${diff}`}>{vb}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">
+        出典: Apple の技術仕様（
+        <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{a}</a>・
+        <a href={specUrl(sb)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{b}</a>）
+      </p>
+    </section>
+  );
+}
+
 export default async function ComparePage({ params }: Props) {
   const { slug } = await params;
   const pair = slugToPair(slug);
@@ -186,13 +229,13 @@ export default async function ComparePage({ params }: Props) {
                 {stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし"}
               </p>
               <dl className="text-xs md:text-sm text-slate-600 space-y-1">
-                <div className="flex justify-between"><dt>価格の中央値</dt><dd className="font-bold">{stats.medianPrice !== null ? yen(stats.medianPrice) : "-"}</dd></div>
+                <div className="flex justify-between"><dt>相場（中央値）</dt><dd className="font-bold">{stats.medianPrice !== null ? yen(stats.medianPrice) : "-"}</dd></div>
                 <div className="flex justify-between"><dt>在庫数</dt><dd className="font-bold">{stats.count.toLocaleString()}件</dd></div>
                 <div className="flex justify-between"><dt>取扱ショップ</dt><dd className="font-bold">{stats.shopCount}店</dd></div>
               </dl>
-              {seriesOf(name) && (
+              {badgesOf(name).length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-4">
-                  {seriesOf(name)!.badges.map((badge) => (
+                  {badgesOf(name).map((badge) => (
                     <span key={badge} className="px-2 py-1 rounded-md text-[10px] md:text-xs font-semibold bg-slate-50 text-slate-600 border border-slate-200">{badge}</span>
                   ))}
                 </div>
@@ -204,6 +247,8 @@ export default async function ComparePage({ params }: Props) {
         <CompareTable title="容量別の最安値" rows={storageRows} labelOf={storageLabel} a={a} b={b} />
         <CompareTable title="状態ランク別の最安値" rows={rankRows} labelOf={(k) => `ランク ${k}`} a={a} b={b} />
         <p className="text-xs text-slate-400 mb-10">差額は「{b} − {a}」の最安値の差です。</p>
+
+        <SpecTable a={a} b={b} />
 
         {/* それぞれの最安の在庫 */}
         {models.map(({ name, stats }) => stats.cheapest.length > 0 && (
