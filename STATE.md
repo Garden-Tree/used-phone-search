@@ -43,7 +43,7 @@
 ## 次にやる（順序）
 
 ```
-ユーザー ブログからのリンク（`ideas/blog-links-2026-09-27.md`。1922 は 10/3〜）
+ユーザー GA4 の内部トラフィック（自宅 IP）の定義とデータフィルタ有効化
 ユーザー gadelog.com の WordPress 更新（CVE-2026-87902 注意喚起・9/24）
 ユーザー サーバーの rakuten-sync/sample.json 削除
 候補   Android（大）
