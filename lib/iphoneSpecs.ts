@@ -6,6 +6,7 @@
  * 発売「月」は Apple のサポートページに無いので載せない（年まで）。
  * 機種を足すときは、上の2ページで確かめてから specId と一緒に足す。載っていない機種はページ側で表示を省く
  */
+import { IPAD_SPECS } from "@/lib/ipadSpecs";
 
 export type IphoneSpec = {
   /** 発売年（Apple の「モデルを識別する」の発売年）。"2021年" */
@@ -13,12 +14,18 @@ export type IphoneSpec = {
   chip: string;
   /** 画面サイズ（インチ） */
   display: number;
-  /** 画面の種類（Super Retina / XDR・OLED ＝ 有機EL、Liquid Retina・Retina HD ＝ 液晶） */
-  panel: "有機EL" | "液晶";
-  port: "Lightning" | "USB-C";
-  auth: "Face ID" | "Touch ID";
+  /**
+   * 画面の種類（Super Retina / XDR・OLED ＝ 有機EL、Liquid Retina・Retina HD ＝ 液晶）。
+   * iPad Pro の Liquid Retina XDR（12.9インチ 第5/6世代）はミニLEDバックライトの液晶
+   */
+  panel: "有機EL" | "液晶" | "液晶（ミニLED）";
+  port: "Lightning" | "USB-C" | "USB-C（Thunderbolt）";
+  /** iPad は Touch ID の位置（ホームボタン／トップボタン）まで書く */
+  auth: "Face ID" | "Touch ID" | "Touch ID（ホームボタン）" | "Touch ID（トップボタン）";
   /** Apple の技術仕様ページの番号 */
   specId: string;
+  /** 番号でなく古い形式（support.apple.com/kb/SPxxx）のページのとき、その URL */
+  url?: string;
 };
 
 const s = (
@@ -70,10 +77,11 @@ export const IPHONE_SPECS: Record<string, IphoneSpec> = {
   "iPhone 7 Plus": s("2016年", "A10 Fusion", 5.5, "液晶", "Lightning", "Touch ID", "111953"),
 };
 
-export const specOf = (model: string): IphoneSpec | undefined => IPHONE_SPECS[model];
+/** iPhone と iPad（`lib/ipadSpecs.ts`）のスペック。載っていない機種は undefined */
+export const specOf = (model: string): IphoneSpec | undefined => IPHONE_SPECS[model] ?? IPAD_SPECS[model];
 
 /** Apple の技術仕様ページ（出典） */
-export const specUrl = (spec: IphoneSpec) => `https://support.apple.com/ja-jp/${spec.specId}`;
+export const specUrl = (spec: IphoneSpec) => spec.url ?? `https://support.apple.com/ja-jp/${spec.specId}`;
 
 /** 表に並べる項目（比較ページ・機種ページで共有） */
 export const SPEC_ROWS: { label: string; value: (s: IphoneSpec) => string }[] = [

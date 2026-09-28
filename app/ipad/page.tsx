@@ -7,6 +7,7 @@ import { getModelMarket } from "@/lib/marketStats";
 import { isIpad, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
+import { specOf } from "@/lib/iphoneSpecs";
 import { SITE_NAME } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { IPAD_SHOPS, shopLabels } from "@/lib/shops";
@@ -68,13 +69,17 @@ export default async function IpadIndexPage() {
             <div className="rounded-2xl border border-slate-200 overflow-hidden">
               {series.models.map((model, i) => {
                 const s = stats.get(model);
+                const spec = specOf(model);
                 return (
                   <Link
                     key={model}
                     href={modelPagePath(model)}
                     className={`grid grid-cols-[1fr_auto_auto_auto] gap-x-4 px-5 py-3 hover:bg-blue-50 transition-colors items-center ${i > 0 ? "border-t border-slate-100" : ""}`}
                   >
-                    <span className="font-bold text-slate-800">{model} <span className="text-slate-300">›</span></span>
+                    <span className="min-w-0">
+                      <span className="block font-bold text-slate-800">{model} <span className="text-slate-300">›</span></span>
+                      {spec && <span className="block text-[11px] text-slate-400">{`${spec.released}・${spec.chip}・${spec.port}`}</span>}
+                    </span>
                     <span className="text-right">
                       {s && <><span className="block text-[10px] text-slate-400">相場</span><span className="font-black text-slate-800">{yen(s.medianPrice)}</span></>}
                     </span>
