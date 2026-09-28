@@ -19,6 +19,7 @@ import {
 } from "@/lib/catalog";
 import { getBatteryRows, getModelStats, getStorageRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
 import { SPEC_ROWS, specOf, specUrl } from "@/lib/iphoneSpecs";
+import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
@@ -250,7 +251,9 @@ export default async function ModelPage({ params }: Props) {
           {stats.minPrice !== null && stats.medianPrice !== null && (
             <>中古の最安値は<strong>{yen(stats.minPrice)}</strong>、相場（在庫の中央値）は<strong>{yen(stats.medianPrice)}</strong>で、{stats.shopCount}ショップに{stats.count.toLocaleString()}件の在庫があります。</>
           )}
-          {!isIpad(model) && (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
+          {isIpad(model)
+            ? (IPADOS27_MODELS.has(model) ? "iPadOS 27 に対応しています。" : "iPadOS 27 には対応していません。")
+            : (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
         </p>
 
         {/* サマリー */}

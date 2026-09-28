@@ -7,7 +7,7 @@
 import { writeFileSync, readFileSync } from "node:fs";
 import { RAKUTEN_SHOPS } from "@/lib/rakutenShops";
 import { IPAD_MODELS, canonicalIpadModel } from "@/lib/ipadCatalog";
-import { IPAD_SPECS } from "@/lib/ipadSpecs";
+import { IPAD_SPECS, IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { matchesModel } from "@/lib/deviceSearch";
 import { SHOPS } from "@/lib/shops";
 const u = "https://item.rakuten.co.jp/x/1/";
@@ -91,6 +91,9 @@ for (const { shopName } of Object.values(RAKUTEN_SHOPS)) {
 // 5. iPad のスペック（lib/ipadSpecs.ts）がカタログの機種名とそろっているか（名前がずれると機種ページのスペック欄が消える）
 for (const model of IPAD_MODELS) {
   if (!IPAD_SPECS[model]) { failures++; console.log(`iPad スペック: lib/ipadSpecs.ts に「${model}」がない`); }
+}
+for (const model of IPADOS27_MODELS) {
+  if (!IPAD_MODELS.includes(model)) { failures++; console.log(`iPadOS 27: 「${model}」がカタログにない`); }
 }
 for (const model of Object.keys(IPAD_SPECS)) {
   if (!IPAD_MODELS.includes(model)) { failures++; console.log(`iPad スペック: 「${model}」がカタログにない`); }

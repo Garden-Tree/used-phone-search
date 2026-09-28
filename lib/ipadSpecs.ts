@@ -61,3 +61,18 @@ export const IPAD_SPECS: Record<string, IphoneSpec> = {
   "iPad (第7世代)": k("2019年", "A10 Fusion", 10.2, "液晶", "Lightning", HOME, "SP807"),
   "iPad (第6世代)": k("2018年", "A10 Fusion", 9.7, "液晶", "Lightning", HOME, "SP774"),
 };
+
+/**
+ * iPadOS 27 に対応している機種（2026-09-29 確認）。
+ * 出典: Apple「iPadOS 27 に対応している iPad のモデル」https://support.apple.com/en-gb/guide/ipad/ipad213a25b2/ipados
+ * （日本語版はまだ iPadOS 26 までだったので英語版。カナダ版でも同じ一覧）
+ */
+export const IPADOS27_MODELS = new Set([
+  "iPad Pro 13インチ (M5)", "iPad Pro 11インチ (M5)", "iPad Pro 13インチ (M4)", "iPad Pro 11インチ (M4)",
+  "iPad Pro 12.9インチ (第6世代)", "iPad Pro 11インチ (第4世代)", "iPad Pro 12.9インチ (第5世代)", "iPad Pro 11インチ (第3世代)",
+  "iPad Pro 12.9インチ (第4世代)", "iPad Pro 11インチ (第2世代)",
+  "iPad Air 13インチ (M4)", "iPad Air 11インチ (M4)", "iPad Air 13インチ (M3)", "iPad Air 11インチ (M3)",
+  "iPad Air 13インチ (M2)", "iPad Air 11インチ (M2)", "iPad Air (第5世代)", "iPad Air (第4世代)",
+  "iPad mini (A17 Pro)", "iPad mini (第6世代)",
+  "iPad (A16)", "iPad (第10世代)", "iPad (第9世代)",
+]);
