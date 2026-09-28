@@ -22,7 +22,8 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/iphone" },
-  openGraph: { title: `${TITLE} | ${SITE_NAME}`, description: DESCRIPTION, url: "/iphone", images: ["/opengraph-image"] },
+  // 画像は app/iphone/opengraph-image.tsx（相場一覧専用）
+  openGraph: { title: `${TITLE} | ${SITE_NAME}`, description: DESCRIPTION, url: "/iphone" },
 };
 
 type Row = { model: string; market?: ModelMarket };
