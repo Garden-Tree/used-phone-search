@@ -48,7 +48,7 @@
 ユーザー gadelog.com の WordPress 更新（CVE-2026-87902）
 ユーザー サーバーの rakuten-sync/sample.json 削除
 ユーザー ブログ wp 713・164・957 に iPad ページへのリンク（案: ideas/blog-links-2026-09-30.md）
-次     Pixel を楽天3店・エムモバにも（fetch.php はユーザーがサーバーへ）。他の Android は在庫を見て
+公開待ち Pixel・Galaxy（feature/pixel）。手順は ideas/2026-09-30.md。ユーザーの OK 後
 ```
 
 ## 期限のあるもの
