@@ -6,7 +6,7 @@ import InfiniteDeviceList from "@/app/components/InfiniteDeviceList";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
-import { buildOrderBy, buildWhere, resolveModelNames, splitModelQuery } from "@/lib/deviceSearch";
+import { SEARCH_DEVICES, buildOrderBy, buildWhere, findSearchDevice, resolveModelNames, splitModelQuery } from "@/lib/deviceSearch";
 import { SITE_NAME } from "@/lib/site";
 import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
 import Link from "next/link";
@@ -36,6 +36,10 @@ export async function generateMetadata({
     const label = splitModelQuery(modelQuery).join('・');
     title = `${label} 中古の最安値・価格比較${hasShop ? `（${shopQuery}）` : ''}`;
     description = `${label}の中古在庫を${hasShop ? shopQuery : shopLabels()}から一括比較。状態ランク・容量・バッテリー残量で絞り込んで最安値をチェック。`;
+  } else if (findSearchDevice(params.device as string | undefined)) {
+    const d = findSearchDevice(params.device as string)!;
+    title = `中古${d.label}の在庫一覧${hasShop ? `（${shopQuery}）` : ""}`;
+    description = `中古${d.label}の在庫を価格・状態ランク・容量・バッテリー残量で絞り込んで比較できます。`;
   } else if (hasShop) {
     title = `${shopQuery} の中古スマホ在庫一覧`;
     description = `${shopQuery}の中古iPhone在庫を価格・状態ランク・容量・バッテリー残量で絞り込んで比較できます。`;
@@ -77,6 +81,7 @@ export default async function SearchPage({
   const modelQuery = params.model as string | undefined;
   const shopQuery = params.shop as string | undefined;
   const sortParam = params.sort as string | undefined;
+  const device = findSearchDevice(params.device as string | undefined);
 
   // Sort configuration
   const currentSort = (sortParam as string) || 'price_asc';
@@ -94,6 +99,7 @@ export default async function SearchPage({
     const where = buildWhere({
       modelNames: await resolveModelNames(models),
       shop: shopQuery,
+      device: device?.key,
       sort: currentSort,
       minPrice: params.minPrice as string | undefined,
       maxPrice: params.maxPrice as string | undefined,
@@ -120,7 +126,7 @@ export default async function SearchPage({
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <h1 className="text-3xl font-extrabold text-slate-900 mb-2">
-                {modelQuery ? `${modelQuery} の中古在庫` : shopQuery ? `${shopQuery} の中古在庫` : "中古スマホ在庫一覧"}
+                {modelQuery ? `${modelQuery} の中古在庫` : device ? `中古${device.label}の在庫${shopQuery ? `（${shopQuery}）` : ""}` : shopQuery ? `${shopQuery} の中古在庫` : "中古iPhone在庫一覧"}
               </h1>
               <p className="text-slate-600">
                 在庫 {totalCount.toLocaleString()}件。スクロールでさらに読み込みます。
@@ -143,6 +149,24 @@ export default async function SearchPage({
           </div>
 
           <AdDisclosure compact />
+
+          {/* 種類の切り替え（機種を指定していないとき）。店の指定は引き継ぐ */}
+          {!modelQuery && (
+            <nav aria-label="種類" className="flex flex-wrap gap-2">
+              {SEARCH_DEVICES.map((d) => {
+                const active = (device?.key ?? (shopQuery ? null : "iphone")) === d.key;
+                const qs = new URLSearchParams({ device: d.key, ...(shopQuery ? { shop: shopQuery } : {}) });
+                return (
+                  <Link key={d.key} href={`/search?${qs.toString()}`}
+                    className={`px-4 py-2 rounded-xl text-sm font-bold border transition-colors ${
+                      active ? "bg-slate-900 text-white border-slate-900" : "bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600"
+                    }`}>
+                    {d.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
 
           {/* Filter Panel */}
           <FilterPanel key={`${params.minPrice ?? ''}-${params.maxPrice ?? ''}`} />

@@ -59,8 +59,10 @@ export default function FilterPanel() {
     // Keep model and shop if they are important, or just clear filters
     const model = searchParams.get('model');
     const shop = searchParams.get('shop');
+    const device = searchParams.get('device');
     if (model) params.set('model', model);
     if (shop) params.set('shop', shop);
+    if (device) params.set('device', device);
     
     router.push(`${pathname}?${params.toString()}`);
     setMinPrice('');

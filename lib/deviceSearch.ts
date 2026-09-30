@@ -85,6 +85,8 @@ export function splitModelQuery(modelQuery: string | null | undefined): string[]
 export type SearchParams = {
   /** resolveModelNames の結果。undefined ならモデルで絞り込まない */
   modelNames?: string[];
+  /** 機種の種類（iphone・ipad・pixel・galaxy）。機種の指定がないときの一覧の切り替え（2026-09-30〜） */
+  device?: string | null;
   shop?: string | null;
   sort?: string | null;
   minPrice?: string | null;
@@ -134,13 +136,26 @@ export function minBatteryWhere(min: number): Prisma.DeviceInventoryWhereInput {
   return { OR: [{ batteryHealth: { gte: min } }, { conditionRank: "S" }] };
 }
 
+/** 検索ページの種類の切り替え（?device=）→ 機種名の先頭 */
+export const SEARCH_DEVICES = [
+  { key: "iphone", label: "iPhone", prefix: "iPhone" },
+  { key: "ipad", label: "iPad", prefix: "iPad" },
+  { key: "pixel", label: "Pixel", prefix: "Pixel" },
+  { key: "galaxy", label: "Galaxy", prefix: "Galaxy" },
+] as const;
+
+export const findSearchDevice = (key: string | null | undefined) => SEARCH_DEVICES.find((d) => d.key === key);
+
 /** DB側の絞り込み条件 */
 export function buildWhere(p: SearchParams): Prisma.DeviceInventoryWhereInput {
   const and: Prisma.DeviceInventoryWhereInput[] = [];
 
   // 機種もショップも指定がない一覧（/search・予算別ページからのリンク）は iPhone だけにする。
-  // ショップ指定の一覧はトップの在庫数（iPhone・iPad の合計）と揃えるため iPad も含める
+  // ?device= があればその種類だけ（ショップ指定と組み合わせられる）。
+  // ショップだけ指定の一覧はトップの在庫数（全種類の合計）と揃えるため全種類を含める
+  const device = findSearchDevice(p.device);
   if (p.modelNames) and.push({ modelName: { in: p.modelNames } });
+  else if (device) and.push({ modelName: { startsWith: device.prefix } });
   else if (!p.shop || p.shop === "all") and.push({ modelName: { startsWith: "iPhone" } });
 
   if (p.shop && p.shop !== "all") and.push({ shopName: p.shop });

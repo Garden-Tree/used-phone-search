@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const where = buildWhere({
       modelNames: await resolveModelNames(splitModelQuery(searchParams.get("model"))),
       shop: searchParams.get("shop"),
+      device: searchParams.get("device"),
       sort,
       minPrice: searchParams.get("minPrice"),
       maxPrice: searchParams.get("maxPrice"),
