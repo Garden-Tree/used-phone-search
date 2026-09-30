@@ -45,9 +45,8 @@
 ## 次にやる（順序）
 
 ```
-ユーザー gadelog.com の WordPress 更新（CVE-2026-87902）
 ユーザー サーバーの rakuten-sync/sample.json 削除
-ユーザー ブログ wp 713・164・957 に iPad ページへのリンク（案: ideas/blog-links-2026-09-30.md）
+ユーザー ブログにリンク（iPad: blog-links-2026-09-30・Pixel/Galaxy: blog-links-2026-10-01。1922 は 10/5〜）
 10/2〜  GSC のリクエストを毎日10件（Pixel・Galaxy の機種ページ）
 ```
 
