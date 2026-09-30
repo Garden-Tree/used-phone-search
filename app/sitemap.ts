@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { PICKS, pickPath } from "@/lib/picks";
-import { BUDGETS, IPAD_BUDGETS, budgetPath } from "@/lib/budgets";
+import { BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetPath } from "@/lib/budgets";
 import { SITE_URL } from "@/lib/site";
 import prisma from "@/lib/prisma";
 
@@ -54,6 +54,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     ...IPAD_BUDGETS.map((max) => ({
       url: `${SITE_URL}${budgetPath(max, "ipad")}`,
+      lastModified,
+      changeFrequency: "daily" as const,
+      priority: 0.7,
+    })),
+    ...PIXEL_BUDGETS.map((max) => ({
+      url: `${SITE_URL}${budgetPath(max, "pixel")}`,
       lastModified,
       changeFrequency: "daily" as const,
       priority: 0.7,

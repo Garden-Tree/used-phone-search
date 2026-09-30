@@ -11,7 +11,7 @@ import { IPAD_SPECS, IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { matchesModel } from "@/lib/deviceSearch";
 import { SHOPS } from "@/lib/shops";
 import { PICKS } from "@/lib/picks";
-import { PIXEL_INFO, PIXEL_MODELS } from "@/lib/pixelCatalog";
+import { PIXEL_INFO, PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
 import { ALL_DEVICE_PAGE_MODELS } from "@/lib/catalog";
 const u = "https://item.rakuten.co.jp/x/1/";
 // [shopCode, 商品名, rank, car, batt]（rank・car・batt は fetch.php が商品説明から抜き出す値）
@@ -121,6 +121,9 @@ for (const pick of PICKS) {
   for (const model of pick.models) {
     if (!ALL_DEVICE_PAGE_MODELS.includes(model)) { failures++; console.log(`目的別 ${pick.slug}: 「${model}」がカタログにない`); }
     if (pick.ipad && !IPADOS27_MODELS.has(model)) { failures++; console.log(`目的別 ${pick.slug}: 「${model}」は iPadOS 27 非対応`); }
+    if (pick.pixel && !((updateYearsLeft(model, new Date().toISOString().slice(0, 7)) ?? 0) > 0)) {
+      failures++; console.log(`目的別 ${pick.slug}: 「${model}」はアップデート保証が終わっている`);
+    }
   }
 }
 

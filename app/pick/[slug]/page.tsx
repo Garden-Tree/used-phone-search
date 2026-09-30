@@ -7,7 +7,8 @@ import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { badgesOf, modelPagePath } from "@/lib/catalog";
 import { getModelStats } from "@/lib/modelStats";
-import { PICKS, findPick, pickPath, pickSearchHref } from "@/lib/picks";
+import { PICKS, findPick, pickDevice, pickPath, pickSearchHref } from "@/lib/picks";
+import { jaMonth, updateUntil } from "@/lib/pixelCatalog";
 import { SITE_NAME } from "@/lib/site";
 import { yen } from "@/lib/format";
 
@@ -65,6 +66,12 @@ export default async function PickPage({ params }: Props) {
               <span className="mx-2">›</span>
             </>
           )}
+          {pick.pixel && (
+            <>
+              <Link href="/pixel" className="hover:text-blue-600">中古Google Pixel</Link>
+              <span className="mx-2">›</span>
+            </>
+          )}
           <span className="text-slate-600">{pick.title}</span>
         </nav>
 
@@ -93,6 +100,9 @@ export default async function PickPage({ params }: Props) {
               <p className="text-xs text-slate-500 mt-1">{stats.count.toLocaleString()}件の在庫</p>
               {badgesOf(name).length > 0 && (
                 <p className="text-[11px] text-slate-400 mt-3 line-clamp-2">{badgesOf(name).join("・")}</p>
+              )}
+              {updateUntil(name) && (
+                <p className="text-[11px] text-slate-400 mt-3">アップデート保証 {jaMonth(updateUntil(name)!)}まで</p>
               )}
               <p className="text-xs font-bold text-blue-600 mt-3">価格まとめを見る &rarr;</p>
             </Link>
@@ -123,7 +133,7 @@ export default async function PickPage({ params }: Props) {
         <section className="mb-4">
           <h2 className="text-lg font-bold mb-3">ほかの目的から探す</h2>
           <div className="flex flex-wrap gap-2">
-            {PICKS.filter((p) => p.slug !== pick.slug && !!p.ipad === !!pick.ipad).map((p) => (
+            {PICKS.filter((p) => p.slug !== pick.slug && pickDevice(p) === pickDevice(pick)).map((p) => (
               <Link key={p.slug} href={pickPath(p.slug)}
                 className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
                 {p.title}

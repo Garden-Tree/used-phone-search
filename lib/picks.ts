@@ -1,3 +1,5 @@
+import { PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
+
 /**
  * トップページの「目的・予算から探す」カードの行き先（/pick/[slug]）。
  * 検索ページ（毎回 DB に問い合わせる動的ページ）ではなく ISR の静的ページにすることで、
@@ -13,6 +15,8 @@ export type Pick = {
   models: string[];
   /** iPad の目的別ページ（/ipad の「目的から探す」に出す）。なしは iPhone */
   ipad?: boolean;
+  /** Pixel の目的別ページ（/pixel の「目的から探す」に出す）。2026-09-30〜 */
+  pixel?: boolean;
   /** 対象機種の出典（Apple 公式） */
   source?: { label: string; url: string };
 };
@@ -70,10 +74,41 @@ export const PICKS: Pick[] = [
     ipad: true,
     source: { label: "Apple「Apple Pencil の互換性」", url: "https://support.apple.com/ja-jp/108937" },
   },
+  // ここから Pixel。対象は Google のアップデート保証が残っている機種だけ（lib/pixelCatalog.ts）
+  {
+    slug: "pixel-long",
+    title: "長く使える Pixel",
+    seoTitle: "長く使える中古Google Pixel（アップデート保証が5年以上残る機種）",
+    lead: "Google のアップデート保証（Pixel 8 以降は販売開始から7年）が、いまから5年以上残っている Pixel の中古在庫をまとめています。",
+    // 保証の残りは日がたつと減るので、サーバーが起動した時点の年月で選ぶ（ISR で作り直すたびに入れ替わる）
+    models: PIXEL_MODELS.filter((m) => (updateYearsLeft(m, new Date().toISOString().slice(0, 7)) ?? 0) >= 5),
+    pixel: true,
+    source: { label: "Google「Pixel のアップデート保証期間」", url: "https://support.google.com/pixelphone/answer/4457705" },
+  },
+  {
+    slug: "pixel-a",
+    title: "安く使える a シリーズ",
+    seoTitle: "安い中古Google Pixel a シリーズ（Pixel 7a・8a・9a・10a）",
+    lead: "価格の安い a シリーズのうち、Google のアップデート保証が1年以上残っている Pixel 7a・8a・9a・10a の中古在庫をまとめています。",
+    models: ["Pixel 10a", "Pixel 9a", "Pixel 8a", "Pixel 7a"],
+    pixel: true,
+  },
+  {
+    slug: "pixel-fold",
+    title: "折りたたみの Pixel",
+    seoTitle: "折りたたみの中古Google Pixel（Pixel Fold・9 Pro Fold・10 Pro Fold・11 Pro Fold）",
+    lead: "開くとタブレットのように使える折りたたみの Pixel（Pixel Fold・9 Pro Fold・10 Pro Fold・11 Pro Fold）の中古在庫をまとめています。",
+    models: ["Pixel 11 Pro Fold", "Pixel 10 Pro Fold", "Pixel 9 Pro Fold", "Pixel Fold"],
+    pixel: true,
+  },
 ];
 
-export const IPHONE_PICKS = PICKS.filter((p) => !p.ipad);
+export const IPHONE_PICKS = PICKS.filter((p) => !p.ipad && !p.pixel);
 export const IPAD_PICKS = PICKS.filter((p) => p.ipad);
+export const PIXEL_PICKS = PICKS.filter((p) => p.pixel);
+
+/** 目的別ページの機種の種類（「ほかの目的」は同じ種類だけ並べる） */
+export const pickDevice = (p: Pick) => (p.ipad ? "ipad" : p.pixel ? "pixel" : "iphone");
 
 export function pickPath(slug: string): string {
   return `/pick/${slug}`;

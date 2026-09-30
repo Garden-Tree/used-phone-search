@@ -9,22 +9,53 @@ import { budgetLabel, budgetPath, budgetsOf, type BudgetDevice } from "@/lib/bud
 import { cheapestUnder, getBudgetModels } from "@/lib/budgetStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
-import { IPAD_SHOPS, SHOPS } from "@/lib/shops";
+import { IPAD_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
+import { jaMonth, updateUntil } from "@/lib/pixelCatalog";
 
 /**
- * 予算別ページの中身（iPhone: app/budget/[slug]、iPad: app/ipad/budget/[slug]）。
- * 文言の違いは TEXT だけにまとめる
+ * 予算別ページの中身（iPhone: app/budget/[slug]、iPad: app/ipad/budget/[slug]、Pixel: app/pixel/budget/[slug]）。
+ * 文言の違いは TEXT だけにまとめる。「対応」は iPhone・iPad は最新 OS の対応、Pixel は Google のアップデート保証が残っているか
  */
-const TEXT = {
+type DeviceText = {
+  name: string;
+  shops: number;
+  /** 機種一覧のページ（パンくず・下のボタン）。iPhone は検索ページへ */
+  hub?: { path: string; name: string; cta: string; ctaNote: string };
+  /** 導入文の「〜でいちばん新しいのは」 */
+  supportedLead: string;
+  supportedNote: string;
+  legacyTitle: string;
+  legacyNote: string;
+  /** 表の機種名の下に添える一言 */
+  subOf?: (model: string) => string | undefined;
+};
+
+const TEXT: Record<BudgetDevice, DeviceText> = {
   iphone: {
-    name: "中古iPhone", os: "iOS 27", shops: SHOPS.length,
+    name: "中古iPhone", shops: SHOPS.length,
+    supportedLead: "最新の iOS 27 に対応した機種で",
+    supportedNote: "iOS 27 対応。機種名から容量別・状態別の価格まとめへ",
+    legacyTitle: "iOS 27 非対応の旧機種",
     legacyNote: "最新の iOS や一部のアプリが使えないため、メイン機には向きません（サブ機・撮影用など）",
   },
   ipad: {
-    name: "中古iPad", os: "iPadOS 27", shops: IPAD_SHOPS.length,
+    name: "中古iPad", shops: IPAD_SHOPS.length,
+    hub: { path: "/ipad", name: "中古iPad", cta: "中古iPadの相場を機種別に見る", ctaNote: "機種ごとに相場（中央値）・最安値・在庫数を比較できます" },
+    supportedLead: "最新の iPadOS 27 に対応した機種で",
+    supportedNote: "iPadOS 27 対応。機種名から容量別・状態別の価格まとめへ",
+    legacyTitle: "iPadOS 27 非対応の旧機種",
     legacyNote: "最新の iPadOS や一部のアプリが使えないため、長く使うには向きません",
   },
-} as const;
+  pixel: {
+    name: "中古Google Pixel", shops: PIXEL_SHOPS.length,
+    hub: { path: "/pixel", name: "中古Google Pixel", cta: "中古Pixelの相場を機種別に見る", ctaNote: "機種ごとに相場（中央値）・最安値・アップデート保証の期限を比較できます" },
+    supportedLead: "Google のアップデート保証が残っている機種で",
+    supportedNote: "アップデート保証が残っている機種。機種名から容量別・状態別の価格まとめへ",
+    legacyTitle: "アップデート保証が終わった機種",
+    legacyNote: "OS・セキュリティの更新が届かないため、長く使うには向きません",
+    subOf: (model) => { const u = updateUntil(model); return u ? `保証 ${jaMonth(u)}まで` : undefined; },
+  },
+};
 
 export async function budgetMetadata(max: number, device: BudgetDevice): Promise<Metadata> {
   const t = TEXT[device];
@@ -53,7 +84,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
   const legacy = rows.filter((r) => !r.supported);
   const totalCount = rows.reduce((n, r) => n + r.count, 0);
 
-  // 予算内で買える新しい機種（iOS 27・iPadOS 27 対応）それぞれの最安の在庫
+  // 予算内で買える新しい機種（最新 OS 対応・Pixel は保証が残っているもの）それぞれの最安の在庫
   const picks = (await Promise.all(supported.slice(0, 6).map((r) => cheapestUnder(r.model, max)))).filter(
     (d) => d !== null,
   );
@@ -64,8 +95,8 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "トップ", item: SITE_URL },
-      ...(device === "ipad" ? [{ "@type": "ListItem", position: 2, name: "中古iPad", item: `${SITE_URL}/ipad` }] : []),
-      { "@type": "ListItem", position: device === "ipad" ? 3 : 2, name: `${label}以下の${t.name}`, item: `${SITE_URL}${path}` },
+      ...(t.hub ? [{ "@type": "ListItem", position: 2, name: t.hub.name, item: `${SITE_URL}${t.hub.path}` }] : []),
+      { "@type": "ListItem", position: t.hub ? 3 : 2, name: `${label}以下の${t.name}`, item: `${SITE_URL}${path}` },
     ],
   };
 
@@ -78,9 +109,9 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
         <nav aria-label="パンくずリスト" className="text-xs text-slate-400 mb-4">
           <Link href="/" className="hover:text-blue-600">トップ</Link>
           <span className="mx-2">›</span>
-          {device === "ipad" && (
+          {t.hub && (
             <>
-              <Link href="/ipad" className="hover:text-blue-600">中古iPad</Link>
+              <Link href={t.hub.path} className="hover:text-blue-600">{t.hub.name}</Link>
               <span className="mx-2">›</span>
             </>
           )}
@@ -95,7 +126,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
               （ジャンク品を除く）。
               {supported[0] && (
                 <>
-                  最新の {t.os} に対応した機種でいちばん新しいのは <strong>{supported[0].model}</strong>（{yen(supported[0].minPrice)}〜）です。
+                  {t.supportedLead}いちばん新しいのは <strong>{supported[0].model}</strong>（{yen(supported[0].minPrice)}〜）です。
                 </>
               )}
             </>
@@ -125,7 +156,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
         {supported.length > 0 && (
           <section className="mb-10">
             <h2 className="text-xl md:text-2xl font-bold mb-1">{label}以下で買える機種（新しい順）</h2>
-            <p className="text-xs text-slate-400 mb-4">{t.os} 対応。機種名から容量別・状態別の価格まとめへ</p>
+            <p className="text-xs text-slate-400 mb-4">{t.supportedNote}</p>
             <div className="rounded-2xl border border-slate-200 overflow-hidden">
               <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 bg-slate-50 text-xs font-bold text-slate-500">
                 <span>機種</span>
@@ -138,7 +169,10 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
                   href={modelPagePath(r.model)}
                   className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 border-t border-slate-100 hover:bg-blue-50 transition-colors items-center"
                 >
-                  <span className="font-bold text-slate-800">{r.model} <span className="text-slate-300">›</span></span>
+                  <span className="min-w-0">
+                    <span className="block font-bold text-slate-800">{r.model} <span className="text-slate-300">›</span></span>
+                    {t.subOf?.(r.model) && <span className="block text-[11px] text-slate-400">{t.subOf(r.model)}</span>}
+                  </span>
                   <span className="text-right font-black text-red-600">{yen(r.minPrice)}</span>
                   <span className="text-right w-16 text-sm text-slate-500">{r.count.toLocaleString()}件</span>
                 </Link>
@@ -159,7 +193,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
 
         {legacy.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-lg font-bold mb-1">{t.os} 非対応の旧機種</h2>
+            <h2 className="text-lg font-bold mb-1">{t.legacyTitle}</h2>
             <p className="text-xs text-slate-400 mb-3">{t.legacyNote}</p>
             <div className="flex flex-wrap gap-2">
               {legacy.map((r) => (
@@ -173,15 +207,15 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
         )}
 
         <div className="text-center mb-4">
-          {/* 検索ページは機種の指定がないと iPhone だけの一覧になるので、iPad は相場一覧へ */}
+          {/* 検索ページは機種の指定がないと iPhone だけの一覧になるので、iPad・Pixel は機種一覧へ */}
           <Link
-            href={device === "ipad" ? "/ipad" : `/search?${new URLSearchParams({ maxPrice: String(max) }).toString()}`}
+            href={t.hub ? t.hub.path : `/search?${new URLSearchParams({ maxPrice: String(max) }).toString()}`}
             className="inline-flex items-center px-8 py-4 bg-slate-900 text-white rounded-full font-bold hover:bg-blue-600 transition-colors"
           >
-            {device === "ipad" ? "中古iPadの相場を機種別に見る" : `${label}以下の在庫をすべて見る`} &rarr;
+            {t.hub ? t.hub.cta : `${label}以下の在庫をすべて見る`} &rarr;
           </Link>
           <p className="text-xs text-slate-400 mt-3">
-            {device === "ipad" ? "機種ごとに相場（中央値）・最安値・在庫数を比較できます" : "容量・状態ランク・バッテリー残量で絞り込めます"}
+            {t.hub ? t.hub.ctaNote : "容量・状態ランク・バッテリー残量で絞り込めます"}
           </p>
         </div>
       </main>

@@ -6,6 +6,7 @@ import { resolveModelNames } from "@/lib/deviceSearch";
 import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { IPADOS27_MODELS, IPAD_SPECS } from "@/lib/ipadSpecs";
 import type { BudgetDevice } from "@/lib/budgets";
+import { PIXEL_INFO, PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
 
 /** 予算別ページ（lib/budgets.ts）の集計 */
 
@@ -13,7 +14,7 @@ export type BudgetModelRow = {
   model: string;
   minPrice: number;
   count: number;
-  /** iOS 27（iPad は iPadOS 27）に対応しているか（旧機種は false） */
+  /** iOS 27（iPad は iPadOS 27）に対応しているか。Pixel は Google のアップデート保証が残っているか */
   supported: boolean;
 };
 
@@ -52,11 +53,17 @@ export async function minPriceByModel(where: Prisma.DeviceInventoryWhereInput, m
 // iPad は発売年の新しい順（同じ年はカタログの順＝Pro・Air・mini・無印）。発売年は Apple 公式で確かめた値（lib/ipadSpecs.ts）
 const releasedYear = (model: string) => Number(IPAD_SPECS[model]?.released.replace("年", "") ?? 0);
 const IPAD_BY_RELEASE = [...IPAD_MODELS].sort((a, b) => releasedYear(b) - releasedYear(a));
+// Pixel は販売開始の年月の新しい順（lib/pixelCatalog.ts。Google 公式）
+const PIXEL_BY_RELEASE = [...PIXEL_MODELS].sort((a, b) => PIXEL_INFO[b].available.localeCompare(PIXEL_INFO[a].available));
 
 /** 予算内の在庫を機種ごとに集計する（機種は新しい順） */
 export async function getBudgetModels(max: number, device: BudgetDevice = "iphone"): Promise<BudgetModelRow[]> {
-  const models = device === "ipad" ? IPAD_BY_RELEASE : ALL_PAGE_MODELS;
-  const isSupported = (m: string) => (device === "ipad" ? IPADOS27_MODELS.has(m) : ALL_CATALOG_MODELS.includes(m));
+  const models = device === "ipad" ? IPAD_BY_RELEASE : device === "pixel" ? PIXEL_BY_RELEASE : ALL_PAGE_MODELS;
+  const now = new Date().toISOString().slice(0, 7);
+  const isSupported = (m: string) =>
+    device === "ipad" ? IPADOS27_MODELS.has(m)
+    : device === "pixel" ? (updateYearsLeft(m, now) ?? 0) > 0
+    : ALL_CATALOG_MODELS.includes(m);
   const byModel = await minPriceByModel({ isSoldOut: false, price: { lte: max }, ...NOT_JUNK }, models);
   return [...byModel].map(([model, r]) => ({ model, ...r, supported: isSupported(model) }));
 }

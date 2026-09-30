@@ -9,6 +9,8 @@ import { PIXEL_CATALOG, PIXEL_INFO, PIXEL_MODELS, jaMonth, updateUntil } from "@
 import { SITE_NAME } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { PIXEL_SHOPS, shopLabels } from "@/lib/shops";
+import { PIXEL_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
+import { PIXEL_PICKS, pickPath } from "@/lib/picks";
 
 // Google Pixel の機種一覧（2026-09-30〜）。在庫は1時間ごとに更新
 export const revalidate = 3600;
@@ -50,6 +52,28 @@ export default async function PixelIndexPage() {
           中古で買うときは、値段と一緒に「あと何年使えるか」も見てください。
         </p>
         <AdDisclosure compact />
+
+        {/* 目的・予算から探す（/pick/pixel-…・/pixel/budget/…） */}
+        <section className="my-6">
+          <h2 className="text-lg font-bold mb-3">目的から探す</h2>
+          <div className="flex flex-wrap gap-2">
+            {PIXEL_PICKS.map((p) => (
+              <Link key={p.slug} href={pickPath(p.slug)}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {p.title}
+              </Link>
+            ))}
+          </div>
+          <h2 className="text-lg font-bold mt-5 mb-3">予算から探す</h2>
+          <div className="flex flex-wrap gap-2">
+            {PIXEL_BUDGETS.map((max) => (
+              <Link key={max} href={budgetPath(max, "pixel")}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {budgetLabel(max)}以下
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {PIXEL_CATALOG.map((series) => (
           <section key={series.series} className="my-8">
