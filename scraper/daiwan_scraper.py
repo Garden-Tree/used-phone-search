@@ -3,7 +3,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
-from common import run_scraper
+from common import PIXEL_ONLY_STORAGE, canonical_pixel_model, run_scraper
 
 def get_detail_info(url, headers, session):
     try:
@@ -155,8 +155,18 @@ def parse_daiwan_item(item, headers):
                 color = word
                 break
 
+    manufacturer = 'Apple'
+    if 'Pixel' in raw_name:
+        # 例: Google Pixel9 Pro 256GB ローズクオーツ SIMフリー（Pixel 5a 以前・読み取れないものは入れない）
+        model_name = canonical_pixel_model(raw_name)
+        if not model_name:
+            return None
+        manufacturer = 'Google'
+        if not storage:
+            storage = PIXEL_ONLY_STORAGE.get(model_name, 0)
+
     return {
-        'manufacturer': 'Apple',
+        'manufacturer': manufacturer,
         'modelName': model_name,
         'storage': storage,
         'color': color,
@@ -184,23 +194,25 @@ def scrape_daiwan(max_pages=5):
     session = requests.Session()
     raw_item_nodes = []
     
-    for page in range(1, max_pages + 1):
-        url = f"https://www.dai-one.jp/smartphone/iphone/page-{page}/?items_per_page=128"
-        try:
-            print(f"  Fetching Listing Page {page}...")
-            response = session.get(url, headers=headers, timeout=15)
-            response.raise_for_status()
-            nodes = parse_daiwan_html(response.text)
-            if not nodes:
-                print("  No more items found.")
+    # iPhone と Pixel（2026-09-30〜）の一覧。どちらも空のページが出たところで止める
+    for category in ("iphone", "pixel"):
+        for page in range(1, max_pages + 1):
+            url = f"https://www.dai-one.jp/smartphone/{category}/page-{page}/?items_per_page=128"
+            try:
+                print(f"  Fetching {category} Listing Page {page}...")
+                response = session.get(url, headers=headers, timeout=15)
+                response.raise_for_status()
+                nodes = parse_daiwan_html(response.text)
+                if not nodes:
+                    print("  No more items found.")
+                    break
+                print(f"  Page {page}: Found {len(nodes)} item nodes")
+                raw_item_nodes.extend(nodes)
+                time.sleep(0.5)
+            except Exception as e:
+                print(f"  Error on Page {page}: {e}")
                 break
-            print(f"  Page {page}: Found {len(nodes)} item nodes")
-            raw_item_nodes.extend(nodes)
-            time.sleep(0.5)
-        except Exception as e:
-            print(f"  Error on Page {page}: {e}")
-            break
-            
+
     if not raw_item_nodes:
         return []
 

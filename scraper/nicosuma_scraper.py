@@ -9,7 +9,7 @@ import json
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
-from common import WIFI_MODEL, run_scraper, is_iphone_13_or_later
+from common import WIFI_MODEL, PIXEL_ONLY_STORAGE, canonical_pixel_model, run_scraper, is_iphone_13_or_later
 
 
 # にこスマでスクレイピング対象とするiPhoneコレクション
@@ -68,6 +68,14 @@ IPAD_COLLECTIONS = [
     "ipad-air-5th-gen", "ipad-air-4th-gen", "ipad-air-3",
     "ipad-mini-7th-gen", "ipad-mini-6th-gen", "ipad-mini-5th-gen",
     "ipad-11th-gen", "ipad-10gen", "ipad-9th-gen", "ipad-8th-gen", "ipad-7th-gen", "ipad-6th-gen",
+]
+
+# Pixel（2026-09-30〜）。アップデート保証の対象の Pixel 6 以降だけ（https://www.nicosuma.com/android/pixel の一覧から）
+PIXEL_COLLECTIONS = [
+    "pixel-6", "pixel-6-pro", "pixel-6a", "pixel-7", "pixel-7-pro", "pixel-7a", "pixel-fold",
+    "pixel-8", "pixel-8-pro", "pixel-8a", "pixel-9", "pixel-9-pro", "pixel-9-pro-xl", "pixel-9-pro-fold", "pixel-9a",
+    "pixel-10", "pixel-10-pro", "pixel-10-pro-xl", "pixel-10-pro-fold", "pixel-10a",
+    "pixel-11", "pixel-11-pro", "pixel-11-pro-xl", "pixel-11-pro-fold",
 ]
 
 # iPad の mno（販路）→ 他ショップと揃えた carrier
@@ -162,9 +170,19 @@ def extract_products_from_page(html_content):
         # iPhone は販路が不明なため carrier は None（Null）。iPad は Wi-Fi/セルラーの区別に必要なので mno から入れる
         is_ipad = model_name.startswith("iPad")
         mno = IPAD_CARRIERS.get(mno) if is_ipad else None
-            
+
+        # Pixel は Google の表記にそろえる（Pixel 5a 以前・読み取れないものは入れない）
+        manufacturer = "Apple"
+        if "pixel" in model_name.lower():
+            model_name = canonical_pixel_model(model_name)
+            if not model_name:
+                continue
+            manufacturer = "Google"
+            if not storage:
+                storage = PIXEL_ONLY_STORAGE.get(model_name, 0)
+
         items.append({
-            "manufacturer": "Apple",
+            "manufacturer": manufacturer,
             "modelName": model_name,
             "storage": storage,
             "color": color,
@@ -219,7 +237,11 @@ def scrape_nicosuma(max_collections=None):
     seen_urls = set()
     
     # (カテゴリ, コレクション) の組。max_collections はテスト用に先頭から絞る
-    target_collections = [("iphone", c) for c in IPHONE_COLLECTIONS] + [("ipad", c) for c in IPAD_COLLECTIONS]
+    target_collections = (
+        [("iphone", c) for c in IPHONE_COLLECTIONS]
+        + [("ipad", c) for c in IPAD_COLLECTIONS]
+        + [("android/pixel", c) for c in PIXEL_COLLECTIONS]
+    )
     if max_collections:
         target_collections = target_collections[:max_collections]
 

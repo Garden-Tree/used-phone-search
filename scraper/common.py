@@ -62,6 +62,34 @@ def load_database_url() -> str:
     return clean_database_url(url)
 
 
+# Google Pixel（2026-09-30〜）。機種名は Google の表記（"Pixel 8a" "Pixel 9 Pro Fold"）にそろえる。
+# 掲載するのはアップデート保証の対象の Pixel 6 以降（Google「Pixel のアップデート保証期間」）。一覧は lib/pixelCatalog.ts と同じ
+PIXEL_MODELS = {
+    "Pixel 6", "Pixel 6 Pro", "Pixel 6a", "Pixel 7", "Pixel 7 Pro", "Pixel 7a", "Pixel Fold",
+    "Pixel 8", "Pixel 8 Pro", "Pixel 8a", "Pixel 9", "Pixel 9 Pro", "Pixel 9 Pro XL", "Pixel 9 Pro Fold", "Pixel 9a",
+    "Pixel 10", "Pixel 10 Pro", "Pixel 10 Pro XL", "Pixel 10 Pro Fold", "Pixel 10a",
+    "Pixel 11", "Pixel 11 Pro", "Pixel 11 Pro XL", "Pixel 11 Pro Fold",
+}
+# 容量が1種類しかなく、商品名に容量が書かれないことがある機種（Google の技術仕様: 6a・7a は 128GB のみ）
+PIXEL_ONLY_STORAGE = {"Pixel 6a": 128, "Pixel 7a": 128}
+
+_PIXEL_RE = re.compile(r"Pixel\s?(\d{1,2})\s?(a|Pro\s?Fold|Pro\s?XL|Pro)?(?![0-9A-Za-z])", re.IGNORECASE)
+
+
+def canonical_pixel_model(raw_name: str):
+    """商品名から Pixel の機種名を返す。Pixel 5a 以前・読み取れないものは None"""
+    m = _PIXEL_RE.search(raw_name)
+    if m:
+        variant = (m.group(2) or "").lower().replace(" ", "")
+        suffix = {"": "", "a": "a", "pro": " Pro", "proxl": " Pro XL", "profold": " Pro Fold"}[variant]
+        name = f"Pixel {int(m.group(1))}{suffix}"
+    elif re.search(r"Pixel\s?Fold", raw_name, re.IGNORECASE):
+        name = "Pixel Fold"
+    else:
+        return None
+    return name if name in PIXEL_MODELS else None
+
+
 def is_iphone_13_or_later(model_name: str) -> bool:
     """iPhone 13 以降（SE 第3世代含む）か。2021年10月以降の発売モデルは原則 SIM ロックなしで売られている"""
     if re.search(r"iPhone\s?(1[3-9])", model_name, re.IGNORECASE):
