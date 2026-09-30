@@ -46,6 +46,12 @@ export async function generateMetadata({
   if (hasShop) canonical.set('shop', shopQuery);
   const canonicalQs = canonical.toString();
   const isFiltered = Object.keys(params).some((k) => !INDEXABLE_PARAMS.includes(k));
+  // 機種を1つだけ指定した検索は、その機種ページ（容量・状態別の表があるページ）と中身が重なる。
+  // 9/30 に GSC で検索ページのほうが表示されていたので、正式な URL を機種ページに向ける（ideas/2026-09-30.md）
+  const models = modelQuery ? splitModelQuery(modelQuery) : [];
+  const modelPage = models.length === 1 && !hasShop && ALL_DEVICE_PAGE_MODELS.includes(models[0]) ? modelPagePath(models[0]) : null;
+  // 複数機種・店つきの検索は絞り込み用なので登録させない（機種ページ・トップで足りる）
+  const isNarrowed = models.length > 1 || hasShop;
   // 在庫が1件もない機種名・知らないショップ名のページ（/search?model=適当な文字 など）は中身が空なので登録させない。
   // 機種名の一覧は resolveModelNames がメモリに持っているので、ここで DB に余計な問い合わせはほぼ増えない
   const modelNames = modelQuery ? await resolveModelNames(splitModelQuery(modelQuery)).catch(() => undefined) : undefined;
@@ -55,10 +61,10 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `/search${canonicalQs ? `?${canonicalQs}` : ''}` },
+    alternates: { canonical: modelPage ?? `/search${canonicalQs ? `?${canonicalQs}` : ''}` },
     // openGraph を上書きするとトップの共通 OGP 画像が引き継がれないので明示する
     openGraph: { title: `${title} | ${SITE_NAME}`, description, url: `/search${canonicalQs ? `?${canonicalQs}` : ''}`, images: ['/opengraph-image'] },
-    robots: isFiltered || unknownModel || unknownShop ? { index: false, follow: true } : undefined,
+    robots: isFiltered || isNarrowed || unknownModel || unknownShop ? { index: false, follow: true } : undefined,
   };
 }
 
