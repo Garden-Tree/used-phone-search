@@ -70,7 +70,9 @@
 ### Pixel の機種名（2026-09-30〜）
 - スクレイパーが取り込むときに Google の表記（`Pixel 8a`・`Pixel 9 Pro Fold`）へそろえる（`scraper/common.py` の `canonical_pixel_model`）。Pixel 5a 以前は入れない
 - 機種の一覧は `scraper/common.py` の `PIXEL_MODELS` と `lib/pixelCatalog.ts` の2か所。`npm run test:normalize` がずれを見つける。新しい Pixel が出たら両方と `PIXEL_INFO`（販売開始・保証年数）に足す
-- 楽天3店・エムモバの Pixel はまだ（楽天は `fetch.php` の KEYWORDS と `lib/rakutenShops.ts` の振り分けが要る。`fetch.php` をサーバーに上げるのはユーザー）
+- 楽天3店: `fetch.php` の KEYWORDS に `Pixel`、受け口は `lib/rakutenPixel.ts`（`lib/rakutenShops.ts` の byDevice で振り分け）。キャリア版も SIM フリー扱い（Pixel 6 以降は SIM ロック原則禁止の後の発売）
+- エムモバは Pixel の一覧がなく、検索ページでも Pixel 6 以降は1件（9/30）なので取り込まない
+- サーバーパネル・ファイルマネージャは 2026-09 から `https://secure.wpx.ne.jp/`（シンクラウド）。旧 `secure.shin-server.jp` は名前解決できない
 - 洗い替えは店ごと（iPhone・iPad・Pixel をまとめて入れ直す）。ある回に Pixel の一覧だけ取れなかったときは、その店の Pixel が次の回まで消える。安全装置（店の合計件数が半分未満なら入れ直さない）は iPhone が多いので効かない
 
 ### 新しい iPhone が出た

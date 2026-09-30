@@ -56,6 +56,27 @@ export const PIXEL_INFO: Record<string, PixelInfo> = {
 
 export const isPixel = (model: string) => /^Pixel/.test(model);
 
+const KNOWN = new Set(PIXEL_MODELS);
+
+/**
+ * 商品名から Pixel の機種名（Google の表記）を返す。Pixel 5a 以前・アクセサリなど読み取れないものは null。
+ * スクレイパーの canonical_pixel_model（scraper/common.py）と同じ規則。楽天3店の読み取り（lib/rakutenPixel.ts）で使う
+ */
+export function canonicalPixelModel(raw: string): string | null {
+  const m = raw.match(/Pixel\s?(\d{1,2})\s?(a|Pro\s?Fold|Pro\s?XL|Pro)?(?![0-9A-Za-z])/i);
+  let name: string;
+  if (m) {
+    const variant = (m[2] ?? "").toLowerCase().replace(/\s/g, "");
+    const suffix = ({ "": "", a: "a", pro: " Pro", proxl: " Pro XL", profold: " Pro Fold" } as Record<string, string>)[variant];
+    name = `Pixel ${Number(m[1])}${suffix}`;
+  } else if (/Pixel\s?Fold/i.test(raw)) {
+    name = "Pixel Fold";
+  } else {
+    return null;
+  }
+  return KNOWN.has(name) ? name : null;
+}
+
 const ym = (s: string) => { const [y, m] = s.split("-").map(Number); return { y, m }; };
 
 /** "2023-10" → "2023年10月" */

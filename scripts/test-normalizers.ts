@@ -38,6 +38,18 @@ const CORPUS: [string, string, string | null, string | null, number | null][] = 
  ["geo-mobile","【中古】【安心保証】 iPhone13[128GB] au/UQmobile ミッドナイト","B",null,null],
  ["geo-mobile","【中古】【安心保証】 iPad 10.2インチ 第8世代[32GB] Wi-Fiモデル シルバー","B",null,null],
  ["geo-mobile","【中古】【安心保証】 iPad 11インチ A16[128GB] Wi-Fiモデル シルバー","A",null,null],
+ ["geo-mobile","【中古】【安心保証】 Google Pixel 8a[128GB] docomo ポーセリン","B",null,null],
+ ["geo-mobile","【中古】【安心保証】 Google Pixel 10[256GB] SIMフリー オブシディアン","A",null,null],
+ ["geo-mobile","【中古】【安心保証】 Google Pixel 8[128GB] UQモバイル ローズ","C",null,null],
+ ["geo-mobile","【中古】【安心保証】 Google Pixel 4a 5G[128GB] SoftBank クリアリーホワイト","B",null,null],
+ ["janpara","【中古】Google au 【SIMフリー】 Pixel Fold ポーセリン 12GB 256GB G0B96【日本橋3】保証期間1ヶ月【ランクB】",null,null,null],
+ ["janpara","【中古】Google 国内版 【SIMフリー】 Pixel 10 Pro Fold ジェイド 16GB 256GB【ECセンター】保証期間1ヶ月【ランクB】",null,null,91],
+ ["janpara","【未使用】Google 【SIMフリー】 Pixel 11 [Obsidian] 12GB 256GB【仙台イービーンズ】保証期間3ヶ月",null,null,null],
+ ["janpara","【中古】Google 海外版 【SIMフリー】 Pixel 10 Pro 16GB 128GB【仙台駅東口】保証期間1ヶ月【ランクA】",null,null,null],
+ ["janpara","【中古】Google SoftBank 【SIMロック解除済み】 Pixel 4 Oh So Orange 6GB 64GB G020N【川越クレアモール】保証期間1ヶ月【ランクC】",null,null,null],
+ ["akiba-u-shop","【中古】GOOGLE(グーグル) Google Pixel 6a 128GB セージ GB17L au SIMフリー 【305-ud】","B",null,88],
+ ["akiba-u-shop","【中古】GOOGLE(グーグル) Google Pixel 10a 128GB Berry PIXEL10A128 SIMフリー 【196-ud】","A","SIMフリー",100],
+ ["akiba-u-shop","【中古】GOOGLE(グーグル) Google Pixel 5a (5G) 128GB モーストリーブラック Softbank SIMフリー 【276-ud】","B",null,null],
 ];
 const FIXTURE = "scripts/fixtures/rakuten-normalize.expected.json";
 let failures = 0;
