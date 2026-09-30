@@ -76,6 +76,24 @@ function buildPairs(): [string, string][] {
     ["Pixel 7", "Pixel 8"],
   );
 
+  // Galaxy（2026-09-30〜）。同じグレードの世代違い、同じ世代の無印と Ultra、Z Fold・Z Flip の世代違い、A シリーズ
+  pairs.push(
+    ["Galaxy S24", "Galaxy S25"],
+    ["Galaxy S25", "Galaxy S26"],
+    ["Galaxy S23 Ultra", "Galaxy S24 Ultra"],
+    ["Galaxy S24 Ultra", "Galaxy S25 Ultra"],
+    ["Galaxy S25 Ultra", "Galaxy S26 Ultra"],
+    ["Galaxy S24", "Galaxy S24 Ultra"],
+    ["Galaxy S25", "Galaxy S25 Ultra"],
+    ["Galaxy S26", "Galaxy S26+"],
+    ["Galaxy Z Fold6", "Galaxy Z Fold7"],
+    ["Galaxy Z Fold7", "Galaxy Z Fold8"],
+    ["Galaxy Z Flip5", "Galaxy Z Flip6"],
+    ["Galaxy Z Flip6", "Galaxy Z Flip7"],
+    ["Galaxy A54 5G", "Galaxy A55 5G"],
+    ["Galaxy A55 5G", "Galaxy A57 5G"],
+  );
+
   // カタログに無いモデルを含む組は除外（表記ミスの防止）
   return pairs.filter(([a, b]) => ALL_DEVICE_PAGE_MODELS.includes(a) && ALL_DEVICE_PAGE_MODELS.includes(b));
 }

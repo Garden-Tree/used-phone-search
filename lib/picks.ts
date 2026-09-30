@@ -17,6 +17,8 @@ export type Pick = {
   ipad?: boolean;
   /** Pixel の目的別ページ（/pixel の「目的から探す」に出す）。2026-09-30〜 */
   pixel?: boolean;
+  /** Galaxy の目的別ページ（/galaxy の「目的から探す」に出す）。2026-09-30〜 */
+  galaxy?: boolean;
   /** 対象機種の出典（Apple 公式） */
   source?: { label: string; url: string };
 };
@@ -101,14 +103,40 @@ export const PICKS: Pick[] = [
     models: ["Pixel 11 Pro Fold", "Pixel 10 Pro Fold", "Pixel 9 Pro Fold", "Pixel Fold"],
     pixel: true,
   },
+  // ここから Galaxy（2022年以降の機種だけ）
+  {
+    slug: "galaxy-fold",
+    title: "開くとタブレットの Z Fold",
+    seoTitle: "中古Galaxy Z Fold（Z Fold4〜Fold8・Fold8 Ultra）の最安値",
+    lead: "開くと小さなタブレットとして使える横折りの Galaxy Z Fold（Z Fold4〜Z Fold8・Z Fold8 Ultra）の中古在庫をまとめています。",
+    models: ["Galaxy Z Fold8 Ultra", "Galaxy Z Fold8", "Galaxy Z Fold7", "Galaxy Z Fold6", "Galaxy Z Fold5", "Galaxy Z Fold4"],
+    galaxy: true,
+  },
+  {
+    slug: "galaxy-flip",
+    title: "たたむと小さい Z Flip",
+    seoTitle: "中古Galaxy Z Flip（Z Flip4〜Flip8）の最安値",
+    lead: "縦に折りたたんでポケットに収まる Galaxy Z Flip（Z Flip4〜Z Flip8）の中古在庫をまとめています。",
+    models: ["Galaxy Z Flip8", "Galaxy Z Flip7", "Galaxy Z Flip6", "Galaxy Z Flip5", "Galaxy Z Flip4"],
+    galaxy: true,
+  },
+  {
+    slug: "galaxy-ultra",
+    title: "ペン付きの Ultra",
+    seoTitle: "中古Galaxy S Ultra（S22 Ultra〜S26 Ultra）の最安値",
+    lead: "Galaxy S シリーズの最上位で、本体に S ペンが入っている Ultra（S22 Ultra〜S26 Ultra）の中古在庫をまとめています。",
+    models: ["Galaxy S26 Ultra", "Galaxy S25 Ultra", "Galaxy S24 Ultra", "Galaxy S23 Ultra", "Galaxy S22 Ultra"],
+    galaxy: true,
+  },
 ];
 
-export const IPHONE_PICKS = PICKS.filter((p) => !p.ipad && !p.pixel);
+export const IPHONE_PICKS = PICKS.filter((p) => !p.ipad && !p.pixel && !p.galaxy);
 export const IPAD_PICKS = PICKS.filter((p) => p.ipad);
 export const PIXEL_PICKS = PICKS.filter((p) => p.pixel);
+export const GALAXY_PICKS = PICKS.filter((p) => p.galaxy);
 
 /** 目的別ページの機種の種類（「ほかの目的」は同じ種類だけ並べる） */
-export const pickDevice = (p: Pick) => (p.ipad ? "ipad" : p.pixel ? "pixel" : "iphone");
+export const pickDevice = (p: Pick) => (p.ipad ? "ipad" : p.pixel ? "pixel" : p.galaxy ? "galaxy" : "iphone");
 
 export function pickPath(slug: string): string {
   return `/pick/${slug}`;

@@ -7,6 +7,7 @@ import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { IPADOS27_MODELS, IPAD_SPECS } from "@/lib/ipadSpecs";
 import type { BudgetDevice } from "@/lib/budgets";
 import { PIXEL_INFO, PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
+import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
 
 /** 予算別ページ（lib/budgets.ts）の集計 */
 
@@ -58,11 +59,13 @@ const PIXEL_BY_RELEASE = [...PIXEL_MODELS].sort((a, b) => PIXEL_INFO[b].availabl
 
 /** 予算内の在庫を機種ごとに集計する（機種は新しい順） */
 export async function getBudgetModels(max: number, device: BudgetDevice = "iphone"): Promise<BudgetModelRow[]> {
-  const models = device === "ipad" ? IPAD_BY_RELEASE : device === "pixel" ? PIXEL_BY_RELEASE : ALL_PAGE_MODELS;
+  // Galaxy は発売年月を公式で確かめていないので、カタログの順（シリーズごとに新しい順）
+  const models = device === "ipad" ? IPAD_BY_RELEASE : device === "pixel" ? PIXEL_BY_RELEASE : device === "galaxy" ? GALAXY_MODELS : ALL_PAGE_MODELS;
   const now = new Date().toISOString().slice(0, 7);
   const isSupported = (m: string) =>
     device === "ipad" ? IPADOS27_MODELS.has(m)
     : device === "pixel" ? (updateYearsLeft(m, now) ?? 0) > 0
+    : device === "galaxy" ? true // カタログは 2022年以降だけ。保証期間は公式に出ていないので分けない
     : ALL_CATALOG_MODELS.includes(m);
   const byModel = await minPriceByModel({ isSoldOut: false, price: { lte: max }, ...NOT_JUNK }, models);
   return [...byModel].map(([model, r]) => ({ model, ...r, supported: isSupported(model) }));

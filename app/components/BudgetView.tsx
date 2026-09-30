@@ -9,11 +9,11 @@ import { budgetLabel, budgetPath, budgetsOf, type BudgetDevice } from "@/lib/bud
 import { cheapestUnder, getBudgetModels } from "@/lib/budgetStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
-import { IPAD_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
+import { GALAXY_SHOPS, IPAD_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
 import { jaMonth, updateUntil } from "@/lib/pixelCatalog";
 
 /**
- * 予算別ページの中身（iPhone: app/budget/[slug]、iPad: app/ipad/budget/[slug]、Pixel: app/pixel/budget/[slug]）。
+ * 予算別ページの中身（iPhone: app/budget/[slug]、iPad・Pixel・Galaxy: app/<種類>/budget/[slug]）。
  * 文言の違いは TEXT だけにまとめる。「対応」は iPhone・iPad は最新 OS の対応、Pixel は Google のアップデート保証が残っているか
  */
 type DeviceText = {
@@ -28,6 +28,11 @@ type DeviceText = {
   legacyNote: string;
   /** 表の機種名の下に添える一言 */
   subOf?: (model: string) => string | undefined;
+  /**
+   * 発売の新しさで並べられるか。Galaxy は発売年月を公式で確かめていないので false
+   * （「新しい順」「いちばん新しいのは」と書かず、シリーズ順に並べる）
+   */
+  byRelease?: false;
 };
 
 const TEXT: Record<BudgetDevice, DeviceText> = {
@@ -55,6 +60,16 @@ const TEXT: Record<BudgetDevice, DeviceText> = {
     legacyNote: "OS・セキュリティの更新が届かないため、長く使うには向きません",
     subOf: (model) => { const u = updateUntil(model); return u ? `保証 ${jaMonth(u)}まで` : undefined; },
   },
+  galaxy: {
+    name: "中古Galaxy", shops: GALAXY_SHOPS.length,
+    hub: { path: "/galaxy", name: "中古Galaxy", cta: "中古Galaxyの相場を機種別に見る", ctaNote: "機種ごとに相場（中央値）・最安値・在庫数を比較できます" },
+    // 2022年以降の機種だけ載せている（Samsung は機種ごとの保証期間を出していないので、対応・非対応は分けない）
+    supportedLead: "",
+    supportedNote: "2022年以降の機種（シリーズ順）。機種名から容量別・状態別の価格まとめへ",
+    legacyTitle: "",
+    legacyNote: "",
+    byRelease: false,
+  },
 };
 
 export async function budgetMetadata(max: number, device: BudgetDevice): Promise<Metadata> {
@@ -62,9 +77,10 @@ export async function budgetMetadata(max: number, device: BudgetDevice): Promise
   const rows = await getBudgetModels(max, device);
   const newest = rows.find((r) => r.supported) ?? rows[0];
   const label = budgetLabel(max);
-  const title = `${label}以下で買える${t.name}｜予算内でいちばん新しい機種【毎日更新】`;
+  const byRelease = t.byRelease !== false;
+  const title = `${label}以下で買える${t.name}｜${byRelease ? "予算内でいちばん新しい機種" : "機種ごとの最安値"}【毎日更新】`;
   const description = newest
-    ? `${label}以下で買える${t.name}は${rows.length}機種・${rows.reduce((n, r) => n + r.count, 0).toLocaleString()}件。いちばん新しいのは${newest.model}（${yen(newest.minPrice)}〜）。大手中古ショップ${t.shops}社の在庫から機種ごとの最安値を比較。`
+    ? `${label}以下で買える${t.name}は${rows.length}機種・${rows.reduce((n, r) => n + r.count, 0).toLocaleString()}件。${byRelease ? `いちばん新しいのは${newest.model}（${yen(newest.minPrice)}〜）。` : ""}大手中古ショップ${t.shops}社の在庫から機種ごとの最安値を比較。`
     : `${label}以下で買える${t.name}を大手中古ショップ${t.shops}社の在庫から探せます。`;
   const path = budgetPath(max, device);
   return {
@@ -124,7 +140,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
             <>
               {label}以下で買える{t.name}は <strong>{rows.length}機種・{totalCount.toLocaleString()}件</strong>
               （ジャンク品を除く）。
-              {supported[0] && (
+              {supported[0] && t.byRelease !== false && (
                 <>
                   {t.supportedLead}いちばん新しいのは <strong>{supported[0].model}</strong>（{yen(supported[0].minPrice)}〜）です。
                 </>
@@ -155,7 +171,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
 
         {supported.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-xl md:text-2xl font-bold mb-1">{label}以下で買える機種（新しい順）</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-1">{label}以下で買える機種（{t.byRelease === false ? "シリーズ順" : "新しい順"}）</h2>
             <p className="text-xs text-slate-400 mb-4">{t.supportedNote}</p>
             <div className="rounded-2xl border border-slate-200 overflow-hidden">
               <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 bg-slate-50 text-xs font-bold text-slate-500">
@@ -183,8 +199,8 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
 
         {picks.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-xl md:text-2xl font-bold mb-1">新しい機種の最安在庫</h2>
-            <p className="text-xs text-slate-400 mb-4">上の表の新しい機種から、それぞれいちばん安い在庫</p>
+            <h2 className="text-xl md:text-2xl font-bold mb-1">{t.byRelease === false ? "機種ごとの最安在庫" : "新しい機種の最安在庫"}</h2>
+            <p className="text-xs text-slate-400 mb-4">上の表の{t.byRelease === false ? "上から6機種の" : "新しい機種から、"}それぞれいちばん安い在庫</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {picks.map((d) => <DeviceCard key={d.id} device={d} />)}
             </div>

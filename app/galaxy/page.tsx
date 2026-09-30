@@ -5,7 +5,10 @@ import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { getModelMarket } from "@/lib/marketStats";
 import { modelPagePath } from "@/lib/catalog";
-import { GALAXY_CATALOG, GALAXY_MODELS } from "@/lib/galaxyCatalog";
+import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
+import { GALAXY_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
+import { GALAXY_PICKS, pickPath } from "@/lib/picks";
+import { GALAXY_CATALOG, GALAXY_MODELS, isGalaxy } from "@/lib/galaxyCatalog";
 import { SITE_NAME } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { GALAXY_SHOPS, shopLabels } from "@/lib/shops";
@@ -46,6 +49,37 @@ export default async function GalaxyIndexPage() {
           を機種別にまとめています（2022年以降の機種）。機種名から容量別・状態別の最安値へ。
         </p>
         <AdDisclosure compact />
+
+        {/* 目的・予算から探す（/pick/galaxy-…・/galaxy/budget/…）と比較ページ */}
+        <section className="my-6">
+          <h2 className="text-lg font-bold mb-3">目的から探す</h2>
+          <div className="flex flex-wrap gap-2">
+            {GALAXY_PICKS.map((p) => (
+              <Link key={p.slug} href={pickPath(p.slug)}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {p.title}
+              </Link>
+            ))}
+          </div>
+          <h2 className="text-lg font-bold mt-5 mb-3">予算から探す</h2>
+          <div className="flex flex-wrap gap-2">
+            {GALAXY_BUDGETS.map((max) => (
+              <Link key={max} href={budgetPath(max, "galaxy")}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {budgetLabel(max)}以下
+              </Link>
+            ))}
+          </div>
+          <h2 className="text-lg font-bold mt-5 mb-3">よく比較される Galaxy</h2>
+          <div className="flex flex-wrap gap-2">
+            {COMPARE_PAIRS.filter(([a]) => isGalaxy(a)).map(([a, b]) => (
+              <Link key={comparePath(a, b)} href={comparePath(a, b)}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {a} <span className="text-slate-400 font-medium">vs</span> {b}
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {GALAXY_CATALOG.map((series) => (
           <section key={series.series} className="my-8">

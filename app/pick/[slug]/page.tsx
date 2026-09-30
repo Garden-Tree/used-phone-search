@@ -72,6 +72,12 @@ export default async function PickPage({ params }: Props) {
               <span className="mx-2">›</span>
             </>
           )}
+          {pick.galaxy && (
+            <>
+              <Link href="/galaxy" className="hover:text-blue-600">中古Galaxy</Link>
+              <span className="mx-2">›</span>
+            </>
+          )}
           <span className="text-slate-600">{pick.title}</span>
         </nav>
 
