@@ -12,6 +12,7 @@ import { matchesModel } from "@/lib/deviceSearch";
 import { SHOPS } from "@/lib/shops";
 import { PICKS } from "@/lib/picks";
 import { PIXEL_INFO, PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
+import { GALAXY_MODELS, canonicalGalaxyModel } from "@/lib/galaxyCatalog";
 import { ALL_DEVICE_PAGE_MODELS } from "@/lib/catalog";
 const u = "https://item.rakuten.co.jp/x/1/";
 // [shopCode, 商品名, rank, car, batt]（rank・car・batt は fetch.php が商品説明から抜き出す値）
@@ -50,6 +51,17 @@ const CORPUS: [string, string, string | null, string | null, number | null][] = 
  ["akiba-u-shop","【中古】GOOGLE(グーグル) Google Pixel 6a 128GB セージ GB17L au SIMフリー 【305-ud】","B",null,88],
  ["akiba-u-shop","【中古】GOOGLE(グーグル) Google Pixel 10a 128GB Berry PIXEL10A128 SIMフリー 【196-ud】","A","SIMフリー",100],
  ["akiba-u-shop","【中古】GOOGLE(グーグル) Google Pixel 5a (5G) 128GB モーストリーブラック Softbank SIMフリー 【276-ud】","B",null,null],
+ ["geo-mobile","【中古】【安心保証】 Galaxy A55 5G SCG27[128GB] au オーサムライラック","B",null,null],
+ ["geo-mobile","【中古】【安心保証】 Galaxy S24 Ultra SCG26[512GB] au チタニウムブラック","A",null,null],
+ ["geo-mobile","【中古】【安心保証】 Galaxy A51 5G SC-54A[128GB] docomo プリズムブリックスブラック","B",null,null],
+ ["janpara","【中古】SAMSUNG docomo 【SIMフリー】 Galaxy S24 Ultra チタニウムバイオレット 12GB 256GB SC-52E【秋葉5号】保証期間1ヶ月【ランクB】",null,null,null],
+ ["janpara","【中古】SAMSUNG 国内版 【SIMフリー】 Galaxy Z Flip7 ブルーシャドウ 12GB 256GB SM-F766Q【DS秋葉】保証期間1ヶ月【ランクA】",null,null,87],
+ ["janpara","【未使用】SAMSUNG docomo 【SIMフリー】 Galaxy A25 5G ブラック 4GB 64GB SC-53F【千葉】保証期間3ヶ月",null,null,null],
+ ["janpara","【中古】SAMSUNG docomo 【SIMロックあり】 Galaxy S9 SC-02K Titanium Gray【仙台駅東口】保証期間1ヶ月【ランクB】",null,null,null],
+ ["akiba-u-shop","【中古】SAMSUNG(サムスン) Galaxy S24 256GB アンバーイエロー SC-51E docomo SIMフリー 【269-ud】","B",null,92],
+ ["akiba-u-shop","【中古】GALAXY(ギャラクシー) Galaxy S22 Ultra 256GB バーガンディ SCG14 au SIMフリー 【352-ud】","C",null,null],
+ ["akiba-u-shop","【中古】SAMSUNG(サムスン) Galaxy Z Fold7 256GB ジェットブラック SM-F966QZKASJP SIMフリー 【258-ud】","A",null,null],
+ ["akiba-u-shop","【中古】SAMSUNG(サムスン) GALAXY A21 64GB ブラック SC-42A docomoロック解除SIMフリー 【305-ud】","B",null,null],
 ];
 const FIXTURE = "scripts/fixtures/rakuten-normalize.expected.json";
 let failures = 0;
@@ -95,6 +107,8 @@ const MATCH_CASES: [string, string, boolean][] = [
   ["iPad (第6世代)", "iPad mini (第6世代)", false], ["iPad Pro 11インチ (M4)", "iPad Pro 13インチ (M4)", false],
   ["Pixel 9", "Pixel 9", true], ["Pixel 9", "Pixel 9a", false], ["Pixel 9", "Pixel 9 Pro", false], ["Pixel 9 Pro", "Pixel 9 Pro XL", false],
   ["Pixel", "Pixel 8a", true], ["Pixel Fold", "Pixel 9 Pro Fold", false], ["Pixel Pro Fold", "Pixel 10 Pro Fold", true], ["iPhone 8", "Pixel 8", false], ["Pixel 8", "iPhone 8", false],
+  ["Galaxy S24", "Galaxy S24", true], ["Galaxy S24", "Galaxy S24 Ultra", false], ["Galaxy S26", "Galaxy S26+", false],
+  ["Galaxy Z Fold8", "Galaxy Z Fold8 Ultra", false], ["Galaxy Z Fold", "Galaxy Z Fold7", true], ["Galaxy S24", "Pixel 8", false],
 ];
 for (const [q, name, want] of MATCH_CASES) {
   if (matchesModel(q, name) !== want) { failures++; console.log(`照合: "${q}" と "${name}" → ${!want}（期待 ${want}）`); }
@@ -137,6 +151,18 @@ for (const model of PIXEL_MODELS) {
 }
 for (const model of pyPixel) {
   if (!PIXEL_MODELS.includes(model)) { failures++; console.log(`Pixel: lib/pixelCatalog.ts に「${model}」がない（scraper/common.py にはある）`); }
+}
+
+// 8. Galaxy の機種一覧が TypeScript（lib/galaxyCatalog.ts）とスクレイパー（scraper/common.py の GALAXY_MODELS）でそろっているか。
+//    TypeScript の読み取り（canonicalGalaxyModel）が各機種名をそのまま返すか（S26+ の「+」など）
+const pyGalaxyBlock = readFileSync("scraper/common.py", "utf-8").match(/GALAXY_MODELS = \{([\s\S]*?)\}/)?.[1] ?? "";
+const pyGalaxy = new Set([...pyGalaxyBlock.matchAll(/"([^"]+)"/g)].map((m) => m[1]));
+for (const model of GALAXY_MODELS) {
+  if (!pyGalaxy.has(model)) { failures++; console.log(`Galaxy: scraper/common.py の GALAXY_MODELS に「${model}」がない`); }
+  if (canonicalGalaxyModel(model) !== model) { failures++; console.log(`Galaxy: canonicalGalaxyModel("${model}") → ${canonicalGalaxyModel(model)}`); }
+}
+for (const model of pyGalaxy) {
+  if (!GALAXY_MODELS.includes(model)) { failures++; console.log(`Galaxy: lib/galaxyCatalog.ts に「${model}」がない（scraper/common.py にはある）`); }
 }
 
 console.log(failures === 0 ? "OK: すべて期待どおり" : `NG: ${failures} 件`);

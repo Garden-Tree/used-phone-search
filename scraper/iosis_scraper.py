@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 from bs4 import BeautifulSoup
 
-from common import WIFI_MODEL, PIXEL_ONLY_STORAGE, canonical_pixel_model, run_scraper, is_iphone_13_or_later
+from common import WIFI_MODEL, PIXEL_ONLY_STORAGE, canonical_galaxy_model, canonical_pixel_model, run_scraper, is_iphone_13_or_later
 
 SHOP_NAME = "イオシス"
 HEADERS = {
@@ -194,11 +194,36 @@ def parse_pixel(li) -> dict | None:
     return item
 
 
+def parse_galaxy(li) -> dict | None:
+    # 例: Galaxy S25 Ultra SM-S938Q 256GB チタニウムシルバーブルー 【国内版SIMフリー】
+    #     Galaxy A25 5G SC-53F ライトブルー 【docomo版SIMフリー】（容量が書かれないものは入れない）
+    raw_name = parse_name(li)
+    model_name = canonical_galaxy_model(raw_name)
+    if not model_name:
+        return None
+    item = base_item(li, raw_name, "/items/smartphone/")
+    if not item["storage"]:
+        return None  # 容量が読めないと表で「0GB」になる
+    carrier = parse_carrier(raw_name)
+    domestic = carrier == "Apple"  # parse_carrier は「国内版」を "Apple" で返す（iPhone 向け）
+    item.update({
+        "manufacturer": "Samsung",
+        "modelName": model_name,
+        "carrier": "国内版" if domestic else carrier,
+        "networkStatus": parse_network_status(raw_name, carrier),
+        # 掲載する 2022年以降の Galaxy は SIM ロックの原則禁止（2021年10月）より後の発売
+        "simUnlocked": True,
+    })
+    return item
+
+
 # (URL, 読み取り関数, 最大ページ数)。Pixel は 9/30 時点で16ページなので 40 で打ち切る（毎回100ページ取りに行かない）
 CATEGORIES = [
     ("https://iosys.co.jp/items/smartphone/iphone?page={page}", parse_iphone, None),
     ("https://iosys.co.jp/items/tablet/ipad?page={page}", parse_ipad, None),
     ("https://iosys.co.jp/items/smartphone/android/pixel?page={page}", parse_pixel, 40),
+    # Galaxy は 9/30 時点で14ページ（2021年以前の機種も含む）
+    ("https://iosys.co.jp/items/smartphone/android/galaxy?page={page}", parse_galaxy, 40),
 ]
 
 
@@ -220,7 +245,7 @@ def fetch_page(url_template: str, parse, page: int) -> list[dict]:
 
 
 def scrape_iosis(max_pages=20):
-    """iPhone・iPad・Pixel の一覧を max_pages ページずつ並列取得する（在庫のないページは0件で返る）"""
+    """iPhone・iPad・Pixel・Galaxy の一覧を max_pages ページずつ並列取得する（在庫のないページは0件で返る）"""
     print("Starting requests scraper for Iosis...")
     jobs = [
         (tpl, parse, page)

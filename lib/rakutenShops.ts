@@ -5,6 +5,7 @@ import { RAKUTEN_JANPARA_SHOP, normalizeJanparaItem } from "@/lib/rakutenJanpara
 import { RAKUTEN_SOFMAP_SHOP, normalizeSofmapItem } from "@/lib/rakutenSofmap";
 import { normalizeGeoIpad, normalizeJanparaIpad, normalizeSofmapIpad } from "@/lib/rakutenIpad";
 import { normalizeGeoPixel, normalizeJanparaPixel, normalizeSofmapPixel } from "@/lib/rakutenPixel";
+import { normalizeGeoGalaxy, normalizeJanparaGalaxy, normalizeSofmapGalaxy } from "@/lib/rakutenGalaxy";
 
 export type { RakutenItem };
 
@@ -20,27 +21,31 @@ type Normalize = RakutenShop["normalize"];
 
 type ByShop = (shopName: string, item: RakutenItem) => ReturnType<Normalize>;
 
-/** 商品名に iPad を含むものは iPad 用、Pixel を含むものは Pixel 用（2026-09-30〜）、それ以外は iPhone 用の読み取りに回す */
-function byDevice(iphone: Normalize, ipad: ByShop, pixel: ByShop, shopName: string): Normalize {
-  return (item) => (/iPad/.test(item.name) ? ipad(shopName, item) : /Pixel/i.test(item.name) ? pixel(shopName, item) : iphone(item));
+/** 商品名に iPad を含むものは iPad 用、Pixel・Galaxy を含むものはそれぞれ用（2026-09-30〜）、それ以外は iPhone 用の読み取りに回す */
+function byDevice(iphone: Normalize, ipad: ByShop, pixel: ByShop, galaxy: ByShop, shopName: string): Normalize {
+  return (item) =>
+    /iPad/.test(item.name) ? ipad(shopName, item)
+    : /Pixel/i.test(item.name) ? pixel(shopName, item)
+    : /Galaxy/i.test(item.name) ? galaxy(shopName, item)
+    : iphone(item);
 }
 
-/** 楽天市場 商品検索API で取り込むショップ（キーは楽天の shopCode）。iPhone・iPad・Pixel を同じショップ名で持つ */
+/** 楽天市場 商品検索API で取り込むショップ（キーは楽天の shopCode）。iPhone・iPad・Pixel・Galaxy を同じショップ名で持つ */
 export const RAKUTEN_SHOPS: Record<string, RakutenShop> = {
   "geo-mobile": {
     shopName: RAKUTEN_GEO_SHOP,
     alsoReplace: [LEGACY_GEO_SHOP],
-    normalize: byDevice(normalizeRakutenGeoItem, normalizeGeoIpad, normalizeGeoPixel, RAKUTEN_GEO_SHOP),
+    normalize: byDevice(normalizeRakutenGeoItem, normalizeGeoIpad, normalizeGeoPixel, normalizeGeoGalaxy, RAKUTEN_GEO_SHOP),
   },
   janpara: {
     shopName: RAKUTEN_JANPARA_SHOP,
     alsoReplace: [],
-    normalize: byDevice(normalizeJanparaItem, normalizeJanparaIpad, normalizeJanparaPixel, RAKUTEN_JANPARA_SHOP),
+    normalize: byDevice(normalizeJanparaItem, normalizeJanparaIpad, normalizeJanparaPixel, normalizeJanparaGalaxy, RAKUTEN_JANPARA_SHOP),
   },
   "akiba-u-shop": {
     shopName: RAKUTEN_SOFMAP_SHOP,
     alsoReplace: [],
-    normalize: byDevice(normalizeSofmapItem, normalizeSofmapIpad, normalizeSofmapPixel, RAKUTEN_SOFMAP_SHOP),
+    normalize: byDevice(normalizeSofmapItem, normalizeSofmapIpad, normalizeSofmapPixel, normalizeSofmapGalaxy, RAKUTEN_SOFMAP_SHOP),
   },
 };
 

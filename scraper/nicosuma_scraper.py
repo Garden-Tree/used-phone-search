@@ -9,7 +9,7 @@ import json
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
-from common import WIFI_MODEL, PIXEL_ONLY_STORAGE, canonical_pixel_model, run_scraper, is_iphone_13_or_later
+from common import WIFI_MODEL, PIXEL_ONLY_STORAGE, canonical_galaxy_model, canonical_pixel_model, run_scraper, is_iphone_13_or_later
 
 
 # にこスマでスクレイピング対象とするiPhoneコレクション
@@ -76,6 +76,15 @@ PIXEL_COLLECTIONS = [
     "pixel-8", "pixel-8-pro", "pixel-8a", "pixel-9", "pixel-9-pro", "pixel-9-pro-xl", "pixel-9-pro-fold", "pixel-9a",
     "pixel-10", "pixel-10-pro", "pixel-10-pro-xl", "pixel-10-pro-fold", "pixel-10a",
     "pixel-11", "pixel-11-pro", "pixel-11-pro-xl", "pixel-11-pro-fold",
+]
+
+# Galaxy（2026-09-30〜）。カタログ（2022年以降）の機種だけ（https://www.nicosuma.com/android/galaxy の一覧から）
+GALAXY_COLLECTIONS = [
+    "galaxy-s22-5g", "galaxy-s22-ultra-5g", "galaxy-s23", "galaxy-s23-ultra", "galaxy-s24", "galaxy-s24-fe", "galaxy-s24-ultra",
+    "galaxy-s25", "galaxy-s25-ultra",
+    "galaxy-z-fold4", "galaxy-z-fold5", "galaxy-z-fold6", "galaxy-z-fold7-ram-12gb", "galaxy-z-fold7-ram-16gb",
+    "galaxy-z-flip4", "galaxy-z-flip5", "galaxy-z-flip6", "galaxy-z-flip7",
+    "galaxy-a23-5g", "galaxy-a25-5g", "galaxy-a53-5g", "galaxy-a54-5g", "galaxy-a55-5g",
 ]
 
 # iPad の mno（販路）→ 他ショップと揃えた carrier
@@ -182,6 +191,11 @@ def extract_products_from_page(html_content):
                 storage = PIXEL_ONLY_STORAGE.get(model_name, 0)
             if not storage:
                 continue  # 容量が読めない Pixel は表で「0GB」になるので入れない
+        elif "galaxy" in model_name.lower():
+            model_name = canonical_galaxy_model(model_name)
+            if not model_name or not storage:
+                continue  # カタログ外（2021年以前）・容量が読めないものは入れない
+            manufacturer = "Samsung"
 
         items.append({
             "manufacturer": manufacturer,
@@ -243,6 +257,7 @@ def scrape_nicosuma(max_collections=None):
         [("iphone", c) for c in IPHONE_COLLECTIONS]
         + [("ipad", c) for c in IPAD_COLLECTIONS]
         + [("android/pixel", c) for c in PIXEL_COLLECTIONS]
+        + [("android/galaxy", c) for c in GALAXY_COLLECTIONS]
     )
     if max_collections:
         target_collections = target_collections[:max_collections]

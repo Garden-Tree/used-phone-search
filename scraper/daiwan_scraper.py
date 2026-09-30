@@ -3,7 +3,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
-from common import PIXEL_ONLY_STORAGE, canonical_pixel_model, run_scraper
+from common import PIXEL_ONLY_STORAGE, canonical_galaxy_model, canonical_pixel_model, run_scraper
 
 def get_detail_info(url, headers, session):
     try:
@@ -166,6 +166,15 @@ def parse_daiwan_item(item, headers):
             storage = PIXEL_ONLY_STORAGE.get(model_name, 0)
         if not storage:
             return None  # 容量が読めない Pixel は表で「0GB」になるので入れない
+    elif 'Galaxy' in raw_name:
+        # 例: Galaxy S25 Ultra SC-52F 256GB チタニウムシルバーブルー docomo版SIMフリー（容量なしは入れない）
+        model_name = canonical_galaxy_model(raw_name)
+        if not model_name or not storage:
+            return None
+        manufacturer = 'Samsung'
+        sim_unlocked = True
+        m_carrier = re.search(r'(docomo|au|SoftBank|UQmobile|楽天モバイル|Y!mobile)版', raw_name)
+        carrier = {'UQmobile': 'au', 'Y!mobile': 'SoftBank'}.get(m_carrier.group(1), m_carrier.group(1)) if m_carrier else '国内版'
 
     return {
         'manufacturer': manufacturer,
@@ -196,8 +205,8 @@ def scrape_daiwan(max_pages=5):
     session = requests.Session()
     raw_item_nodes = []
     
-    # iPhone と Pixel（2026-09-30〜）の一覧。どちらも空のページが出たところで止める
-    for category in ("iphone", "pixel"):
+    # iPhone・Pixel・Galaxy（2026-09-30〜）の一覧。どれも空のページが出たところで止める
+    for category in ("iphone", "pixel", "galaxy"):
         for page in range(1, max_pages + 1):
             url = f"https://www.dai-one.jp/smartphone/{category}/page-{page}/?items_per_page=128"
             try:

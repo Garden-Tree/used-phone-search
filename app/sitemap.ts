@@ -39,6 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/iphone`, lastModified, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/ipad`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/pixel`, lastModified, changeFrequency: "daily", priority: 0.8 },
+    { url: `${SITE_URL}/galaxy`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/about`, changeFrequency: "monthly", priority: 0.3 },
     ...PICKS.map((p) => ({
       url: `${SITE_URL}${pickPath(p.slug)}`,

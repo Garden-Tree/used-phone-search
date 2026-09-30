@@ -1,6 +1,6 @@
 <?php
 /**
- * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone・iPad・Google Pixel 在庫を取得し、
+ * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone・iPad・Google Pixel・Galaxy 在庫を取得し、
  * used.gadelog.com の受け口（/api/ingest/rakuten?shop=<shopCode>）へショップごとに送信する。
  *
  * シンレンタルサーバー（固定IP: 楽天アプリの許可IPに登録済み）の cron から実行する。
@@ -23,8 +23,8 @@ const ENDPOINT = 'https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/2
 // 取り込むショップ（楽天の shopCode）。受け口 lib/rakutenShops.ts の RAKUTEN_SHOPS と揃える
 const SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop'];
 // 1ショップ分として、この検索語の結果をまとめて送る（受け口はショップ単位で洗い替えるため）
-// Pixel は 2026-09-30〜（アクセサリも当たるが、受け口の lib/rakutenPixel.ts が本体以外を落とす）
-const KEYWORDS = ['iPhone', 'iPad', 'Pixel'];
+// Pixel・Galaxy は 2026-09-30〜（アクセサリも当たるが、受け口の lib/rakutenPixel.ts・rakutenGalaxy.ts が本体以外を落とす）
+const KEYWORDS = ['iPhone', 'iPad', 'Pixel', 'Galaxy'];
 const HITS = 30;              // 1ページの最大件数
 const MAX_PAGES = 100;        // API の上限（1検索あたり最大 3,000 件）
 const INTERVAL_US = 1100000;  // 登録した QPS=1 を守るため 1.1 秒間隔

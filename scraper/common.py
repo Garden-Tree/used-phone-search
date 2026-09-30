@@ -90,6 +90,41 @@ def canonical_pixel_model(raw_name: str):
     return name if name in PIXEL_MODELS else None
 
 
+# Samsung Galaxy（2026-09-30〜）。機種名は Samsung の表記（"Galaxy S24 Ultra" "Galaxy Z Fold7" "Galaxy A55 5G"）にそろえる。
+# 載せるのは 2022年以降の機種のうち、中古在庫が出ているもの。一覧は lib/galaxyCatalog.ts と同じ
+GALAXY_MODELS = {
+    "Galaxy S26 Ultra", "Galaxy S26+", "Galaxy S26", "Galaxy S25 Ultra", "Galaxy S25",
+    "Galaxy S24 Ultra", "Galaxy S24", "Galaxy S24 FE", "Galaxy S23 Ultra", "Galaxy S23", "Galaxy S22 Ultra", "Galaxy S22",
+    "Galaxy Z Fold8 Ultra", "Galaxy Z Fold8", "Galaxy Z Fold7", "Galaxy Z Fold6", "Galaxy Z Fold5", "Galaxy Z Fold4",
+    "Galaxy Z Flip8", "Galaxy Z Flip7", "Galaxy Z Flip6", "Galaxy Z Flip5", "Galaxy Z Flip4",
+    "Galaxy A57 5G", "Galaxy A55 5G", "Galaxy A54 5G", "Galaxy A53 5G", "Galaxy A25 5G", "Galaxy A23 5G",
+}
+
+_GALAXY_RE = re.compile(
+    r"Galaxy\s?(?:"
+    r"(?P<s>S)\s?(?P<sn>\d{2})\s?(?P<sv>Ultra|FE|\+|Plus)?"
+    r"|Z\s?(?P<z>Fold|Flip)\s?(?P<zn>\d)\s?(?P<zv>Ultra)?"
+    r"|(?P<a>A)\s?(?P<an>\d{2})\s?(?P<a5>5G)?"
+    r")(?![0-9A-Za-z])",
+    re.IGNORECASE,
+)
+
+
+def canonical_galaxy_model(raw_name: str):
+    """商品名から Galaxy の機種名を返す。カタログにない機種（2021年以前など）・読み取れないものは None"""
+    m = _GALAXY_RE.search(raw_name)
+    if not m:
+        return None
+    if m.group("s"):
+        variant = {"": "", "ultra": " Ultra", "fe": " FE", "+": "+", "plus": "+"}[(m.group("sv") or "").lower()]
+        name = f"Galaxy S{m.group('sn')}{variant}"
+    elif m.group("z"):
+        name = f"Galaxy Z {m.group('z').capitalize()}{m.group('zn')}" + (" Ultra" if m.group("zv") else "")
+    else:
+        name = f"Galaxy A{m.group('an')} 5G"
+    return name if name in GALAXY_MODELS else None
+
+
 def is_iphone_13_or_later(model_name: str) -> bool:
     """iPhone 13 以降（SE 第3世代含む）か。2021年10月以降の発売モデルは原則 SIM ロックなしで売られている"""
     if re.search(r"iPhone\s?(1[3-9])", model_name, re.IGNORECASE):

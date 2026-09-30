@@ -10,6 +10,8 @@ import {
   ALL_PAGE_MODELS,
   IPHONE_CATALOG,
   badgesOf,
+  DEVICE_HUB,
+  deviceOf,
   isIpad,
   modelPagePath,
   modelToSlug,
@@ -20,7 +22,7 @@ import {
 import { getBatteryRows, getModelStats, getStorageRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
 import { SPEC_ROWS, specOf, specUrl } from "@/lib/iphoneSpecs";
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
-import { PIXEL_INFO, isPixel, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
+import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
@@ -183,8 +185,9 @@ export default async function ModelPage({ params }: Props) {
     getStorageRankMatrix(model),
   ]);
   const spec = specOf(model);
-  const listPath = isIpad(model) ? "/ipad" : isPixel(model) ? "/pixel" : "/iphone";
-  const listName = isIpad(model) ? "中古iPad" : isPixel(model) ? "中古Google Pixel" : "中古iPhoneの相場一覧";
+  const hub = DEVICE_HUB[deviceOf(model)];
+  const listPath = hub.path;
+  const listName = hub.name;
   const pixel = PIXEL_INFO[model];
   const pixelUntil = updateUntil(model);
   // 保証の残り（ISR で1時間ごとに作り直すので、その時点の年月で計算する）
@@ -212,7 +215,7 @@ export default async function ModelPage({ params }: Props) {
           "@context": "https://schema.org",
           "@type": "Product",
           name: `${model}（中古）`,
-          brand: { "@type": "Brand", name: isPixel(model) ? "Google" : "Apple" },
+          brand: { "@type": "Brand", name: hub.brand },
           itemCondition: "https://schema.org/UsedCondition",
           offers: {
             "@type": "AggregateOffer",
@@ -268,7 +271,9 @@ export default async function ModelPage({ params }: Props) {
               : <>Google のアップデート保証（販売開始から{pixel.updateYears}年・{jaMonth(pixelUntil)}まで）は終わっています。</>)
             : isIpad(model)
               ? (IPADOS27_MODELS.has(model) ? "iPadOS 27 に対応しています。" : "iPadOS 27 には対応していません。")
-              : (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
+              : deviceOf(model) === "galaxy"
+                ? null
+                : (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
         </p>
 
         {/* サマリー */}
@@ -333,7 +338,7 @@ export default async function ModelPage({ params }: Props) {
         )}
 
         {/* 運営者（検品担当）の視点。iPhone のみ */}
-        {!isIpad(model) && !isPixel(model) && (
+        {deviceOf(model) === "iphone" && (
           <InspectionTips model={model} has64GB={stats.byStorage.some((r) => r.key === "64")} />
         )}
 

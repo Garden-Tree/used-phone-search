@@ -85,6 +85,7 @@ export default function AboutPage() {
                   <th className="text-left font-semibold px-3 py-2">バッテリー最大容量</th>
                   <th className="text-left font-semibold px-3 py-2">iPad</th>
                   <th className="text-left font-semibold px-3 py-2">Pixel</th>
+                  <th className="text-left font-semibold px-3 py-2">Galaxy</th>
                 </tr>
               </thead>
               <tbody>
@@ -94,6 +95,7 @@ export default function AboutPage() {
                     <td className="px-3 py-2">{BATTERY_TEXT[s.battery]}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{s.ipad ? "あり" : "なし"}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{s.pixel ? "あり" : "なし"}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{s.galaxy ? "あり" : "なし"}</td>
                   </tr>
                 ))}
               </tbody>
