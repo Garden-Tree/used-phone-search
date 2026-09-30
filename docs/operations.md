@@ -35,7 +35,7 @@
 | --- | --- | --- | --- |
 | 3/9/15/21時 | GitHub Actions `Phone Inventory Scraper` | 4店のスクレイピング（イオシス・にこスマは iPad も、イオシス・にこスマ・ダイワンは Pixel も）→ iPad の機種名の正規化 → 価格推移の記録 → 自己有効化 | Actions の実行ログ（失敗時は GitHub から通知メール） |
 | 2:40/8:40/14:40/20:40 | サーバー cron | 楽天からゲオ・じゃんぱら・ソフマップの iPhone・iPad を順に取得して送信（合計約25分） | `~/rakuten-sync/fetch.log`（行頭に shopCode） |
-| 毎日10:00 | サーバー cron | `/api/health` を確認し、問題時のみメール | cron の通知メール |
+| 毎日10:00 | サーバー cron | `/api/health` を確認し、問題時のみメール（店ごとの更新停止・価格推移の停止・扱うはずの iPad/Pixel/Galaxy が0件） | cron の通知メール |
 | 毎日7:56 | サーバー cron（ブログ用・パネルが自動作成。「WordPressキャッシュ自動削除Cronを表示」で出る） | `wp-content/cache/` の3日より古いファイルを削除 | 出力なし（下記） |
 
 - cron の通知アドレスを設定すると **すべての cron の出力がメールで届く**。WordPress キャッシュ削除の cron は
@@ -119,5 +119,6 @@
 ## ローカルの確認用 DB（Docker）
 
 - `docker compose up -d` でローカル Postgres。`DATABASE_URL="postgresql://user:password@localhost:5432/used_phone_db"` を付けて `npx prisma db push`・スクレイパー（`scraper/run_all_scrapers.py`）・`npx next dev` を動かすと、本番の Neon に触れずに在庫つきで確かめられる
-- Docker Desktop が起動しきらない（WSL の docker-desktop が Stopped のまま）とき: 前回の終了で残ったソケット（`%LOCALAPPDATA%\Dockerun\dockerInference`・`%LOCALAPPDATA%\docker-secrets-engine\engine.sock`）を消せずに落ちている。
+- Docker Desktop が起動しきらない（WSL の docker-desktop が Stopped のまま）とき: 前回の終了で残ったソケット（`%LOCALAPPDATA%\Docker
+un\dockerInference`・`%LOCALAPPDATA%\docker-secrets-engine\engine.sock`）を消せずに落ちている。
   Docker を終了し、2つのフォルダを `.stale-日時` に名前を変えてから起動し直す（ファイル自体は消せない。「Reset to factory defaults」は押さない）
