@@ -11,6 +11,7 @@ import { IPAD_SPECS, IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { matchesModel } from "@/lib/deviceSearch";
 import { SHOPS } from "@/lib/shops";
 import { PICKS } from "@/lib/picks";
+import { PIXEL_INFO, PIXEL_MODELS } from "@/lib/pixelCatalog";
 import { ALL_DEVICE_PAGE_MODELS } from "@/lib/catalog";
 const u = "https://item.rakuten.co.jp/x/1/";
 // [shopCode, 商品名, rank, car, batt]（rank・car・batt は fetch.php が商品説明から抜き出す値）
@@ -80,6 +81,8 @@ const MATCH_CASES: [string, string, boolean][] = [
   ["iPhone 7", "iPhone 17", false], ["iPhone SE", "iPhone SE (第3世代)", true], ["iPhone 11", "iPad Pro 11インチ (第2世代)", false],
   ["iPad", "iPad Air (第5世代)", true], ["iPad Air", "iPad Pro 11インチ (M4)", false],
   ["iPad (第6世代)", "iPad mini (第6世代)", false], ["iPad Pro 11インチ (M4)", "iPad Pro 13インチ (M4)", false],
+  ["Pixel 9", "Pixel 9", true], ["Pixel 9", "Pixel 9a", false], ["Pixel 9", "Pixel 9 Pro", false], ["Pixel 9 Pro", "Pixel 9 Pro XL", false],
+  ["Pixel", "Pixel 8a", true], ["Pixel Fold", "Pixel 9 Pro Fold", false], ["Pixel Pro Fold", "Pixel 10 Pro Fold", true], ["iPhone 8", "Pixel 8", false], ["Pixel 8", "iPhone 8", false],
 ];
 for (const [q, name, want] of MATCH_CASES) {
   if (matchesModel(q, name) !== want) { failures++; console.log(`照合: "${q}" と "${name}" → ${!want}（期待 ${want}）`); }
@@ -107,6 +110,18 @@ for (const pick of PICKS) {
     if (!ALL_DEVICE_PAGE_MODELS.includes(model)) { failures++; console.log(`目的別 ${pick.slug}: 「${model}」がカタログにない`); }
     if (pick.ipad && !IPADOS27_MODELS.has(model)) { failures++; console.log(`目的別 ${pick.slug}: 「${model}」は iPadOS 27 非対応`); }
   }
+}
+
+// 7. Pixel の機種一覧が TypeScript（lib/pixelCatalog.ts）とスクレイパー（scraper/common.py の PIXEL_MODELS）でそろっているか。
+//    ずれると、取り込んだのにページがない（または逆）機種が出る。発売年月・保証年数（PIXEL_INFO）もそろっているか
+const pyBlock = readFileSync("scraper/common.py", "utf-8").match(/PIXEL_MODELS = \{([\s\S]*?)\}/)?.[1] ?? "";
+const pyPixel = new Set([...pyBlock.matchAll(/"([^"]+)"/g)].map((m) => m[1]));
+for (const model of PIXEL_MODELS) {
+  if (!pyPixel.has(model)) { failures++; console.log(`Pixel: scraper/common.py の PIXEL_MODELS に「${model}」がない`); }
+  if (!PIXEL_INFO[model]) { failures++; console.log(`Pixel: PIXEL_INFO に「${model}」がない`); }
+}
+for (const model of pyPixel) {
+  if (!PIXEL_MODELS.includes(model)) { failures++; console.log(`Pixel: lib/pixelCatalog.ts に「${model}」がない（scraper/common.py にはある）`); }
 }
 
 console.log(failures === 0 ? "OK: すべて期待どおり" : `NG: ${failures} 件`);

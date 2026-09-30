@@ -180,6 +180,8 @@ def extract_products_from_page(html_content):
             manufacturer = "Google"
             if not storage:
                 storage = PIXEL_ONLY_STORAGE.get(model_name, 0)
+            if not storage:
+                continue  # 容量が読めない Pixel は表で「0GB」になるので入れない
 
         items.append({
             "manufacturer": manufacturer,

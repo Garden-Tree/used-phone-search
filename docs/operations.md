@@ -7,7 +7,7 @@
  scraper/run_all_scrapers.py（4店）                 ~/rakuten-sync/fetch.php
    イオシス・にこスマ・エムモバ・ダイワン              楽天市場 商品検索API（ゲオモバイル・じゃんぱら・ソフマップの楽天市場店）
    └→ Neon（DeviceInventory を店ごとに洗い替え）       └→ POST /api/ingest/rakuten?shop=<shopCode>（gzip + Bearer）
- npm run snapshot:prices（価格推移を記録）               └→ Neon（ショップごとに洗い替え。iPhone・iPad）
+ npm run snapshot:prices（価格推移を記録）               └→ Neon（ショップごとに洗い替え。iPhone・iPad・Pixel）
  ワークフローの自己有効化（60日停止の防止）
                                    ↓
               Vercel（used.gadelog.com・Next.js 16）
@@ -33,7 +33,7 @@
 
 | いつ（日本時間） | どこで | 何を | ログ |
 | --- | --- | --- | --- |
-| 3/9/15/21時 | GitHub Actions `Phone Inventory Scraper` | 4店のスクレイピング（イオシス・にこスマは iPad も）→ iPad の機種名の正規化 → 価格推移の記録 → 自己有効化 | Actions の実行ログ（失敗時は GitHub から通知メール） |
+| 3/9/15/21時 | GitHub Actions `Phone Inventory Scraper` | 4店のスクレイピング（イオシス・にこスマは iPad も、イオシス・にこスマ・ダイワンは Pixel も）→ iPad の機種名の正規化 → 価格推移の記録 → 自己有効化 | Actions の実行ログ（失敗時は GitHub から通知メール） |
 | 2:40/8:40/14:40/20:40 | サーバー cron | 楽天からゲオ・じゃんぱら・ソフマップの iPhone・iPad を順に取得して送信（合計約25分） | `~/rakuten-sync/fetch.log`（行頭に shopCode） |
 | 毎日10:00 | サーバー cron | `/api/health` を確認し、問題時のみメール | cron の通知メール |
 | 毎日7:56 | サーバー cron（ブログ用・パネルが自動作成。「WordPressキャッシュ自動削除Cronを表示」で出る） | `wp-content/cache/` の3日より古いファイルを削除 | 出力なし（下記） |
@@ -66,6 +66,12 @@
 - 楽天3店の iPad は `lib/ipadCatalog.ts` の `canonicalIpadModel` で Apple の正式名にそろえる（チップ⇔世代の対応表込み）。
   カタログにない機種・画面サイズが書かれていない M 系 Air は取り込まない。新しい iPad が出たら `IPAD_CATALOG` に追加
 - 検索は機種の指定がなければ iPhone のみ（`buildWhere`）。iPad は `/ipad` と機種別ページから
+
+### Pixel の機種名（2026-09-30〜）
+- スクレイパーが取り込むときに Google の表記（`Pixel 8a`・`Pixel 9 Pro Fold`）へそろえる（`scraper/common.py` の `canonical_pixel_model`）。Pixel 5a 以前は入れない
+- 機種の一覧は `scraper/common.py` の `PIXEL_MODELS` と `lib/pixelCatalog.ts` の2か所。`npm run test:normalize` がずれを見つける。新しい Pixel が出たら両方と `PIXEL_INFO`（販売開始・保証年数）に足す
+- 楽天3店・エムモバの Pixel はまだ（楽天は `fetch.php` の KEYWORDS と `lib/rakutenShops.ts` の振り分けが要る。`fetch.php` をサーバーに上げるのはユーザー）
+- 洗い替えは店ごと（iPhone・iPad・Pixel をまとめて入れ直す）。ある回に Pixel の一覧だけ取れなかったときは、その店の Pixel が次の回まで消える。安全装置（店の合計件数が半分未満なら入れ直さない）は iPhone が多いので効かない
 
 ### 新しい iPhone が出た
 1. 中古在庫が出たのを確認（楽天のゲオ店が早い）

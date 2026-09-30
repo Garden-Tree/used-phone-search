@@ -20,13 +20,14 @@ import {
 import { getBatteryRows, getModelStats, getStorageRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
 import { SPEC_ROWS, specOf, specUrl } from "@/lib/iphoneSpecs";
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
+import { PIXEL_INFO, isPixel, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
 import InspectionTips from "@/app/components/InspectionTips";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
-import { SHOPS, findShop, shopLabels, shopsFor } from "@/lib/shops";
+import { findShop, shopLabels, shopsFor } from "@/lib/shops";
 
 // スクレイパーは6時間ごとに実行されるため、1時間ごとに再生成すれば十分新しい
 export const revalidate = 3600;
@@ -161,8 +162,14 @@ function StorageRankTable({ model, matrix }: { model: string; matrix: StorageRan
 }
 
 // 店によってバッテリーの表記が違うので、表の数え方を書いておく（lib/shops.ts の battery）
-const labelsWith = (battery: string) => SHOPS.filter((s) => s.battery === battery).map((s) => s.label).join("・");
-const BATTERY_NOTE = `未使用品（ランクS）を含みます。${labelsWith("over80")}は「80%以上」表記のため80%の行だけに、${labelsWith("none")}はバッテリーの記載を取り込めていないため未使用品以外は含みません。`;
+// 注記に出すのは、その機種を扱っている店だけ（Pixel は3店など）
+function batteryNote(model: string): string {
+  const shops = shopsFor(model);
+  const labelsWith = (battery: string) => shops.filter((s) => s.battery === battery).map((s) => s.label).join("・");
+  const over80 = labelsWith("over80");
+  const none = labelsWith("none");
+  return `未使用品（ランクS）を含みます。${over80 ? `${over80}は「80%以上」表記のため80%の行だけに` : ""}${over80 && none ? "、" : over80 ? "入れています。" : ""}${none ? `${none}はバッテリーの記載を取り込めていないため未使用品以外は含みません。` : ""}`;
+}
 
 export default async function ModelPage({ params }: Props) {
   const { slug } = await params;
@@ -176,8 +183,12 @@ export default async function ModelPage({ params }: Props) {
     getStorageRankMatrix(model),
   ]);
   const spec = specOf(model);
-  const listPath = isIpad(model) ? "/ipad" : "/iphone";
-  const listName = isIpad(model) ? "中古iPad" : "中古iPhoneの相場一覧";
+  const listPath = isIpad(model) ? "/ipad" : isPixel(model) ? "/pixel" : "/iphone";
+  const listName = isIpad(model) ? "中古iPad" : isPixel(model) ? "中古Google Pixel" : "中古iPhoneの相場一覧";
+  const pixel = PIXEL_INFO[model];
+  const pixelUntil = updateUntil(model);
+  // 保証の残り（ISR で1時間ごとに作り直すので、その時点の年月で計算する）
+  const pixelLeft = updateYearsLeft(model, new Date().toISOString().slice(0, 7));
   const series = seriesOf(model);
   const siblings = siblingModels(model);
   const path = modelPagePath(model);
@@ -201,7 +212,7 @@ export default async function ModelPage({ params }: Props) {
           "@context": "https://schema.org",
           "@type": "Product",
           name: `${model}（中古）`,
-          brand: { "@type": "Brand", name: "Apple" },
+          brand: { "@type": "Brand", name: isPixel(model) ? "Google" : "Apple" },
           itemCondition: "https://schema.org/UsedCondition",
           offers: {
             "@type": "AggregateOffer",
@@ -251,9 +262,13 @@ export default async function ModelPage({ params }: Props) {
           {stats.minPrice !== null && stats.medianPrice !== null && (
             <>中古の最安値は<strong>{yen(stats.minPrice)}</strong>、相場（在庫の中央値）は<strong>{yen(stats.medianPrice)}</strong>で、{stats.shopCount}ショップに{stats.count.toLocaleString()}件の在庫があります。</>
           )}
-          {isIpad(model)
-            ? (IPADOS27_MODELS.has(model) ? "iPadOS 27 に対応しています。" : "iPadOS 27 には対応していません。")
-            : (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
+          {pixel && pixelUntil && pixelLeft !== undefined
+            ? (pixelLeft > 0
+              ? <>Google のアップデート保証は販売開始（{jaMonth(pixel.available)}）から{pixel.updateYears}年で、<strong>{jaMonth(pixelUntil)}まで</strong>（残り約{pixelLeft}年）です。</>
+              : <>Google のアップデート保証（販売開始から{pixel.updateYears}年・{jaMonth(pixelUntil)}まで）は終わっています。</>)
+            : isIpad(model)
+              ? (IPADOS27_MODELS.has(model) ? "iPadOS 27 に対応しています。" : "iPadOS 27 には対応していません。")
+              : (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
         </p>
 
         {/* サマリー */}
@@ -291,7 +306,7 @@ export default async function ModelPage({ params }: Props) {
                 hrefOf={(k) => searchHref(model, { storage: k })} />
               {/* 多くの店で最大容量は値段に反映されていないので、少し足すだけで状態のよい個体が買えることを見せる */}
               <PriceTable title="バッテリー最大容量別の最安値" rows={batteryRows} labelOf={(k) => `${k}%以上`}
-                hrefOf={(k) => searchHref(model, { minBattery: k })} baseline={stats.minPrice} note={BATTERY_NOTE} />
+                hrefOf={(k) => searchHref(model, { minBattery: k })} baseline={stats.minPrice} note={batteryNote(model)} />
               <PriceTable title="状態ランク別の最安値" rows={stats.byRank} labelOf={(k) => `ランク ${k}`}
                 hrefOf={(k) => searchHref(model, { rank: k })} />
               <PriceTable title="ショップ別の最安値" rows={stats.byShop} labelOf={(k) => k}
@@ -318,7 +333,7 @@ export default async function ModelPage({ params }: Props) {
         )}
 
         {/* 運営者（検品担当）の視点。iPhone のみ */}
-        {!isIpad(model) && (
+        {!isIpad(model) && !isPixel(model) && (
           <InspectionTips model={model} has64GB={stats.byStorage.some((r) => r.key === "64")} />
         )}
 
@@ -336,6 +351,26 @@ export default async function ModelPage({ params }: Props) {
             </dl>
             <p className="mt-3 text-xs text-slate-400">
               出典: <a href={specUrl(spec)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">Apple「{model} - 技術仕様」</a>
+            </p>
+          </section>
+        )}
+
+        {/* Pixel のアップデート保証（Google 公式の年数と販売開始の年月から。lib/pixelCatalog.ts） */}
+        {pixel && pixelUntil && (
+          <section className="mb-6 rounded-3xl border border-slate-200 p-5 md:p-6">
+            <h2 className="text-lg font-bold mb-3">{model}のアップデート保証</h2>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+              <dt className="text-slate-400 font-bold">販売開始</dt>
+              <dd className="text-slate-800">{jaMonth(pixel.available)}（米国 Google ストア）</dd>
+              <dt className="text-slate-400 font-bold">保証の年数</dt>
+              <dd className="text-slate-800">販売開始から{pixel.updateYears}年（OS・セキュリティ）</dd>
+              <dt className="text-slate-400 font-bold">保証の終わり</dt>
+              <dd className="text-slate-800">{jaMonth(pixelUntil)}ごろ</dd>
+            </dl>
+            <p className="mt-3 text-xs text-slate-400 leading-relaxed">
+              出典: Google「<a href="https://support.google.com/pixelphone/answer/4457705" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">Pixel のアップデート保証期間</a>」
+              「<a href="https://support.google.com/pixelphone/answer/15738422" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">デバイスが利用可能になった時期</a>」。
+              保証の終わりは、販売開始の年月に年数を足したものです。
             </p>
           </section>
         )}

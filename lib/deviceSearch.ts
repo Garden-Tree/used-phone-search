@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { IPAD_MODELS } from "@/lib/ipadCatalog";
+import { PIXEL_MODELS } from "@/lib/pixelCatalog";
 
 // モデル名の「バリエーション」を表す語（この集合が一致するものだけをヒットさせる）
 const VARIANT_WORDS = ["pro", "max", "plus", "mini"] as const;
@@ -50,6 +51,16 @@ export function matchesModel(query: string, modelName: string): boolean {
     const name = modelName.trim().toLowerCase();
     if (IPAD_MODELS.some((m) => m.toLowerCase() === q)) return q === name;
     return /^ipad/.test(name) && q.split(/\s+/).every((word) => name.includes(word));
+  }
+  // Pixel も取り込み時に Google の表記（lib/pixelCatalog.ts）にそろえている。考え方は iPad と同じ
+  // （トークン判定だと「Pixel 9」が「Pixel 9a」「Pixel 9 Pro」にも当たる）
+  const pixelQuery = /^\s*pixel/i.test(query);
+  if (pixelQuery || /^pixel/i.test(modelName)) {
+    if (!pixelQuery) return false;
+    const q = query.trim().toLowerCase();
+    const name = modelName.trim().toLowerCase();
+    if (PIXEL_MODELS.some((m) => m.toLowerCase() === q)) return q === name;
+    return /^pixel/.test(name) && q.split(/\s+/).every((word) => name.includes(word));
   }
   const q = parseModel(query);
   if (!q.core) return true;
