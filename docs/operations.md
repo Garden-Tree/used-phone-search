@@ -115,3 +115,9 @@
 
 - `main` への push で Vercel が本番デプロイ。PR ごとにプレビュー
 - 開発の流れ：ブランチ → PR → Vercel のプレビュービルド成功 → マージ（自動マージはリポジトリ設定で無効）
+
+## ローカルの確認用 DB（Docker）
+
+- `docker compose up -d` でローカル Postgres。`DATABASE_URL="postgresql://user:password@localhost:5432/used_phone_db"` を付けて `npx prisma db push`・スクレイパー（`scraper/run_all_scrapers.py`）・`npx next dev` を動かすと、本番の Neon に触れずに在庫つきで確かめられる
+- Docker Desktop が起動しきらない（WSL の docker-desktop が Stopped のまま）とき: 前回の終了で残ったソケット（`%LOCALAPPDATA%\Dockerun\dockerInference`・`%LOCALAPPDATA%\docker-secrets-engine\engine.sock`）を消せずに落ちている。
+  Docker を終了し、2つのフォルダを `.stale-日時` に名前を変えてから起動し直す（ファイル自体は消せない。「Reset to factory defaults」は押さない）
