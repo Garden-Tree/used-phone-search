@@ -10,13 +10,13 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 from bs4 import BeautifulSoup
 
-from common import WIFI_MODEL, PIXEL_ONLY_STORAGE, canonical_pixel_model, run_scraper, is_iphone_13_or_later
+from common import WIFI_MODEL, run_scraper, is_iphone_13_or_later
 
 SHOP_NAME = "イオシス"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 }
-# (一覧の URL, 読み取り関数, 最大ページ数) はファイル末尾の CATEGORIES
+# (一覧の URL, 商品リンクの接頭辞, 読み取り関数) はファイル末尾の CATEGORIES
 
 
 def parse_rank(li) -> str:
@@ -164,39 +164,9 @@ def parse_ipad(li) -> dict | None:
     return item
 
 
-def parse_pixel(li) -> dict | None:
-    # 例: Google Pixel8a G576D 128GB ポーセリン 【国内版SIMフリー】
-    #     Google Pixel7a G82U8 シー 【国内版SIMフリー】（容量が1種類の機種は容量が書かれない）
-    raw_name = parse_name(li)
-    model_name = canonical_pixel_model(raw_name)
-    if not model_name:
-        return None  # Pixel 5a 以前など
-    item = base_item(li, raw_name, "/items/smartphone/")
-    if not item["storage"] and model_name in PIXEL_ONLY_STORAGE:
-        item["storage"] = PIXEL_ONLY_STORAGE[model_name]
-    if item["color"] == "不明":
-        # 容量が書かれないときは、Google の型番（G82U8 など）の後ろが色
-        m_color = re.search(r"\bG[0-9A-Z]{4}\s+([^\s【]+)", raw_name)
-        if m_color:
-            item["color"] = m_color.group(1)
-
-    carrier = parse_carrier(raw_name)
-    domestic = carrier == "Apple"  # parse_carrier は「国内版」を "Apple" で返す（iPhone 向け）
-    item.update({
-        "manufacturer": "Google",
-        "modelName": model_name,
-        "carrier": "Google" if domestic else carrier,
-        "networkStatus": parse_network_status(raw_name, carrier),
-        "simUnlocked": any(w in raw_name for w in ("ロック解除", "SIMフリー", "国内版")),
-    })
-    return item
-
-
-# (URL, 読み取り関数, 最大ページ数)。Pixel は 9/30 時点で16ページなので 40 で打ち切る（毎回100ページ取りに行かない）
 CATEGORIES = [
-    ("https://iosys.co.jp/items/smartphone/iphone?page={page}", parse_iphone, None),
-    ("https://iosys.co.jp/items/tablet/ipad?page={page}", parse_ipad, None),
-    ("https://iosys.co.jp/items/smartphone/android/pixel?page={page}", parse_pixel, 40),
+    ("https://iosys.co.jp/items/smartphone/iphone?page={page}", parse_iphone),
+    ("https://iosys.co.jp/items/tablet/ipad?page={page}", parse_ipad),
 ]
 
 
@@ -218,13 +188,9 @@ def fetch_page(url_template: str, parse, page: int) -> list[dict]:
 
 
 def scrape_iosis(max_pages=20):
-    """iPhone・iPad・Pixel の一覧を max_pages ページずつ並列取得する（在庫のないページは0件で返る）"""
+    """iPhone・iPad の一覧を max_pages ページずつ並列取得する（在庫のないページは0件で返る）"""
     print("Starting requests scraper for Iosis...")
-    jobs = [
-        (tpl, parse, page)
-        for tpl, parse, cap in CATEGORIES
-        for page in range(1, min(max_pages, cap or max_pages) + 1)
-    ]
+    jobs = [(tpl, parse, page) for tpl, parse in CATEGORIES for page in range(1, max_pages + 1)]
     all_items = []
     with ThreadPoolExecutor(max_workers=15) as executor:
         for items in executor.map(lambda job: fetch_page(*job), jobs):
