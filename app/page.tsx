@@ -4,8 +4,8 @@ import { ALL_CATALOG_MODELS, IPHONE_CATALOG, modelPagePath } from "@/lib/catalog
 import { minPriceByModel } from "@/lib/budgetStats";
 import { yen } from "@/lib/format";
 import { comparePath } from "@/lib/compare";
-import { pickPath } from "@/lib/picks";
-import { BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
+import { IPAD_PICKS, pickPath } from "@/lib/picks";
+import { BUDGETS, IPAD_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import prisma from "@/lib/prisma";
 import { SHOPS } from "@/lib/shops";
 import SiteFooter from "@/app/components/SiteFooter";
@@ -191,9 +191,26 @@ export default async function Home() {
 
           {/* 予算別ページ */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-bold text-slate-500 mr-1">予算で探す:</span>
+            <span className="text-sm font-bold text-slate-500 mr-1">iPhone を予算で探す:</span>
             {BUDGETS.map((max) => (
               <Link key={max} href={budgetPath(max)}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {budgetLabel(max)}以下
+              </Link>
+            ))}
+          </div>
+
+          {/* iPad の目的別・予算別（9/30〜）。トップから直接たどれるようにして、Google に早く見つけてもらう */}
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <span className="text-sm font-bold text-slate-500 mr-1">iPad を目的・予算で探す:</span>
+            {IPAD_PICKS.map((p) => (
+              <Link key={p.slug} href={pickPath(p.slug)}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {p.title}
+              </Link>
+            ))}
+            {IPAD_BUDGETS.map((max) => (
+              <Link key={max} href={budgetPath(max, "ipad")}
                 className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
                 {budgetLabel(max)}以下
               </Link>
