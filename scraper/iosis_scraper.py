@@ -174,8 +174,6 @@ def parse_pixel(li) -> dict | None:
     item = base_item(li, raw_name, "/items/smartphone/")
     if not item["storage"] and model_name in PIXEL_ONLY_STORAGE:
         item["storage"] = PIXEL_ONLY_STORAGE[model_name]
-    if not item["storage"]:
-        return None  # 容量が読めない Pixel は表で「0GB」になるので入れない
     if item["color"] == "不明":
         # 容量が書かれないときは、Google の型番（G82U8 など）の後ろが色
         m_color = re.search(r"\bG[0-9A-Z]{4}\s+([^\s【]+)", raw_name)

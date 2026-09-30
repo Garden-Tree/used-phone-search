@@ -82,7 +82,7 @@ export default async function Home() {
           </p>
 
           <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6">
-            大手中古ショップ{SHOPS.length}社の iPhone・iPad・Google Pixel の価格、状態ランク、容量、バッテリーを一括比較。<br className="hidden md:block" />
+            大手中古ショップ{SHOPS.length}社の iPhone・iPad の価格、状態ランク、容量、バッテリーを一括比較。<br className="hidden md:block" />
             欲しいモデルの最安値を一瞬で見つけ出します。
           </p>
 
@@ -112,7 +112,7 @@ export default async function Home() {
 
           {/* 比較対象のショップと在庫数 */}
           <p className="text-xs font-bold text-slate-400 tracking-[0.15em] mb-4">
-            比較対象の大手中古ショップ {SHOPS.length}社{total > 0 && <>・在庫 {total.toLocaleString()}件（iPhone・iPad・Pixel）</>}
+            比較対象の大手中古ショップ {SHOPS.length}社{total > 0 && <>・在庫 {total.toLocaleString()}件（iPhone・iPad）</>}
           </p>
           <ul className="flex flex-wrap justify-center gap-2 md:gap-3 max-w-4xl mx-auto">
             {SHOPS.map((shop) => {
@@ -254,16 +254,6 @@ export default async function Home() {
           <div>
             <p className="text-lg md:text-xl font-bold text-slate-800 group-hover:text-blue-600">中古iPadの最安値を見る</p>
             <p className="text-xs md:text-sm text-slate-500 mt-1">iPad・iPad mini・iPad Air・iPad Pro を機種別に比較</p>
-          </div>
-          <span className="text-2xl text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-transform" aria-hidden>›</span>
-        </Link>
-      </section>
-      <section className="max-w-6xl mx-auto px-4 mb-10 -mt-6 relative z-10">
-        <Link href="/pixel"
-          className="group flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-6 py-5 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-          <div>
-            <p className="text-lg md:text-xl font-bold text-slate-800 group-hover:text-blue-600">中古Google Pixelの最安値を見る</p>
-            <p className="text-xs md:text-sm text-slate-500 mt-1">Pixel 6〜11・a シリーズ・Fold を機種別に比較（アップデート保証の期限つき）</p>
           </div>
           <span className="text-2xl text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-transform" aria-hidden>›</span>
         </Link>

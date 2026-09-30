@@ -164,8 +164,6 @@ def parse_daiwan_item(item, headers):
         manufacturer = 'Google'
         if not storage:
             storage = PIXEL_ONLY_STORAGE.get(model_name, 0)
-        if not storage:
-            return None  # 容量が読めない Pixel は表で「0GB」になるので入れない
 
     return {
         'manufacturer': manufacturer,
