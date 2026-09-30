@@ -13,6 +13,7 @@ import { yen, storageLabel } from "@/lib/format";
 import { shopsFor } from "@/lib/shops";
 import { SPEC_ROWS, specOf, specUrl } from "@/lib/iphoneSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
+import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 
 // モデル別ページと同じく1時間ごとに再生成
 export const revalidate = 3600;
@@ -49,6 +50,24 @@ function pixelNote(a: string, b: string): string {
   if (d === 0) return ` アップデート保証の残りはどちらも約${Math.max(la, 0)}年です。`;
   const [longer, shorter] = d > 0 ? [b, a] : [a, b];
   return ` Google のアップデート保証は ${longer} のほうが約${Math.abs(d)}年長く残ります（${shorter} は${jaMonth(updateUntil(shorter)!)}まで）。`;
+}
+
+/** 年月（"2024-04"）どうしの差（か月） */
+const monthsBetween = (from: string, to: string) => {
+  const [fy, fm] = from.split("-").map(Number);
+  const [ty, tm] = to.split("-").map(Number);
+  return (ty - fy) * 12 + (tm - fm);
+};
+
+/** Galaxy どうしなら、日本での発売の差をひと言足す（Samsung・キャリアの発表で確かめた年月。lib/galaxyCatalog.ts） */
+function galaxyNote(a: string, b: string): string {
+  const ra = GALAXY_RELEASED[a];
+  const rb = GALAXY_RELEASED[b];
+  if (!ra || !rb) return "";
+  const d = monthsBetween(ra, rb);
+  if (d === 0) return ` どちらも日本では${jaMonth(ra)}に発売されました。`;
+  const [newer, older] = d > 0 ? [b, a] : [a, b];
+  return ` 日本での発売は ${newer} が ${older} の約${Math.abs(d)}か月後です（${older} は${jaMonth(GALAXY_RELEASED[older])}、${newer} は${jaMonth(GALAXY_RELEASED[newer])}）。`;
 }
 
 /** 2モデルの行（容量・ランク）を突き合わせた比較表の行 */
@@ -275,7 +294,7 @@ export default async function ComparePage({ params }: Props) {
         <h1 className="text-2xl md:text-4xl font-extrabold text-slate-900 mb-3">
           {a} と {b}<br className="md:hidden" /> 中古はどっちがお得？
         </h1>
-        <p className="text-slate-600 mb-4 leading-relaxed">{verdict(a, b, sa, sb)}{pixelNote(a, b)}</p>
+        <p className="text-slate-600 mb-4 leading-relaxed">{verdict(a, b, sa, sb)}{pixelNote(a, b)}{galaxyNote(a, b)}</p>
         <AdDisclosure compact />
 
         {/* 2モデルのサマリーを横に並べる */}
