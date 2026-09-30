@@ -1,16 +1,23 @@
 /**
- * 予算別ページ（/budget/[slug]）。「中古iPhone 3万円以下」のような検索に向けて、
- * 予算内で買える機種を新しい順に並べる
+ * 予算別ページ。「中古iPhone 3万円以下」「中古iPad 3万円以下」のような検索に向けて、
+ * 予算内で買える機種を新しい順に並べる（iPhone は /budget/[slug]、iPad は /ipad/budget/[slug]）
  */
+export type BudgetDevice = "iphone" | "ipad";
+
 export const BUDGETS = [10000, 20000, 30000, 40000, 50000, 70000, 100000];
+// iPad は1万円以下の在庫（ジャンク品を除く）がほぼないので2万円から（9/30 時点で2万円以下は5機種）
+export const IPAD_BUDGETS = [20000, 30000, 40000, 50000, 70000, 100000];
+
+export const budgetsOf = (device: BudgetDevice) => (device === "ipad" ? IPAD_BUDGETS : BUDGETS);
 
 export const budgetSlug = (max: number) => `under-${max}`;
-export const budgetPath = (max: number) => `/budget/${budgetSlug(max)}`;
+export const budgetPath = (max: number, device: BudgetDevice = "iphone") =>
+  device === "ipad" ? `/ipad/budget/${budgetSlug(max)}` : `/budget/${budgetSlug(max)}`;
 
-export function slugToBudget(slug: string): number | undefined {
+export function slugToBudget(slug: string, device: BudgetDevice = "iphone"): number | undefined {
   const m = slug.match(/^under-(\d+)$/);
   const max = m ? Number(m[1]) : NaN;
-  return BUDGETS.includes(max) ? max : undefined;
+  return budgetsOf(device).includes(max) ? max : undefined;
 }
 
 /** 30000 → "3万円" */

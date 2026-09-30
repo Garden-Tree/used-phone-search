@@ -11,6 +11,8 @@ import { specOf } from "@/lib/iphoneSpecs";
 import { SITE_NAME } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { IPAD_SHOPS, shopLabels } from "@/lib/shops";
+import { IPAD_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
+import { IPAD_PICKS, pickPath } from "@/lib/picks";
 
 // iPad の機種一覧。在庫は1時間ごとに更新
 export const revalidate = 3600;
@@ -49,6 +51,28 @@ export default async function IpadIndexPage() {
           を機種別にまとめています。機種名から容量別・状態別の最安値へ。
         </p>
         <AdDisclosure compact />
+
+        {/* 目的・予算から探す（/pick/ipad-…・/ipad/budget/…） */}
+        <section className="my-6">
+          <h2 className="text-lg font-bold mb-3">目的から探す</h2>
+          <div className="flex flex-wrap gap-2">
+            {IPAD_PICKS.map((p) => (
+              <Link key={p.slug} href={pickPath(p.slug)}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {p.title}
+              </Link>
+            ))}
+          </div>
+          <h2 className="text-lg font-bold mt-5 mb-3">予算から探す</h2>
+          <div className="flex flex-wrap gap-2">
+            {IPAD_BUDGETS.map((max) => (
+              <Link key={max} href={budgetPath(max, "ipad")}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {budgetLabel(max)}以下
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* iPad の比較ページ */}
         <section className="my-6">

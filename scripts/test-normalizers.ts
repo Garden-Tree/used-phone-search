@@ -10,6 +10,8 @@ import { IPAD_MODELS, canonicalIpadModel } from "@/lib/ipadCatalog";
 import { IPAD_SPECS, IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { matchesModel } from "@/lib/deviceSearch";
 import { SHOPS } from "@/lib/shops";
+import { PICKS } from "@/lib/picks";
+import { ALL_DEVICE_PAGE_MODELS } from "@/lib/catalog";
 const u = "https://item.rakuten.co.jp/x/1/";
 // [shopCode, 商品名, rank, car, batt]（rank・car・batt は fetch.php が商品説明から抜き出す値）
 const CORPUS: [string, string, string | null, string | null, number | null][] = [
@@ -97,6 +99,14 @@ for (const model of IPADOS27_MODELS) {
 }
 for (const model of Object.keys(IPAD_SPECS)) {
   if (!IPAD_MODELS.includes(model)) { failures++; console.log(`iPad スペック: 「${model}」がカタログにない`); }
+}
+
+// 6. 目的別ページの機種名がカタログにあるか（ずれるとその機種のカードが「在庫なし」になる）。iPad はどれも iPadOS 27 対応に絞っている
+for (const pick of PICKS) {
+  for (const model of pick.models) {
+    if (!ALL_DEVICE_PAGE_MODELS.includes(model)) { failures++; console.log(`目的別 ${pick.slug}: 「${model}」がカタログにない`); }
+    if (pick.ipad && !IPADOS27_MODELS.has(model)) { failures++; console.log(`目的別 ${pick.slug}: 「${model}」は iPadOS 27 非対応`); }
+  }
 }
 
 console.log(failures === 0 ? "OK: すべて期待どおり" : `NG: ${failures} 件`);

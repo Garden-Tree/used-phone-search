@@ -59,11 +59,22 @@ export default async function PickPage({ params }: Props) {
         <nav aria-label="パンくずリスト" className="text-xs text-slate-400 mb-4">
           <Link href="/" className="hover:text-blue-600">トップ</Link>
           <span className="mx-2">›</span>
+          {pick.ipad && (
+            <>
+              <Link href="/ipad" className="hover:text-blue-600">中古iPad</Link>
+              <span className="mx-2">›</span>
+            </>
+          )}
           <span className="text-slate-600">{pick.title}</span>
         </nav>
 
         <h1 className="text-2xl md:text-4xl font-extrabold mb-3">{pick.title}</h1>
         <p className="text-slate-600 mb-4 leading-relaxed">{pick.lead}</p>
+        {pick.source && (
+          <p className="text-xs text-slate-400 mb-4">
+            対象機種の出典: <a href={pick.source.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">{pick.source.label}</a>
+          </p>
+        )}
         <AdDisclosure compact />
 
         {/* 対象モデルごとの最安値。カード全体が機種別ページへのリンク */}
@@ -112,7 +123,7 @@ export default async function PickPage({ params }: Props) {
         <section className="mb-4">
           <h2 className="text-lg font-bold mb-3">ほかの目的から探す</h2>
           <div className="flex flex-wrap gap-2">
-            {PICKS.filter((p) => p.slug !== pick.slug).map((p) => (
+            {PICKS.filter((p) => p.slug !== pick.slug && !!p.ipad === !!pick.ipad).map((p) => (
               <Link key={p.slug} href={pickPath(p.slug)}
                 className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
                 {p.title}

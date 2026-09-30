@@ -3,6 +3,9 @@ import prisma from "@/lib/prisma";
 import type { Device } from "@/app/components/DeviceCard";
 import { ALL_CATALOG_MODELS, ALL_PAGE_MODELS } from "@/lib/catalog";
 import { resolveModelNames } from "@/lib/deviceSearch";
+import { IPAD_MODELS } from "@/lib/ipadCatalog";
+import { IPADOS27_MODELS, IPAD_SPECS } from "@/lib/ipadSpecs";
+import type { BudgetDevice } from "@/lib/budgets";
 
 /** 予算別ページ（lib/budgets.ts）の集計 */
 
@@ -10,7 +13,7 @@ export type BudgetModelRow = {
   model: string;
   minPrice: number;
   count: number;
-  /** iOS 27 に対応しているか（旧機種は false） */
+  /** iOS 27（iPad は iPadOS 27）に対応しているか（旧機種は false） */
   supported: boolean;
 };
 
@@ -46,10 +49,16 @@ export async function minPriceByModel(where: Prisma.DeviceInventoryWhereInput, m
   return result;
 }
 
+// iPad は発売年の新しい順（同じ年はカタログの順＝Pro・Air・mini・無印）。発売年は Apple 公式で確かめた値（lib/ipadSpecs.ts）
+const releasedYear = (model: string) => Number(IPAD_SPECS[model]?.released.replace("年", "") ?? 0);
+const IPAD_BY_RELEASE = [...IPAD_MODELS].sort((a, b) => releasedYear(b) - releasedYear(a));
+
 /** 予算内の在庫を機種ごとに集計する（機種は新しい順） */
-export async function getBudgetModels(max: number): Promise<BudgetModelRow[]> {
-  const byModel = await minPriceByModel({ isSoldOut: false, price: { lte: max }, ...NOT_JUNK }, ALL_PAGE_MODELS);
-  return [...byModel].map(([model, r]) => ({ model, ...r, supported: ALL_CATALOG_MODELS.includes(model) }));
+export async function getBudgetModels(max: number, device: BudgetDevice = "iphone"): Promise<BudgetModelRow[]> {
+  const models = device === "ipad" ? IPAD_BY_RELEASE : ALL_PAGE_MODELS;
+  const isSupported = (m: string) => (device === "ipad" ? IPADOS27_MODELS.has(m) : ALL_CATALOG_MODELS.includes(m));
+  const byModel = await minPriceByModel({ isSoldOut: false, price: { lte: max }, ...NOT_JUNK }, models);
+  return [...byModel].map(([model, r]) => ({ model, ...r, supported: isSupported(model) }));
 }
 
 /** 指定した機種の、予算内でいちばん安い在庫 */
