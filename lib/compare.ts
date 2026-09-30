@@ -1,7 +1,7 @@
 import { ALL_DEVICE_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
 
 /**
- * 比較ページを作る組み合わせ。「iPhone 13 14 中古 どっち」のように検索されやすいものに絞る（iPad も含む）。
+ * 比較ページを作る組み合わせ。「iPhone 13 14 中古 どっち」のように検索されやすいものに絞る（iPad・Pixel も含む）。
  * 各ペアは [古い/下位モデル, 新しい/上位モデル] の順で書く（URL もこの順になる）
  */
 const GENERATIONS = [11, 12, 13, 14, 15, 16, 17];
@@ -56,6 +56,24 @@ function buildPairs(): [string, string][] {
     ["iPad Pro 11インチ (第4世代)", "iPad Pro 11インチ (M4)"],
     ["iPad Pro 11インチ (M4)", "iPad Pro 11インチ (M5)"],
     ["iPad Pro 12.9インチ (第6世代)", "iPad Pro 13インチ (M4)"],
+  );
+
+  // Pixel（2026-09-30〜）。a シリーズの世代違い、無印・Pro の世代違い、同じ世代の a と無印・Pro と Pro XL
+  pairs.push(
+    ["Pixel 7a", "Pixel 8a"],
+    ["Pixel 8a", "Pixel 9a"],
+    ["Pixel 9a", "Pixel 10a"],
+    ["Pixel 8", "Pixel 9"],
+    ["Pixel 9", "Pixel 10"],
+    ["Pixel 10", "Pixel 11"],
+    ["Pixel 9 Pro", "Pixel 10 Pro"],
+    ["Pixel 10 Pro", "Pixel 11 Pro"],
+    ["Pixel 8a", "Pixel 8"],
+    ["Pixel 9a", "Pixel 9"],
+    ["Pixel 10a", "Pixel 10"],
+    ["Pixel 9 Pro", "Pixel 9 Pro XL"],
+    ["Pixel 9 Pro Fold", "Pixel 10 Pro Fold"],
+    ["Pixel 7", "Pixel 8"],
   );
 
   // カタログに無いモデルを含む組は除外（表記ミスの防止）

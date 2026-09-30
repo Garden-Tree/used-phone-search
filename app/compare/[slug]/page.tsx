@@ -12,6 +12,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
 import { shopsFor } from "@/lib/shops";
 import { SPEC_ROWS, specOf, specUrl } from "@/lib/iphoneSpecs";
+import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 
 // モデル別ページと同じく1時間ごとに再生成
 export const revalidate = 3600;
@@ -36,6 +37,18 @@ function verdict(a: string, b: string, sa: ModelStats, sb: ModelStats): string {
   const [cheap, pricey] = diff > 0 ? [a, b] : [b, a];
   const rate = Math.round((Math.abs(diff) / Math.max(sa.minPrice, sb.minPrice!)) * 100);
   return `中古の最安値は ${cheap} のほうが ${yen(Math.abs(diff))}（約${rate}%）安く、価格重視なら ${cheap}、新しさや性能を優先するなら差額を払って ${pricey} という選び方になります。`;
+}
+
+/** Pixel どうしなら、アップデート保証の残りの差をひと言足す（値段の差と合わせて選べるように） */
+function pixelNote(a: string, b: string): string {
+  const now = new Date().toISOString().slice(0, 7);
+  const la = updateYearsLeft(a, now);
+  const lb = updateYearsLeft(b, now);
+  if (la === undefined || lb === undefined) return "";
+  const d = Math.round((lb - la) * 10) / 10;
+  if (d === 0) return ` アップデート保証の残りはどちらも約${Math.max(la, 0)}年です。`;
+  const [longer, shorter] = d > 0 ? [b, a] : [a, b];
+  return ` Google のアップデート保証は ${longer} のほうが約${Math.abs(d)}年長く残ります（${shorter} は${jaMonth(updateUntil(shorter)!)}まで）。`;
 }
 
 /** 2モデルの行（容量・ランク）を突き合わせた比較表の行 */
@@ -169,6 +182,54 @@ function SpecTable({ a, b }: { a: string; b: string }) {
   );
 }
 
+/** Pixel どうしの比較: 販売開始とアップデート保証（Google 公式の年数と販売開始の年月から。lib/pixelCatalog.ts） */
+function PixelUpdateTable({ a, b }: { a: string; b: string }) {
+  const ia = PIXEL_INFO[a];
+  const ib = PIXEL_INFO[b];
+  if (!ia || !ib) return null;
+  const now = new Date().toISOString().slice(0, 7);
+  const left = (m: string) => { const y = updateYearsLeft(m, now) ?? 0; return y > 0 ? `約${y}年` : "終了"; };
+  const rows = [
+    { label: "販売開始", va: jaMonth(ia.available), vb: jaMonth(ib.available) },
+    { label: "保証の年数", va: `${ia.updateYears}年`, vb: `${ib.updateYears}年` },
+    { label: "保証の終わり", va: jaMonth(updateUntil(a)!), vb: jaMonth(updateUntil(b)!) },
+    { label: "保証の残り", va: left(a), vb: left(b) },
+  ];
+  return (
+    <section className="bg-white rounded-3xl border border-slate-200 overflow-hidden mb-10">
+      <h2 className="px-5 py-4 text-base font-bold text-slate-800 bg-slate-50 border-b border-slate-100">アップデート保証の違い</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-xs text-slate-500">
+              <th className="text-left font-semibold pl-4 pr-2 sm:px-5 py-2"></th>
+              <th className="text-left font-semibold px-2 sm:px-5 py-2">{a}</th>
+              <th className="text-left font-semibold pl-2 pr-4 sm:px-5 py-2">{b}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => {
+              const diff = r.va !== r.vb ? "font-bold text-slate-900" : "text-slate-500";
+              return (
+                <tr key={r.label} className="border-t border-slate-100">
+                  <td className="pl-4 pr-2 sm:px-5 py-2.5 font-bold text-slate-400 whitespace-nowrap">{r.label}</td>
+                  <td className={`px-2 sm:px-5 py-2.5 ${diff}`}>{r.va}</td>
+                  <td className={`pl-2 pr-4 sm:px-5 py-2.5 ${diff}`}>{r.vb}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400 leading-relaxed">
+        販売開始は米国 Google ストアの年月、保証の終わりはそれに保証の年数を足したものです。出典: Google「
+        <a href="https://support.google.com/pixelphone/answer/4457705" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">Pixel のアップデート保証期間</a>」「
+        <a href="https://support.google.com/pixelphone/answer/15738422" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">デバイスが利用可能になった時期</a>」
+      </p>
+    </section>
+  );
+}
+
 export default async function ComparePage({ params }: Props) {
   const { slug } = await params;
   const pair = slugToPair(slug);
@@ -214,7 +275,7 @@ export default async function ComparePage({ params }: Props) {
         <h1 className="text-2xl md:text-4xl font-extrabold text-slate-900 mb-3">
           {a} と {b}<br className="md:hidden" /> 中古はどっちがお得？
         </h1>
-        <p className="text-slate-600 mb-4 leading-relaxed">{verdict(a, b, sa, sb)}</p>
+        <p className="text-slate-600 mb-4 leading-relaxed">{verdict(a, b, sa, sb)}{pixelNote(a, b)}</p>
         <AdDisclosure compact />
 
         {/* 2モデルのサマリーを横に並べる */}
@@ -249,6 +310,7 @@ export default async function ComparePage({ params }: Props) {
         <p className="text-xs text-slate-400 mb-10">差額は「{b} − {a}」の最安値の差です。</p>
 
         <SpecTable a={a} b={b} />
+        <PixelUpdateTable a={a} b={b} />
 
         {/* それぞれの最安の在庫 */}
         {models.map(({ name, stats }) => stats.cheapest.length > 0 && (

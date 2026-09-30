@@ -5,7 +5,8 @@ import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { getModelMarket } from "@/lib/marketStats";
 import { modelPagePath } from "@/lib/catalog";
-import { PIXEL_CATALOG, PIXEL_INFO, PIXEL_MODELS, jaMonth, updateUntil } from "@/lib/pixelCatalog";
+import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
+import { PIXEL_CATALOG, PIXEL_INFO, PIXEL_MODELS, isPixel, jaMonth, updateUntil } from "@/lib/pixelCatalog";
 import { SITE_NAME } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { PIXEL_SHOPS, shopLabels } from "@/lib/shops";
@@ -70,6 +71,19 @@ export default async function PixelIndexPage() {
               <Link key={max} href={budgetPath(max, "pixel")}
                 className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
                 {budgetLabel(max)}以下
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* Pixel の比較ページ */}
+        <section className="my-6">
+          <h2 className="text-lg font-bold mb-3">よく比較される Pixel</h2>
+          <div className="flex flex-wrap gap-2">
+            {COMPARE_PAIRS.filter(([a]) => isPixel(a)).map(([a, b]) => (
+              <Link key={comparePath(a, b)} href={comparePath(a, b)}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                {a} <span className="text-slate-400 font-medium">vs</span> {b}
               </Link>
             ))}
           </div>
