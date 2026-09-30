@@ -47,7 +47,7 @@ export const SHOPS: Shop[] = [
   { name: "ダイワンテレコム", label: "ダイワンテレコム", galaxy: true, pixel: true, ipad: false, battery: "over80",
     warranty: "1年間の全額返金（不具合時）", redRom: "無期限で同等品と交換", guaranteeUrl: "https://www.dai-one.jp/guide/warranty/" },
   { name: "エムモバ", label: "エムモバ", ipad: false, battery: "none",
-    warranty: "1ヶ月（レビュー投稿で1年の延長保証）", redRom: "保証期間に関わらず交換・返金", guaranteeUrl: "https://ec.emcom.site/pages/guarantee" },
+    warranty: "1ヶ月（レビュー投稿で1年に延長。延長分は代金の30%返金）", redRom: "保証期間に関わらず交換・返金", guaranteeUrl: "https://ec.emcom.site/pages/guarantee" },
 ];
 
 export const IPAD_SHOPS = SHOPS.filter((s) => s.ipad);

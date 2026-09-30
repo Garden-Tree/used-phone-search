@@ -64,8 +64,8 @@ export const IPAD_SPECS: Record<string, IphoneSpec> = {
 
 /**
  * iPadOS 27 に対応している機種（2026-09-29 確認）。
- * 出典: Apple「iPadOS 27 に対応している iPad のモデル」https://support.apple.com/en-gb/guide/ipad/ipad213a25b2/ipados
- * （日本語版はまだ iPadOS 26 までだったので英語版。カナダ版でも同じ一覧）
+ * 出典: Apple「iPadOS 27 に対応している iPad のモデル」https://support.apple.com/ja-jp/guide/ipad/ipad213a25b2/ipados
+ * （9/29 は日本語版がまだ iPadOS 26 までだったので英語版で確認。10/1 に日本語版ができ、同じ23機種）
  */
 export const IPADOS27_MODELS = new Set([
   "iPad Pro 13インチ (M5)", "iPad Pro 11インチ (M5)", "iPad Pro 13インチ (M4)", "iPad Pro 11インチ (M4)",
