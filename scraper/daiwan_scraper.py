@@ -3,7 +3,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
-from common import PIXEL_ONLY_STORAGE, canonical_galaxy_model, canonical_pixel_model, run_scraper
+from common import PIXEL_ONLY_STORAGE, canonical_galaxy_model, canonical_pixel_model, galaxy_storage_from_code, run_scraper
 
 def get_detail_info(url, headers, session):
     try:
@@ -167,8 +167,13 @@ def parse_daiwan_item(item, headers):
         if not storage:
             return None  # 容量が読めない Pixel は表で「0GB」になるので入れない
     elif 'Galaxy' in raw_name:
-        # 例: Galaxy S25 Ultra SC-52F 256GB チタニウムシルバーブルー docomo版SIMフリー（容量なしは入れない）
+        # 例: Galaxy S25 Ultra SC-52F 256GB チタニウムシルバーブルー docomo版SIMフリー（容量なし → 型番から。わからなければ入れない）
         model_name = canonical_galaxy_model(raw_name)
+        if not storage:
+            storage = galaxy_storage_from_code(raw_name)
+            m_color = re.search(r'\b(?:SC-?\d{2}[A-Z]|SCG\d{2}|SM-[A-Z]\d{3}[A-Z])\s+(\S+)', raw_name)
+            if m_color and 'SIM' not in m_color.group(1) and '版' not in m_color.group(1):
+                color = m_color.group(1)
         if not model_name or not storage:
             return None
         manufacturer = 'Samsung'

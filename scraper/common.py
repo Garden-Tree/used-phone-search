@@ -110,6 +110,31 @@ _GALAXY_RE = re.compile(
 )
 
 
+# 容量が1種類しかない型番（キャリア版など）。商品名に容量が書かれないとき（イオシス・ダイワン）はこれで補う。
+# 2026-09-30 に各社の公式ページで確認（docomo・au・SoftBank・Y!mobile・楽天モバイル・Samsung Japan の仕様ページ）。
+# 型番が書かれていない・ここにない型番で容量もないものは入れない
+GALAXY_CODE_STORAGE = {
+    "SC-53F": 64, "SCG33": 64, "SM-A253C": 64, "SM-A253Z": 64,  # Galaxy A25 5G（docomo・au・楽天モバイル・Y!mobile/SoftBank）
+    "SC-53E": 128,  # Galaxy A55 5G（docomo）
+    "SC-54G": 128, "SM-A576Q": 128,  # Galaxy A57 5G（docomo・SIM フリー）
+    "SCG18": 64,  # Galaxy A23 5G（au）
+    "SCG30": 128,  # Galaxy S24 FE（au）
+    "SM-S931Z": 256,  # Galaxy S25（SoftBank）
+    "SC-54C": 128,  # Galaxy Z Flip4（docomo）
+    "SM-F766Z": 256,  # Galaxy Z Flip7（SoftBank）
+    "SC-55C": 256, "SCG16": 256,  # Galaxy Z Fold4（docomo・au）
+}
+
+
+def galaxy_storage_from_code(raw_name: str) -> int:
+    """商品名の型番（SC-53F・SCG33・SM-A253Z など）から容量を引く。わからなければ 0"""
+    for code in re.findall(r"\b(SC-?\d{2}[A-Z]|SCG\d{2}|SM-[A-Z]\d{3}[A-Z])", raw_name):
+        code = code if code.startswith(("SCG", "SM-")) or "-" in code else code[:2] + "-" + code[2:]
+        if code in GALAXY_CODE_STORAGE:
+            return GALAXY_CODE_STORAGE[code]
+    return 0
+
+
 def canonical_galaxy_model(raw_name: str):
     """商品名から Galaxy の機種名を返す。カタログにない機種（2021年以前など）・読み取れないものは None"""
     m = _GALAXY_RE.search(raw_name)

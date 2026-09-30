@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 from bs4 import BeautifulSoup
 
-from common import WIFI_MODEL, PIXEL_ONLY_STORAGE, canonical_galaxy_model, canonical_pixel_model, run_scraper, is_iphone_13_or_later
+from common import WIFI_MODEL, PIXEL_ONLY_STORAGE, canonical_galaxy_model, canonical_pixel_model, galaxy_storage_from_code, run_scraper, is_iphone_13_or_later
 
 SHOP_NAME = "イオシス"
 HEADERS = {
@@ -196,14 +196,20 @@ def parse_pixel(li) -> dict | None:
 
 def parse_galaxy(li) -> dict | None:
     # 例: Galaxy S25 Ultra SM-S938Q 256GB チタニウムシルバーブルー 【国内版SIMフリー】
-    #     Galaxy A25 5G SC-53F ライトブルー 【docomo版SIMフリー】（容量が書かれないものは入れない）
+    #     Galaxy A25 5G SC-53F ライトブルー 【docomo版SIMフリー】（容量なし → 型番から。わからなければ入れない）
     raw_name = parse_name(li)
     model_name = canonical_galaxy_model(raw_name)
     if not model_name:
         return None
     item = base_item(li, raw_name, "/items/smartphone/")
     if not item["storage"]:
-        return None  # 容量が読めないと表で「0GB」になる
+        item["storage"] = galaxy_storage_from_code(raw_name)
+        if not item["storage"]:
+            return None  # 容量が読めないと表で「0GB」になる
+        # 容量がないと色は型番の後ろ（Galaxy A25 5G SC-53F ライトブルー 【…】）
+        m_color = re.search(r"\b(?:SC-?\d{2}[A-Z]|SCG\d{2}|SM-[A-Z]\d{3}[A-Z])\s+([^\s【]+)", raw_name)
+        if m_color:
+            item["color"] = m_color.group(1)
     carrier = parse_carrier(raw_name)
     domestic = carrier == "Apple"  # parse_carrier は「国内版」を "Apple" で返す（iPhone 向け）
     item.update({
