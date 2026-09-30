@@ -7,7 +7,7 @@ import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { IPADOS27_MODELS, IPAD_SPECS } from "@/lib/ipadSpecs";
 import type { BudgetDevice } from "@/lib/budgets";
 import { PIXEL_INFO, PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
-import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
+import { GALAXY_MODELS, GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 
 /** 予算別ページ（lib/budgets.ts）の集計 */
 
@@ -54,13 +54,14 @@ export async function minPriceByModel(where: Prisma.DeviceInventoryWhereInput, m
 // iPad は発売年の新しい順（同じ年はカタログの順＝Pro・Air・mini・無印）。発売年は Apple 公式で確かめた値（lib/ipadSpecs.ts）
 const releasedYear = (model: string) => Number(IPAD_SPECS[model]?.released.replace("年", "") ?? 0);
 const IPAD_BY_RELEASE = [...IPAD_MODELS].sort((a, b) => releasedYear(b) - releasedYear(a));
+// Galaxy は日本での発売年月の新しい順（lib/galaxyCatalog.ts。Samsung・各キャリアの発表）
+const GALAXY_BY_RELEASE = [...GALAXY_MODELS].sort((a, b) => GALAXY_RELEASED[b].localeCompare(GALAXY_RELEASED[a]));
 // Pixel は販売開始の年月の新しい順（lib/pixelCatalog.ts。Google 公式）
 const PIXEL_BY_RELEASE = [...PIXEL_MODELS].sort((a, b) => PIXEL_INFO[b].available.localeCompare(PIXEL_INFO[a].available));
 
 /** 予算内の在庫を機種ごとに集計する（機種は新しい順） */
 export async function getBudgetModels(max: number, device: BudgetDevice = "iphone"): Promise<BudgetModelRow[]> {
-  // Galaxy は発売年月を公式で確かめていないので、カタログの順（シリーズごとに新しい順）
-  const models = device === "ipad" ? IPAD_BY_RELEASE : device === "pixel" ? PIXEL_BY_RELEASE : device === "galaxy" ? GALAXY_MODELS : ALL_PAGE_MODELS;
+  const models = device === "ipad" ? IPAD_BY_RELEASE : device === "pixel" ? PIXEL_BY_RELEASE : device === "galaxy" ? GALAXY_BY_RELEASE : ALL_PAGE_MODELS;
   const now = new Date().toISOString().slice(0, 7);
   const isSupported = (m: string) =>
     device === "ipad" ? IPADOS27_MODELS.has(m)

@@ -12,7 +12,7 @@ import { matchesModel } from "@/lib/deviceSearch";
 import { SHOPS } from "@/lib/shops";
 import { PICKS } from "@/lib/picks";
 import { PIXEL_INFO, PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
-import { GALAXY_MODELS, canonicalGalaxyModel } from "@/lib/galaxyCatalog";
+import { GALAXY_MODELS, GALAXY_RELEASED, canonicalGalaxyModel } from "@/lib/galaxyCatalog";
 import { ALL_DEVICE_PAGE_MODELS } from "@/lib/catalog";
 const u = "https://item.rakuten.co.jp/x/1/";
 // [shopCode, 商品名, rank, car, batt]（rank・car・batt は fetch.php が商品説明から抜き出す値）
@@ -160,6 +160,7 @@ const pyGalaxy = new Set([...pyGalaxyBlock.matchAll(/"([^"]+)"/g)].map((m) => m[
 for (const model of GALAXY_MODELS) {
   if (!pyGalaxy.has(model)) { failures++; console.log(`Galaxy: scraper/common.py の GALAXY_MODELS に「${model}」がない`); }
   if (canonicalGalaxyModel(model) !== model) { failures++; console.log(`Galaxy: canonicalGalaxyModel("${model}") → ${canonicalGalaxyModel(model)}`); }
+  if (!GALAXY_RELEASED[model]) { failures++; console.log(`Galaxy: GALAXY_RELEASED に「${model}」がない`); }
 }
 for (const model of pyGalaxy) {
   if (!GALAXY_MODELS.includes(model)) { failures++; console.log(`Galaxy: lib/galaxyCatalog.ts に「${model}」がない（scraper/common.py にはある）`); }

@@ -23,6 +23,7 @@ import { getBatteryRows, getModelStats, getStorageRankMatrix, type PriceRow, typ
 import { SPEC_ROWS, specOf, specUrl } from "@/lib/iphoneSpecs";
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
+import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
@@ -272,7 +273,7 @@ export default async function ModelPage({ params }: Props) {
             : isIpad(model)
               ? (IPADOS27_MODELS.has(model) ? "iPadOS 27 に対応しています。" : "iPadOS 27 には対応していません。")
               : deviceOf(model) === "galaxy"
-                ? null
+                ? (GALAXY_RELEASED[model] ? `日本では${jaMonth(GALAXY_RELEASED[model])}に発売されました。` : null)
                 : (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
         </p>
 

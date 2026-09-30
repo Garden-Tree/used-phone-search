@@ -11,6 +11,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { GALAXY_SHOPS, IPAD_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
 import { jaMonth, updateUntil } from "@/lib/pixelCatalog";
+import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 
 /**
  * 予算別ページの中身（iPhone: app/budget/[slug]、iPad・Pixel・Galaxy: app/<種類>/budget/[slug]）。
@@ -65,10 +66,10 @@ const TEXT: Record<BudgetDevice, DeviceText> = {
     hub: { path: "/galaxy", name: "中古Galaxy", cta: "中古Galaxyの相場を機種別に見る", ctaNote: "機種ごとに相場（中央値）・最安値・在庫数を比較できます" },
     // 2022年以降の機種だけ載せている（Samsung は機種ごとの保証期間を出していないので、対応・非対応は分けない）
     supportedLead: "",
-    supportedNote: "2022年以降の機種（シリーズ順）。機種名から容量別・状態別の価格まとめへ",
+    supportedNote: "2022年以降の機種（日本での発売が新しい順）。機種名から容量別・状態別の価格まとめへ",
     legacyTitle: "",
     legacyNote: "",
-    byRelease: false,
+    subOf: (model) => (GALAXY_RELEASED[model] ? `${jaMonth(GALAXY_RELEASED[model])}発売` : undefined),
   },
 };
 

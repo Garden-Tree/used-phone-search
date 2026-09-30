@@ -6,6 +6,23 @@
  * スクレイパー（scraper/common.py の GALAXY_MODELS）と同じ一覧にする（npm run test:normalize で確かめる）。
  * Pixel と違い、Samsung は日本向けにアップデートの保証期間を機種ごとに出していないので、保証の期限は載せない
  */
+
+/**
+ * 日本での発売年月（キャリア・SIM フリーのうちいちばん早い日）。2026-09-30 に公式の発表で確認:
+ * Samsung Newsroom 日本（news.samsung.com/jp）・docomo／KDDI／UQ／SoftBank の報道発表。
+ * 出典の URL は ideas/2026-09-30.md。予算別ページの並び（新しい順）と機種ページ・一覧の「○年○月発売」に使う
+ */
+export const GALAXY_RELEASED: Record<string, string> = {
+  "Galaxy S26 Ultra": "2026-03", "Galaxy S26+": "2026-03", "Galaxy S26": "2026-03",
+  "Galaxy S25 Ultra": "2025-02", "Galaxy S25": "2025-02",
+  "Galaxy S24 Ultra": "2024-04", "Galaxy S24": "2024-04", "Galaxy S24 FE": "2024-12",
+  "Galaxy S23 Ultra": "2023-04", "Galaxy S23": "2023-04", "Galaxy S22 Ultra": "2022-04", "Galaxy S22": "2022-04",
+  "Galaxy Z Fold8 Ultra": "2026-08", "Galaxy Z Fold8": "2026-08", "Galaxy Z Fold7": "2025-08", "Galaxy Z Fold6": "2024-07",
+  "Galaxy Z Fold5": "2023-09", "Galaxy Z Fold4": "2022-09",
+  "Galaxy Z Flip8": "2026-08", "Galaxy Z Flip7": "2025-08", "Galaxy Z Flip6": "2024-07", "Galaxy Z Flip5": "2023-09", "Galaxy Z Flip4": "2022-09",
+  "Galaxy A57 5G": "2026-04", "Galaxy A55 5G": "2024-05", "Galaxy A54 5G": "2023-05", "Galaxy A53 5G": "2022-05",
+  "Galaxy A25 5G": "2025-02", "Galaxy A23 5G": "2022-10",
+};
 export const GALAXY_CATALOG = [
   { series: "Galaxy S26", models: ["Galaxy S26 Ultra", "Galaxy S26+", "Galaxy S26"] },
   { series: "Galaxy S25", models: ["Galaxy S25 Ultra", "Galaxy S25"] },
