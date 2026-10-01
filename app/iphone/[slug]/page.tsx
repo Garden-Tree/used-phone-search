@@ -20,7 +20,7 @@ import {
   slugToModel,
 } from "@/lib/catalog";
 import { getBatteryRows, getModelStats, getStorageRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
-import { SPEC_ROWS, specOf, specUrl } from "@/lib/iphoneSpecs";
+import { SPEC_ROWS, displayText, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
@@ -261,7 +261,7 @@ export default async function ModelPage({ params }: Props) {
         {/* 紹介文（発売・スペックと、いまの中古相場） */}
         <p className="mt-5 text-slate-700 leading-relaxed">
           {spec && (
-            <>{model}は{spec.released}発売（{spec.chip}・{spec.display}インチ{spec.panel}・{spec.port}）。</>
+            <>{model}は{spec.released}発売（{spec.chip}・{displayText(spec).replace(" ", "")}・{spec.port}）。</>
           )}
           {stats.minPrice !== null && stats.medianPrice !== null && (
             <>中古の最安値は<strong>{yen(stats.minPrice)}</strong>、相場（在庫の中央値）は<strong>{yen(stats.medianPrice)}</strong>で、{stats.shopCount}ショップに{stats.count.toLocaleString()}件の在庫があります。</>
@@ -356,7 +356,7 @@ export default async function ModelPage({ params }: Props) {
               ))}
             </dl>
             <p className="mt-3 text-xs text-slate-400">
-              出典: <a href={specUrl(spec)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">Apple「{model} - 技術仕様」</a>
+              出典: <a href={specUrl(spec)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{specSourceName(spec, model)}</a>
             </p>
           </section>
         )}

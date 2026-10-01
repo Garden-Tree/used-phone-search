@@ -12,6 +12,7 @@ import { matchesModel } from "@/lib/deviceSearch";
 import { SHOPS } from "@/lib/shops";
 import { PICKS } from "@/lib/picks";
 import { PIXEL_INFO, PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
+import { PIXEL_SPECS } from "@/lib/pixelSpecs";
 import { GALAXY_MODELS, GALAXY_RELEASED, canonicalGalaxyModel } from "@/lib/galaxyCatalog";
 import { ALL_DEVICE_PAGE_MODELS } from "@/lib/catalog";
 const u = "https://item.rakuten.co.jp/x/1/";
@@ -147,6 +148,7 @@ const pyBlock = readFileSync("scraper/common.py", "utf-8").match(/PIXEL_MODELS =
 const pyPixel = new Set([...pyBlock.matchAll(/"([^"]+)"/g)].map((m) => m[1]));
 for (const model of PIXEL_MODELS) {
   if (!pyPixel.has(model)) { failures++; console.log(`Pixel: scraper/common.py の PIXEL_MODELS に「${model}」がない`); }
+  if (!PIXEL_SPECS[model]) { failures++; console.log(`Pixel: lib/pixelSpecs.ts に「${model}」のスペックがない`); }
   if (!PIXEL_INFO[model]) { failures++; console.log(`Pixel: PIXEL_INFO に「${model}」がない`); }
 }
 for (const model of pyPixel) {

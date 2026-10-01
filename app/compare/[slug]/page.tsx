@@ -11,7 +11,7 @@ import { getModelStats, type ModelStats, type PriceRow } from "@/lib/modelStats"
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
 import { shopsFor } from "@/lib/shops";
-import { SPEC_ROWS, specOf, specUrl } from "@/lib/iphoneSpecs";
+import { SPEC_ROWS, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 
@@ -193,9 +193,15 @@ function SpecTable({ a, b }: { a: string; b: string }) {
         </table>
       </div>
       <p className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">
-        出典: Apple の技術仕様（
-        <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{a}</a>・
-        <a href={specUrl(sb)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{b}</a>）
+        {sa.source && specUrl(sa) === specUrl(sb) ? (
+          <>出典: <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{specSourceName(sa, a)}</a></>
+        ) : (
+          <>
+            出典: Apple の技術仕様（
+            <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{a}</a>・
+            <a href={specUrl(sb)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{b}</a>）
+          </>
+        )}
       </p>
     </section>
   );

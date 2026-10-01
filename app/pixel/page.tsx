@@ -7,6 +7,7 @@ import { getModelMarket } from "@/lib/marketStats";
 import { modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { PIXEL_CATALOG, PIXEL_INFO, PIXEL_MODELS, isPixel, jaMonth, updateUntil } from "@/lib/pixelCatalog";
+import { PIXEL_SPECS } from "@/lib/pixelSpecs";
 import { SITE_NAME } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { PIXEL_SHOPS, shopLabels } from "@/lib/shops";
@@ -106,7 +107,7 @@ export default async function PixelIndexPage() {
                     <span className="min-w-0">
                       <span className="block font-bold text-slate-800">{model} <span className="text-slate-300">›</span></span>
                       {info && until && (
-                        <span className="block text-[11px] text-slate-400">{`${jaMonth(info.available)}発売・保証 ${jaMonth(until)}まで`}</span>
+                        <span className="block text-[11px] text-slate-400">{`${jaMonth(info.available)}発売・${PIXEL_SPECS[model]?.chip.replace("Google ", "") ?? ""}・保証 ${jaMonth(until)}まで`.replace("・・", "・")}</span>
                       )}
                     </span>
                     <span className="text-right">

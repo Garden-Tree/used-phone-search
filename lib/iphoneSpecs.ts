@@ -7,25 +7,30 @@
  * 機種を足すときは、上の2ページで確かめてから specId と一緒に足す。載っていない機種はページ側で表示を省く
  */
 import { IPAD_SPECS } from "@/lib/ipadSpecs";
+import { PIXEL_SPECS } from "@/lib/pixelSpecs";
 
 export type IphoneSpec = {
-  /** 発売年（Apple の「モデルを識別する」の発売年）。"2021年" */
+  /** 発売年（Apple の「モデルを識別する」の発売年）。"2021年"。Pixel は販売開始の年月（"2024年8月"） */
   released: string;
   chip: string;
-  /** 画面サイズ（インチ） */
+  /** 画面サイズ（インチ）。折りたたみは外側 */
   display: number;
+  /** 折りたたみの内側の画面（インチ）。Pixel Fold 系 */
+  displayInner?: number;
   /**
    * 画面の種類（Super Retina / XDR・OLED ＝ 有機EL、Liquid Retina・Retina HD ＝ 液晶）。
    * iPad Pro の Liquid Retina XDR（12.9インチ 第5/6世代）はミニLEDバックライトの液晶
    */
   panel: "有機EL" | "液晶" | "ミニLED液晶";
   port: "Lightning" | "USB-C" | "Thunderbolt / USB 4";
-  /** iPad は Touch ID の位置（ホームボタン／トップボタン）まで書く */
-  auth: "Face ID" | "Touch ID" | "Touch ID（ホームボタン）" | "Touch ID（トップボタン）";
+  /** iPad は Touch ID の位置（ホームボタン／トップボタン）まで書く。Pixel は「指紋（画面内）・顔認証」など（lib/pixelSpecs.ts） */
+  auth: "Face ID" | "Touch ID" | "Touch ID（ホームボタン）" | "Touch ID（トップボタン）" | (string & {});
   /** Apple の技術仕様ページの番号 */
   specId: string;
-  /** 番号でなく古い形式（support.apple.com/kb/SPxxx）のページのとき、その URL */
+  /** 番号でなく古い形式（support.apple.com/kb/SPxxx）のページや、Apple 以外の出典のとき、その URL */
   url?: string;
+  /** Apple 以外の出典の名前（例: Google「Pixel スマートフォンのハードウェア技術仕様」）。無ければ Apple の技術仕様 */
+  source?: string;
 };
 
 const s = (
@@ -77,8 +82,15 @@ export const IPHONE_SPECS: Record<string, IphoneSpec> = {
   "iPhone 7 Plus": s("2016年", "A10 Fusion", 5.5, "液晶", "Lightning", "Touch ID", "111953"),
 };
 
-/** iPhone と iPad（`lib/ipadSpecs.ts`）のスペック。載っていない機種は undefined */
-export const specOf = (model: string): IphoneSpec | undefined => IPHONE_SPECS[model] ?? IPAD_SPECS[model];
+/** iPhone・iPad（`lib/ipadSpecs.ts`）・Pixel（`lib/pixelSpecs.ts`）のスペック。載っていない機種は undefined */
+export const specOf = (model: string): IphoneSpec | undefined => IPHONE_SPECS[model] ?? IPAD_SPECS[model] ?? PIXEL_SPECS[model];
+
+/** 画面の表記（折りたたみは外側・内側） */
+export const displayText = (s: IphoneSpec) =>
+  s.displayInner ? `外側${s.display}インチ・内側${s.displayInner}インチ ${s.panel}` : `${s.display}インチ ${s.panel}`;
+
+/** 出典の名前（リンクの文言） */
+export const specSourceName = (s: IphoneSpec, model: string) => s.source ?? `Apple「${model} - 技術仕様」`;
 
 /** Apple の技術仕様ページ（出典） */
 export const specUrl = (spec: IphoneSpec) => spec.url ?? `https://support.apple.com/ja-jp/${spec.specId}`;
@@ -87,7 +99,7 @@ export const specUrl = (spec: IphoneSpec) => spec.url ?? `https://support.apple.
 export const SPEC_ROWS: { label: string; value: (s: IphoneSpec) => string }[] = [
   { label: "発売", value: (s) => s.released },
   { label: "チップ", value: (s) => s.chip },
-  { label: "画面", value: (s) => `${s.display}インチ ${s.panel}` },
+  { label: "画面", value: displayText },
   { label: "充電端子", value: (s) => s.port },
   { label: "生体認証", value: (s) => s.auth },
 ];
