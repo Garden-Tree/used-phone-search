@@ -45,7 +45,6 @@
 ## 次にやる（順序）
 
 ```
-ユーザー サーバーの rakuten-sync/sample.json 削除
 ユーザー ブログにリンク（iPad: blog-links-2026-09-30・Pixel/Galaxy: blog-links-2026-10-01。1922 は 10/5〜）
 10/2〜  GSC のリクエストを毎日10件（Pixel・Galaxy の機種ページ）
 ```
