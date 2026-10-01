@@ -8,7 +8,7 @@ import { isIpad, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
 import { specOf } from "@/lib/iphoneSpecs";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { IPAD_SHOPS, shopLabels } from "@/lib/shops";
 import { IPAD_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
@@ -34,8 +34,18 @@ export default async function IpadIndexPage() {
   const stats = await getModelMarket(IPAD_MODELS);
   const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "中古iPadの相場一覧", item: `${SITE_URL}/ipad` },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader label="iPad" />
 
       <main className="max-w-6xl mx-auto px-4 py-6">

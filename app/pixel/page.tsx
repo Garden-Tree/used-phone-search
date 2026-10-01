@@ -8,7 +8,7 @@ import { modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { PIXEL_CATALOG, PIXEL_INFO, PIXEL_MODELS, isPixel, jaMonth, updateUntil } from "@/lib/pixelCatalog";
 import { PIXEL_SPECS } from "@/lib/pixelSpecs";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { PIXEL_SHOPS, shopLabels } from "@/lib/shops";
 import { PIXEL_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
@@ -33,8 +33,18 @@ export default async function PixelIndexPage() {
   const stats = await getModelMarket(PIXEL_MODELS);
   const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "中古Google Pixelの相場一覧", item: `${SITE_URL}/pixel` },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader label="Google Pixel" />
 
       <main className="max-w-6xl mx-auto px-4 py-6">

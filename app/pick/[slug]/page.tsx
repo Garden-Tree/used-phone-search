@@ -9,7 +9,7 @@ import { badgesOf, modelPagePath } from "@/lib/catalog";
 import { getModelStats } from "@/lib/modelStats";
 import { PICKS, findPick, pickDevice, pickPath, pickSearchHref } from "@/lib/picks";
 import { jaMonth, updateUntil } from "@/lib/pixelCatalog";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
 
 // 静的に生成して CDN から配信する（検索ページと違い、休止明けでも待たされない）。在庫は1時間ごとに更新
@@ -52,8 +52,25 @@ export default async function PickPage({ params }: Props) {
     .sort((a, b) => a.price - b.price)
     .slice(0, 9);
 
+  // パンくず（画面のパンくずと同じ並び。iPhone の目的別はトップの直下。名前は一覧ページの構造化データと揃える）
+  const hub = pick.ipad ? { name: "中古iPadの相場一覧", path: "/ipad" }
+    : pick.pixel ? { name: "中古Google Pixelの相場一覧", path: "/pixel" }
+    : pick.galaxy ? { name: "中古Galaxyの相場一覧", path: "/galaxy" }
+    : null;
+  const crumbs = [
+    { name: SITE_NAME, item: SITE_URL },
+    ...(hub ? [{ name: hub.name, item: `${SITE_URL}${hub.path}` }] : []),
+    { name: pick.title, item: `${SITE_URL}${pickPath(pick.slug)}` },
+  ];
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((c, i) => ({ "@type": "ListItem", position: i + 1, ...c })),
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader label="目的・予算から探す" />
 
       <main className="max-w-6xl mx-auto px-4 py-6">

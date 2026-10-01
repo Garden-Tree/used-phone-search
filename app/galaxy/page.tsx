@@ -11,7 +11,7 @@ import { GALAXY_PICKS, pickPath } from "@/lib/picks";
 import { GALAXY_CATALOG, GALAXY_MODELS, GALAXY_RELEASED, isGalaxy } from "@/lib/galaxyCatalog";
 import { jaMonth } from "@/lib/pixelCatalog";
 import { GALAXY_SPECS } from "@/lib/galaxySpecs";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { GALAXY_SHOPS, shopLabels } from "@/lib/shops";
 
@@ -34,8 +34,18 @@ export default async function GalaxyIndexPage() {
   const stats = await getModelMarket(GALAXY_MODELS);
   const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "中古Galaxyの相場一覧", item: `${SITE_URL}/galaxy` },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader label="Galaxy" />
 
       <main className="max-w-6xl mx-auto px-4 py-6">
