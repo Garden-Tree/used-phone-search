@@ -357,6 +357,7 @@ export default async function ModelPage({ params }: Props) {
             </dl>
             <p className="mt-3 text-xs text-slate-400">
               出典: <a href={specUrl(spec)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{specSourceName(spec, model)}</a>
+              {spec.extraSource && <>・<a href={spec.extraSource.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{spec.extraSource.name}</a></>}
             </p>
           </section>
         )}

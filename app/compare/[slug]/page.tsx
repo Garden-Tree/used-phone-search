@@ -195,6 +195,12 @@ function SpecTable({ a, b }: { a: string; b: string }) {
       <p className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">
         {sa.source && specUrl(sa) === specUrl(sb) ? (
           <>出典: <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{specSourceName(sa, a)}</a></>
+        ) : sa.source || sb.source ? (
+          // 機種ごとに出典のページが違う（Galaxy はドコモの機種ごとの仕様ページ）
+          <>
+            出典: <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{specSourceName(sa, a)}</a>・<a href={specUrl(sb)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{specSourceName(sb, b)}</a>
+            {sa.extraSource && <>・<a href={sa.extraSource.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{sa.extraSource.name}</a></>}
+          </>
         ) : (
           <>
             出典: Apple の技術仕様（

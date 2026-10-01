@@ -8,6 +8,7 @@
  */
 import { IPAD_SPECS } from "@/lib/ipadSpecs";
 import { PIXEL_SPECS } from "@/lib/pixelSpecs";
+import { GALAXY_SPECS } from "@/lib/galaxySpecs";
 
 export type IphoneSpec = {
   /** 発売年（Apple の「モデルを識別する」の発売年）。"2021年"。Pixel は販売開始の年月（"2024年8月"） */
@@ -31,6 +32,8 @@ export type IphoneSpec = {
   url?: string;
   /** Apple 以外の出典の名前（例: Google「Pixel スマートフォンのハードウェア技術仕様」）。無ければ Apple の技術仕様 */
   source?: string;
+  /** 一部の項目だけ別のページで確かめたときの、その出典（Galaxy の生体認証） */
+  extraSource?: { name: string; url: string };
 };
 
 const s = (
@@ -82,8 +85,9 @@ export const IPHONE_SPECS: Record<string, IphoneSpec> = {
   "iPhone 7 Plus": s("2016年", "A10 Fusion", 5.5, "液晶", "Lightning", "Touch ID", "111953"),
 };
 
-/** iPhone・iPad（`lib/ipadSpecs.ts`）・Pixel（`lib/pixelSpecs.ts`）のスペック。載っていない機種は undefined */
-export const specOf = (model: string): IphoneSpec | undefined => IPHONE_SPECS[model] ?? IPAD_SPECS[model] ?? PIXEL_SPECS[model];
+/** iPhone・iPad（`lib/ipadSpecs.ts`）・Pixel（`lib/pixelSpecs.ts`）・Galaxy（`lib/galaxySpecs.ts`）のスペック。載っていない機種は undefined */
+export const specOf = (model: string): IphoneSpec | undefined =>
+  IPHONE_SPECS[model] ?? IPAD_SPECS[model] ?? PIXEL_SPECS[model] ?? GALAXY_SPECS[model];
 
 /** 画面の表記（折りたたみは外側・内側） */
 export const displayText = (s: IphoneSpec) =>

@@ -10,6 +10,7 @@ import { GALAXY_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import { GALAXY_PICKS, pickPath } from "@/lib/picks";
 import { GALAXY_CATALOG, GALAXY_MODELS, GALAXY_RELEASED, isGalaxy } from "@/lib/galaxyCatalog";
 import { jaMonth } from "@/lib/pixelCatalog";
+import { GALAXY_SPECS } from "@/lib/galaxySpecs";
 import { SITE_NAME } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { GALAXY_SHOPS, shopLabels } from "@/lib/shops";
@@ -96,7 +97,7 @@ export default async function GalaxyIndexPage() {
                   >
                     <span className="min-w-0">
                       <span className="block font-bold text-slate-800">{model} <span className="text-slate-300">›</span></span>
-                      {GALAXY_RELEASED[model] && <span className="block text-[11px] text-slate-400">{jaMonth(GALAXY_RELEASED[model])}発売（日本）</span>}
+                      {GALAXY_RELEASED[model] && <span className="block text-[11px] text-slate-400">{jaMonth(GALAXY_RELEASED[model])}発売（日本）{GALAXY_SPECS[model] && `・${GALAXY_SPECS[model].chip.replace(" for Galaxy", "")}`}</span>}
                     </span>
                     <span className="text-right">
                       {s && <><span className="block text-[10px] text-slate-400">相場</span><span className="font-black text-slate-800">{yen(s.medianPrice)}</span></>}
