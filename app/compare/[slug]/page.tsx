@@ -15,8 +15,8 @@ import { SPEC_ROWS, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 
-// モデル別ページと同じく1時間ごとに再生成
-export const revalidate = 3600;
+// モデル別ページと同じく3時間ごとに再生成
+export const revalidate = 10800; // 3時間（Neon の計算時間を減らすため。2026-10-02）
 export const dynamicParams = false;
 
 export function generateStaticParams() {

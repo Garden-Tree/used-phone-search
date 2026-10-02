@@ -5,9 +5,9 @@ import { getModelMarket } from "@/lib/marketStats";
 import { notoSansJp } from "@/lib/ogFont";
 import { GALAXY_SHOPS } from "@/lib/shops";
 
-// 中古Galaxy 一覧（/galaxy）の OGP 画像。/ipad の画像と同じ作り。ページと同じく1時間ごとに作り直す。
+// 中古Galaxy 一覧（/galaxy）の OGP 画像。/ipad の画像と同じ作り。1日ごとに作り直す。
 // 機種別ページ（/galaxy/[slug]）はそれぞれの opengraph-image を持つので、この画像は /galaxy だけに使われる
-export const revalidate = 3600;
+export const revalidate = 86400; // 1日（Neon の計算時間を減らすため。2026-10-02）
 
 export const alt = "中古Galaxyの相場一覧";
 export const size = { width: 1200, height: 630 };

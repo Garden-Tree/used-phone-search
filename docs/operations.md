@@ -11,7 +11,7 @@
  ワークフローの自己有効化（60日停止の防止）
                                    ↓
               Vercel（used.gadelog.com・Next.js 16）
-               静的（ISR 1時間）: トップ / 機種別 / 比較 / 目的別 / OGP 画像
+               静的（ISR 3時間・OGP 画像は1日）: トップ / 機種別 / 比較 / 目的別 / OGP 画像
                動的: 検索 / API
                                    ↑
 [シンレンタルサーバー cron 毎日10:00] ~/rakuten-sync/healthcheck.php → /api/health

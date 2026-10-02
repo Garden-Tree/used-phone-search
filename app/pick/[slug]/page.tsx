@@ -12,8 +12,8 @@ import { jaMonth, updateUntil } from "@/lib/pixelCatalog";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
 
-// 静的に生成して CDN から配信する（検索ページと違い、休止明けでも待たされない）。在庫は1時間ごとに更新
-export const revalidate = 3600;
+// 静的に生成して CDN から配信する（検索ページと違い、休止明けでも待たされない）。在庫は3時間ごとに更新
+export const revalidate = 10800; // 3時間（Neon の計算時間を減らすため。2026-10-02）
 export const dynamicParams = false;
 
 export function generateStaticParams() {

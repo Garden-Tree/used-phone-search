@@ -6,8 +6,8 @@ import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetPath } from
 import { SITE_URL } from "@/lib/site";
 import prisma from "@/lib/prisma";
 
-// 1時間ごとに作り直す（lastmod を在庫の更新に合わせるため）
-export const revalidate = 3600;
+// 3時間ごとに作り直す（lastmod を在庫の更新に合わせるため）
+export const revalidate = 10800; // 3時間（Neon の計算時間を減らすため。2026-10-02）
 
 /**
  * 在庫を最後に取り込んだ時刻。在庫から作るページはどれも、この時刻に中身が変わる。

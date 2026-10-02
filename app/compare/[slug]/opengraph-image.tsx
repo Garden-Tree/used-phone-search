@@ -3,7 +3,7 @@ import { COMPARE_PAIRS, compareSlug, slugToPair } from "@/lib/compare";
 import { getModelStats } from "@/lib/modelStats";
 import { fitFontSize, notoSansJp } from "@/lib/ogFont";
 
-export const revalidate = 3600;
+export const revalidate = 86400; // 1日（Neon の計算時間を減らすため。2026-10-02）
 export const dynamicParams = false;
 
 export const alt = "中古iPhoneの価格比較";

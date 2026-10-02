@@ -5,8 +5,8 @@ import { fitFontSize, notoSansJp } from "@/lib/ogFont";
 import { storageLabel } from "@/lib/format";
 import { shopsFor } from "@/lib/shops";
 
-// モデル別ページと同じく1時間ごとに作り直す（最安値が変わるため）
-export const revalidate = 3600;
+// モデル別1日ごとに作り直す（最安値が変わるため）
+export const revalidate = 86400; // 1日（Neon の計算時間を減らすため。2026-10-02）
 export const dynamicParams = false;
 
 export const alt = "中古iPhoneの最安値・価格比較";

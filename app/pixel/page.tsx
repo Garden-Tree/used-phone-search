@@ -14,8 +14,8 @@ import { PIXEL_SHOPS, shopLabels } from "@/lib/shops";
 import { PIXEL_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import { PIXEL_PICKS, pickPath } from "@/lib/picks";
 
-// Google Pixel の機種一覧（2026-09-30〜）。在庫は1時間ごとに更新
-export const revalidate = 3600;
+// Google Pixel の機種一覧（2026-09-30〜）。在庫は3時間ごとに更新
+export const revalidate = 10800; // 3時間（Neon の計算時間を減らすため。2026-10-02）
 
 const TITLE = "中古Google Pixelの相場・最安値を機種別に比較【毎日更新】";
 const DESCRIPTION =

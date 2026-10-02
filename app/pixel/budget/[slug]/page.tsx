@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { BudgetView, budgetMetadata } from "@/app/components/BudgetView";
 import { PIXEL_BUDGETS, budgetSlug, slugToBudget } from "@/lib/budgets";
 
-// Pixel の予算別ページ（中身は iPhone と共通の BudgetView）。静的に生成して CDN から配信する。在庫は1時間ごとに更新
-export const revalidate = 3600;
+// Pixel の予算別ページ（中身は iPhone と共通の BudgetView）。静的に生成して CDN から配信する。在庫は3時間ごとに更新
+export const revalidate = 10800; // 3時間（Neon の計算時間を減らすため。2026-10-02）
 export const dynamicParams = false;
 
 export function generateStaticParams() {
