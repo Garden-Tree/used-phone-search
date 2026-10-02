@@ -26,6 +26,8 @@ import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCa
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
+import { BUDGET_NAMES, budgetLabel, budgetPath } from "@/lib/budgets";
+import { smallestBudgetFor } from "@/lib/budgetStats";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
 import InspectionTips from "@/app/components/InspectionTips";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -179,14 +181,16 @@ export default async function ModelPage({ params }: Props) {
   const model = slugToModel(slug);
   if (!model) notFound();
 
-  const [stats, history, batteryRows, matrix] = await Promise.all([
+  const device = deviceOf(model);
+  const [stats, history, batteryRows, matrix, budget] = await Promise.all([
     getModelStats(model),
     getPriceHistory(slug),
     getBatteryRows(model),
     getStorageRankMatrix(model),
+    smallestBudgetFor(model, device),
   ]);
   const spec = specOf(model);
-  const hub = DEVICE_HUB[deviceOf(model)];
+  const hub = DEVICE_HUB[device];
   const listPath = hub.path;
   const listName = hub.name;
   const pixel = PIXEL_INFO[model];
@@ -295,8 +299,19 @@ export default async function ModelPage({ params }: Props) {
           相場＝販売中の在庫を安い順に並べた真ん中の値。最安値は1台だけの特価やジャンク品のことが多いので、買う値段の目安には相場を見てください。
         </p>
 
+        {/* この機種が買える予算（予算別ページへの導線。lib/budgetStats.ts の smallestBudgetFor） */}
+        {budget && (
+          <p className="-mt-5 mb-8 text-sm text-slate-600">
+            {model}はジャンク品を除いて{yen(budget.minPrice)}から買えます。同じ予算のほかの機種は{" "}
+            <Link href={budgetPath(budget.max, device)} className="font-bold text-blue-600 hover:underline underline-offset-2">
+              {budgetLabel(budget.max)}以下で買える{BUDGET_NAMES[device]}
+            </Link>
+            で比べられます。
+          </p>
+        )}
+
         <section className="mb-10 rounded-3xl border border-slate-200 p-5 md:p-6">
-          <h2 className="text-lg md:text-xl font-bold mb-3">{model} 中古の最安値の推移</h2>
+          <h2 className="text-lg md:text-xl font-bold mb-3">{model} 中古価格の推移（最安値）</h2>
           <PriceHistoryChart history={history} model={model} />
         </section>
 

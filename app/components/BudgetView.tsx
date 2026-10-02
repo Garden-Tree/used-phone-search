@@ -5,7 +5,7 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { modelPagePath } from "@/lib/catalog";
-import { budgetLabel, budgetPath, budgetsOf, type BudgetDevice } from "@/lib/budgets";
+import { BUDGET_NAMES, budgetLabel, budgetPath, budgetsOf, type BudgetDevice } from "@/lib/budgets";
 import { cheapestUnder, getBudgetModels } from "@/lib/budgetStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
@@ -38,14 +38,14 @@ type DeviceText = {
 
 const TEXT: Record<BudgetDevice, DeviceText> = {
   iphone: {
-    name: "中古iPhone", shops: SHOPS.length,
+    name: BUDGET_NAMES.iphone, shops: SHOPS.length,
     supportedLead: "最新の iOS 27 に対応した機種で",
     supportedNote: "iOS 27 対応。機種名から容量別・状態別の価格まとめへ",
     legacyTitle: "iOS 27 非対応の旧機種",
     legacyNote: "最新の iOS や一部のアプリが使えないため、メイン機には向きません（サブ機・撮影用など）",
   },
   ipad: {
-    name: "中古iPad", shops: IPAD_SHOPS.length,
+    name: BUDGET_NAMES.ipad, shops: IPAD_SHOPS.length,
     hub: { path: "/ipad", name: "中古iPad", cta: "中古iPadの相場を機種別に見る", ctaNote: "機種ごとに相場（中央値）・最安値・在庫数を比較できます" },
     supportedLead: "最新の iPadOS 27 に対応した機種で",
     supportedNote: "iPadOS 27 対応。機種名から容量別・状態別の価格まとめへ",
@@ -53,7 +53,7 @@ const TEXT: Record<BudgetDevice, DeviceText> = {
     legacyNote: "最新の iPadOS や一部のアプリが使えないため、長く使うには向きません",
   },
   pixel: {
-    name: "中古Google Pixel", shops: PIXEL_SHOPS.length,
+    name: BUDGET_NAMES.pixel, shops: PIXEL_SHOPS.length,
     hub: { path: "/pixel", name: "中古Google Pixel", cta: "中古Pixelの相場を機種別に見る", ctaNote: "機種ごとに相場（中央値）・最安値・アップデート保証の期限を比較できます" },
     supportedLead: "Google のアップデート保証が残っている機種で",
     supportedNote: "アップデート保証が残っている機種。機種名から容量別・状態別の価格まとめへ",
@@ -62,7 +62,7 @@ const TEXT: Record<BudgetDevice, DeviceText> = {
     subOf: (model) => { const u = updateUntil(model); return u ? `保証 ${jaMonth(u)}まで` : undefined; },
   },
   galaxy: {
-    name: "中古Galaxy", shops: GALAXY_SHOPS.length,
+    name: BUDGET_NAMES.galaxy, shops: GALAXY_SHOPS.length,
     hub: { path: "/galaxy", name: "中古Galaxy", cta: "中古Galaxyの相場を機種別に見る", ctaNote: "機種ごとに相場（中央値）・最安値・在庫数を比較できます" },
     // 2022年以降の機種だけ載せている（Samsung は機種ごとの保証期間を出していないので、対応・非対応は分けない）
     supportedLead: "",
@@ -222,6 +222,22 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
             </div>
           </section>
         )}
+
+        {/* 同じ予算のほかの種類（「中古スマホ 2万円以下」のように種類を決めずに探す人向け）。その種類に同じ予算がなければ、すぐ上の予算 */}
+        <section className="mb-10">
+          <h2 className="text-lg font-bold mb-3">同じ予算でほかの種類も見る</h2>
+          <div className="flex flex-wrap gap-2">
+            {(Object.keys(BUDGET_NAMES) as BudgetDevice[]).filter((d) => d !== device).map((d) => {
+              const b = budgetsOf(d).find((x) => x >= max) ?? budgetsOf(d)[budgetsOf(d).length - 1];
+              return (
+                <Link key={d} href={budgetPath(b, d)}
+                  className="px-4 py-2 rounded-xl text-sm bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                  {budgetLabel(b)}以下の{BUDGET_NAMES[d]}
+                </Link>
+              );
+            })}
+          </div>
+        </section>
 
         <div className="text-center mb-4">
           {/* 検索ページは機種の指定がないと iPhone だけの一覧になるので、iPad・Pixel は機種一覧へ */}

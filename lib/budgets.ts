@@ -14,6 +14,14 @@ export const PIXEL_BUDGETS = [30000, 40000, 50000, 70000, 100000];
 // Galaxy は Z Flip5・A55 5G の 4万円台から、Z Fold8 Ultra の 25万円台まで（9/30。楽天3店の A シリーズが入ると3万円以下も出る）
 export const GALAXY_BUDGETS = [30000, 50000, 70000, 100000, 150000];
 
+/** 予算別ページの見出しの「○万円以下で買える〜」の〜（機種ページ・他の種類の予算別ページからのリンクにも使う） */
+export const BUDGET_NAMES: Record<BudgetDevice, string> = {
+  iphone: "中古iPhone",
+  ipad: "中古iPad",
+  pixel: "中古Google Pixel",
+  galaxy: "中古Galaxy",
+};
+
 export const budgetsOf = (device: BudgetDevice) =>
   device === "ipad" ? IPAD_BUDGETS : device === "pixel" ? PIXEL_BUDGETS : device === "galaxy" ? GALAXY_BUDGETS : BUDGETS;
 

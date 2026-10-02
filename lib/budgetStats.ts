@@ -5,7 +5,7 @@ import { ALL_CATALOG_MODELS, ALL_PAGE_MODELS } from "@/lib/catalog";
 import { resolveModelNames } from "@/lib/deviceSearch";
 import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { IPADOS27_MODELS, IPAD_SPECS } from "@/lib/ipadSpecs";
-import type { BudgetDevice } from "@/lib/budgets";
+import { budgetsOf, type BudgetDevice } from "@/lib/budgets";
 import { PIXEL_INFO, PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
 import { GALAXY_MODELS, GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 
@@ -70,6 +70,23 @@ export async function getBudgetModels(max: number, device: BudgetDevice = "iphon
     : ALL_CATALOG_MODELS.includes(m);
   const byModel = await minPriceByModel({ isSoldOut: false, price: { lte: max }, ...NOT_JUNK }, models);
   return [...byModel].map(([model, r]) => ({ model, ...r, supported: isSupported(model) }));
+}
+
+/**
+ * 機種ページの「この機種が買える予算」: ジャンク品を除く最安値が収まる、いちばん小さい予算（予算別ページと同じ条件）。
+ * どの予算にも収まらなければ null
+ */
+export async function smallestBudgetFor(model: string, device: BudgetDevice): Promise<{ max: number; minPrice: number } | null> {
+  const names = await resolveModelNames([model]);
+  if (!names?.length) return null;
+  const agg = await prisma.deviceInventory.aggregate({
+    where: { modelName: { in: names }, isSoldOut: false, ...NOT_JUNK },
+    _min: { price: true },
+  });
+  const minPrice = agg._min.price;
+  if (minPrice === null) return null;
+  const max = budgetsOf(device).find((b) => minPrice <= b);
+  return max ? { max, minPrice } : null;
 }
 
 /** 指定した機種の、予算内でいちばん安い在庫 */
