@@ -164,6 +164,8 @@ jobs:
         # 一部の店の取得・楽天の取り込みに失敗した回も、取れた分で書き出せていれば配置する（success() だと止まる）
         if: ${{ !cancelled() && steps.build.outcome == 'success' && env.DEPLOY_HOST != '' && env.DEPLOY_PATH != '' }}
         run: |
+          # DEPLOY_PATH はこちら（Actions）で展開してから送る
+          # shellcheck disable=SC2029
           ssh deploy "test -f '${DEPLOY_PATH%/}/.used-deploy-target'" || { echo "配置先に .used-deploy-target がない（DEPLOY_PATH を確認）"; exit 1; }
           rsync -rlzc --delete --delete-after --delay-updates \
             --filter='P /_next/static/***' --filter='P /.well-known/***' --filter='P /.user.ini' --filter='P /.used-deploy-target' \
