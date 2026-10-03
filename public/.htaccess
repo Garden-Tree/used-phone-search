@@ -48,6 +48,8 @@ RewriteRule ^ - [R=404,L]
 </IfModule>
 
 <IfModule mod_headers.c>
+  # 今の本番（Vercel）と同じ HSTS（2年）。ブラウザは https の応答のときだけ受け取る
+  Header always set Strict-Transport-Security "max-age=63072000"
   # mod_deflate が ETag の末尾に -gzip を付けると 304 が返らなくなるので、比べるときは外す（Apache 2.4 の既知の問題）
   RequestHeader edit "If-None-Match" '^"((.*)-gzip)"$' '"$1", "$2"'
   # ファイル名にハッシュが付くもの（JS・CSS）は長くキャッシュ

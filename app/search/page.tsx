@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   title: "中古スマホの在庫検索",
   description: `大手中古ショップ${SHOPS.length}社の中古iPhone・iPad・Google Pixel・Galaxyの在庫を、価格・状態ランク・容量・バッテリー残量で絞り込めます。`,
   alternates: { canonical: "/search" },
+  // openGraph を上書きするとトップの共通 OGP 画像が引き継がれないので明示する
+  openGraph: { title: "中古スマホの在庫検索 | 中古スマホ一括検索", url: "/search", images: ["/opengraph-image"] },
   robots: { index: false, follow: true },
 };
 

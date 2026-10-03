@@ -70,7 +70,7 @@ export default function FilterPanel() {
   };
 
   const activeFiltersCount = Array.from(searchParams.keys()).filter(k => 
-    !['model', 'shop', 'sort'].includes(k)
+    !['model', 'shop', 'sort', 'device'].includes(k) // 種類のタブ（device）は詳細フィルターではない
   ).length;
 
   return (
