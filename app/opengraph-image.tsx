@@ -2,6 +2,8 @@ import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
 import { SHOPS } from "@/lib/shops";
 
+export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る
+
 // トップページ・検索ページなど、個別の画像を持たないページの共通 OGP 画像
 export const alt = `中古スマホ一括検索 | 中古iPhoneの最安値を大手${SHOPS.length}ショップから比較`;
 export const size = { width: 1200, height: 630 };

@@ -6,8 +6,8 @@ import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetPath } from
 import { SITE_URL } from "@/lib/site";
 import prisma from "@/lib/prisma";
 
-// 3時間ごとに作り直す（lastmod を在庫の更新に合わせるため）
-export const revalidate = 10800; // 3時間（Neon の計算時間を減らすため。2026-10-02）
+// ビルドのたびに作る（lastmod を在庫の更新に合わせるため）
+export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 /**
  * 在庫を最後に取り込んだ時刻。在庫から作るページはどれも、この時刻に中身が変わる。
@@ -35,7 +35,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: SITE_URL, lastModified, changeFrequency: "daily", priority: 1 },
-    { url: `${SITE_URL}/search`, lastModified, changeFrequency: "daily", priority: 0.6 },
     { url: `${SITE_URL}/iphone`, lastModified, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/ipad`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/pixel`, lastModified, changeFrequency: "daily", priority: 0.8 },

@@ -5,4 +5,6 @@ return [
     'rakuten_access_key'   => '（楽天ウェブサービスの Access Key）',
     'ingest_url'           => 'https://used.gadelog.com/api/ingest/rakuten',
     'ingest_secret'        => '（Vercel の RAKUTEN_INGEST_SECRET と同じ値）',
+    // 静的書き出し版（docs/static-export.md）に切り替えたら、送信をやめてここに保存する（公開フォルダの外）
+    // 'output_dir'        => __DIR__ . '/out',
 ];

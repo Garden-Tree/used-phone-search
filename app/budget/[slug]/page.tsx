@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { BudgetView, budgetMetadata } from "@/app/components/BudgetView";
 import { BUDGETS, budgetSlug, slugToBudget } from "@/lib/budgets";
 
-// 静的に生成して CDN から配信する。在庫は3時間ごとに更新
-export const revalidate = 10800; // 3時間（Neon の計算時間を減らすため。2026-10-02）
+// 静的に書き出す。在庫はビルド（1日4回）のたびに更新
+export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 export const dynamicParams = false;
 
 export function generateStaticParams() {

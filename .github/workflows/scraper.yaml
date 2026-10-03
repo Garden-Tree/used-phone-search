@@ -1,4 +1,7 @@
 name: Phone Inventory Scraper
+# 静的書き出し版（static-export ブランチ・docs/static-export.md）: 在庫の取得 → 楽天分の取り込み → 価格推移 →
+# サイトの書き出し（next build）→ シンレンタルサーバーへ配置、までを1本で行う。
+# 配置先の Secrets（DEPLOY_*）が無いあいだは、書き出しまでで止まる
 
 on:
   schedule:
@@ -32,6 +35,13 @@ permissions:
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
+    env:
+      # シンレンタルサーバー（SSH）。値は Secrets（docs/static-export.md）
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      RAKUTEN_DATA_PATH: ${{ secrets.RAKUTEN_DATA_PATH }}
 
     steps:
       - name: リポジトリのコードを取得
@@ -76,6 +86,35 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm ci
 
+      - name: SSH の準備
+        if: ${{ !cancelled() && env.DEPLOY_HOST != '' }}
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          echo "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          {
+            echo "Host deploy"
+            echo "  HostName $DEPLOY_HOST"
+            echo "  Port ${DEPLOY_PORT:-10022}"
+            echo "  User $DEPLOY_USER"
+            echo "  IdentityFile ~/.ssh/deploy_key"
+            echo "  StrictHostKeyChecking yes"
+          } > ~/.ssh/config
+
+      # 楽天市場店の在庫: サーバーの fetch.php（cron。この20分前）が書き出した JSON を取ってきて取り込む。
+      # 失敗しても前回の在庫のまま書き出しは続ける（ジョブは失敗として通知される）
+      - name: 楽天市場店の在庫を取り込む
+        if: ${{ !cancelled() && env.DEPLOY_HOST != '' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          mkdir -p rakuten-data
+          scp -p "deploy:${RAKUTEN_DATA_PATH:-rakuten-sync/out}/*.json.gz" rakuten-data/
+          npx tsx scripts/ingest-rakuten.ts rakuten-data
+
       # にこスマ・イオシスの iPad は店の表記のまま入るので、lib/ipadCatalog.ts の正式名にそろえる
       - name: iPad の機種名をそろえる
         if: ${{ !cancelled() }}
@@ -89,6 +128,38 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run snapshot:prices
+
+      # 監視: 取り込みが止まっていないか（問題があっても書き出しは続け、最後にジョブを失敗にして通知する）
+      - name: データ更新の監視
+        id: health
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx tsx scripts/check-health.ts
+
+      # サイトの書き出し（out/）。DB を読むのはここだけ（実行時は読まない）
+      - name: サイトを書き出す
+        if: ${{ !cancelled() }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_PUBLIC_SITE_URL: https://used.gadelog.com
+          NEXT_PUBLIC_GA_ID: G-YV3ZR0N6B1 # used 専用の GA4（公開される値）
+        run: |
+          npx next build
+          test -f out/index.html && test -f out/data/inventory/index.json
+
+      # 配置先のフォルダを丸ごと out/ と同じにする（--delete。配置先は used.gadelog.com 専用のフォルダにすること）。
+      # OGP 画像などはビルドのたびに作り直されるので、更新日時ではなく中身で比べて変わったものだけ送る
+      - name: シンレンタルサーバーへ配置
+        if: ${{ success() && env.DEPLOY_HOST != '' && env.DEPLOY_PATH != '' }}
+        run: rsync -rlzc --delete out/ "deploy:${DEPLOY_PATH%/}/"
+
+      - name: 監視で問題があればジョブを失敗にする
+        if: ${{ !cancelled() && steps.health.outcome == 'failure' }}
+        run: |
+          echo "データ更新に問題があります（上の「データ更新の監視」を参照）"
+          exit 1
 
       # GitHub は 60 日間リポジトリに動きがないと定期実行を自動で無効化する（2026/08 に実際に停止した）。
       # 実行のたびにワークフローを有効化し直して、無効化までの期限を延ばす

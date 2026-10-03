@@ -5,9 +5,9 @@ import { getModelMarket } from "@/lib/marketStats";
 import { notoSansJp } from "@/lib/ogFont";
 import { IPAD_SHOPS } from "@/lib/shops";
 
-// 中古iPad 一覧（/ipad）の OGP 画像。/iphone の画像と同じ作り。1日ごとに作り直す。
+// 中古iPad 一覧（/ipad）の OGP 画像。/iphone の画像と同じ作り。ビルドのたびに作る。
 // 機種別ページ（/ipad/[slug]）はそれぞれの opengraph-image を持つので、この画像は /ipad だけに使われる
-export const revalidate = 86400; // 1日（Neon の計算時間を減らすため。2026-10-02）
+export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 export const alt = "中古iPadの相場一覧";
 export const size = { width: 1200, height: 630 };

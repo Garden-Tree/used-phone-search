@@ -1,0 +1,40 @@
+# used.gadelog.com（静的書き出し版）をシンレンタルサーバー（Apache）で配信するための設定。
+# next build の out/ にそのままコピーされる（public/ の中身）。手順は docs/static-export.md
+
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
+# /iphone は iphone.html と iphone/（機種ページのフォルダ）の両方があるので、
+# フォルダへの自動の「/」付けを止めて .html を返す（URL は今の Vercel 版と同じ・末尾の / なし）
+DirectorySlash Off
+
+RewriteEngine On
+
+# 末尾に / が付いた URL は付かない形へ（トップは除く）
+RewriteCond %{REQUEST_URI} !^/$
+RewriteRule ^(.+)/$ /$1 [R=301,L]
+
+# /iphone/iphone-13 → /iphone/iphone-13.html
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+)$ $1.html [L]
+
+# OGP 画像は拡張子なしのファイル名で書き出される
+<FilesMatch "^opengraph-image$">
+  ForceType image/png
+</FilesMatch>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_headers.c>
+  # ファイル名にハッシュが付くもの（JS・CSS）は長くキャッシュ
+  <If "%{REQUEST_URI} =~ m#^/_next/static/#">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </If>
+  # HTML・在庫データ・監視は1日4回作り直すので、毎回確認させる
+  <If "%{REQUEST_URI} !~ m#^/_next/static/#">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </If>
+</IfModule>

@@ -2,6 +2,8 @@
 /**
  * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone・iPad・Google Pixel・Galaxy 在庫を取得し、
  * used.gadelog.com の受け口（/api/ingest/rakuten?shop=<shopCode>）へショップごとに送信する。
+ * 静的書き出し版（static-export ブランチ）では、config.php に output_dir を書くと、送信せずに
+ * <output_dir>/<shopCode>.json.gz に保存する（GitHub Actions が SSH で取りに来て scripts/ingest-rakuten.ts で取り込む）。
  *
  * シンレンタルサーバー（固定IP: 楽天アプリの許可IPに登録済み）の cron から実行する。
  *   php fetch.php                 … 全ショップを全件取得して送信
@@ -174,6 +176,16 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
 
     // 1万件規模になるので gzip で圧縮して送る（Vercel の受信上限対策）
     $payload = gzencode(json_encode(['items' => $items], JSON_UNESCAPED_UNICODE), 9);
+
+    // 静的書き出し版: ファイルに置くだけ（書きかけを読まれないよう、一時ファイルに書いてから名前を変える）
+    if (!empty($config['output_dir'])) {
+        $dir = rtrim($config['output_dir'], '/');
+        if (!is_dir($dir)) mkdir($dir, 0700, true);
+        $tmp = "{$dir}/.{$shopCode}.json.gz.tmp";
+        $ok = file_put_contents($tmp, $payload) !== false && rename($tmp, "{$dir}/{$shopCode}.json.gz");
+        logLine("{$shopCode} saved: " . ($ok ? "{$dir}/{$shopCode}.json.gz (" . strlen($payload) . ' bytes)' : 'FAILED'));
+        return $ok;
+    }
     $ch = curl_init($config['ingest_url'] . '?shop=' . urlencode($shopCode));
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,

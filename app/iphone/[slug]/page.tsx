@@ -34,8 +34,8 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
 import { findShop, shopLabels, shopsFor } from "@/lib/shops";
 
-// スクレイパーは6時間ごとに実行されるため、3時間ごとに再生成すれば十分新しい
-export const revalidate = 10800; // 3時間（Neon の計算時間を減らすため。2026-10-02）
+// スクレイパーの後にビルドするので、在庫はその時点のもの
+export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 // カタログ外のslugは404
 export const dynamicParams = false;
@@ -195,7 +195,7 @@ export default async function ModelPage({ params }: Props) {
   const listName = hub.name;
   const pixel = PIXEL_INFO[model];
   const pixelUntil = updateUntil(model);
-  // 保証の残り（ISR で3時間ごとに作り直すので、その時点の年月で計算する）
+  // 保証の残り（ビルドのたびに作り直すので、その時点の年月で計算する）
   const pixelLeft = updateYearsLeft(model, new Date().toISOString().slice(0, 7));
   const series = seriesOf(model);
   const siblings = siblingModels(model);

@@ -9,7 +9,10 @@
 
 declare(strict_types=1);
 
-const HEALTH_URL = 'https://used.gadelog.com/api/health';
+// 静的書き出し版（docs/static-export.md）はビルドのたびに書き出す /health.json を読む。
+// ビルド自体が止まっても気づけるよう、checkedAt が古すぎるときも問題とする
+const HEALTH_URL = 'https://used.gadelog.com/health.json';
+const MAX_BUILD_AGE_HOURS = 14; // ビルドは6時間ごと（GitHub の遅れで数時間ずれる）
 
 $ch = curl_init(HEALTH_URL);
 curl_setopt_array($ch, [
@@ -23,7 +26,12 @@ curl_close($ch);
 
 $data = is_string($body) ? json_decode($body, true) : null;
 
-if ($status === 200 && is_array($data) && ($data['ok'] ?? false) === true) {
+$buildAgeHours = is_array($data) && isset($data['checkedAt'])
+    ? (time() - strtotime((string)$data['checkedAt'])) / 3600
+    : null;
+$buildStale = $buildAgeHours === null || $buildAgeHours > MAX_BUILD_AGE_HOURS;
+
+if ($status === 200 && is_array($data) && ($data['ok'] ?? false) === true && !$buildStale) {
     exit(0); // 正常: 出力しない（メールも送られない）
 }
 
@@ -31,6 +39,10 @@ echo "【中古スマホ一括検索】データ更新に問題があります\n
 echo "確認先: " . HEALTH_URL . "\n";
 echo "HTTP ステータス: {$status}" . ($error !== '' ? "（{$error}）" : '') . "\n\n";
 
+if ($buildStale) {
+    echo "- サイトの書き出しが止まっています（最終: " . ($data['checkedAt'] ?? '不明') . "）
+";
+}
 if (is_array($data)) {
     foreach ($data['problems'] ?? [] as $problem) {
         echo "- {$problem}\n";
