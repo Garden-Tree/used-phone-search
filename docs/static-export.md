@@ -44,32 +44,51 @@ docker run -d --name used-static-test -p 8088:80 -v "<リポジトリ>/out:/usr/
 
 ## 切り替えの手順（ユーザーの作業を含む。順番どおりに）
 
+**前提: 今の本番は HSTS（`Strict-Transport-Security: max-age=63072000`）付き**。一度来た人のブラウザと Googlebot は https でしか開かないので、
+**DNS を切り替える前にシンサーバー側で SSL を済ませる**（切り替えた瞬間に https が使えないと、そのまま見られなくなる）
+
+0. **DNS の置き場所を確かめる**（ユーザー・Claude はブラウザで見るだけ）
+   - gadelog.com のネームサーバーがどこか、`used` のレコード（Vercel 向けの CNAME など）がどこにあるか
+   - シンのネームサーバーなら、サーバーパネルでサブドメインを足した時点で A レコードが自動で作られ、**Vercel 向けの設定と競合・上書きして即切り替わる**おそれがある（未確認）。
+     その場合は手順 1 の前に、DNS レコードの扱いを確認する
+   - 切り替えの1日前に `used` のレコードの TTL を短く（300 秒など）しておく
 1. **サーバー: used 用のフォルダとサブドメイン**（サーバーパネル）
-   - サブドメイン `used.gadelog.com` を追加（ドキュメントルートを控える。例 `~/gadelog.com/public_html/used`）。
-     DNS が Vercel を向いているあいだは、サブドメインの追加だけでは表示は変わらない
-   - SSL（無料独自 SSL）は DNS を切り替えた後に申請する（手順 6）
+   - サブドメイン `used.gadelog.com` を追加し、ドキュメントルートを控える。できれば public_html の外（ブログのフォルダの下だと gadelog.com/used/… でも見えてしまう。.htaccess で used.gadelog.com に寄せてはいる）
    - そのフォルダに空の印のファイル `.used-deploy-target` を作る（ファイルマネージャの「新規ファイル」）。これが無いと Actions は配置しない
    - サーバーパネルが作った `.htaccess` があれば中身を控える（out/.htaccess で上書きされる。https への転送は out/.htaccess に入っている）
-2. **SSH の鍵**（ユーザー）
+2. **SSL を DNS 切り替えの前に用意する**（ユーザー・サーバーパネル「SSL設定」）
+   - シンの「他社サーバーでの Web 認証」: 発行されたトークンファイルを今の配信元（Vercel）の同じパスに置く → Claude が main の `public/` に置いて Vercel に出す。
+     または「他社ネームサーバーでの DNS 認証」: 表示されたレコードを今の DNS に足す
+     （[シンの FAQ](https://www.shin-server.jp/support/faq/ssl_setting_prior.php)・[無料独自SSL設定](https://www.shin-server.jp/support/manual/man_server_ssl.php)）
+   - 証明書が出るまで DNS は変えない
+3. **SSH の鍵**（ユーザー）
    - サーバーパネル「SSH設定」を ON、公開鍵認証用の鍵を作る（秘密鍵は Claude に渡さない）
    - GitHub の Secrets に登録: `DEPLOY_HOST`（例 `wp760415.wpx.jp`）・`DEPLOY_PORT`（シンは `10022`）・`DEPLOY_USER`（`wp760415`）・
      `DEPLOY_SSH_KEY`（秘密鍵）・`DEPLOY_KNOWN_HOSTS`（`ssh-keyscan -p 10022 <ホスト>` の結果）・
-     `DEPLOY_PATH`（手順 1 のフォルダ。**used 専用**。`--delete` で中身を out/ と同じにする）・`RAKUTEN_DATA_PATH`（省略時 `rakuten-sync/out`）
-   - サーバーに rsync があるか確認（`ssh ... rsync --version`）
-3. **楽天の取り込みを切り替える**（ユーザーが config.php に1行足す）
+     `DEPLOY_PATH`（手順 1 のフォルダ。**ホームからの相対パスか絶対パス**。`~/` は付けても外す）・`RAKUTEN_DATA_PATH`（省略時 `rakuten-sync/out`）
+   - サーバーに rsync があるか（`ssh ... rsync --version`）。scp は SFTP 方式で動く（ubuntu の既定）。SFTP が使えなければワークフローを `scp -O` に
+4. **楽天の取り込みを切り替える**（ユーザーが config.php に1行足す。手順 5 と同じ日に）
    - `rakuten-sync/fetch.php`（このブランチの版）をサーバーに上書き。`config.php` に `'output_dir' => __DIR__ . '/out',`
-   - この時点から Vercel 版の楽天分は更新されなくなる → 手順 4 を同じ日に
-4. **ブランチを main にマージ**（Claude）→ Actions を手動実行して、配置まで通るか確認。STATE の「ページ方針」（検索ページは noindex・ISR なし）も書き換える
-   - サーバーの初期ドメイン（`wp760415.wpx.jp` 配下など）か hosts の書き換えで、配置した中身を見る
-5. **healthcheck.php を上書き**（/health.json を読む版）
-6. **DNS の切り替え**（ユーザー）: `used.gadelog.com` を Vercel からシンサーバーへ。反映後に SSL を申請
-   - 切り替え直後は SSL が出るまで数分〜数時間 https が使えない。アクセスの少ない時間に
-7. **後片付け**: Vercel のプロジェクトを止める（環境変数 `RAKUTEN_INGEST_SECRET` は不要に）。
-   Search Console は URL が変わらないので何もしない（`verification.google` のメタタグは残る）。Neon を Free に戻す
+   - この時点から Vercel 版の楽天分は更新されなくなる（DNS を切り替えるまでの数時間〜1日は、楽天3店だけ古い在庫のまま）
+5. **ブランチを main にマージ**（Claude）→ Actions を手動実行して、配置まで通るか確認。STATE の「ページ方針」（検索ページは noindex・ISR なし）も書き換える
+   - Vercel はこれ以降ビルドしない。DNS を切り替えるまで、Vercel に残る最後のデプロイ（旧版）が本番として動き続ける
+   - 配置した中身の確認は、ブラウザではなく `curl --resolve used.gadelog.com:443:<シンの IP> https://used.gadelog.com/...`（HSTS があるので hosts の書き換えはブラウザでは使いにくい）
+6. **DNS の切り替え**（ユーザー）: `used.gadelog.com` を Vercel からシンサーバーへ。アクセスの少ない時間に
+7. **healthcheck.php を上書き**（/health.json を読む版）。**DNS の切り替え後に**（前に入れると、旧版の Vercel には /health.json が無いので毎朝誤った警告が届く）
+8. **後片付け（1〜2週間たってから）**: Vercel のプロジェクトを止める（`RAKUTEN_INGEST_SECRET` は不要に）。Neon を Free に戻すのは Vercel を止めた後（旧版の ISR が計算時間を使うため）。
+   Search Console は URL が変わらないので何もしない（`verification.google` のメタタグは残る）。GA4 もそのまま
+
+### 戻し方（切り替え後に問題が出たとき）
+
+- DNS の `used` を Vercel 向けに戻す → Vercel に残る旧版が動く（手順 8 で Vercel を消すまでは戻せる）
+- 楽天は config.php の `output_dir` の行を消せば、元の送信（/api/ingest/rakuten）に戻る
+- healthcheck.php は main の前の版（/api/health を読む版）に戻す
+- Actions は旧版でも在庫を Neon に入れ続けるので、DB はどちらの版でもそのまま使える
 
 ## 未確認・気になる点
 
-- シンサーバーの Apache で `DirectorySlash Off`・`ForceType`・`mod_headers` が .htaccess で使えるか（手元の Apache では動いた）
+- シンサーバーの Apache で `DirectorySlash Off`・`ForceType`・`mod_headers` が .htaccess で使えるか（手元の Apache では動いた）。シンの高速化機能（前段のキャッシュ）が静的ファイルを直接返す場合、.htaccess の Header などが効かないことがある
+- `_next/static` は古い HTML のために消さない（P）ので、コードを変えてデプロイするたびに古い JS が少しずつ残る（1回あたり 1MB 未満）。たまにファイルマネージャで古いものを消すか、P を外して1回配置する
 - Actions からの SSH（接続元 IP の制限がないか）・rsync の有無
 - 書き出しのたびに 2,700 ファイルを比べる rsync の時間（中身で比べるので送るのは変わったものだけ）
 - 前段にプロキシがあって `%{HTTPS}` が on にならない場合、https への転送がループする（その場合は `X-Forwarded-Proto` を見る形に）

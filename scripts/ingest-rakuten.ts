@@ -35,6 +35,17 @@ async function main() {
       failed++;
       continue;
     }
+    // fetch.php の取得中（約25分）に Actions が始まると、前回取り込んだファイルが残っている。
+    // その店の在庫の最終更新より古いファイルは取り込まない（取り込むと更新日時だけ新しくなり、監視が気づかない）
+    const last = await prisma.deviceInventory.aggregate({
+      where: { shopName: RAKUTEN_SHOPS[shopCode].shopName },
+      _max: { updatedAt: true },
+    });
+    if (!force && last._max.updatedAt && statSync(file).mtimeMs <= last._max.updatedAt.getTime()) {
+      console.error(`${shopCode}: 前回取り込んだファイル（${new Date(statSync(file).mtimeMs).toISOString()}）。新しい取得を待つ`);
+      failed++;
+      continue;
+    }
     try {
       const items: RakutenItem[] = JSON.parse(gunzipSync(readFileSync(file)).toString("utf8")).items;
       if (!Array.isArray(items)) throw new Error("items is not an array");

@@ -11,6 +11,14 @@ DirectorySlash Off
 
 RewriteEngine On
 
+# used.gadelog.com 以外のホスト名（ブログ側のフォルダ gadelog.com/used/… など）で来たら寄せる（手元の確認用の localhost は除く）
+RewriteCond %{HTTP_HOST} !^used\.gadelog\.com$ [NC]
+RewriteCond %{HTTP_HOST} !^localhost
+RewriteRule ^(.*)$ https://used.gadelog.com/$1 [R=301,L]
+
+# rsync の配置途中の一時フォルダ（--delay-updates の .~tmp~）は見せない
+RewriteRule (^|/)\.~tmp~ - [R=404,L]
+
 # http → https（Vercel 版と同じく https に寄せる。SSL の認証用 .well-known は除く）
 RewriteCond %{HTTPS} !on
 RewriteCond %{REQUEST_URI} !^/\.well-known/
@@ -24,6 +32,11 @@ RewriteRule ^(.+)/$ https://%{HTTP_HOST}/$1 [R=301,L]
 # /iphone/iphone-13 → /iphone/iphone-13.html
 RewriteCond %{REQUEST_FILENAME}.html -f
 RewriteRule ^(.+)$ $1.html [L]
+
+# 同じ名前の .html がないフォルダ（/compare・/data など）は、一覧を出さない設定の 403 ではなく 404 にする
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteCond %{REQUEST_URI} !^/$
+RewriteRule ^ - [R=404,L]
 
 # OGP 画像は拡張子なしのファイル名で書き出される
 <FilesMatch "^opengraph-image$">

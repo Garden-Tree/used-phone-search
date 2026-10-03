@@ -3,14 +3,40 @@
  * ImageResponse は同梱できるサイズが 500KB までで Noto Sans JP 全体は入らないため、
  * Google Fonts の text= 指定で「画像に使う文字だけ」のサブセット TTF を取得する。
  */
-async function loadGoogleFont(weight: number, text: string): Promise<ArrayBuffer> {
+async function fetchFont(weight: number, text: string): Promise<ArrayBuffer> {
   const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@${weight}&text=${encodeURIComponent(text)}`;
-  const css = await (await fetch(url)).text();
+  const cssRes = await fetch(url);
+  if (!cssRes.ok) throw new Error(`Failed to load Noto Sans JP ${weight} CSS: HTTP ${cssRes.status}`);
+  const css = await cssRes.text();
   const src = css.match(/src: url\((.+?)\) format\('(opentype|truetype)'\)/);
   if (!src) throw new Error(`Failed to load Noto Sans JP ${weight}`);
   const res = await fetch(src[1]);
   if (!res.ok) throw new Error(`Failed to download Noto Sans JP ${weight}: HTTP ${res.status}`);
   return res.arrayBuffer();
+}
+
+// 静的書き出しでは OGP 画像を数百枚まとめて作るので、同じ文字の組み合わせは使い回し、
+// 一時的な失敗（429 など）は少し待って2回までやり直す（1枚の失敗で書き出し全体が止まらないように）
+const fontCache = new Map<string, Promise<ArrayBuffer>>();
+
+function loadGoogleFont(weight: number, text: string): Promise<ArrayBuffer> {
+  const key = `${weight}:${text}`;
+  let p = fontCache.get(key);
+  if (!p) {
+    p = (async () => {
+      for (let attempt = 1; ; attempt++) {
+        try {
+          return await fetchFont(weight, text);
+        } catch (error) {
+          if (attempt >= 3) throw error;
+          await new Promise((r) => setTimeout(r, 2000 * attempt));
+        }
+      }
+    })();
+    p.catch(() => fontCache.delete(key));
+    fontCache.set(key, p);
+  }
+  return p;
 }
 
 /** 画像内の文字列をまとめて渡すと、ImageResponse の fonts オプションを返す */

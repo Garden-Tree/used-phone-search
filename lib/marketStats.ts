@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { ALL_STORAGE } from "@/lib/priceHistory";
 import { minPriceByModel } from "@/lib/budgetStats";
 import { medianPrice, modelWhere } from "@/lib/modelInventory";
+import { rethrowDuringBuild } from "@/lib/buildGuard";
 
 /**
  * 全機種の相場（相場一覧・値下がり）。
@@ -91,6 +92,7 @@ export const getPriceDrops = cache(async (days = 7, limit = 10, minCount = 5): P
     }
     return drops.sort((a, b) => b.rate - a.rate).slice(0, limit);
   } catch (error) {
+    rethrowDuringBuild(error);
     console.error("price drops failed:", error);
     return [];
   }

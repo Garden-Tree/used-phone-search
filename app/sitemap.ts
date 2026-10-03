@@ -5,6 +5,7 @@ import { PICKS, pickPath } from "@/lib/picks";
 import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetPath } from "@/lib/budgets";
 import { SITE_URL } from "@/lib/site";
 import prisma from "@/lib/prisma";
+import { rethrowDuringBuild } from "@/lib/buildGuard";
 
 // ビルドのたびに作る（lastmod を在庫の更新に合わせるため）
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -18,7 +19,8 @@ async function lastIngestedAt(): Promise<Date | undefined> {
   try {
     const r = await prisma.deviceInventory.aggregate({ _max: { updatedAt: true } });
     return r._max.updatedAt ?? undefined;
-  } catch {
+  } catch (error) {
+    rethrowDuringBuild(error);
     return undefined;
   }
 }
