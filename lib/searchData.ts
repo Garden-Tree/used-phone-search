@@ -40,8 +40,9 @@ export type InventoryIndex = {
 
 const OTHER_PREFIX = "other-";
 
-const deviceOfName = (name: string): Device =>
-  /^ipad/i.test(name) ? "ipad" : /^pixel/i.test(name) ? "pixel" : /^galaxy/i.test(name) ? "galaxy" : "iphone";
+// 機種名の先頭で種類を見分ける（DB 版の検索の startsWith と同じく大文字小文字を区別）。どれでもない名前は検索に出さない
+const deviceOfName = (name: string): Device | null =>
+  name.startsWith("iPhone") ? "iphone" : name.startsWith("iPad") ? "ipad" : name.startsWith("Pixel") ? "pixel" : name.startsWith("Galaxy") ? "galaxy" : null;
 
 /** ファイル名（拡張子なし）の一覧。在庫の有無にかかわらず全機種＋種類ごとの other を書き出す（ブラウザ側で 404 を出さないため） */
 export function inventoryFileKeys(): string[] {
@@ -60,7 +61,9 @@ function buckets(): Promise<Map<string, string[]>> {
     const map = new Map<string, string[]>();
     for (const { modelName } of rows) {
       const page = ALL_DEVICE_PAGE_MODELS.find((m) => matchesModel(m, modelName));
-      const key = page ? modelToSlug(page) : `${OTHER_PREFIX}${deviceOfName(modelName)}`;
+      const device = deviceOfName(modelName);
+      if (!page && !device) continue;
+      const key = page ? modelToSlug(page) : `${OTHER_PREFIX}${device}`;
       map.set(key, [...(map.get(key) ?? []), modelName]);
     }
     return map;

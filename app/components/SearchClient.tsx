@@ -28,11 +28,21 @@ const fetchJson = async <T,>(path: string): Promise<T> => {
   if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
   return res.json() as Promise<T>;
 };
-const loadIndex = () => (indexCache ??= fetchJson<InventoryIndex>(`${DATA_DIR}/index.json`));
+// 失敗したもの（配置中の一時的な 404 など）は覚えておかず、次の操作で読み直す
+const loadIndex = () => {
+  indexCache ??= fetchJson<InventoryIndex>(`${DATA_DIR}/index.json`).catch((e) => {
+    indexCache = null;
+    throw e;
+  });
+  return indexCache;
+};
 const loadFile = (key: string) => {
   let p = fileCache.get(key);
   if (!p) {
-    p = fetchJson<InventoryFile>(`${DATA_DIR}/${key}.json`);
+    p = fetchJson<InventoryFile>(`${DATA_DIR}/${key}.json`).catch((e) => {
+      fileCache.delete(key);
+      throw e;
+    });
     fileCache.set(key, p);
   }
   return p;

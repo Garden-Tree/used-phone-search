@@ -8,20 +8,20 @@
 - **スタイリング**: [Tailwind CSS 4](https://tailwindcss.com/)
 - **言語**: [TypeScript](https://www.typescriptlang.org/)
 - **主要コンポーネント**:
-  - `InfiniteDeviceList`: Intersection Observer API を使用した段階的読み込み（無限スクロール）の実装。
+  - `SearchClient`: 検索ページの中身。ビルド時に書き出した機種ごとの在庫 JSON（`lib/searchData.ts`）を読み、絞り込み・並べ替え・20件ずつの表示をブラウザで行う。
   - `FilterPanel`: ショップ・価格・容量・ランク・バッテリー最大容量の絞り込み（URL パラメータ連動）。
   - `SortSelect`: 価格順、バッテリー容量順での動的な並び替え（URLパラメータ連動）。
   - `DeviceCard`: 在庫1件の表示とアフィリエイトリンクの生成（A8・楽天アフィリエイト）。iPad の Wi-Fi モデルは carrier=「Wi-Fiモデル」。
   - `PriceHistoryChart`: 価格推移の SVG グラフ（容量タブ・ホバーのツールチップ・表表示）。
-- **ページ**: トップ・機種別 `/iphone/[slug]` `/ipad/[slug]`・iPad 一覧 `/ipad`・比較 `/compare/[slug]`・目的別 `/pick/[slug]`・予算別 `/budget/[slug]` は SSG + ISR（1時間）。検索 `/search` は動的。
+- **ページ**: すべて静的書き出し（`output: "export"`。ビルドは Actions で1日4回、out/ をシンレンタルサーバーへ配置。`docs/static-export.md`）。検索 `/search` も静的な1ページで、中身はブラウザで組み立てる。
   `/ipad/[slug]` は `/iphone/[slug]/page.tsx` を再エクスポートしている（中身は共通）。
 - **OGP 画像**: `opengraph-image.tsx` + `next/og`。日本語フォントは Google Fonts から使用文字だけのサブセットを取得（`lib/ogFont.ts`）。
 
 ## バックエンド & API
-- **API Routes**: Next.js Route Handlers (`app/api/` 内)
-  - `/api/devices`: 在庫データ取得（無限スクロール用）。絞り込みは DB 側で完結（`lib/deviceSearch.ts`）。
-  - `/api/ingest/rakuten?shop=<shopCode>`: 楽天API で取得した在庫の受け口（Bearer 認証・gzip・ショップ単位で洗い替え）。
-  - `/api/health`: データ鮮度の監視用（24時間以上更新なしで 503）。
+- **API は持たない**（静的書き出し）。ビルド時に書き出すファイル:
+  - `/data/inventory/index.json`・`/data/inventory/<機種>.json`: 検索ページ用の在庫（`app/data/inventory/[file]/route.ts`）
+  - `/health.json`: データ鮮度の監視（`lib/health.ts`。Actions では `scripts/check-health.ts`）
+  - 楽天の取り込みは `scripts/ingest-rakuten.ts`（`lib/rakutenIngest.ts`）
 - **ORM**: [Prisma](https://www.prisma.io/)
 - **データベース**: [PostgreSQL](https://www.postgresql.org/)（本番は Neon。ローカルは Docker Compose も可）
   - `DeviceInventory`: 在庫（ショップごとに洗い替え）
@@ -43,7 +43,7 @@
 
 ## 楽天API 取り込み（ゲオモバイル・じゃんぱら・ソフマップの楽天市場店）
 - `rakuten-sync/fetch.php`（PHP）をシンレンタルサーバー（固定IP）の cron で実行し、楽天市場 商品検索API（2026-07-01版）から取得。
-  ショップごとに「iPhone」「iPad」の2語で検索してまとめ、gzip で `/api/ingest/rakuten?shop=<shopCode>` に送信。
+  ショップごとに「iPhone」「iPad」「Pixel」「Galaxy」で検索してまとめ、gzip の JSON を `config.php` の `output_dir` に保存（Actions が SSH で取りに来る）。
   1検索3,000件の上限は価格帯の2分割で回避。一時エラーは2回までリトライ。1ショップの失敗で他は止めない。
 - 正規化は受け口（TypeScript）側。ショップの登録は `lib/rakutenShops.ts`、商品名の読み取りは下の「コードの地図」。
 - 詳細は [operations.md](./operations.md)。
@@ -70,8 +70,8 @@
 | `format.ts` | 金額（`yen`）・容量（`storageLabel`）の表示 |
 | `ogFont.ts` | OGP 画像用の日本語フォント（使う文字だけのサブセット） |
 
-- 検索（`/search`・`/api/devices`）は同じ `buildWhere` を使う。機種もショップも指定がなければ iPhone のみ。
-  在庫のない機種名・知らない店名の検索ページは noindex
+- 検索（`/search`）はブラウザで絞り込む（`SearchClient`。条件は DB 版の `buildWhere` と同じ。機種の照合は `lib/modelMatch.ts`）。
+  機種もショップも指定がなければ iPhone のみ。/search は noindex
 - 新しいショップ・機種の追加手順は [operations.md](./operations.md)
 - iPad の機種名は `canonicalIpadModel` の1か所でそろえる。楽天3店は受け口で、イオシス・にこスマは Actions の `npm run normalize:ipad` で
 - 読み取りや照合を変えたら `npm run test:normalize`（商品名の読み取り・iPad の正規化・機種照合の回帰テスト）

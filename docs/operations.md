@@ -2,6 +2,9 @@
 
 ## 全体像
 
+> **static-export ブランチ**: 静的書き出し＋シンレンタルサーバー配信の版。構成・切り替え手順は [static-export.md](./static-export.md)。
+> 下の図とこのファイルの API（/api/ingest・/api/health）の記述は、切り替えるまでの Vercel 版（main）のもの
+
 ```
 [GitHub Actions 6時間ごと 3/9/15/21時]            [シンレンタルサーバー cron 2:40/8:40/14:40/20:40]
  scraper/run_all_scrapers.py（4店）                 ~/rakuten-sync/fetch.php
@@ -120,7 +123,8 @@
 
 - `docker compose up -d` でローカル Postgres。`DATABASE_URL="postgresql://user:password@localhost:5432/used_phone_db"` を付けて `npx prisma db push`・スクレイパー（`scraper/run_all_scrapers.py`）・`npx next dev` を動かすと、本番の Neon に触れずに在庫つきで確かめられる
 - Docker Desktop が起動途中で止まる（`docker info` が返らない・`dockerDesktopLinuxEngine` が見つからない）とき: PC の再起動後に古いソケットが残るのが原因（9/30・10/3 に発生）。
-  Docker のプロセスを止め `wsl --shutdown` → `%LOCALAPPDATA%\Dockerun` と `%LOCALAPPDATA%\docker-secrets-engine` を `.stale-日時` に名前を変えて起動し直す（削除・Reset to factory defaults はしない）
+  Docker のプロセスを止め `wsl --shutdown` → `%LOCALAPPDATA%\Docker
+un` と `%LOCALAPPDATA%\docker-secrets-engine` を `.stale-日時` に名前を変えて起動し直す（削除・Reset to factory defaults はしない）
 - Docker Desktop が起動しきらない（WSL の docker-desktop が Stopped のまま）とき: 前回の終了で残ったソケット（`%LOCALAPPDATA%\Docker
 un\dockerInference`・`%LOCALAPPDATA%\docker-secrets-engine\engine.sock`）を消せずに落ちている。
   Docker を終了し、2つのフォルダを `.stale-日時` に名前を変えてから起動し直す（ファイル自体は消せない。「Reset to factory defaults」は押さない）

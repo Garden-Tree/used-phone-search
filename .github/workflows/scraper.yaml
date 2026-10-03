@@ -27,6 +27,11 @@ on:
         required: true
         default: '100'
 
+# 手動実行と定期実行が重ならないように（楽天の洗い替え・書き出し・rsync --delete が同時に走らない）
+concurrency:
+  group: scraper-deploy
+  cancel-in-progress: false
+
 # 自分自身を有効化し直すステップで actions: write が必要
 permissions:
   contents: read
@@ -140,6 +145,7 @@ jobs:
 
       # サイトの書き出し（out/）。DB を読むのはここだけ（実行時は読まない）
       - name: サイトを書き出す
+        id: build
         if: ${{ !cancelled() }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -149,11 +155,20 @@ jobs:
           npx next build
           test -f out/index.html && test -f out/data/inventory/index.json
 
-      # 配置先のフォルダを丸ごと out/ と同じにする（--delete。配置先は used.gadelog.com 専用のフォルダにすること）。
-      # OGP 画像などはビルドのたびに作り直されるので、更新日時ではなく中身で比べて変わったものだけ送る
+      # 配置先のフォルダを out/ と同じにする（--delete）。
+      # - 配置先を間違えてブログなどを消さないよう、印のファイル（.used-deploy-target）があるフォルダにだけ配置する
+      # - 送り終えてから一度に入れ替え・削除する（--delay-updates --delete-after）。古い HTML が読む _next/static は消さない（P）
+      # - サーバー側のファイル（SSL 認証の .well-known・.user.ini・印のファイル）は触らない
+      # - OGP 画像などはビルドのたびに作り直されるので、更新日時ではなく中身で比べて変わったものだけ送る
       - name: シンレンタルサーバーへ配置
-        if: ${{ success() && env.DEPLOY_HOST != '' && env.DEPLOY_PATH != '' }}
-        run: rsync -rlzc --delete out/ "deploy:${DEPLOY_PATH%/}/"
+        # 一部の店の取得・楽天の取り込みに失敗した回も、取れた分で書き出せていれば配置する（success() だと止まる）
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && env.DEPLOY_HOST != '' && env.DEPLOY_PATH != '' }}
+        run: |
+          ssh deploy "test -f '${DEPLOY_PATH%/}/.used-deploy-target'" || { echo "配置先に .used-deploy-target がない（DEPLOY_PATH を確認）"; exit 1; }
+          rsync -rlzc --delete --delete-after --delay-updates \
+            --filter='P /_next/static/***' --filter='P /.well-known/***' --filter='P /.user.ini' --filter='P /.used-deploy-target' \
+            --exclude='/.well-known/' --exclude='/.user.ini' --exclude='/.used-deploy-target' \
+            out/ "deploy:${DEPLOY_PATH%/}/"
 
       - name: 監視で問題があればジョブを失敗にする
         if: ${{ !cancelled() && steps.health.outcome == 'failure' }}

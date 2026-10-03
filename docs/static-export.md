@@ -21,11 +21,16 @@ GitHub Actions（scraper.yaml・6時間ごと）
 ```
 
 - **実行時に DB を使わない**。Neon に触るのは Actions（1日4回）だけ → Free 枠に収まる見込み
-- 検索ページ（/search）はブラウザで絞り込む。在庫は機種ごとの JSON（/data/inventory/<機種>.json、合計 2MB 前後）を書き出す（`lib/searchData.ts`・`app/components/SearchClient.tsx`）
+- 検索ページ（/search）はブラウザで絞り込む。在庫は機種ごとの JSON（/data/inventory/<機種>.json）を書き出す（`lib/searchData.ts`・`app/components/SearchClient.tsx`）
+  - 大きさの見込み（本番 約5.2万件で換算）: 全体 非圧縮 約7MB／圧縮 約0.9MB、iPhone タブ（約50ファイル）圧縮 約0.6MB。.htaccess で圧縮して配信する
+  - 機種名が iPhone・iPad・Pixel・Galaxy のどれでも始まらない在庫は検索に出さない（DB 版の種類のタブと同じ）。売り切れ（isSoldOut）は出さない
   - URL のパラメータは今と同じ。違いは「ショップだけの指定」が全種類ではなく種類のタブ（初めは iPhone）になること
+    （トップの店ごとの件数は全種類の合計なので、リンク先の件数と合わない）
   - /search は noindex・sitemap から外した（結果が HTML に入らないため）
 - API（/api/devices・/api/health・/api/ingest/rakuten）は廃止。監視は /health.json
-- URL はそのまま（`public/.htaccess` で /iphone/iphone-13 → iphone-13.html。末尾の / は 301 で外す。OGP 画像は image/png）
+- URL はそのまま（`public/.htaccess` で /iphone/iphone-13 → iphone-13.html。http と末尾の / は https・/ なしへ 301。OGP 画像は image/png）
+- Vercel はこのブランチから一切ビルドしない（`scripts/vercel-ignore.sh`）。main にマージしても、DNS を切り替えるまでは Vercel の最後のデプロイ（旧版）が動き続ける
+- 配置（rsync）は印のファイル `.used-deploy-target` があるフォルダにだけ行う。送り終えてから一度に入れ替え・削除し、古い `_next/static`・`.well-known`・`.user.ini` は消さない。Actions は同時に1本だけ（concurrency）
 - 書き出しは約 80MB・2,700 ファイル（多くは OGP 画像）
 
 ## 手元での確認
@@ -43,6 +48,8 @@ docker run -d --name used-static-test -p 8088:80 -v "<リポジトリ>/out:/usr/
    - サブドメイン `used.gadelog.com` を追加（ドキュメントルートを控える。例 `~/gadelog.com/public_html/used`）。
      DNS が Vercel を向いているあいだは、サブドメインの追加だけでは表示は変わらない
    - SSL（無料独自 SSL）は DNS を切り替えた後に申請する（手順 6）
+   - そのフォルダに空の印のファイル `.used-deploy-target` を作る（ファイルマネージャの「新規ファイル」）。これが無いと Actions は配置しない
+   - サーバーパネルが作った `.htaccess` があれば中身を控える（out/.htaccess で上書きされる。https への転送は out/.htaccess に入っている）
 2. **SSH の鍵**（ユーザー）
    - サーバーパネル「SSH設定」を ON、公開鍵認証用の鍵を作る（秘密鍵は Claude に渡さない）
    - GitHub の Secrets に登録: `DEPLOY_HOST`（例 `wp760415.wpx.jp`）・`DEPLOY_PORT`（シンは `10022`）・`DEPLOY_USER`（`wp760415`）・
@@ -52,7 +59,7 @@ docker run -d --name used-static-test -p 8088:80 -v "<リポジトリ>/out:/usr/
 3. **楽天の取り込みを切り替える**（ユーザーが config.php に1行足す）
    - `rakuten-sync/fetch.php`（このブランチの版）をサーバーに上書き。`config.php` に `'output_dir' => __DIR__ . '/out',`
    - この時点から Vercel 版の楽天分は更新されなくなる → 手順 4 を同じ日に
-4. **ブランチを main にマージ**（Claude）→ Actions を手動実行して、配置まで通るか確認
+4. **ブランチを main にマージ**（Claude）→ Actions を手動実行して、配置まで通るか確認。STATE の「ページ方針」（検索ページは noindex・ISR なし）も書き換える
    - サーバーの初期ドメイン（`wp760415.wpx.jp` 配下など）か hosts の書き換えで、配置した中身を見る
 5. **healthcheck.php を上書き**（/health.json を読む版）
 6. **DNS の切り替え**（ユーザー）: `used.gadelog.com` を Vercel からシンサーバーへ。反映後に SSL を申請
@@ -65,4 +72,5 @@ docker run -d --name used-static-test -p 8088:80 -v "<リポジトリ>/out:/usr/
 - シンサーバーの Apache で `DirectorySlash Off`・`ForceType`・`mod_headers` が .htaccess で使えるか（手元の Apache では動いた）
 - Actions からの SSH（接続元 IP の制限がないか）・rsync の有無
 - 書き出しのたびに 2,700 ファイルを比べる rsync の時間（中身で比べるので送るのは変わったものだけ）
+- 前段にプロキシがあって `%{HTTPS}` が on にならない場合、https への転送がループする（その場合は `X-Forwarded-Proto` を見る形に）
 - 検索ページを直接開いたときのタイトル（`document.title`）が「中古スマホの在庫検索」のままのことがある（タブを切り替えると変わる。表示上の問題のみ）
