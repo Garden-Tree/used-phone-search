@@ -11,18 +11,19 @@ DirectorySlash Off
 
 RewriteEngine On
 
+# ドットファイル（印のファイル・.user.ini・rsync の一時フォルダ .~tmp~ など）は見せない。SSL の認証用 .well-known は除く
+RewriteRule (^|/)\.(?!well-known/) - [R=404,L]
+
 # used.gadelog.com 以外のホスト名（ブログ側のフォルダ gadelog.com/used/… など）で来たら寄せる（手元の確認用の localhost は除く）
 RewriteCond %{HTTP_HOST} !^used\.gadelog\.com$ [NC]
-RewriteCond %{HTTP_HOST} !^localhost
+RewriteCond %{HTTP_HOST} !^localhost(:[0-9]+)?$
 RewriteRule ^(.*)$ https://used.gadelog.com/$1 [R=301,L]
 
-# rsync の配置途中の一時フォルダ（--delay-updates の .~tmp~）は見せない
-RewriteRule (^|/)\.~tmp~ - [R=404,L]
 
 # http → https（Vercel 版と同じく https に寄せる。SSL の認証用 .well-known は除く）
 RewriteCond %{HTTPS} !on
 RewriteCond %{REQUEST_URI} !^/\.well-known/
-RewriteCond %{HTTP_HOST} !^localhost
+RewriteCond %{HTTP_HOST} !^localhost(:[0-9]+)?$
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
 # 末尾に / が付いた URL は付かない形へ（トップは除く）

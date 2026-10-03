@@ -181,7 +181,8 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
     if (!empty($config['output_dir'])) {
         $dir = rtrim($config['output_dir'], '/');
         if (!is_dir($dir)) mkdir($dir, 0700, true);
-        $tmp = "{$dir}/.{$shopCode}.json.gz.tmp";
+        // 手動実行と cron が重なっても書きかけを取り違えないよう、一時ファイル名にプロセス番号を付ける
+        $tmp = "{$dir}/.{$shopCode}.json.gz." . getmypid() . '.tmp';
         $ok = file_put_contents($tmp, $payload) !== false && rename($tmp, "{$dir}/{$shopCode}.json.gz");
         logLine("{$shopCode} saved: " . ($ok ? "{$dir}/{$shopCode}.json.gz (" . strlen($payload) . ' bytes)' : 'FAILED'));
         return $ok;
@@ -202,6 +203,14 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
     curl_close($ch);
     logLine("{$shopCode} ingest: HTTP {$status} " . cutUtf8((string)$body, 500));
     return $status === 200;
+}
+
+// 知らないショップ名（打ち間違い・パスに使えない文字）は止める
+foreach ($onlyShops as $shopCode) {
+    if (!in_array($shopCode, SHOP_CODES, true)) {
+        fwrite(STDERR, "unknown shop: {$shopCode}\n");
+        exit(2);
+    }
 }
 
 // 1ショップの失敗で他のショップを止めない

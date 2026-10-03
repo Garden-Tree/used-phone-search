@@ -99,6 +99,8 @@ export async function checkHealth(): Promise<HealthReport> {
       lastPriceSnapshot: snapshotDate?.toISOString().slice(0, 10) ?? null,
     };
   } catch (error) {
-    return { ok: false, checkedAt: new Date(now).toISOString(), problems: [`DB に接続できません: ${String(error)}`] };
+    // 接続先のホスト名などを公開しないよう、詳細はログだけに出す（/health.json は誰でも読める）
+    console.error("health check failed:", error);
+    return { ok: false, checkedAt: new Date(now).toISOString(), problems: ["DB に接続できません"] };
   }
 }

@@ -26,12 +26,25 @@ curl_close($ch);
 
 $data = is_string($body) ? json_decode($body, true) : null;
 
+// ページそのものが配信できているか（.htaccess の不具合・サーバー側の設定変更で HTML だけ壊れることがある）
+$pageProblems = [];
+foreach (['https://used.gadelog.com/', 'https://used.gadelog.com/iphone/iphone-13'] as $pageUrl) {
+    $ch = curl_init($pageUrl);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 60]);
+    $html = curl_exec($ch);
+    $pageStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($pageStatus !== 200 || !is_string($html) || stripos($html, '<html') === false) {
+        $pageProblems[] = "ページが表示できない: {$pageUrl}（HTTP {$pageStatus}）";
+    }
+}
+
 $buildAgeHours = is_array($data) && isset($data['checkedAt'])
     ? (time() - strtotime((string)$data['checkedAt'])) / 3600
     : null;
 $buildStale = $buildAgeHours === null || $buildAgeHours > MAX_BUILD_AGE_HOURS;
 
-if ($status === 200 && is_array($data) && ($data['ok'] ?? false) === true && !$buildStale) {
+if ($status === 200 && is_array($data) && ($data['ok'] ?? false) === true && !$buildStale && $pageProblems === []) {
     exit(0); // 正常: 出力しない（メールも送られない）
 }
 
@@ -39,9 +52,11 @@ echo "【中古スマホ一括検索】データ更新に問題があります\n
 echo "確認先: " . HEALTH_URL . "\n";
 echo "HTTP ステータス: {$status}" . ($error !== '' ? "（{$error}）" : '') . "\n\n";
 
+foreach ($pageProblems as $problem) {
+    echo "- {$problem}\n";
+}
 if ($buildStale) {
-    echo "- サイトの書き出しが止まっています（最終: " . ($data['checkedAt'] ?? '不明') . "）
-";
+    echo "- サイトの書き出しが止まっています（最終: " . ($data['checkedAt'] ?? '不明') . "）\n";
 }
 if (is_array($data)) {
     foreach ($data['problems'] ?? [] as $problem) {

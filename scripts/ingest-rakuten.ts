@@ -2,8 +2,11 @@
  * 楽天市場店の在庫を取り込む（静的書き出し版）。
  * シンレンタルサーバーの rakuten-sync/fetch.php（output_dir を設定したとき）が書き出した <shopCode>.json.gz を、
  * GitHub Actions が SSH で取ってきてから実行する:
- *   npx tsx scripts/ingest-rakuten.ts <ディレクトリ> [--force]
- * ファイルが古い（前回の取り込みに使ったもの）ときは取り込まない。1ショップの失敗で他を止めない
+ *   npx tsx scripts/ingest-rakuten.ts <ディレクトリ> [--allow-shrink] [--allow-old]
+ *   --allow-shrink … 件数が前回の半分未満でも洗い替える（安全装置を外す。品切れが本当に多いときだけ）
+ *   --allow-old    … 前回取り込んだファイル・7時間より古いファイルも取り込む
+ * 1ショップの失敗で他を止めない。前回取り込んだファイル（fetch.php の取得がまだ終わっていない回）は警告だけで、失敗にはしない
+ * （止まったことは /health.json の24時間判定で気づく）
  */
 import "dotenv/config";
 import { existsSync, readFileSync, statSync } from "node:fs";
@@ -18,8 +21,9 @@ const MAX_AGE_HOURS = 7;
 
 async function main() {
   const dir = process.argv[2];
-  const force = process.argv.includes("--force");
-  if (!dir) throw new Error("使い方: tsx scripts/ingest-rakuten.ts <ディレクトリ> [--force]");
+  const allowShrink = process.argv.includes("--allow-shrink");
+  const allowOld = process.argv.includes("--allow-old");
+  if (!dir) throw new Error("使い方: tsx scripts/ingest-rakuten.ts <ディレクトリ> [--allow-shrink] [--allow-old]");
 
   let failed = 0;
   for (const shopCode of Object.keys(RAKUTEN_SHOPS)) {
@@ -30,7 +34,7 @@ async function main() {
       continue;
     }
     const ageHours = (Date.now() - statSync(file).mtimeMs) / 3_600_000;
-    if (ageHours > MAX_AGE_HOURS) {
+    if (!allowOld && ageHours > MAX_AGE_HOURS) {
       console.error(`${shopCode}: ファイルが ${ageHours.toFixed(1)} 時間前のもの（fetch.php が失敗している）。取り込まない`);
       failed++;
       continue;
@@ -41,15 +45,14 @@ async function main() {
       where: { shopName: RAKUTEN_SHOPS[shopCode].shopName },
       _max: { updatedAt: true },
     });
-    if (!force && last._max.updatedAt && statSync(file).mtimeMs <= last._max.updatedAt.getTime()) {
-      console.error(`${shopCode}: 前回取り込んだファイル（${new Date(statSync(file).mtimeMs).toISOString()}）。新しい取得を待つ`);
-      failed++;
+    if (!allowOld && last._max.updatedAt && statSync(file).mtimeMs <= last._max.updatedAt.getTime()) {
+      console.warn(`${shopCode}: 前回取り込んだファイル（${new Date(statSync(file).mtimeMs).toISOString()}）。次の回に取り込む`);
       continue;
     }
     try {
       const items: RakutenItem[] = JSON.parse(gunzipSync(readFileSync(file)).toString("utf8")).items;
       if (!Array.isArray(items)) throw new Error("items is not an array");
-      const result = await replaceRakutenShop(shopCode, items, force);
+      const result = await replaceRakutenShop(shopCode, items, allowShrink);
       console.log(`${shopCode}: ${JSON.stringify(result)}`);
       if (!result.ok) failed++;
     } catch (error) {

@@ -54,7 +54,8 @@ docker run -d --name used-static-test -p 8088:80 -v "<リポジトリ>/out:/usr/
    - 切り替えの1日前に `used` のレコードの TTL を短く（300 秒など）しておく
 1. **サーバー: used 用のフォルダとサブドメイン**（サーバーパネル）
    - サブドメイン `used.gadelog.com` を追加し、ドキュメントルートを控える。できれば public_html の外（ブログのフォルダの下だと gadelog.com/used/… でも見えてしまう。.htaccess で used.gadelog.com に寄せてはいる）
-   - そのフォルダに空の印のファイル `.used-deploy-target` を作る（ファイルマネージャの「新規ファイル」）。これが無いと Actions は配置しない
+   - そのフォルダに印のファイル `.used-deploy-target` を作り、中身を1行 `used.gadelog.com` にする（ファイルマネージャの「新規ファイル」）。これが無い・中身が違うと Actions は配置しない
+   - 配置の安全策（`scripts/ci-deploy.sh`）: 印のあるフォルダだけ／ホームそのもの・`.`・`..` を含む指定は拒否／消すファイルが300件を超えたら止める。秘密鍵は取得・配置の間だけディスクに置く
    - サーバーパネルが作った `.htaccess` があれば中身を控える（out/.htaccess で上書きされる。https への転送は out/.htaccess に入っている）
 2. **SSL を DNS 切り替えの前に用意する**（ユーザー・サーバーパネル「SSL設定」）
    - シンの「他社サーバーでの Web 認証」: 発行されたトークンファイルを今の配信元（Vercel）の同じパスに置く → Claude が main の `public/` に置いて Vercel に出す。
@@ -66,7 +67,8 @@ docker run -d --name used-static-test -p 8088:80 -v "<リポジトリ>/out:/usr/
    - GitHub の Secrets に登録: `DEPLOY_HOST`（例 `wp760415.wpx.jp`）・`DEPLOY_PORT`（シンは `10022`）・`DEPLOY_USER`（`wp760415`）・
      `DEPLOY_SSH_KEY`（秘密鍵）・`DEPLOY_KNOWN_HOSTS`（`ssh-keyscan -p 10022 <ホスト>` の結果）・
      `DEPLOY_PATH`（手順 1 のフォルダ。**ホームからの相対パスか絶対パス**。`~/` は付けても外す）・`RAKUTEN_DATA_PATH`（省略時 `rakuten-sync/out`）
-   - サーバーに rsync があるか（`ssh ... rsync --version`）。scp は SFTP 方式で動く（ubuntu の既定）。SFTP が使えなければワークフローを `scp -O` に
+   - サーバーに rsync があるか（`ssh ... rsync --version`）。scp は SFTP 方式で動く（ubuntu の既定）。SFTP が使えなければ `scripts/ci-deploy.sh` を `scp -O` に
+   - できれば `authorized_keys` でこの鍵を used のフォルダだけに制限する（`command="rrsync …",restrict`。シンで rrsync が使えるかは未確認。使えない場合は今の安全策で運用）
 4. **楽天の取り込みを切り替える**（ユーザーが config.php に1行足す。手順 5 と同じ日に）
    - `rakuten-sync/fetch.php`（このブランチの版）をサーバーに上書き。`config.php` に `'output_dir' => __DIR__ . '/out',`
    - この時点から Vercel 版の楽天分は更新されなくなる（DNS を切り替えるまでの数時間〜1日は、楽天3店だけ古い在庫のまま）
