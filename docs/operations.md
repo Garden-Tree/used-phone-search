@@ -2,7 +2,7 @@
 
 ## 全体像
 
-> **static-export ブランチ**: 静的書き出し＋シンレンタルサーバー配信の版。構成・切り替え手順は [static-export.md](./static-export.md)。
+> **cloudflare-pages ブランチ**: 静的書き出し＋Cloudflare Pages 配信の版。構成・切り替え手順は [cloudflare-pages.md](./cloudflare-pages.md)。
 > 下の図とこのファイルの API（/api/ingest・/api/health）の記述は、切り替えるまでの Vercel 版（main）のもの
 
 ```

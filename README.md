@@ -21,7 +21,7 @@
 - **Database**: PostgreSQL（Neon）+ Prisma ORM
 - **Scraper**: Python 3 (BeautifulSoup4, curl_cffi, psycopg2)。GitHub Actions で6時間ごと
 - **楽天API 取り込み**: PHP（シンレンタルサーバーの cron）が JSON を保存 → Actions が取り込み（ゲオ・じゃんぱら・ソフマップ）
-- **Hosting**: 静的書き出しをシンレンタルサーバーで配信（`https://used.gadelog.com`。切り替え前は Vercel。`docs/static-export.md`）
+- **Hosting**: 静的書き出しを Cloudflare Pages で配信（`https://used.gadelog.com`。切り替え前は Vercel。`docs/cloudflare-pages.md`）
 
 > 💡 技術的な詳細については [docs/tech_stack.md](./docs/tech_stack.md) を参照してください。
 

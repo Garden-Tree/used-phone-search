@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-// 静的書き出し版（docs/static-export.md）はビルドのたびに書き出す /health.json を読む。
+// 静的書き出し版（docs/cloudflare-pages.md）はビルドのたびに書き出す /health.json を読む。
 // ビルド自体が止まっても気づけるよう、checkedAt が古すぎるときも問題とする
 const HEALTH_URL = 'https://used.gadelog.com/health.json';
 const MAX_BUILD_AGE_HOURS = 14; // ビルドは6時間ごと（GitHub の遅れで数時間ずれる）
@@ -26,7 +26,7 @@ curl_close($ch);
 
 $data = is_string($body) ? json_decode($body, true) : null;
 
-// ページそのものが配信できているか（.htaccess の不具合・サーバー側の設定変更で HTML だけ壊れることがある）
+// ページそのものが配信できているか（配置の不具合・DNS・SSL の問題で HTML だけ届かないことがある）
 $pageProblems = [];
 foreach (['https://used.gadelog.com/', 'https://used.gadelog.com/iphone/iphone-13'] as $pageUrl) {
     $ch = curl_init($pageUrl);

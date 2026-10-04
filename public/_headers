@@ -1,0 +1,23 @@
+# Cloudflare Pages のレスポンスヘッダー（used.gadelog.com の静的書き出し。docs/cloudflare-pages.md）
+# HTML・在庫データ（/data/inventory）・/health.json は Pages の既定（public, max-age=0, must-revalidate）のまま。1日4回書き出すので毎回確認させる
+
+# 今の本番（Vercel）と同じ HSTS（2年）
+/*
+  Strict-Transport-Security: max-age=63072000
+
+# ファイル名にハッシュが付く JS・CSS は長くキャッシュ
+/_next/static/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+
+# OGP 画像は拡張子なしのファイル名で書き出される
+/opengraph-image
+  Content-Type: image/png
+/*/opengraph-image
+  Content-Type: image/png
+
+# pages.dev の URL（本番・プレビュー）は検索に出さない。正式な URL は used.gadelog.com（canonical もそちら）
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex

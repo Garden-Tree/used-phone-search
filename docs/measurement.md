@@ -53,5 +53,5 @@
 ## 監視（計測ではなくデータ鮮度）
 
 - `https://used.gadelog.com/api/health`：ショップごとの最終更新と価格推移の最終記録日。24時間以上止まると 503
-  （static-export 版は `/health.json`。ビルドのたびに書き出し、`ok` と `checkedAt` を見る。`docs/static-export.md`）
+  （Cloudflare Pages 版は `/health.json`。ビルドのたびに書き出し、`ok` と `checkedAt` を見る。`docs/cloudflare-pages.md`）
 - サーバーの cron が毎日10:00に確認し、問題時のみメール（詳細は `operations.md`）

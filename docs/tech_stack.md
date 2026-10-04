@@ -13,7 +13,7 @@
   - `SortSelect`: 価格順、バッテリー容量順での動的な並び替え（URLパラメータ連動）。
   - `DeviceCard`: 在庫1件の表示とアフィリエイトリンクの生成（A8・楽天アフィリエイト）。iPad の Wi-Fi モデルは carrier=「Wi-Fiモデル」。
   - `PriceHistoryChart`: 価格推移の SVG グラフ（容量タブ・ホバーのツールチップ・表表示）。
-- **ページ**: すべて静的書き出し（`output: "export"`。ビルドは Actions で1日4回、out/ をシンレンタルサーバーへ配置。`docs/static-export.md`）。検索 `/search` も静的な1ページで、中身はブラウザで組み立てる。
+- **ページ**: すべて静的書き出し（`output: "export"`。ビルドは Actions で1日4回、out/ を Cloudflare Pages へ配置。`docs/cloudflare-pages.md`）。検索 `/search` も静的な1ページで、中身はブラウザで組み立てる。
   `/ipad/[slug]` は `/iphone/[slug]/page.tsx` を再エクスポートしている（中身は共通）。
 - **OGP 画像**: `opengraph-image.tsx` + `next/og`。日本語フォントは Google Fonts から使用文字だけのサブセットを取得（`lib/ogFont.ts`）。
 
@@ -43,7 +43,7 @@
 
 ## 楽天API 取り込み（ゲオモバイル・じゃんぱら・ソフマップの楽天市場店）
 - `rakuten-sync/fetch.php`（PHP）をシンレンタルサーバー（固定IP）の cron で実行し、楽天市場 商品検索API（2026-07-01版）から取得。
-  ショップごとに「iPhone」「iPad」「Pixel」「Galaxy」で検索してまとめ、gzip の JSON を `config.php` の `output_dir` に保存（Actions が SSH で取りに来る）。
+  ショップごとに「iPhone」「iPad」「Pixel」「Galaxy」で検索してまとめ、gzip の JSON を `config.php` の `output_dir`（公開フォルダの中の推測されにくいフォルダ）に保存（Actions が HTTPS で取りに来る）。
   1検索3,000件の上限は価格帯の2分割で回避。一時エラーは2回までリトライ。1ショップの失敗で他は止めない。
 - 正規化は受け口（TypeScript）側。ショップの登録は `lib/rakutenShops.ts`、商品名の読み取りは下の「コードの地図」。
 - 詳細は [operations.md](./operations.md)。

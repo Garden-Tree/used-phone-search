@@ -4,7 +4,7 @@ import { RAKUTEN_SHOPS, type RakutenItem } from "@/lib/rakutenShops";
 /**
  * 楽天市場店の在庫の洗い替え（ショップ単位）。
  * Vercel 版は /api/ingest/rakuten が fetch.php からの POST を受けて呼び、
- * 静的書き出し版（static-export ブランチ）は scripts/ingest-rakuten.ts が、サーバーに置かれた JSON を読んで呼ぶ
+ * Cloudflare Pages 版（静的書き出し）は scripts/ingest-rakuten.ts が、サーバーに置かれた JSON を Actions が取ってきてから呼ぶ
  */
 
 // 取得件数が既存の何割未満なら洗い替えを中止するか（scraper/common.py の ensure_safe_to_replace と同じ考え方）
