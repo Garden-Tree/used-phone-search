@@ -14,7 +14,7 @@
  ワークフローの自己有効化（60日停止の防止）
                                    ↓
               Vercel（used.gadelog.com・Next.js 16）
-               静的（ISR 3時間・OGP 画像は1日）: トップ / 機種別 / 比較 / 目的別 / OGP 画像
+               静的（ISR 6時間・OGP 画像は1日）: トップ / 機種別 / 比較 / 目的別 / OGP 画像
                動的: 検索 / API
                                    ↑
 [シンレンタルサーバー cron 毎日10:00] ~/rakuten-sync/healthcheck.php → /api/health
@@ -123,8 +123,6 @@
 
 - `docker compose up -d` でローカル Postgres。`DATABASE_URL="postgresql://user:password@localhost:5432/used_phone_db"` を付けて `npx prisma db push`・スクレイパー（`scraper/run_all_scrapers.py`）・`npx next dev` を動かすと、本番の Neon に触れずに在庫つきで確かめられる
 - Docker Desktop が起動途中で止まる（`docker info` が返らない・`dockerDesktopLinuxEngine` が見つからない）とき: PC の再起動後に古いソケットが残るのが原因（9/30・10/3 に発生）。
-  Docker のプロセスを止め `wsl --shutdown` → `%LOCALAPPDATA%\Docker
-un` と `%LOCALAPPDATA%\docker-secrets-engine` を `.stale-日時` に名前を変えて起動し直す（削除・Reset to factory defaults はしない）
-- Docker Desktop が起動しきらない（WSL の docker-desktop が Stopped のまま）とき: 前回の終了で残ったソケット（`%LOCALAPPDATA%\Docker
-un\dockerInference`・`%LOCALAPPDATA%\docker-secrets-engine\engine.sock`）を消せずに落ちている。
+  Docker のプロセスを止め `wsl --shutdown` → `%LOCALAPPDATA%\Docker\run` と `%LOCALAPPDATA%\docker-secrets-engine` を `.stale-日時` に名前を変えて起動し直す（削除・Reset to factory defaults はしない）
+- Docker Desktop が起動しきらない（WSL の docker-desktop が Stopped のまま）とき: 前回の終了で残ったソケット（`%LOCALAPPDATA%\Docker\run\dockerInference`・`%LOCALAPPDATA%\docker-secrets-engine\engine.sock`）を消せずに落ちている。
   Docker を終了し、2つのフォルダを `.stale-日時` に名前を変えてから起動し直す（ファイル自体は消せない。「Reset to factory defaults」は押さない）
