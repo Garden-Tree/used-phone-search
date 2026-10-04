@@ -39,7 +39,7 @@
 ## 進行中・外部条件待ち
 
 - **A8 イオシス 審査待ち**。承認されたら `lib/affiliate.ts` の `A8_PROGRAMS` にイオシスを追加
-- **Vercel からの移行**（Hobby は商用不可）: 比較は `ideas/2026-10-03.md`。**静的書き出し＋シンサーバー版を `static-export` ブランチで開発中**（手元で動作確認済み。手順はブランチの `docs/static-export.md`。**SSH は国外アクセス制限で Actions から入れない**→ 配置方法の判断待ち `ideas/2026-10-04.md`）
+- **Vercel からの移行**（Hobby は商用不可）: 比較は `ideas/2026-10-03.md`。**静的書き出し＋Cloudflare Pages 版を `cloudflare-pages` ブランチで開発**（手元で動作確認済み。手順はブランチの `docs/cloudflare-pages.md`。次はユーザーが Cloudflare のアカウント・API トークン。経緯 `ideas/2026-10-04.md`）
 
 ## 次にやる（順序）
 
