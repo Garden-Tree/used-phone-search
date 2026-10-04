@@ -14,8 +14,8 @@ import { IPAD_SHOPS, shopLabels } from "@/lib/shops";
 import { IPAD_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import { IPAD_PICKS, pickPath } from "@/lib/picks";
 
-// iPad の機種一覧。在庫は3時間ごとに更新
-export const revalidate = 10800; // 3時間（Neon の計算時間を減らすため。2026-10-02）
+// iPad の機種一覧。在庫は6時間ごとに更新
+export const revalidate = 21600; // 6時間（在庫の取り込みと同じ間隔。Neon の計算時間を減らすため。2026-10-04）
 
 const TITLE = "中古iPadの相場・最安値を機種別に比較【毎日更新】";
 const DESCRIPTION =

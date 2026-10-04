@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { BudgetView, budgetMetadata } from "@/app/components/BudgetView";
 import { IPAD_BUDGETS, budgetSlug, slugToBudget } from "@/lib/budgets";
 
-// iPad の予算別ページ（中身は iPhone と共通の BudgetView）。静的に生成して CDN から配信する。在庫は3時間ごとに更新
-export const revalidate = 10800; // 3時間（Neon の計算時間を減らすため。2026-10-02）
+// iPad の予算別ページ（中身は iPhone と共通の BudgetView）。静的に生成して CDN から配信する。在庫は6時間ごとに更新
+export const revalidate = 21600; // 6時間（在庫の取り込みと同じ間隔。Neon の計算時間を減らすため。2026-10-04）
 export const dynamicParams = false;
 
 export function generateStaticParams() {

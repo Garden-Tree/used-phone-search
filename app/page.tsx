@@ -12,8 +12,8 @@ import SiteFooter from "@/app/components/SiteFooter";
 import PriceDrops from "@/app/components/PriceDrops";
 import { getPriceDrops } from "@/lib/marketStats";
 
-// ショップごとの在庫数を出すので、3時間ごとに再生成する
-export const revalidate = 10800; // 3時間（Neon の計算時間を減らすため。2026-10-02）
+// ショップごとの在庫数を出すので、6時間ごとに再生成する
+export const revalidate = 21600; // 6時間（在庫の取り込みと同じ間隔。Neon の計算時間を減らすため。2026-10-04）
 
 /** ショップごとの在庫数。DB に届かないときもトップページは出す */
 async function shopCounts(): Promise<Map<string, number>> {
