@@ -21,7 +21,7 @@
 - **DB**: Neon は Launch（従量課金・9/27〜）。使用量が無料枠内なら Free に戻す（台帳 10/4〜8）。**Cloudflare 版でも DB は Neon のまま**（10/4。DB なし＝R2 案は問題が出たら。理由・移る目安は ideas/2026-10-04）
 - **データ更新**: 4店は GitHub Actions（6時間ごと）、ゲオ・じゃんぱら・ソフマップは楽天API（シンサーバー cron、その20分前）。構成図は `docs/operations.md`
 - **ページ方針**: 流入を取るページは静的生成（ISR 3時間・OGP 画像は1日。10/2〜）。検索ページ（動的）は絞り込み用（1機種だけなら canonical を機種ページ、複数機種・店つきは noindex。9/30。`/search?…` は robots.txt でクロール禁止 10/3）。「検品担当が見るポイント」・`/about`（運営者・プライバシーポリシー）の文面はユーザー確認後に変える
-- **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**（バッテリーの実数値は にこスマ・ソフマップ・じゃんぱら。保証・赤ロムは各店の公式で確認・毎月1日に見直す）
+- **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**（保証・赤ロムは各店の公式で確認・毎月1日に見直す）
 - **スペック・保証期限・発売年月は公式（Apple・Google・Samsung・キャリア）で確かめた値だけ載せる**（`lib/*Specs.ts`・`pixelCatalog.ts`・`galaxyCatalog.ts`）
 - **掲載機種**: iPhone（iOS 27 対応＋旧機種 X/XS/XR/8/7）・iPad 32・Pixel 24・Galaxy 29。18 系・iPhone Duo は中古在庫が出てから（台帳 11月）
 
@@ -39,7 +39,7 @@
 ## 進行中・外部条件待ち
 
 - **A8 イオシス 審査待ち**。承認されたら `lib/affiliate.ts` の `A8_PROGRAMS` にイオシスを追加
-- **Vercel からの移行**（Hobby は商用不可）: 比較は `ideas/2026-10-03.md`。**静的書き出し＋Cloudflare Pages 版を `cloudflare-pages` ブランチで開発**（手元で動作確認済み。手順はブランチの `docs/cloudflare-pages.md`。次はユーザーが Cloudflare のアカウント・API トークン。経緯 `ideas/2026-10-04.md`）
+- **Vercel からの移行**（Hobby は商用不可）: **静的書き出し＋Cloudflare Pages 版を `cloudflare-pages` ブランチで開発**（手元で確認済み。手順はブランチの `docs/cloudflare-pages.md`。次はユーザーが Cloudflare のアカウント・API トークン。経緯 `ideas/2026-10-03`・`10-04`）
 
 ## 次にやる（順序）
 
