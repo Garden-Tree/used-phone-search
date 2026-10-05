@@ -1,4 +1,7 @@
 name: Phone Inventory Scraper
+# Cloudflare Pages 版（cloudflare-pages ブランチ・docs/cloudflare-pages.md）: 在庫の取得 → 楽天分の取り込み → 価格推移 →
+# サイトの書き出し（next build）→ Cloudflare Pages へ配置、までを1本で行う。
+# Cloudflare の Secrets（CLOUDFLARE_*）が無いあいだは、書き出しまでで止まる
 
 on:
   schedule:
@@ -24,6 +27,11 @@ on:
         required: true
         default: '100'
 
+# 手動実行と定期実行が重ならないように（楽天の洗い替え・書き出し・rsync --delete が同時に走らない）
+concurrency:
+  group: scraper-deploy
+  cancel-in-progress: false
+
 # 自分自身を有効化し直すステップで actions: write が必要
 permissions:
   contents: read
@@ -32,14 +40,27 @@ permissions:
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
+    # 取得・スクレイパーが固まったときに6時間（既定）居座って、次の定期実行を待たせないように
+    timeout-minutes: 60
+    env:
+      # 楽天の在庫を置く URL（シンレンタルサーバー）と Cloudflare Pages。値は Secrets・Variables（docs/cloudflare-pages.md）
+      RAKUTEN_DATA_URL: ${{ secrets.RAKUTEN_DATA_URL }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CF_PAGES_PROJECT: ${{ vars.CF_PAGES_PROJECT || 'used-phone-search' }}
+      HAS_CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
 
     steps:
       - name: リポジトリのコードを取得
         uses: actions/checkout@v4
+        with:
+          # GitHub のトークンを .git に残さない（依存パッケージなどから読まれないように）
+          persist-credentials: false
 
       - name: .envファイルの作成
-        run: |
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        # 値を run: に直接埋め込まない（パスワードの記号をシェルに解釈させない）
+        run: echo "DATABASE_URL=$DATABASE_URL" > .env
 
       - name: Python 3.11 をセットアップ
         uses: actions/setup-python@v5
@@ -76,6 +97,19 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm ci
 
+      # 楽天市場店の在庫: サーバーの fetch.php（cron。この20分前）が書き出した JSON を HTTPS で取ってきて取り込む。
+      # 失敗しても前回の在庫のまま書き出しは続ける（ジョブは失敗として通知される）
+      - name: 楽天市場店の在庫を取り込む
+        if: ${{ !cancelled() && env.RAKUTEN_DATA_URL != '' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        # 1店の取得に失敗しても、取れた店の分は取り込む（失敗はジョブの失敗として通知される）
+        run: |
+          fetch_ok=0
+          bash scripts/ci-deploy.sh fetch-rakuten || fetch_ok=1
+          npx tsx scripts/ingest-rakuten.ts rakuten-data
+          exit "$fetch_ok"
+
       # にこスマ・イオシスの iPad は店の表記のまま入るので、lib/ipadCatalog.ts の正式名にそろえる
       - name: iPad の機種名をそろえる
         if: ${{ !cancelled() }}
@@ -89,6 +123,48 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run snapshot:prices
+
+      # 監視: 取り込みが止まっていないか（問題があっても書き出しは続け、最後にジョブを失敗にして通知する）
+      - name: データ更新の監視
+        id: health
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx tsx scripts/check-health.ts
+
+      # サイトの書き出し（out/）。DB を読むのはここだけ（実行時は読まない）
+      - name: サイトを書き出す
+        id: build
+        if: ${{ !cancelled() }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_PUBLIC_SITE_URL: https://used.gadelog.com
+          NEXT_PUBLIC_GA_ID: G-YV3ZR0N6B1 # used 専用の GA4（公開される値）
+        run: |
+          npx next build
+          test -f out/index.html && test -f out/data/inventory/index.json
+
+      # Cloudflare Pages へ配置（scripts/ci-deploy.sh。ファイル数・大きさを Pages の上限と照らしてから wrangler で出す）
+      - name: Cloudflare Pages へ配置
+        # 一部の店の取得・楽天の取り込みに失敗した回も、取れた分で書き出せていれば配置する（success() だと止まる）
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && env.HAS_CLOUDFLARE_TOKEN == 'true' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: bash scripts/ci-deploy.sh deploy
+
+      # 切り替え後（main）に Cloudflare の Secrets が消えると、黙って配置しなくなる。そのときはジョブを失敗にして気づく
+      - name: 配置先の設定がなければ失敗にする
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' && (env.HAS_CLOUDFLARE_TOKEN != 'true' || env.CLOUDFLARE_ACCOUNT_ID == '' || env.RAKUTEN_DATA_URL == '') }}
+        run: |
+          echo "CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID / RAKUTEN_DATA_URL の Secrets がない（サイトか楽天の在庫が更新されていない）"
+          exit 1
+
+      - name: 監視で問題があればジョブを失敗にする
+        if: ${{ !cancelled() && steps.health.outcome == 'failure' }}
+        run: |
+          echo "データ更新に問題があります（上の「データ更新の監視」を参照）"
+          exit 1
 
       # GitHub は 60 日間リポジトリに動きがないと定期実行を自動で無効化する（2026/08 に実際に停止した）。
       # 実行のたびにワークフローを有効化し直して、無効化までの期限を延ばす

@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 
+export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {

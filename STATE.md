@@ -17,10 +17,10 @@
 
 - **GA4 は used 専用プロパティ 556047315（`G-YV3ZR0N6B1`）**（9/27〜。ブログと分離）
   - 自宅は内部トラフィックで除外（`240b:252:6222:1bf0::/64`・`14.12.98.34`。IP が変わったら直す）
-- **ホスティング**: Vercel（Hobby）
+- **ホスティング**: Cloudflare Pages（静的書き出し・10/6 切り替え中。Vercel は DNS を戻せるよう1〜2週間残す）
 - **DB**: Neon は Launch（従量課金・9/27〜）。使用量が無料枠内なら Free に戻す（台帳 10/4〜8）。**Cloudflare 版でも DB は Neon のまま**（10/4。DB なし＝R2 案は問題が出たら。理由・移る目安は ideas/2026-10-04）
-- **データ更新**: 4店は GitHub Actions（6時間ごと）、ゲオ・じゃんぱら・ソフマップは楽天API（シンサーバー cron、その20分前）。構成図は `docs/operations.md`
-- **ページ方針**: 流入を取るページは静的生成（ISR 6時間・OGP 画像は1日。10/4〜）。検索ページ（動的）は絞り込み用（1機種だけなら canonical を機種ページ、複数機種・店つきは noindex。9/30。`/search?…` は robots.txt でクロール禁止 10/3）。「検品担当が見るポイント」・`/about`（運営者・プライバシーポリシー）の文面はユーザー確認後に変える
+- **データ更新**: Actions（6時間ごと）が4店の取得・楽天3店の JSON（シンの cron が20分前に書き出し）の取り込み・書き出し・配置まで行う。構成は `docs/cloudflare-pages.md`
+- **ページ方針**: 全ページ静的（1日4回のビルドで作り直す）。検索ページはブラウザで絞り込み・noindex（sitemap に入れない。`/search?` は robots でクロール禁止）。「検品担当が見るポイント」・`/about`（運営者・プライバシーポリシー）の文面はユーザー確認後に変える
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**（保証・赤ロムは各店の公式で確認・毎月1日に見直す）
 - **スペック・保証期限・発売年月は公式（Apple・Google・Samsung・キャリア）で確かめた値だけ載せる**（`lib/*Specs.ts`・`pixelCatalog.ts`・`galaxyCatalog.ts`）
 - **掲載機種**: iPhone（iOS 27 対応＋旧機種 X/XS/XR/8/7）・iPad 32・Pixel 24・Galaxy 29。18 系・iPhone Duo は中古在庫が出てから（台帳 11月）
@@ -39,7 +39,7 @@
 ## 進行中・外部条件待ち
 
 - **A8 イオシス 審査待ち**。承認されたら `lib/affiliate.ts` の `A8_PROGRAMS` にイオシスを追加
-- **Vercel からの移行**（Hobby は商用不可）: **静的書き出し＋Cloudflare Pages 版を `cloudflare-pages` ブランチで開発**（10/5 に `used-phone-search.pages.dev` で本番と一致（全ページ）。手順 2・5 済み。次は TTL 300（ユーザー）→ 3〜4 を同じ日に。手順はブランチの `docs/cloudflare-pages.md`。経緯 ideas/10-03〜05）
+- **Vercel からの移行**（Hobby は商用不可）: **静的書き出し＋Cloudflare Pages 版へ切り替え中**（10/5 深夜 main にマージ。手順は `docs/cloudflare-pages.md`。経緯 ideas/10-03〜05）
 
 ## 次にやる（順序）
 

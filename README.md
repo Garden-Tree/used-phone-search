@@ -13,15 +13,15 @@
 - 🖼️ **OGP 画像の自動生成**: 機種別・比較ページは最安値入り
 - 🎛️ **高度なフィルタ・ソート**: 価格帯、容量、状態ランク、バッテリー最大容量（80/85/90/95%以上）、ショップ
 - 🔄 **データ正規化**: ショップごとに異なるモデル名・ランク・キャリア表記を統一
-- 🩺 **監視**: `/api/health` とサーバー cron で、データ更新の停止をメール通知
+- 🩺 **監視**: `/health.json`（ビルドのたびに書き出し）とサーバー cron で、データ更新の停止をメール通知
 
 ## 技術スタック (Technology Stack)
 
 - **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS 4, Lucide React
 - **Database**: PostgreSQL（Neon）+ Prisma ORM
 - **Scraper**: Python 3 (BeautifulSoup4, curl_cffi, psycopg2)。GitHub Actions で6時間ごと
-- **楽天API 取り込み**: PHP（シンレンタルサーバーの cron）→ `/api/ingest/rakuten?shop=…`（ゲオ・じゃんぱら・ソフマップ）
-- **Hosting**: Vercel（`https://used.gadelog.com`）
+- **楽天API 取り込み**: PHP（シンレンタルサーバーの cron）が JSON を保存 → Actions が取り込み（ゲオ・じゃんぱら・ソフマップ）
+- **Hosting**: 静的書き出しを Cloudflare Pages で配信（`https://used.gadelog.com`。切り替え前は Vercel。`docs/cloudflare-pages.md`）
 
 > 💡 技術的な詳細については [docs/tech_stack.md](./docs/tech_stack.md) を参照してください。
 

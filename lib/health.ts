@@ -1,17 +1,15 @@
-import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { jstToday } from "@/lib/priceHistory";
 import { SHOPS } from "@/lib/shops";
 
 /**
- * データ更新の監視用。ショップごとの最終更新と価格推移の最終記録日を返す。
- * 取り込みは6時間ごとなので、24時間以上更新がなければ停止とみなし 503 を返す。
+ * データ更新の監視。ショップごとの最終更新と価格推移の最終記録日を調べる。
+ * 取り込みは6時間ごとなので、24時間以上更新がなければ停止とみなす。
  * 店ごとに iPhone・iPad・Pixel・Galaxy をまとめて洗い替えるので、ある種類の一覧だけ取れなかった回はその種類が0件になる
- * （店の合計件数の安全装置には当たらない）。lib/shops.ts で扱うことになっている種類が0件でも 503 を返す
- * シンレンタルサーバーの cron（rakuten-sync/healthcheck.php）から毎日呼ばれる
+ * （店の合計件数の安全装置には当たらない）。lib/shops.ts で扱うことになっている種類が0件でも問題とする。
+ * 静的書き出し版では、ビルドのたびに /health.json として書き出し（app/health.json/route.ts）、
+ * GitHub Actions（scripts/check-health.ts）とシンレンタルサーバーの cron（rakuten-sync/healthcheck.php）が読む
  */
-
-export const dynamic = "force-dynamic";
 
 const STALE_HOURS = 24;
 
@@ -25,9 +23,24 @@ const DEVICES = [
   { key: "galaxy", label: "Galaxy", prefix: "Galaxy" },
 ] as const;
 
-export async function GET() {
+export type HealthReport = {
+  ok: boolean;
+  checkedAt: string;
+  problems: string[];
+  shops?: {
+    shop: string;
+    count: number;
+    lastUpdated: string | null;
+    ageHours: number | null;
+    stale: boolean;
+    devices: Record<string, number>;
+  }[];
+  lastPriceSnapshot?: string | null;
+};
+
+export async function checkHealth(): Promise<HealthReport> {
+  const now = Date.now();
   try {
-    const now = Date.now();
     const shops = await prisma.deviceInventory.groupBy({
       by: ["shopName"],
       _count: { _all: true },
@@ -78,20 +91,16 @@ export async function GET() {
       ...(snapshotStale ? [`価格推移: 最終記録 ${snapshotDate?.toISOString().slice(0, 10) ?? "なし"}`] : []),
     ];
 
-    return NextResponse.json(
-      {
-        ok: problems.length === 0,
-        checkedAt: new Date(now).toISOString(),
-        problems,
-        shops: shopStatus,
-        lastPriceSnapshot: snapshotDate?.toISOString().slice(0, 10) ?? null,
-      },
-      { status: problems.length === 0 ? 200 : 503, headers: { "Cache-Control": "no-store" } },
-    );
+    return {
+      ok: problems.length === 0,
+      checkedAt: new Date(now).toISOString(),
+      problems,
+      shops: shopStatus,
+      lastPriceSnapshot: snapshotDate?.toISOString().slice(0, 10) ?? null,
+    };
   } catch (error) {
-    return NextResponse.json(
-      { ok: false, problems: [`DB に接続できません: ${String(error)}`] },
-      { status: 503, headers: { "Cache-Control": "no-store" } },
-    );
+    // 接続先のホスト名などを公開しないよう、詳細はログだけに出す（/health.json は誰でも読める）
+    console.error("health check failed:", error);
+    return { ok: false, checkedAt: new Date(now).toISOString(), problems: ["DB に接続できません"] };
   }
 }

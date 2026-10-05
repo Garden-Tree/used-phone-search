@@ -11,8 +11,8 @@ import { SHOPS } from "@/lib/shops";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
 
-// 機種ページと同じく6時間ごとに作り直す（在庫の取り込みと同じ間隔）
-export const revalidate = 21600; // 6時間（在庫の取り込みと同じ間隔。Neon の計算時間を減らすため。2026-10-04）
+// 機種ページと同じくビルドのたびに作る（在庫の取り込みは6時間ごと）
+export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 const TITLE = "中古iPhoneの相場一覧【毎日更新】全機種の中古価格・最安値";
 const DESCRIPTION =

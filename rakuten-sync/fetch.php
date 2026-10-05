@@ -2,6 +2,9 @@
 /**
  * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone・iPad・Google Pixel・Galaxy 在庫を取得し、
  * used.gadelog.com の受け口（/api/ingest/rakuten?shop=<shopCode>）へショップごとに送信する。
+ * Cloudflare Pages 版（cloudflare-pages ブランチ）では、config.php に output_dir を書くと、送信せずに
+ * <output_dir>/<shopCode>.json.gz に保存する。output_dir は公開フォルダの中の推測されにくいフォルダにし、
+ * GitHub Actions が HTTPS で取りに来て scripts/ingest-rakuten.ts で取り込む（docs/cloudflare-pages.md）。
  *
  * シンレンタルサーバー（固定IP: 楽天アプリの許可IPに登録済み）の cron から実行する。
  *   php fetch.php                 … 全ショップを全件取得して送信
@@ -174,6 +177,21 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
 
     // 1万件規模になるので gzip で圧縮して送る（Vercel の受信上限対策）
     $payload = gzencode(json_encode(['items' => $items], JSON_UNESCAPED_UNICODE), 9);
+
+    // 静的書き出し版: ファイルに置くだけ（書きかけを読まれないよう、一時ファイルに書いてから名前を変える）
+    if (!empty($config['output_dir'])) {
+        $dir = rtrim($config['output_dir'], '/');
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        // 一覧を出さない・サーバーキャッシュ（5分）に古い分を返させない（must-revalidate などがあるとキャッシュされない）
+        if (!is_file("{$dir}/.htaccess")) {
+            file_put_contents("{$dir}/.htaccess", "Options -Indexes\nHeader set Cache-Control \"no-store\"\n");
+        }
+        // 手動実行と cron が重なっても書きかけを取り違えないよう、一時ファイル名にプロセス番号を付ける
+        $tmp = "{$dir}/.{$shopCode}.json.gz." . getmypid() . '.tmp';
+        $ok = file_put_contents($tmp, $payload) !== false && rename($tmp, "{$dir}/{$shopCode}.json.gz");
+        logLine("{$shopCode} saved: " . ($ok ? "{$dir}/{$shopCode}.json.gz (" . strlen($payload) . ' bytes)' : 'FAILED'));
+        return $ok;
+    }
     $ch = curl_init($config['ingest_url'] . '?shop=' . urlencode($shopCode));
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
@@ -190,6 +208,14 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
     curl_close($ch);
     logLine("{$shopCode} ingest: HTTP {$status} " . cutUtf8((string)$body, 500));
     return $status === 200;
+}
+
+// 知らないショップ名（打ち間違い・パスに使えない文字）は止める
+foreach ($onlyShops as $shopCode) {
+    if (!in_array($shopCode, SHOP_CODES, true)) {
+        fwrite(STDERR, "unknown shop: {$shopCode}\n");
+        exit(2);
+    }
 }
 
 // 1ショップの失敗で他のショップを止めない

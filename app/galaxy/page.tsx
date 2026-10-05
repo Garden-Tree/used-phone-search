@@ -15,8 +15,8 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { GALAXY_SHOPS, shopLabels } from "@/lib/shops";
 
-// Samsung Galaxy の機種一覧（2026-09-30〜）。在庫は6時間ごとに更新
-export const revalidate = 21600; // 6時間（在庫の取り込みと同じ間隔。Neon の計算時間を減らすため。2026-10-04）
+// Samsung Galaxy の機種一覧（2026-09-30〜）。在庫はビルド（1日4回）のたびに更新
+export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 const TITLE = "中古Galaxyの相場・最安値を機種別に比較【毎日更新】";
 const DESCRIPTION =

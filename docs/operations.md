@@ -2,6 +2,9 @@
 
 ## 全体像
 
+> **cloudflare-pages ブランチ**: 静的書き出し＋Cloudflare Pages 配信の版。構成・切り替え手順は [cloudflare-pages.md](./cloudflare-pages.md)。
+> 下の図とこのファイルの API（/api/ingest・/api/health）の記述は、切り替えるまでの Vercel 版（main）のもの
+
 ```
 [GitHub Actions 6時間ごと 3/9/15/21時]            [シンレンタルサーバー cron 2:40/8:40/14:40/20:40]
  scraper/run_all_scrapers.py（4店）                 ~/rakuten-sync/fetch.php

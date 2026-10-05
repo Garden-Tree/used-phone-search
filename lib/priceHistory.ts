@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { ALL_DEVICE_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
 import { groupMinPrice, medianPrice, modelWhere } from "@/lib/modelInventory";
+import { rethrowDuringBuild } from "@/lib/buildGuard";
 
 /** 全容量をまとめた集計を表す storage の値 */
 export const ALL_STORAGE = 0;
@@ -80,6 +81,7 @@ export async function getPriceHistory(modelSlug: string, days = 180): Promise<Pr
     }
     return history;
   } catch (error) {
+    rethrowDuringBuild(error);
     console.error("Failed to fetch price history:", error);
     return {};
   }

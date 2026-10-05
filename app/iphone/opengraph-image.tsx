@@ -4,10 +4,11 @@ import { minPriceByModel } from "@/lib/budgetStats";
 import { getModelMarket } from "@/lib/marketStats";
 import { notoSansJp } from "@/lib/ogFont";
 import { SHOPS } from "@/lib/shops";
+import { rethrowDuringBuild } from "@/lib/buildGuard";
 
-// 相場一覧（/iphone）の OGP 画像。1日ごとに作り直す。
+// 相場一覧（/iphone）の OGP 画像。ビルドのたびに作る。
 // 機種別ページ（/iphone/[slug]）はそれぞれの opengraph-image を持つので、この画像は /iphone だけに使われる
-export const revalidate = 86400; // 1日（Neon の計算時間を減らすため。2026-10-02）
+export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 export const alt = "中古iPhoneの相場一覧";
 export const size = { width: 1200, height: 630 };
@@ -19,8 +20,8 @@ const POPULAR = ["iPhone 12", "iPhone 13", "iPhone 14", "iPhone 15", "iPhone 16"
 export default async function Image() {
   // 在庫件数は1回の集計、中央値は並べる5機種の分だけ取る
   const [all, market] = await Promise.all([
-    minPriceByModel({ isSoldOut: false }, ALL_PAGE_MODELS).catch(() => new Map()),
-    getModelMarket(POPULAR).catch(() => new Map()),
+    minPriceByModel({ isSoldOut: false }, ALL_PAGE_MODELS).catch((e) => { rethrowDuringBuild(e); return new Map(); }),
+    getModelMarket(POPULAR).catch((e) => { rethrowDuringBuild(e); return new Map(); }),
   ]);
   const total = [...all.values()].reduce((n, r) => n + r.count, 0);
   const rows = POPULAR.flatMap((m) => {

@@ -11,9 +11,10 @@ import { SHOPS } from "@/lib/shops";
 import SiteFooter from "@/app/components/SiteFooter";
 import PriceDrops from "@/app/components/PriceDrops";
 import { getPriceDrops } from "@/lib/marketStats";
+import { rethrowDuringBuild } from "@/lib/buildGuard";
 
-// ショップごとの在庫数を出すので、6時間ごとに再生成する
-export const revalidate = 21600; // 6時間（在庫の取り込みと同じ間隔。Neon の計算時間を減らすため。2026-10-04）
+// ショップごとの在庫数を出す。ビルドのたびに作る
+export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 /** ショップごとの在庫数。DB に届かないときもトップページは出す */
 async function shopCounts(): Promise<Map<string, number>> {
@@ -25,6 +26,7 @@ async function shopCounts(): Promise<Map<string, number>> {
     });
     return new Map(rows.map((r) => [r.shopName, r._count._all]));
   } catch (error) {
+    rethrowDuringBuild(error);
     console.error("shop counts failed:", error);
     return new Map();
   }
@@ -35,6 +37,7 @@ async function modelPrices(): Promise<Map<string, { minPrice: number; count: num
   try {
     return await minPriceByModel({ isSoldOut: false }, ALL_CATALOG_MODELS);
   } catch (error) {
+    rethrowDuringBuild(error);
     console.error("model prices failed:", error);
     return new Map();
   }

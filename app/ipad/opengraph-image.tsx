@@ -4,10 +4,11 @@ import { minPriceByModel } from "@/lib/budgetStats";
 import { getModelMarket } from "@/lib/marketStats";
 import { notoSansJp } from "@/lib/ogFont";
 import { IPAD_SHOPS } from "@/lib/shops";
+import { rethrowDuringBuild } from "@/lib/buildGuard";
 
-// 中古iPad 一覧（/ipad）の OGP 画像。/iphone の画像と同じ作り。1日ごとに作り直す。
+// 中古iPad 一覧（/ipad）の OGP 画像。/iphone の画像と同じ作り。ビルドのたびに作る。
 // 機種別ページ（/ipad/[slug]）はそれぞれの opengraph-image を持つので、この画像は /ipad だけに使われる
-export const revalidate = 86400; // 1日（Neon の計算時間を減らすため。2026-10-02）
+export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 export const alt = "中古iPadの相場一覧";
 export const size = { width: 1200, height: 630 };
@@ -15,10 +16,10 @@ export const contentType = "image/png";
 
 export default async function Image() {
   // 在庫件数は1回の集計。並べるのは在庫の多い5機種（iPad は世代の呼び名がばらばらなので、固定の人気機種より在庫で選ぶ）で、中央値はその分だけ取る
-  const all: Map<string, { count: number }> = await minPriceByModel({ isSoldOut: false }, IPAD_MODELS).catch(() => new Map());
+  const all: Map<string, { count: number }> = await minPriceByModel({ isSoldOut: false }, IPAD_MODELS).catch((e) => { rethrowDuringBuild(e); return new Map(); });
   const total = [...all.values()].reduce((n, r) => n + r.count, 0);
   const popular = [...all.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 5).map(([m]) => m);
-  const market = await getModelMarket(popular).catch(() => new Map());
+  const market = await getModelMarket(popular).catch((e) => { rethrowDuringBuild(e); return new Map(); });
   const rows = popular.flatMap((m) => {
     const r = market.get(m);
     return r ? [{ model: m, median: r.medianPrice }] : [];
