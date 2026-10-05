@@ -39,7 +39,7 @@
 ## 進行中・外部条件待ち
 
 - **A8 イオシス 審査待ち**。承認されたら `lib/affiliate.ts` の `A8_PROGRAMS` にイオシスを追加
-- **Vercel からの移行**（Hobby は商用不可）: **静的書き出し＋Cloudflare Pages 版を `cloudflare-pages` ブランチで開発**（10/5 に `used-phone-search.pages.dev` で本番と一致を確認。次は切り替え手順 2〜。手順はブランチの `docs/cloudflare-pages.md`。経緯 `ideas/2026-10-03`〜`05`）
+- **Vercel からの移行**（Hobby は商用不可）: **静的書き出し＋Cloudflare Pages 版を `cloudflare-pages` ブランチで開発**（10/5 に `used-phone-search.pages.dev` で本番と一致（全ページ）。手順 2 済み。次は 3〜4 を同じ日に。手順はブランチの `docs/cloudflare-pages.md`。経緯 `ideas/2026-10-03`〜`05`）
 
 ## 次にやる（順序）
 
