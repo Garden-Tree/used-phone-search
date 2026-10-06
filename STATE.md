@@ -44,8 +44,7 @@
 ## 次にやる（順序）
 
 ```
-ユーザー GitHub トークン → config.php（楽天取得の直後に Actions を起動。fetch.php は反映済み。手順 ideas/2026-10-06 末尾）
-Claude  次の楽天取得の後に fetch.log の dispatch: HTTP 204 を確認
+Claude  10/7 2:40 の楽天取得の後に fetch.log の dispatch: HTTP 204 と Actions の即時起動を確認（トークンは 10/6 夜に設定済み）
 ユーザー ブログ 1922 にリンク（ideas/blog-links-2026-09-30・10-01）
 10/7〜  GSC のリクエスト（登録数が見えたら、未登録の予算別ページだけ）
 ```
@@ -56,3 +55,4 @@ Claude  次の楽天取得の後に fetch.log の dispatch: HTTP 204 を確認
 | --- | --- |
 | 2026/11/30 | シンレンタルサーバー（自動更新） |
 | 2027/09/26 | 楽天ウェブサービスのアプリ有効期限（管理画面で Refresh） |
+| 2027/10/05 | GitHub トークン `used-phone-search dispatch`（作り直して config.php の github_dispatch_token を差し替え） |
