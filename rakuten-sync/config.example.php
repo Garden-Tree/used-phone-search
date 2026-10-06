@@ -8,4 +8,6 @@ return [
     // Cloudflare Pages 版（docs/cloudflare-pages.md）に切り替えたら、送信をやめてここに保存する。
     // 公開フォルダの中の推測されにくいフォルダにする（その URL を GitHub の Secrets「RAKUTEN_DATA_URL」に登録）
     // 'output_dir'        => '/home/wp760415/gadelog.com/public_html/（推測されにくい名前）',
+    // 書き出し後に GitHub Actions をすぐ起動する（任意）。Fine-grained トークン・このリポジトリだけ・Actions: Read and write
+    // 'github_dispatch_token' => '（github_pat_...）',
 ];

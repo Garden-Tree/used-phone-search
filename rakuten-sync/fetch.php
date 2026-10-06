@@ -228,4 +228,29 @@ foreach ($onlyShops ?: SHOP_CODES as $shopCode) {
         $failed++;
     }
 }
+
+// 書き出しが終わったら、GitHub Actions に取り込み〜サイトの書き出しをすぐ始めさせる。
+// 定期実行（schedule）は数時間遅れることがあるので、楽天の取得の直後に起こす（定期実行は保険として残す）。
+// トークンは Fine-grained で、このリポジトリの Actions: Read and write だけを付ける（config.php に置く）
+if (!$dryRun && !$onlyShops && !empty($config['output_dir']) && !empty($config['github_dispatch_token'])) {
+    $ch = curl_init('https://api.github.com/repos/Garden-Tree/used-phone-search/actions/workflows/scraper.yaml/dispatches');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode(['ref' => 'main']),
+        CURLOPT_HTTPHEADER     => [
+            'Accept: application/vnd.github+json',
+            'Authorization: Bearer ' . $config['github_dispatch_token'],
+            'X-GitHub-Api-Version: 2022-11-28',
+            'User-Agent: used-phone-search-rakuten-sync',
+        ],
+        CURLOPT_TIMEOUT        => 30,
+    ]);
+    $body = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    // 成功は 204。失敗しても定期実行で取り込まれるので、ログに残すだけ
+    logLine('dispatch: HTTP ' . $status . ($status === 204 ? '' : ' ' . substr((string)$body, 0, 200)));
+}
+
 exit($failed === 0 ? 0 : 1);
