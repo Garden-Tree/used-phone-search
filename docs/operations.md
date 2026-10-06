@@ -1,69 +1,81 @@
 # 運用手順（インフラ・データ更新・障害対応）
 
-## 全体像
-
-> **cloudflare-pages ブランチ**: 静的書き出し＋Cloudflare Pages 配信の版。構成・切り替え手順は [cloudflare-pages.md](./cloudflare-pages.md)。
-> 下の図とこのファイルの API（/api/ingest・/api/health）の記述は、切り替えるまでの Vercel 版（main）のもの
+## 全体像（2026-10-06〜 Cloudflare Pages。切り替えの経緯・戻し方は [cloudflare-pages.md](./cloudflare-pages.md)）
 
 ```
-[GitHub Actions 6時間ごと 3/9/15/21時]            [シンレンタルサーバー cron 2:40/8:40/14:40/20:40]
- scraper/run_all_scrapers.py（4店）                 ~/rakuten-sync/fetch.php
-   イオシス・にこスマ・エムモバ・ダイワン              楽天市場 商品検索API（ゲオモバイル・じゃんぱら・ソフマップの楽天市場店）
-   └→ Neon（DeviceInventory を店ごとに洗い替え）       └→ POST /api/ingest/rakuten?shop=<shopCode>（gzip + Bearer）
- npm run snapshot:prices（価格推移を記録）               └→ Neon（ショップごとに洗い替え。iPhone・iPad・Pixel）
- ワークフローの自己有効化（60日停止の防止）
+[シンレンタルサーバー cron 2:40/8:40/14:40/20:40] ~/rakuten-sync/fetch.php（約30分）
+   楽天市場 商品検索API（ゲオモバイル・じゃんぱら・ソフマップの楽天市場店）
+   └→ 公開フォルダの中の推測されにくいフォルダに <shopCode>.json.gz を保存（config.php の output_dir）
+   └→ 3店とも終わったら GitHub の workflow_dispatch で Actions を起動（config.php の github_dispatch_token）
                                    ↓
-              Vercel（used.gadelog.com・Next.js 16）
-               静的（ISR 6時間・OGP 画像は1日）: トップ / 機種別 / 比較 / 目的別 / OGP 画像
-               動的: 検索 / API
+[GitHub Actions scraper.yaml]  起動: 上の workflow_dispatch／定期実行 0:00/6:00/12:00/18:00 UTC（＝9/15/21/3時。数時間遅れ・取りこぼしあり）
+ 1. 4店のスクレイプ（イオシス・にこスマ・エムモバ・ダイワン）→ Neon（店ごとに洗い替え）
+ 2. 楽天3店の json.gz を HTTPS で取得（Secrets の RAKUTEN_DATA_URL）→ scripts/ingest-rakuten.ts → Neon
+ 3. iPad の機種名をそろえる → 価格推移の記録 → scripts/check-health.ts
+ 4. next build（output: "export"）→ out/ → scripts/ci-deploy.sh deploy（wrangler pages deploy）
+                                   ↓
+              Cloudflare Pages（used.gadelog.com・プロジェクト used-phone-search）
+               全ページ静的。検索ページは /data/inventory/<機種>.json をブラウザで絞り込む。監視用 /health.json
                                    ↑
-[シンレンタルサーバー cron 毎日10:00] ~/rakuten-sync/healthcheck.php → /api/health
-  → 問題があるときだけ keigo3142011@yahoo.co.jp にメール
+[シンレンタルサーバー cron 毎日10:00] ~/rakuten-sync/healthcheck.php → /health.json とページ2つ
+  → 問題（店の24時間停止・書き出しの14時間停止・ページが開けない）があるときだけ keigo3142011@yahoo.co.jp にメール
 ```
+
+- **サイトの中身が変わるのは Actions が書き出したときだけ**。実行時に DB は使わない（Neon が起きるのは Actions の間だけ）
+- Vercel は 10/20 ごろまで旧版を残している（DNS を戻せば旧版に戻る）。Vercel のプロジェクトを止めたら、この行と cloudflare-pages.md の「戻し方」を消す
 
 ## アカウント・秘密情報の置き場所
 
 | 用途 | 場所 | 備考 |
 | --- | --- | --- |
-| DB 接続 | Vercel `DATABASE_URL`（Production/Preview）、GitHub Secrets `DATABASE_URL`、ローカル `.env` | Neon（`ep-shy-sunset-...ap-southeast-1`）。**本番と同じ DB** |
-| サイトURL | Vercel `NEXT_PUBLIC_SITE_URL=https://used.gadelog.com` | |
-| GA4 | Vercel `NEXT_PUBLIC_GA_ID=G-YV3ZR0N6B1`（プロパティ 556047315） | 詳細は `measurement.md` |
-| 楽天の受け口 | Vercel `RAKUTEN_INGEST_SECRET` とサーバーの `~/rakuten-sync/config.php` の `ingest_secret`（同じ値） | Secret 型。Claude は扱わない |
-| 楽天API | サーバーの `config.php`（アプリID・Access Key） | アプリ「中古スマホ一括検索」・Backend・許可IP 210.157.79.113 |
-| サーバー | シンレンタルサーバー sv3112（サーバーID wp760415、gadelog.com と共用） | ファイルマネージャ・Cron 設定はサーバーパネル |
+| DB 接続 | GitHub Secrets `DATABASE_URL`、ローカル `.env` | Neon（`ep-shy-sunset-...ap-southeast-1`）。**本番と同じ DB** |
+| 配置 | GitHub Secrets `CLOUDFLARE_API_TOKEN`（Account / Cloudflare Pages / Edit だけ）・`CLOUDFLARE_ACCOUNT_ID` | ユーザーが作成・登録。Claude はトークンを扱わない |
+| 楽天の JSON の場所 | GitHub Secrets `RAKUTEN_DATA_URL`（`https://gadelog.com/<推測されにくいフォルダ>/`）と `config.php` の `output_dir` | フォルダ名は Git に書かない |
+| Actions の即時起動 | `config.php` の `github_dispatch_token`（Fine-grained・このリポジトリだけ・Actions: Read and write） | **期限 2027/10/05**。ユーザーが作成・入力 |
+| 楽天API | `config.php`（アプリID・Access Key） | アプリ「中古スマホ一括検索」・Backend・許可IP 210.157.79.113 |
+| サイトURL・GA4 | ワークフローの `NEXT_PUBLIC_SITE_URL`・`NEXT_PUBLIC_GA_ID=G-YV3ZR0N6B1`（公開される値なので直書き） | GA4 の詳細は `measurement.md` |
+| DNS | シンドメイン → DNSレコード設定（`used` の CNAME → `used-phone-search.pages.dev`・TTL 300） | DNS の変更はユーザー（Claude Code の安全確認で止まる） |
+| サーバー | シンレンタルサーバー sv3112（サーバーID wp760415、gadelog.com と共用） | ファイルマネージャ・Cron 設定はサーバーパネル（`https://secure.wpx.ne.jp/`） |
+
+`config.php` は秘密情報。Claude は中身を読まない・書かない（文法の確認は一度だけの cron で `php -l` を実行し、結果のファイルだけ見る）。
 
 ## 定期処理
 
 | いつ（日本時間） | どこで | 何を | ログ |
 | --- | --- | --- | --- |
-| 3/9/15/21時 | GitHub Actions `Phone Inventory Scraper` | 4店のスクレイピング（イオシス・にこスマは iPad も、イオシス・にこスマ・ダイワンは Pixel も）→ iPad の機種名の正規化 → 価格推移の記録 → 自己有効化 | Actions の実行ログ（失敗時は GitHub から通知メール） |
-| 2:40/8:40/14:40/20:40 | サーバー cron | 楽天からゲオ・じゃんぱら・ソフマップの iPhone・iPad を順に取得して送信（合計約25分） | `~/rakuten-sync/fetch.log`（行頭に shopCode） |
-| 毎日10:00 | サーバー cron | `/api/health` を確認し、問題時のみメール（店ごとの更新停止・価格推移の停止・扱うはずの iPad/Pixel/Galaxy が0件） | cron の通知メール |
+| 2:40/8:40/14:40/20:40 | サーバー cron | 楽天3店の取得と JSON の保存 → Actions を起動 | `~/rakuten-sync/fetch.log`（`<shopCode> saved:`・`dispatch: HTTP 204`） |
+| 上の直後＋定期実行（9/15/21/3時ごろ） | GitHub Actions `Phone Inventory Scraper` | 取得・取り込み・価格推移・書き出し・配置・自己有効化 | Actions の実行ログ（失敗時は GitHub から通知メール） |
+| 毎日10:00 | サーバー cron | `healthcheck.php`（問題時のみメール） | cron の通知メール |
 | 毎日7:56 | サーバー cron（ブログ用・パネルが自動作成。「WordPressキャッシュ自動削除Cronを表示」で出る） | `wp-content/cache/` の3日より古いファイルを削除 | 出力なし（下記） |
 
 - cron の通知アドレスを設定すると **すべての cron の出力がメールで届く**。WordPress キャッシュ削除の cron は
-  キャッシュが空だと `find`/`rm` のエラーを毎朝出していたため、9/27 に `-print 2>/dev/null | xargs -r rm` に変更した。
-  このパネルは `-delete`・`&&`・`[ ]` を含むコマンドを「コマンドを正しく入力してください」で拒否する
-
+  キャッシュが空だと `find`/`rm` のエラーを毎朝出していたため、9/27 に `-print 2>/dev/null | xargs -r rm` に変更した
+- このパネルのコマンド欄は `&`（`2>&1`・`&&`）・`-delete`・`[ ]` を受け付けない（黙って追加されないこともある）。標準エラーは別ファイルに出す
+- 一度だけ動かしたいときは「分 時 日 月 *」で日付まで指定して追加し、終わったら削除する（来年の同じ日に動かないように）
 - ゲオ公式ECは自動アクセスを拒否しているのでスクレイパーは持たない（9/27 に `geo_scraper.py` を削除。楽天API のみ）
-- 検索用モデル名の一覧は各サーバーで5分キャッシュ
+- GitHub の定期実行は混むと数時間遅れ、回ごと飛ばされることもある（10/6 は 3:00 の回が 8:24 に起動・15:00 の回は起動せず）。だから楽天の取得の直後に起動している
 
 ## よくある対応
 
 ### 「データ更新に問題があります」メールが来た
-1. メール本文の「問題」を見る（どのショップが何時間止まっているか）
-2. **楽天3店以外**（イオシス・にこスマ・エムモバ・ダイワン）が止まっている → GitHub の Actions タブ
-   - ワークフローが無効（disabled）なら有効化 → 「Run workflow」で手動実行
-   - 失敗しているならログで該当ショップを確認（サイト構造の変更が多い）
-3. **楽天3店**（ゲオ・じゃんぱら・ソフマップ）が止まっている → サーバーの `~/rakuten-sync/fetch.log`
+1. メール本文の「問題」を見る（どのショップが何時間止まっているか・書き出しが止まっているか・ページが開けないか）
+2. **書き出しが止まっている／全店が止まっている** → GitHub の Actions タブ
+   - 実行が無い: ワークフローが無効（disabled）なら有効化 → 「Run workflow」で手動実行。`fetch.log` の `dispatch:` が 204 以外ならトークン（期限・権限）
+   - 失敗している: ログを見る。「Cloudflare Pages へ配置」の失敗は API トークン・Pages の上限（ファイル数2万・月500デプロイ）
+3. **楽天3店以外**（イオシス・にこスマ・エムモバ・ダイワン）だけが止まっている → Actions のログで該当ショップ（サイト構造の変更が多い）
+4. **楽天3店**だけが止まっている → サーバーの `~/rakuten-sync/fetch.log`
    - `HTTP 401/403`：楽天アプリの有効期限・許可IP・Access Key
-   - `ingest: HTTP 401`：Vercel とサーバーの `ingest_secret` の不一致
-   - `ingest: HTTP 409`：取得件数が既存の50%未満で洗い替え中止（楽天側の一時的な不調が多い。続くなら確認）
-4. **価格推移**が止まっている → Actions の「価格推移の記録」ステップ
+   - `saved: ... FAILED`：フォルダの書き込み権限・容量
+   - Actions 側の「楽天市場店の在庫を取り込む」のログ: `ファイルが ... 時間前のもの` は fetch.php が動いていない、`件数が ... 50%未満` は楽天側の不調（続くなら確認）
+5. **ページが開けない** → `https://used.gadelog.com/` を開く。DNS（シンドメインの CNAME）・Cloudflare の Custom domains の状態・証明書を確認
+6. **価格推移**が止まっている → Actions の「価格推移の記録」ステップ
 
 ### 在庫が急に減った・消えた
-- スクレイパーも楽天の受け口も「件数が既存の50%未満なら洗い替えを中止」する。意図的に減らしたときは
-  スクレイパーは `FORCE_REPLACE=1`、受け口は `?force=1`
+- スクレイパーも楽天の取り込みも「件数が既存の50%未満なら洗い替えを中止」する。意図的に減らしたときは
+  スクレイパーは `FORCE_REPLACE=1`、楽天は `npx tsx scripts/ingest-rakuten.ts <dir> --allow-shrink`
+
+### サイトを今すぐ更新したい
+- GitHub の Actions → Phone Inventory Scraper → Run workflow（main）。10分ほどで配置まで終わる
 
 ### iPad の機種名
 - 楽天3店の iPad は `lib/ipadCatalog.ts` の `canonicalIpadModel` で Apple の正式名にそろえる（チップ⇔世代の対応表込み）。
@@ -73,7 +85,7 @@
 ### Pixel の機種名（2026-09-30〜）
 - スクレイパーが取り込むときに Google の表記（`Pixel 8a`・`Pixel 9 Pro Fold`）へそろえる（`scraper/common.py` の `canonical_pixel_model`）。Pixel 5a 以前は入れない
 - 機種の一覧は `scraper/common.py` の `PIXEL_MODELS` と `lib/pixelCatalog.ts` の2か所。`npm run test:normalize` がずれを見つける。新しい Pixel が出たら両方と `PIXEL_INFO`（販売開始・保証年数）に足す
-- 楽天3店: `fetch.php` の KEYWORDS に `Pixel`、受け口は `lib/rakutenPixel.ts`（`lib/rakutenShops.ts` の byDevice で振り分け）。キャリア版も SIM フリー扱い（Pixel 6 以降は SIM ロック原則禁止の後の発売）
+- 楽天3店: `fetch.php` の KEYWORDS に `Pixel`、読み取りは `lib/rakutenPixel.ts`（`lib/rakutenShops.ts` の byDevice で振り分け）。キャリア版も SIM フリー扱い（Pixel 6 以降は SIM ロック原則禁止の後の発売）
 - エムモバは Pixel の一覧がなく、検索ページでも Pixel 6 以降は1件（9/30）なので取り込まない
 - サーバーパネル・ファイルマネージャは 2026-09 から `https://secure.wpx.ne.jp/`（シンクラウド）。旧 `secure.shin-server.jp` は名前解決できない
 - 洗い替えは店ごと（iPhone・iPad・Pixel をまとめて入れ直す）。ある回に Pixel の一覧だけ取れなかったときは、その店の Pixel が次の回まで消える。安全装置（店の合計件数が半分未満なら入れ直さない）は iPhone が多いので効かない
@@ -87,7 +99,7 @@
 ### 商品名の読み取りを確かめる（楽天API は手元から呼べない）
 - 楽天の公開ページ（`https://search.rakuten.co.jp/search/mall/iPad/?sid=<ショップID>`）から商品名をコピーし、
   `npx tsx` の使い捨てスクリプトで `RAKUTEN_SHOPS[shopCode].normalize({...})` に通す
-- 本番で試すなら、サーバーの Cron に一時的に `php fetch.php <shopCode>` を追加し、終わったら削除する（`fetch.log` と `/api/health` で確認）
+- 本番で試すなら、サーバーの Cron に一度だけ `php fetch.php` を追加し、終わったら削除する（`fetch.log` と、起動された Actions の取り込みログで確認）
 
 ### 楽天市場のショップを追加する
 1. `lib/rakutenShops.ts` の `RAKUTEN_SHOPS` に shopCode・ショップ名・商品名の解析関数を追加（例: `lib/rakutenJanpara.ts`）
@@ -98,8 +110,9 @@
 4. 規約上、リンクは楽天アフィリエイトのみ（`DeviceCard.tsx` は `RAKUTEN_SHOP_NAMES` で自動判定）
 
 ### 楽天の取得スクリプトを更新する
-- リポジトリの `rakuten-sync/fetch.php` を編集 → サーバーのファイルマネージャで `~/rakuten-sync/` に上書きアップロード
-- `config.php` は上書きしない。お試しは `php fetch.php --dry janpara`（先頭3ページを `sample-janpara.json` に保存）。`php fetch.php janpara` で1店だけ送信
+- リポジトリの `rakuten-sync/fetch.php` を編集 → 手元の Docker の PHP で `php -l` → サーバーのファイルマネージャで `~/rakuten-sync/fetch.php` を上書き
+  （編集欄は React。上書き前後の中身を SHA-256 で突き合わせると取り違えに気づける）
+- `config.php` は上書きしない。お試しは `php fetch.php --dry janpara`（先頭3ページを `sample-janpara.json` に保存）。店を指定したときは Actions を起動しない
 
 ### DB スキーマを変える
 - `prisma/schema.prisma` を編集 → `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` で差分を確認 → `npx prisma db push`
@@ -110,14 +123,15 @@
 - 2026-09-27 に 88%（4.4GB）の警告。原因は機種別・比較・目的別ページと OGP 画像の再生成のたびに、機種の在庫を全件取り出して JS で集計していたこと
   （ビルドのたびに全ページ分が走るので、PR が多い日に急増）。PR #28 で DB 側の集計（groupBy/aggregate）＋最大7行の取得に変更
 - **在庫の行をまとめて取り出す処理を書かない**。集計は `lib/modelInventory.ts` の `groupMinPrice`・`medianPrice` を使う
-- ローカルの `next build` も `.env` の本番 DB を使う（全ページ分のクエリが走る）。確認はなるべく Vercel のプレビューで
-- 使用量は Neon の管理画面（Billing / Usage）。上限を超えるとその月は DB が止まり、検索・取り込み・ページの再生成が失敗する
-  （静的ページは前回生成分が表示され続ける）
+- ローカルの `next build` も `.env` の本番 DB を使う（全ページ分のクエリが走る）。確認はローカルの Docker の DB で（下記）
+- 使用量は Neon の管理画面（Billing / Usage）。上限を超えるとその月は DB が止まり、取り込み・書き出しが失敗する
+  （サイトは前回の書き出しのまま表示され続ける）
 
 ## デプロイ
 
-- `main` への push で Vercel が本番デプロイ。PR ごとにプレビュー
-- 開発の流れ：ブランチ → PR → Vercel のプレビュービルド成功 → マージ（自動マージはリポジトリ設定で無効）
+- **push ではデプロイされない**。サイトに出るのは次の Actions の実行（楽天の取得の後・定期実行・手動の Run workflow）
+- コードを変えたら: ローカルで `npx next build`（Docker の DB）→ main に push → Run workflow で即反映 → `https://used.gadelog.com` で確認
+- 開発の流れ：ブランチ → PR → マージ（自動マージはリポジトリ設定で無効）。Vercel は `scripts/vercel-ignore.sh` で一切ビルドしない
 
 ## ローカルの確認用 DB（Docker）
 

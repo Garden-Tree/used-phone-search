@@ -78,6 +78,6 @@
 
 ## インフラ・環境構築
 - **コンテナ化**: [Docker Compose](https://docs.docker.com/compose/) を使用して PostgreSQL データベースを管理。
-- **ホスティング**: Vercel（`main` への push で本番デプロイ）。
+- **ホスティング**: Cloudflare Pages（2026-10-06〜。GitHub Actions が書き出して `wrangler pages deploy`。push では配置されない）。
 - **CI/CD**: GitHub Actions によるスクレイパーの定期実行（6時間ごと）と価格推移の記録。60日無操作での停止を防ぐため毎回ワークフローを自己有効化。
 - **環境変数**: `.env` ファイルによる DB 接続情報の管理。
