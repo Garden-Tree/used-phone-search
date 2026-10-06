@@ -38,14 +38,15 @@
 
 ## 進行中・外部条件待ち
 
-- **楽天の取得直後に Actions を起動**（定期実行が数時間遅れる）: サーバーに反映済み。config.php のトークン待ち（ideas/10-06）
 - **A8 イオシス 審査待ち**。承認されたら `lib/affiliate.ts` の `A8_PROGRAMS` にイオシスを追加
 - **Vercel の後片付け（10/20 ごろ）**: 問題がなければ Vercel のプロジェクトを止める（`RAKUTEN_INGEST_SECRET` も不要）→ Neon を Free に（ユーザー）。経緯 ideas/10-03〜06
 
 ## 次にやる（順序）
 
 ```
-ユーザー ブログにリンク（iPad: blog-links-2026-09-30・Pixel/Galaxy: blog-links-2026-10-01。1922 は 10/5〜）
+ユーザー GitHub トークン → config.php（楽天取得の直後に Actions を起動。fetch.php は反映済み。手順 ideas/2026-10-06 末尾）
+Claude  次の楽天取得の後に fetch.log の dispatch: HTTP 204 を確認
+ユーザー ブログ 1922 にリンク（ideas/blog-links-2026-09-30・10-01）
 10/7〜  GSC のリクエスト（登録数が見えたら、未登録の予算別ページだけ）
 ```
 
