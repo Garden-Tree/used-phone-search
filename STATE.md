@@ -20,7 +20,7 @@
 - **ホスティング**: Cloudflare Pages（静的書き出し。10/6 9:03 に DNS 切り替え完了。Vercel は戻せるよう 10/20 ごろまで残す。手順・戻し方 `docs/cloudflare-pages.md`）
 - **DB**: Neon は Launch（従量課金・9/27〜）。使用量が無料枠内なら Free に戻す（台帳 10/4〜8）。**Cloudflare 版でも DB は Neon のまま**（10/4。DB なし＝R2 案は問題が出たら。理由・移る目安は ideas/2026-10-04）
 - **データ更新**: Actions（楽天の取得直後に fetch.php が起動＋保険の定期実行。10/7〜）が4店の取得・楽天3店の JSON（シンの cron が20分前に書き出し）の取り込み・書き出し・配置まで行う。構成は `docs/cloudflare-pages.md`
-- **ページ方針**: 全ページ静的（1日4回のビルドで作り直す）。検索ページはブラウザで絞り込み・noindex（sitemap に入れない。`/search?` は robots でクロール禁止）。「検品担当が見るポイント」・`/about`（運営者・プライバシーポリシー）の文面はユーザー確認後に変える
+- **ページ方針**: 全ページ静的（1日4回のビルドで作り直す）。検索ページはブラウザで絞り込み・noindex（sitemap に入れない。robots でのクロール禁止は 10/7 に外した＝旧 /search?model= の登録を noindex で外させる）。「検品担当が見るポイント」・`/about`（運営者・プライバシーポリシー）の文面はユーザー確認後に変える
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**（保証・赤ロムは各店の公式で確認・毎月1日に見直す）
 - **スペック・保証期限・発売年月は公式（Apple・Google・Samsung・キャリア）で確かめた値だけ載せる**（`lib/*Specs.ts`・`pixelCatalog.ts`・`galaxyCatalog.ts`）
 - **掲載機種**: iPhone（iOS 27 対応＋旧機種 X/XS/XR/8/7）・iPad 32・Pixel 24・Galaxy 29。18 系・iPhone Duo は中古在庫が出てから（台帳 11月）
