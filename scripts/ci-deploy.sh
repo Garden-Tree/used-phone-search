@@ -19,7 +19,10 @@ fetch_rakuten() {
   local failed=0
   for shop in "${SHOP_CODES[@]}"; do
     # -R: サーバーの更新日時をファイルに付ける（ingest-rakuten.ts が「前回取り込んだファイルか」をこれで見分ける）
-    if ! curl -fsSR --retry 2 --max-time 120 -o "rakuten-data/$shop.json.gz" "${RAKUTEN_DATA_URL%/}/$shop.json.gz"; then
+    # 接続できないときは 20 秒で見切り、30 秒おきに 5 回まで試す（10/7 15時に Actions からシンへの接続が
+    # 一時的に通らず、120 秒の待ちを 3 店 × 3 回くり返して 18 分かけて失敗した）
+    if ! curl -fsSR --connect-timeout 20 --max-time 120 --retry 5 --retry-delay 30 --retry-all-errors \
+        -o "rakuten-data/$shop.json.gz" "${RAKUTEN_DATA_URL%/}/$shop.json.gz"; then
       echo "$shop: 取得できない"
       failed=1
     fi
