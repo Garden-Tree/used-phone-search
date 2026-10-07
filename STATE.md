@@ -38,7 +38,7 @@
 
 ## 進行中・外部条件待ち
 
-- **A8 イオシス: 未提携**（10/7 確認。審査待ちではなかった。ideas/10-07）。申請はユーザー。承認後 `lib/affiliate.ts` の `A8_PROGRAMS` に追加
+- **A8 イオシス: 10/7 に提携申請・審査中**（それまでは未提携だった。ideas/10-07）。承認後 `lib/affiliate.ts` の `A8_PROGRAMS` に追加
 - **Vercel の後片付け（10/20 ごろ）**: 問題がなければ Vercel のプロジェクトを止める（`RAKUTEN_INGEST_SECRET` も不要）→ Neon を Free に（ユーザー）。経緯 ideas/10-03〜06
 
 ## 次にやる（順序）
