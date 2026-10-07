@@ -31,3 +31,10 @@ export function affiliateUrl(shopName: string, url: string): string {
 export function isAffiliateUrl(href: string): boolean {
   return /^https:\/\/px\.a8\.net\/|\.afl\.rakuten\.co\.jp\//.test(href);
 }
+
+/** リンクの種類（GA4 の shop_click イベントで、収益になるクリックかを分けるため） */
+export function affiliateLinkType(href: string): "rakuten" | "a8" | "direct" {
+  if (/\.afl\.rakuten\.co\.jp\//.test(href)) return "rakuten";
+  if (/^https:\/\/px\.a8\.net\//.test(href)) return "a8";
+  return "direct";
+}

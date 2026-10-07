@@ -1,5 +1,5 @@
 import React from 'react';
-import { affiliateUrl, isAffiliateUrl } from '@/lib/affiliate';
+import { affiliateLinkType, affiliateUrl, isAffiliateUrl } from '@/lib/affiliate';
 import { findShop } from '@/lib/shops';
 
 // Define the type for the device object
@@ -103,6 +103,14 @@ export default function DeviceCard({ device }: { device: Device }) {
       href={device.isSoldOut ? '#' : href}
       target={device.isSoldOut ? '_self' : '_blank'}
       rel={rel}
+      // ShopClickTracker が読んで GA4 の shop_click イベントに載せる（どの店・機種・価格のカードが押されたか）
+      data-shop-click={device.isSoldOut ? undefined : ''}
+      data-shop={device.shopName}
+      data-model={device.modelName}
+      data-storage={device.storage}
+      data-rank={device.conditionRank}
+      data-price={device.price}
+      data-link-type={affiliateLinkType(href)}
       className={`group relative bg-white rounded-[2rem] p-6 shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-200/60 hover:-translate-y-1.5 flex flex-col h-full overflow-hidden ${device.isSoldOut ? 'cursor-not-allowed' : 'cursor-pointer'
         }`}
     >

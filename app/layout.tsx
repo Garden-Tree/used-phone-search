@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
+import ShopClickTracker from "./components/ShopClickTracker";
 import { SHOPS } from "@/lib/shops";
 
 const geistSans = Geist({
@@ -59,6 +60,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">{children}</body>
       {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
+      {GA_ID && <ShopClickTracker />}
     </html>
   );
 }
