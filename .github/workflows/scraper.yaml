@@ -52,6 +52,7 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       # Yahoo!ショッピング 商品検索API の Client ID。未登録のあいだは Yahoo の取り込みを飛ばす
       YAHOO_APP_ID: ${{ secrets.YAHOO_APP_ID }}
+      VC_SID: ${{ secrets.VC_SID }}
       # Amazon Creators API（整備済み品）の認証情報・アソシエイトのタグ。AMAZON_CREDENTIAL_ID が未登録のあいだは Amazon の取り込みを飛ばす
       AMAZON_CREDENTIAL_ID: ${{ secrets.AMAZON_CREDENTIAL_ID }}
       CF_PAGES_PROJECT: ${{ vars.CF_PAGES_PROJECT || 'used-phone-search' }}
@@ -108,7 +109,8 @@ jobs:
       # Yahoo!ショッピングの店（lib/yahooShops.ts）の在庫: Actions から商品検索API を直接呼んで取り込む（IP 制限なし。約3〜5分）。
       # 楽天の取り込みと同様、失敗しても前回の在庫のまま書き出しは続ける（ジョブは失敗として通知される。取得に失敗した店のファイルは書かれず、取り込みも飛ばされる）
       - name: Yahoo!ショッピングの在庫を取り込む
-        if: ${{ !cancelled() && env.YAHOO_APP_ID != '' }}
+        # バリューコマースの提携（VC_SID）が入るまでは取り込まない（アフィリエイトなしで Yahoo の店を出さない）
+        if: ${{ !cancelled() && env.YAHOO_APP_ID != '' && env.VC_SID != '' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |

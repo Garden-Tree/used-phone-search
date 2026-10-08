@@ -8,7 +8,7 @@
  *   --debug … 最初の1商品の生の応答を表示する（応答の形を確かめるとき）
  *   --shop  … 指定したストアだけ
  *
- * - API は 1 秒に 1 回まで（1.1 秒以上あける）。429・5xx は待って 3 回までやり直す
+ * - API は 1 秒に 1 回までだが、連続で呼ぶと 30 回ほどで 429 になったので 2 秒あける。429 は 30 秒待って 3 回まで、5xx などは待って 2 回までやり直す
  * - 1回の検索で取れるのは先頭 1,000 件まで。それを超える検索は価格帯を半分ずつに割って取る（rakuten-sync/fetch.php の collectRange と同じ考え方）
  * - 1 ストアでも取得に失敗したらそのストアのファイルは書かない（前回のファイルが古くなり、ingest が取り込まない＝既存の在庫を守る）。終了コードは 1
  * - リンク先はアフィリエイトの付かない商品URL。ValueCommerce のリンクは表示時にサイト側で組み立てる（lib/affiliate.ts）
@@ -24,7 +24,8 @@ const KEYWORDS = ["iPhone", "iPad", "Pixel", "Galaxy"];
 /** 1ページの件数。API が 400 を返したら順に小さくする（上限が 100 でなかったときの保険） */
 const PAGE_SIZES = [100, 50, 20];
 const MAX_START = 1000; // start の上限＝1回の検索で取れる件数
-const INTERVAL_MS = 1100;
+const INTERVAL_MS = 2000;
+const RATE_LIMIT_WAIT_MS = 30_000; // 429（回数制限）のあと待つ時間
 const MAX_REQUESTS = 3000; // 暴走防止（1ストアあたり）
 
 const debug = process.argv.includes("--debug");
@@ -105,9 +106,10 @@ async function fetchPage(sellerId: string, keyword: string, start: number, from:
       continue;
     }
     const detail = `HTTP ${status} start=${start} price=${from}-${to} ${body.slice(0, 300)}`;
-    if (attempt >= 3 || (status >= 400 && status < 500 && status !== 429)) throw new ApiError(status, detail);
+    // 429 は 30 秒待って 3 回まで（4 回目も 429 なら失敗）、それ以外の一時的なエラーは 3000ms×回数 待って 2 回まで
+    if (attempt >= (status === 429 ? 4 : 3) || (status >= 400 && status < 500 && status !== 429)) throw new ApiError(status, detail);
     console.warn(`${sellerId} ${keyword} retry ${attempt}: ${detail}`);
-    await sleep(3000 * attempt);
+    await sleep(status === 429 ? RATE_LIMIT_WAIT_MS : 3000 * attempt);
   }
 }
 
@@ -120,6 +122,8 @@ function extract(text: string): Pick<RakutenItem, "rank" | "nw" | "batt" | "car"
     t.match(/\[中古\s*([SABCJ])ランク\]/)?.[1] ??
     t.match(/【([SABCJ])ランク】/)?.[1] ??
     t.match(/この商品は\s*(?:中古)?([SABCJ])ランク/)?.[1] ??
+    t.match(/商品ランク\s*[：:]\s*([SABCJ])/)?.[1] ?? // Be-Stock（画面ランクと別に商品ランクがある）
+    t.match(/外観ランク\s*[：:]?\s*([SABCJ])/)?.[1] ?? // Joshin
     t.match(/(?:商品)?ランク\s*[：:]\s*([SABCJ])/)?.[1] ??
     t.match(/中古\s*([SABCJ])ランク/)?.[1] ??
     null;
@@ -127,9 +131,17 @@ function extract(text: string): Pick<RakutenItem, "rank" | "nw" | "batt" | "car"
     t.match(/ネットワーク利用制限確認【([^】]*)】/)?.[1] ??
     t.match(/ネットワーク利用制限\s*[：:]?\s*([〇○△×✕－-])/)?.[1] ??
     t.match(/利用制限\s*[：:]\s*([○〇△×✕－-])/)?.[1] ??
+    t.match(/ネットワーク制限\s*[：:]\s*([〇○△×✕－-])/)?.[1] ?? // Joshin（「ネットワーク制限：○(ソフトバンク)」）
+    (/ネットワーク利用制限\s*[：:]\s*なし/.test(t) ? "〇" : null) ?? // Be-Stock
     null;
-  const batt = t.match(/最大容量\s*[：:]?\s*(\d{2,3})\s*[%％]/)?.[1] ?? t.match(/バッテリー容量\s*[：:]?\s*(\d{2,3})\s*[%％]/)?.[1] ?? null;
-  const car = t.match(/〔キャリア〕\s*([^〔\s]+)/)?.[1] ?? null;
+  const batt =
+    t.match(/最大容量\s*[：:]?\s*(\d{2,3})\s*[%％]/)?.[1] ??
+    t.match(/バッテリー容量\s*[：:]?\s*(\d{2,3})\s*[%％]/)?.[1] ??
+    // 下限の表記（「バッテリー80％以上」「バッテリー100%保証」「電池性能：iPhoneは80％以上を保証」）は、その値を下限として入れる
+    t.match(/バッテリー\s*(\d{2,3})\s*[%％]\s*(?:以上|保証)/)?.[1] ??
+    t.match(/電池性能[^。\d]{0,20}(\d{2,3})\s*[%％]\s*以上/)?.[1] ??
+    null;
+  const car = t.match(/〔キャリア〕\s*([^〔\s]+)/)?.[1] ?? t.match(/■キャリア\s*([^\s■]+)/)?.[1] ?? null; // 後ろは モバステ（「■キャリア SIMフリー」）
   return { rank, nw, batt: batt ? Number(batt) : null, car };
 }
 

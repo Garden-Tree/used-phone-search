@@ -121,12 +121,13 @@
    店名が楽天の shopName とずれていないかは `npm run test:normalize` が確かめる
 4. 規約上、リンクは楽天アフィリエイトのみ（`DeviceCard.tsx` は `RAKUTEN_SHOP_NAMES` で自動判定）
 
-### Yahoo!ショッピングの店を追加する（2026-10-09〜。Quality Shop のみ）
-- 流れ: Actions の「Yahoo!ショッピングの在庫を取り込む」が `scripts/fetch-yahoo.ts`（商品検索API v3 を直接呼ぶ。1秒1回・先頭1,000件を超える検索は価格帯を割って取得）→
+### Yahoo!ショッピングの店を追加する（2026-10-09〜。Quality Shop・モバステ・エムコム・リユスマ・Joshin 中古アウトレット・MyWiT・Be-Stock。`lib/shops.ts` の行はどれもコメントアウト＝稼働前）
+- 流れ: Actions の「Yahoo!ショッピングの在庫を取り込む」が `scripts/fetch-yahoo.ts`（商品検索API v3 を直接呼ぶ。2秒に1回（30回ほどで 429 になったため。429 は30秒待って3回まで再試行）・先頭1,000件を超える検索は価格帯を割って取得）→
   `yahoo-data/<ストアID>.json.gz` → `scripts/ingest-rakuten.ts yahoo-data --family yahoo`（楽天と同じ洗い替え・半分未満なら中止の安全装置）。`YAHOO_APP_ID` が空なら飛ばす
 1. `lib/yahooShops.ts` の `YAHOO_SHOPS` にストアID（`store.shopping.yahoo.co.jp/<ストアID>/` の部分）・ショップ名・商品名の解析関数を追加（例: `lib/yahooQualityShop.ts`）。
    商品名は店の検索ページ（`https://store.shopping.yahoo.co.jp/<ストアID>/search.html?p=iPhone+中古&b=1`。`b` は 1・31・61…）から集めて `scripts/test-normalizers.ts` の CORPUS に足す
    （`shopping.yahoo.co.jp/search?...&sid=` は店で絞り込まれない）
+   （商品検索API v3 を `seller_id=<ストアID>&condition=used&in_stock=true` で呼んでも商品名を集められる。`description` にランク・バッテリー・キャリアが書かれている店が多く、`fetch-yahoo.ts` の `extract` が読む。保証は店の `guide.html`（`info.html` は会社概要だけ）にある）
 2. `lib/shops.ts` の `SHOPS` に1行足す（`note` が "Yahoo!" で始まる店は絞り込みで「（Yahoo!）」と出る。保証・赤ロムは**その店の公式ページで確かめてから**書く）
 3. リンクは ValueCommerce 経由（`lib/affiliate.ts` の `valueCommerceUrl`。GA4 の `link_type` は `vc`）。Yahoo の商品ページ以外へは張らない
 4. API の応答の形・件数の上限を確かめるとき: `YAHOO_APP_ID=... npx tsx scripts/fetch-yahoo.ts --debug --shop <ストアID>`（最初の1商品の生の応答を出す）
