@@ -32,6 +32,7 @@
 | 配置 | GitHub Secrets `CLOUDFLARE_API_TOKEN`（Account / Cloudflare Pages / Edit だけ）・`CLOUDFLARE_ACCOUNT_ID` | ユーザーが作成・登録。Claude はトークンを扱わない |
 | 楽天の JSON の場所 | GitHub Secrets `RAKUTEN_DATA_URL`（`https://gadelog.com/<推測されにくいフォルダ>/`）と `config.php` の `output_dir` | フォルダ名は Git に書かない |
 | Yahoo!ショッピング API | GitHub Secrets `YAHOO_APP_ID`（Yahoo! デベロッパーネットワークのアプリの Client ID） | ユーザーが登録。未登録のあいだは Yahoo の取り込みを飛ばす。Claude は値を扱わない |
+| Amazon Creators API | GitHub Secrets `AMAZON_CREDENTIAL_ID`・`AMAZON_CREDENTIAL_SECRET`・`AMAZON_PARTNER_TAG`（アソシエイトのトラッキングID）、Variables `AMAZON_CREDENTIAL_VERSION`（認証情報のバージョン。未設定は 3.3＝極東。3.1 北米・3.2 欧州） | ユーザーが登録。`AMAZON_CREDENTIAL_ID` が空なら Amazon の取り込みを飛ばす。Claude は値を扱わない |
 | ValueCommerce のリンク | GitHub Secrets `VC_SID`（サイトID）・`VC_PID`（プロモーションID）→ ビルド時に `NEXT_PUBLIC_VC_SID`/`NEXT_PUBLIC_VC_PID` | リンクの URL に出る公開の値。未登録なら Yahoo の商品へ直接リンク（収益なし） |
 | Actions の即時起動 | `config.php` の `github_dispatch_token`（Fine-grained・このリポジトリだけ・Actions: Read and write） | **期限 2027/10/05**。ユーザーが作成・入力 |
 | 楽天API | `config.php`（アプリID・Access Key） | アプリ「中古スマホ一括検索」・Backend・許可IP 210.157.79.113 |
@@ -130,6 +131,16 @@
 3. リンクは ValueCommerce 経由（`lib/affiliate.ts` の `valueCommerceUrl`。GA4 の `link_type` は `vc`）。Yahoo の商品ページ以外へは張らない
 4. API の応答の形・件数の上限を確かめるとき: `YAHOO_APP_ID=... npx tsx scripts/fetch-yahoo.ts --debug --shop <ストアID>`（最初の1商品の生の応答を出す）
 - Yahoo! JAPAN のウェブサービスを使う側の表記（クレジット）は未対応。API 規約を確認して `app/components/AdDisclosure.tsx` に足す
+
+### Amazon 整備済み品（Creators API。2026-10-09 実装・認証情報の登録待ち）
+- 流れ: Actions の「Amazon 整備済み品を取り込む」が `scripts/fetch-amazon.ts`（機種 126 件 × 「<機種> 整備済み品」で SearchItems。1機種 最大5ページ＝最大 630 リクエスト・約12分。上限は1秒1回・1日 8,640 回）→
+  `amazon-data/amazon.json.gz`（`{items, fetchedAt}`）→ `scripts/ingest-rakuten.ts amazon-data --family amazon`（洗い替え・半分未満なら中止の安全装置は楽天と同じ）。`AMAZON_CREDENTIAL_ID` が空なら飛ばす
+- 規約（Creators API）: ①価格は取得から1時間・その他は1日まで ②リンクは `detailPageURL` をそのまま（アソシエイトのタグ付き。`affiliateUrl` は加工しない）
+  ③価格に「○時点」と注意書き（`DeviceCard` の「価格は M/D HH:mm 時点」＝サイトを書き出した時刻、`AdDisclosure`）④取得データを誘導以外に使わない → **価格推移（`lib/priceHistory.ts`）から Amazon を除外**している
+- 古い価格を出さない: `fetch-amazon.ts` が失敗するとファイルは書かれない → 取り込みが、最後の取り込みから20時間を過ぎた Amazon の在庫を売り切れ扱いにして隠す（ファイルがない・古いどちらも）。ジョブは失敗として通知される
+- 有効にする手順: ①Secrets・Variables を登録 ②`npx tsx scripts/fetch-amazon.ts --debug --dry`（応答の形・タイトルの形・`condition` の値を確かめる）→ `lib/amazonRenewed.ts`・`scripts/test-normalizers.ts` の CORPUS を実物に合わせる
+  ③初回の取り込みが通ったら `lib/shops.ts` のコメントアウトした Amazon の行を有効にする（保証・赤ロムは Amazon の公式ページで確かめてから）
+- ランクは特徴欄の「プレミアム→A・優良→B・良い→C」、バッテリーは「90%以上」「80%以上」の表記があるときだけ（`fetch-amazon.ts` の `extract`）。実物の書き方に合わせて直す
 
 ### 楽天の取得スクリプトを更新する
 - リポジトリの `rakuten-sync/fetch.php` を編集 → 手元の Docker の PHP で `php -l` → サーバーのファイルマネージャで `~/rakuten-sync/fetch.php` を上書き

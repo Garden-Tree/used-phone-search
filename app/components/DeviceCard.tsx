@@ -1,6 +1,7 @@
 import React from 'react';
 import { affiliateLinkType, affiliateUrl, isAffiliateUrl, rakutenAffiliateUrl } from '@/lib/affiliate';
 import { findShop } from '@/lib/shops';
+import { BUILD_TIME } from '@/lib/buildTime';
 
 // Define the type for the device object
 export type Device = {
@@ -192,6 +193,11 @@ export default function DeviceCard({ device }: { device: Device }) {
             </svg>
           </div>
         </div>
+
+        {/* Amazon の価格は取得時点を添える（Creators API の規約。時刻はサイトを書き出した時刻） */}
+        {findShop(device.shopName)?.marketplace === 'amazon' && (
+          <p className="mt-1 text-[11px] text-slate-400">価格は {BUILD_TIME} 時点</p>
+        )}
       </div>
     </a>
   );

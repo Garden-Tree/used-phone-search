@@ -1,3 +1,8 @@
+import { SHOPS } from "@/lib/shops";
+
+// Amazon の店を有効にしたとき（lib/shops.ts）だけ、Amazon の表記を出す
+const HAS_AMAZON = SHOPS.some((s) => s.marketplace === "amazon");
+
 // ステマ規制（景品表示法・2023年10月施行）対応の広告表記
 export default function AdDisclosure({ compact = false }: { compact?: boolean }) {
   if (compact) {
@@ -15,6 +20,14 @@ export default function AdDisclosure({ compact = false }: { compact?: boolean })
       <br className="hidden md:block" />
       価格・在庫状況は取得時点のものです。最新情報は各ショップのページでご確認ください。
       <br />
+      {/* Amazon アソシエイト・プログラム参加規約の表記と、Creators API の価格表示の注意書き（Amazon の掲載は lib/shops.ts で有効にしたとき） */}
+      {HAS_AMAZON && (
+        <>
+          Amazonのアソシエイトとして、当サイトは適格販売により収入を得ています。
+          Amazon の価格・在庫は表示の時点（カードの「○時点」）のものです。購入時には Amazon.co.jp の表示が適用されます。
+          <br />
+        </>
+      )}
       {/* 楽天ウェブサービス利用規約に基づくクレジット表記 */}
       <a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">
         Supported by Rakuten Developers

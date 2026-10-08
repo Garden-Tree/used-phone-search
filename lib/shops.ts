@@ -33,28 +33,33 @@ export type Shop = {
   guaranteeUrl: string;
   /** 同じ店の別の売り場（イオシス楽天市場店 → "イオシス"）。店の数・一覧には数えず、絞り込みでは本店と一緒に出す */
   alias?: string;
+  /** API 経由の売り場。楽天・Yahoo!ショッピング・Amazon（Amazon は価格の取得時刻を添える。DeviceCard.tsx） */
+  marketplace?: "rakuten" | "yahoo" | "amazon";
 };
 
 export const SHOPS: Shop[] = [
   { name: "イオシス", label: "イオシス", galaxy: true, pixel: true, ipad: true, battery: "over80",
     warranty: "中古3ヶ月（未使用品は6ヶ月）", redRom: "保証期間に関わらず対象", guaranteeUrl: "https://iosys.co.jp/guide/support/guarantee.html" },
-  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", pixel: true, galaxy: true, ipad: true, battery: "exact",
+  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "exact",
     warranty: "商品ごと（iPhone は多くが1ヶ月）", redRom: "永久保証", guaranteeUrl: "https://www.janpara.co.jp/contents/faq/" },
-  { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店", pixel: true, galaxy: true, ipad: true, battery: "none",
+  { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "到着後30日以内の返品・交換", redRom: "永久保証（期間を問わず交換・返金）", guaranteeUrl: "https://www.rakuten.ne.jp/gold/geo-mobile/info_henpin.html" },
-  { name: "ソフマップ（楽天市場店）", label: "ソフマップ", note: "楽天市場店", pixel: true, galaxy: true, ipad: true, battery: "exact",
+  { name: "ソフマップ（楽天市場店）", label: "ソフマップ", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "exact",
     warranty: "初期不良は到着後30日以内に返金（返品保証10日間）", redRom: "到着から3年以内は返品可（商品ページに記載）", guaranteeUrl: "https://www.rakuten.co.jp/akiba-u-shop/info.html" },
-  { name: "ニューズドテック（楽天市場店）", label: "ニューズドテック", note: "楽天市場店", pixel: true, galaxy: true, ipad: true, battery: "none",
+  { name: "ニューズドテック（楽天市場店）", label: "ニューズドテック", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "到着から1ヶ月（レビュー投稿で3ヶ月に延長。延長分は代金の30%返金）", redRom: "永久保証（商品ページに記載）",
     guaranteeUrl: "https://www.rakuten.co.jp/kamaya-awards/info.html" },
-  { name: "カメラのキタムラ（楽天市場店）", label: "カメラのキタムラ", note: "楽天市場店", pixel: true, galaxy: true, ipad: true, battery: "over80",
+  { name: "カメラのキタムラ（楽天市場店）", label: "カメラのキタムラ", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "over80",
     warranty: "初期不良のみ到着後14日以内（中古品の保証はなし）", redRom: "無期限保証（商品ページに記載）",
     guaranteeUrl: "https://www.rakuten.co.jp/emedama/info.html" },
-  { name: "エムティーエム（楽天市場店）", label: "エムティーエム", note: "楽天市場店", pixel: true, galaxy: true, ipad: true, battery: "none",
+  { name: "エムティーエム（楽天市場店）", label: "エムティーエム", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "記載なし（楽天の店舗情報に保証期間の記載がない。商品ページを確認）", redRom: "記載なし", guaranteeUrl: "https://www.rakuten.co.jp/ekosuta/info.html" },
   // Yahoo!ショッピングの店は YAHOO_APP_ID（GitHub Secrets）を入れて初回の取り込みが通ってから有効にする（0件のまま一覧に出さない）
   // { name: "Quality Shop（Yahoo!ショッピング店）", label: "Quality Shop", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "none",
-  //   warranty: "記載なし（確認中）", redRom: "記載なし（確認中）", guaranteeUrl: "https://store.shopping.yahoo.co.jp/quality-shop/info.html" },
+  //   warranty: "記載なし（確認中）", redRom: "記載なし（確認中）", guaranteeUrl: "https://store.shopping.yahoo.co.jp/quality-shop/info.html", marketplace: "yahoo" },
+  // Amazon 整備済み品は AMAZON_CREDENTIAL_*（GitHub Secrets）を入れて初回の取り込みが通ってから有効にする（0件のまま一覧に出さない）
+  // { name: "Amazon 整備済み品", label: "Amazon 整備済み品", note: "Amazon", pixel: true, galaxy: true, ipad: true, battery: "over80",
+  //   warranty: "Amazon 整備済み品の保証（180日返品）", redRom: "記載なし（商品ページを確認）", guaranteeUrl: "https://www.amazon.co.jp/b?node=8130460051", marketplace: "amazon" },
   { name: "にこスマ", label: "にこスマ", galaxy: true, pixel: true, ipad: true, battery: "exact",
     warranty: "1年間の返品・交換", redRom: "永久保証", guaranteeUrl: "https://www.nicosuma.com/about/shopping-guide" },
   { name: "ダイワンテレコム", label: "ダイワンテレコム", galaxy: true, pixel: true, ipad: false, battery: "over80",
@@ -68,7 +73,7 @@ export const SHOPS: Shop[] = [
  * 同じ商品は公式のカードに「楽天市場でも販売」として添える（scripts/link-iosys-rakuten.ts）。公式で取れなかった商品だけがこの名前で残る
  */
 export const ALIAS_SHOPS: Shop[] = [
-  { name: "イオシス（楽天市場店）", label: "イオシス", note: "楽天市場店", alias: "イオシス", galaxy: true, pixel: true, ipad: true, battery: "over80",
+  { name: "イオシス（楽天市場店）", label: "イオシス", note: "楽天市場店", alias: "イオシス", marketplace: "rakuten", galaxy: true, pixel: true, ipad: true, battery: "over80",
     warranty: "中古3ヶ月（未使用品は6ヶ月。商品名に記載）", redRom: "保証期間に関わらず対象", guaranteeUrl: "https://www.rakuten.co.jp/pc-good/info.html" },
 ];
 

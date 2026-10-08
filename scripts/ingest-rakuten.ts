@@ -5,6 +5,8 @@
  *   npx tsx scripts/ingest-rakuten.ts <ディレクトリ> [--allow-shrink] [--allow-old] [--family yahoo]
  *   --allow-shrink … 件数が前回の半分未満でも洗い替える（安全装置を外す。品切れが本当に多いときだけ）
  *   --allow-old    … 前回取り込んだファイル・7時間より古いファイルも取り込む
+ *   --family amazon … Amazon 整備済み品（AMAZON_SHOPS。ディレクトリは scripts/fetch-amazon.ts の出力 amazon.json.gz）。
+ *                    Amazon の価格は24時間を超えて出せないので、ファイルが20時間より古いときは取り込まず、Amazon の在庫を売り切れ扱いにして隠す
  *   --family yahoo … 楽天（RAKUTEN_SHOPS）の代わりに Yahoo!ショッピングの店（YAHOO_SHOPS）を取り込む。
  *                    ディレクトリは scripts/fetch-yahoo.ts の出力（<ストアID>.json.gz）。洗い替え・安全装置・前回ファイルの判定は同じ
  * 1ショップの失敗で他を止めない。前回取り込んだファイル（fetch.php の取得がまだ終わっていない回）は警告だけで、失敗にはしない
@@ -20,27 +22,47 @@ import prisma from "@/lib/prisma";
 
 // fetch.php は6時間ごと。これより古いファイルは前回分なので取り込まない
 const MAX_AGE_HOURS = 7;
+// Amazon の価格は24時間を超えて表示できない（Creators API の規約）。ビルドまでの時間を見込んで20時間
+const AMAZON_MAX_AGE_HOURS = 20;
+
+/** Amazon の在庫のうち、最後の取り込みが20時間より前のものを売り切れ扱いにして隠す（価格は24時間を超えて出せない）。新しい行は触らない */
+async function hideStaleAmazon(shopName: string) {
+  const before = new Date(Date.now() - AMAZON_MAX_AGE_HOURS * 3_600_000);
+  const hidden = await prisma.deviceInventory.updateMany({ where: { shopName, isSoldOut: false, updatedAt: { lt: before } }, data: { isSoldOut: true } });
+  if (hidden.count > 0) console.error(`${shopName}: 古い Amazon の在庫 ${hidden.count} 件を隠した`);
+}
 
 async function main() {
   const args = process.argv.slice(2);
   const familyIndex = args.indexOf("--family");
-  const family: ShopFamily = familyIndex >= 0 && args[familyIndex + 1] === "yahoo" ? "yahoo" : "rakuten";
+  const familyArg = familyIndex >= 0 ? args[familyIndex + 1] : "";
+  const family: ShopFamily = familyArg === "yahoo" ? "yahoo" : familyArg === "amazon" ? "amazon" : "rakuten";
   const dir = args.find((a, i) => !a.startsWith("--") && i !== familyIndex + 1);
   const SHOPS = shopsOf(family);
   const allowShrink = process.argv.includes("--allow-shrink");
   const allowOld = process.argv.includes("--allow-old");
-  if (!dir) throw new Error("使い方: tsx scripts/ingest-rakuten.ts <ディレクトリ> [--allow-shrink] [--allow-old] [--family yahoo]");
+  if (!dir) throw new Error("使い方: tsx scripts/ingest-rakuten.ts <ディレクトリ> [--allow-shrink] [--allow-old] [--family yahoo|amazon]");
 
   let failed = 0;
   for (const shopCode of Object.keys(SHOPS)) {
     const file = join(dir, `${shopCode}.json.gz`);
     if (!existsSync(file)) {
+      // Actions の実行環境にはファイルが残らないので、fetch-amazon.ts が失敗した回は「ファイルがない」になる。
+      // Amazon はこのとき、最後の取り込みが20時間より前なら在庫を隠す
+      if (family === "amazon" && !allowOld) await hideStaleAmazon(SHOPS[shopCode].shopName);
       console.error(`${shopCode}: ${file} がない`);
       failed++;
       continue;
     }
     const ageHours = (Date.now() - statSync(file).mtimeMs) / 3_600_000;
-    if (!allowOld && ageHours > MAX_AGE_HOURS) {
+    if (family === "amazon" && !allowOld && ageHours > AMAZON_MAX_AGE_HOURS) {
+      // 古い価格を出し続けないよう、取り込まずに売り切れ扱いにする（次に取得が成功した回の取り込みで置き換わる）
+      console.error(`${shopCode}: ファイルが ${ageHours.toFixed(1)} 時間前のもの（fetch-amazon.ts が失敗している）。取り込まない`);
+      await hideStaleAmazon(SHOPS[shopCode].shopName);
+      failed++;
+      continue;
+    }
+    if (family !== "amazon" && !allowOld && ageHours > MAX_AGE_HOURS) {
       console.error(`${shopCode}: ファイルが ${ageHours.toFixed(1)} 時間前のもの（fetch.php・fetch-yahoo.ts が失敗している）。取り込まない`);
       failed++;
       continue;

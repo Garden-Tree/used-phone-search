@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { RAKUTEN_SHOPS, type RakutenItem } from "@/lib/rakutenShops";
 import { YAHOO_SHOPS } from "@/lib/yahooShops";
+import { AMAZON_SHOPS } from "@/lib/amazonShops";
 
 /**
  * 楽天市場店の在庫の洗い替え（ショップ単位）。
@@ -18,11 +19,12 @@ export type IngestResult =
   | { ok: false; status: number; error: string; detail?: string };
 
 /** どの店の一覧から探すか（楽天は shopCode、Yahoo!ショッピングはストアID。Yahoo は scripts/fetch-yahoo.ts が楽天と同じ形の JSON を作る） */
-export type ShopFamily = "rakuten" | "yahoo";
+export type ShopFamily = "rakuten" | "yahoo" | "amazon";
 
 /** 取り込む店の一覧（family で切り替える）。Yahoo の店には旧ショップ名・店の分け合いはない */
 export function shopsOf(family: ShopFamily): Record<string, { shopName: string; alsoReplace?: string[]; sharedShopName?: boolean; normalize: (item: RakutenItem) => ReturnType<(typeof RAKUTEN_SHOPS)[string]["normalize"]> }> {
-  return family === "yahoo" ? YAHOO_SHOPS : RAKUTEN_SHOPS;
+  // Amazon（整備済み品。scripts/fetch-amazon.ts）も楽天と同じ形の JSON。url の前方一致を使うのは sharedShopName の店だけなので影響しない
+  return family === "yahoo" ? YAHOO_SHOPS : family === "amazon" ? AMAZON_SHOPS : RAKUTEN_SHOPS;
 }
 
 export async function replaceRakutenShop(shopCode: string, items: RakutenItem[], force = false, family: ShopFamily = "rakuten"): Promise<IngestResult> {

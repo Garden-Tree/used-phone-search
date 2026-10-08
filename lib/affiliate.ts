@@ -1,5 +1,6 @@
 import { RAKUTEN_SHOP_NAMES } from "@/lib/rakutenShops";
 import { YAHOO_SHOP_NAMES } from "@/lib/yahooShops";
+import { AMAZON_SHOP_NAMES } from "@/lib/amazonShops";
 
 // 楽天アフィリエイトID（公開情報。楽天ウェブサービスのアプリ管理画面に表示される）
 const RAKUTEN_AFFILIATE_ID = "5356a96f.f87a73cf.5356a970.2f9f146a";
@@ -36,6 +37,8 @@ const A8_PROGRAMS: Record<string, string> = {
 export function affiliateUrl(shopName: string, url: string): string {
   if (RAKUTEN_SHOP_NAMES.has(shopName)) return rakutenAffiliateUrl(url);
   if (YAHOO_SHOP_NAMES.has(shopName)) return valueCommerceUrl(url);
+  // Amazon は Creators API が返す detailPageURL（アソシエイトのタグ付き）をそのまま使う。URL の加工は規約違反
+  if (AMAZON_SHOP_NAMES.has(shopName)) return url;
   const a8mat = A8_PROGRAMS[shopName];
   if (a8mat) return `https://px.a8.net/svt/ejp?a8mat=${a8mat}&a8ejpredirect=${encodeURIComponent(url)}`;
   return url;
@@ -43,13 +46,14 @@ export function affiliateUrl(shopName: string, url: string): string {
 
 /** リンクがアフィリエイト経由か（Google のガイドラインに従い rel="sponsored" を付ける） */
 export function isAffiliateUrl(href: string): boolean {
-  return /^https:\/\/px\.a8\.net\/|\.afl\.rakuten\.co\.jp\/|^https:\/\/ck\.jp\.ap\.valuecommerce\.com\//.test(href);
+  return /^https:\/\/px\.a8\.net\/|\.afl\.rakuten\.co\.jp\/|^https:\/\/ck\.jp\.ap\.valuecommerce\.com\/|^https:\/\/www\.amazon\.co\.jp\/[^#]*[?&]tag=/.test(href);
 }
 
 /** リンクの種類（GA4 の shop_click イベントで、収益になるクリックかを分けるため） */
-export function affiliateLinkType(href: string): "rakuten" | "a8" | "vc" | "direct" {
+export function affiliateLinkType(href: string): "rakuten" | "a8" | "vc" | "amazon" | "direct" {
   if (/\.afl\.rakuten\.co\.jp\//.test(href)) return "rakuten";
   if (/^https:\/\/px\.a8\.net\//.test(href)) return "a8";
   if (/^https:\/\/ck\.jp\.ap\.valuecommerce\.com\//.test(href)) return "vc";
+  if (/^https:\/\/www\.amazon\.co\.jp\/[^#]*[?&]tag=/.test(href)) return "amazon";
   return "direct";
 }

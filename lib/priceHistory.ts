@@ -1,4 +1,6 @@
+import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { AMAZON_RENEWED_SHOP } from "@/lib/amazonRenewed";
 import { ALL_DEVICE_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
 import { groupMinPrice, medianPrice, modelWhere } from "@/lib/modelInventory";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
@@ -21,7 +23,9 @@ export function jstToday(now = new Date()): Date {
 export async function recordPriceSnapshots(date = jstToday()) {
   let written = 0;
   for (const model of ALL_DEVICE_PAGE_MODELS) {
-    const where = await modelWhere(model);
+    // Amazon の価格は価格推移に使わない（Creators API の規約: 取得したデータはトラフィックを誘導する目的以外に使わない・24時間を超えて保持しない）。
+    // 履歴の集計だけから除く。モデル別ページの最安・中央値などは modelWhere そのまま
+    const where: Prisma.DeviceInventoryWhereInput = { AND: [await modelWhere(model), { shopName: { not: AMAZON_RENEWED_SHOP } }] };
     const groups = await groupMinPrice(where, "storage");
     if (groups.length === 0) continue; // 在庫ゼロのモデルは記録しない
 

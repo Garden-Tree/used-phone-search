@@ -11,6 +11,8 @@ export type RakutenItem = {
   nw: string | null;
   batt?: number | null;
   car?: string | null;
+  /** 販売元（Amazon の出品者名。scripts/fetch-amazon.ts だけが入れる） */
+  seller?: string | null;
 };
 
 const RANKS = new Set(["S", "A", "B", "C", "D", "J"]);

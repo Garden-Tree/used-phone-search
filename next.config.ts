@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   // ビルドごとの _next/static/<buildId>/ をコミットごとにする（コードが同じ回は同じ名前にする）。
   // 手元（GITHUB_SHA なし）は Next の既定
   generateBuildId: async () => process.env.GITHUB_SHA ?? null,
+  // Amazon の価格に添える「○時点」（lib/buildTime.ts）。ビルドの時刻をクライアントにも埋め込む
+  env: { NEXT_PUBLIC_BUILD_TIME: new Date().toISOString() },
   serverExternalPackages: ['@prisma/client'],
 };
 

@@ -7,6 +7,7 @@
 import { writeFileSync, readFileSync } from "node:fs";
 import { RAKUTEN_SHOPS } from "@/lib/rakutenShops";
 import { YAHOO_SHOPS } from "@/lib/yahooShops";
+import { AMAZON_SHOPS } from "@/lib/amazonShops";
 import { IPAD_MODELS, canonicalIpadModel } from "@/lib/ipadCatalog";
 import { IPAD_SPECS, IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { matchesModel } from "@/lib/deviceSearch";
@@ -158,13 +159,23 @@ const CORPUS: [string, string, string | null, string | null, number | null][] = 
  ["quality-shop","[中古 Jランク] ジャンク品 SIMフリー iPhone12 [ホワイト][128GB]   [国内正規品]",null,null,null],
  ["quality-shop","【新品 未開封品】SIMフリー iPhone 17 Pro 256GB [コズミックオレンジ][アップル][eSIM専用端末]",null,null,null],
  ["quality-shop","[中古 Cランク]  iPad mini3 Cellular gold  [展示用端末 ※デモ機]",null,null,null],
+
+ ["amazon","Apple iPhone 14 128GB ミッドナイト SIMフリー (整備済み品)","A",null,90],
+ ["amazon","iPhone13 128GB SIMフリー ブルー (整備済み品)","B",null,null],
+ ["amazon","Google Pixel 8a 128GB Obsidian SIMフリー (整備済み品)","C",null,null],
+ ["amazon","Apple iPhone 15 Pro Max 256GB ナチュラルチタニウム SIMフリー （整備済み品）","A",null,null],
+ ["amazon","Apple iPad 第9世代 64GB Wi-Fi シルバー (整備済み品)","B",null,80],
+ ["amazon","Apple iPad Air 第5世代 64GB Wi-Fi + Cellular スペースグレイ SIMフリー (整備済み品)",null,null,null],
+ ["amazon","Samsung Galaxy S23 Ultra 256GB ファントムブラック SIMフリー (整備済み品)","B",null,null],
+ ["amazon","Apple iPhone 12 mini 64GB 専用ケース付き (整備済み品)","B",null,null],
+ ["amazon","Apple iPhone 11 SIMフリー ブラック (整備済み品)","B",null,null],
 ];
 const FIXTURE = "scripts/fixtures/rakuten-normalize.expected.json";
 let failures = 0;
 
 // 1. 楽天3店の商品名の読み取り（期待値はファイル）
 const out = CORPUS.map(([shop, name, rank, car, batt]) =>
-  (RAKUTEN_SHOPS[shop] ?? YAHOO_SHOPS[shop]).normalize({ code: "x", name, price: 1000, url: u, rank, nw: "○", car, batt }),
+  (RAKUTEN_SHOPS[shop] ?? YAHOO_SHOPS[shop] ?? AMAZON_SHOPS[shop]).normalize({ code: "x", name, price: 1000, url: u, rank, nw: "○", car, batt }),
 );
 if (process.argv.includes("--update")) {
   writeFileSync(FIXTURE, JSON.stringify(out, null, 1));

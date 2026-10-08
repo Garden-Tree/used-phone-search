@@ -52,6 +52,8 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       # Yahoo!ショッピング 商品検索API の Client ID。未登録のあいだは Yahoo の取り込みを飛ばす
       YAHOO_APP_ID: ${{ secrets.YAHOO_APP_ID }}
+      # Amazon Creators API（整備済み品）の認証情報・アソシエイトのタグ。AMAZON_CREDENTIAL_ID が未登録のあいだは Amazon の取り込みを飛ばす
+      AMAZON_CREDENTIAL_ID: ${{ secrets.AMAZON_CREDENTIAL_ID }}
       CF_PAGES_PROJECT: ${{ vars.CF_PAGES_PROJECT || 'used-phone-search' }}
       HAS_CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
 
@@ -113,6 +115,21 @@ jobs:
           failed=0
           npx tsx scripts/fetch-yahoo.ts || failed=1
           npx tsx scripts/ingest-rakuten.ts yahoo-data --family yahoo || failed=1
+          exit "$failed"
+
+      # Amazon.co.jp の整備済み品（lib/amazonShops.ts）: Creators API を直接呼んで取り込む（1秒1回・最大約12分）。Yahoo と同じ扱い（失敗しても書き出しは続け、ジョブは失敗として通知）。
+      # 取得に失敗した回は amazon-data/amazon.json.gz が書かれず、取り込みが Amazon の在庫を隠す（価格は24時間を超えて出せない）
+      - name: Amazon 整備済み品を取り込む
+        if: ${{ !cancelled() && env.AMAZON_CREDENTIAL_ID != '' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AMAZON_CREDENTIAL_SECRET: ${{ secrets.AMAZON_CREDENTIAL_SECRET }}
+          AMAZON_PARTNER_TAG: ${{ secrets.AMAZON_PARTNER_TAG }}
+          AMAZON_CREDENTIAL_VERSION: ${{ vars.AMAZON_CREDENTIAL_VERSION || '3.3' }}
+        run: |
+          failed=0
+          npx tsx scripts/fetch-amazon.ts || failed=1
+          npx tsx scripts/ingest-rakuten.ts amazon-data --family amazon || failed=1
           exit "$failed"
 
       # 楽天市場店の在庫: サーバーの fetch.php（cron。この20分前）が書き出した JSON を HTTPS で取ってきて取り込む。
