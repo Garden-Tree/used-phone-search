@@ -76,9 +76,9 @@ export function normalizeNewsedtechItem(item: RakutenItem): Row | null {
   const batteryHealth = batteryFrom(item.name, item);
 
   // iPhone: "iPhone14 128GB ミッドナイト Aランク SIMフリー"・"iPhone13mini 128GB …"・"iPhoneSE3 64GB …"
-  const iphone = b.match(/^iPhone\s?(.+?)\s+\d+\s*(?:GB|TB)\s+(.*?)\s*(?:[SABC]ランク|良品)?\s*SIMフリー/);
+  const iphone = b.match(/^iPhone\s?(.+?)\s+\d+\s*(?:GB|TB)\s+(.*?)\s*(?:[SABC]ランク|良品)?\s*(?:SIMフリー|$)/);
   if (iphone) {
-    const part = iphone[1].replace(/(\d)(mini|Plus|Pro|e)\b/i, "$1 $2");
+    const part = iphone[1].replace(/(\d)(mini|Plus|Pro)\b/i, "$1 $2"); // 「16e」はそのまま
     const modelName = `iPhone ${normalizeModelPart(part)}`;
     if (!isKnownIphoneModel(modelName)) return null;
     return base(item, "Apple", {

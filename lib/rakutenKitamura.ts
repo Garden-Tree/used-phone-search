@@ -27,7 +27,7 @@ type Row = Prisma.DeviceInventoryCreateManyInput;
 
 const RANKS: Record<string, string> = { AA: "A", A: "A", AB: "B", B: "C", C: "D" };
 
-const HEAD_RE = /^\s*【中古[：:]\s*(AA|AB|A|B|C)\b[^】]*】\s*/;
+const HEAD_RE = /【中古[：:]\s*(AA|AB|A|B|C)\b[^】]*】\s*/;
 
 /** Galaxy の型番から元のキャリア（SC-52E は docomo、SCG26 は au、SM-xxxxQ は国内版） */
 function galaxyCarrier(name: string): string {
@@ -43,7 +43,7 @@ export function normalizeKitamuraItem(item: RakutenItem): Row | null {
   if (!head) return null;
   const conditionRank = RANKS[head[1]] ?? "不明";
   // 「【ガラスフィルム付属】」などの後ろは検索用の語なので読まない
-  const b = item.name.slice(head[0].length).split("【")[0].replace(/[\s　]+/g, " ").trim();
+  const b = item.name.slice((head.index ?? 0) + head[0].length).split("【")[0].replace(/[\s　]+/g, " ").trim();
   const storages = [...b.matchAll(/(\d+)\s*(GB|TB)/g)];
   if (storages.length !== 1) return null;
   const storage = toStorage(storages[0][1], storages[0][2]);
@@ -63,7 +63,7 @@ export function normalizeKitamuraItem(item: RakutenItem): Row | null {
     return { ...common, manufacturer: "Apple", modelName, simUnlocked: simFree, carrier: null }; // 元のキャリアは書かれていない（「SIMフリー」とだけ出す）
   }
 
-  const ipad = b.match(/^Apple (iPad.*?)\s*(Wi-Fi(?:\+Cellular)?)?\s*\d+\s*(?:GB|TB)/);
+  const ipad = b.match(/^Apple ((?:\d+(?:\.\d)?インチ )?iPad.*?)\s*(Wi-Fi(?:\+Cellular)?)?\s*\d+\s*(?:GB|TB)/);
   if (ipad) {
     const modelName = canonicalIpadModel(ipad[1]);
     if (!modelName) return null;

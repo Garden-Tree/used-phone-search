@@ -92,6 +92,11 @@ const CORPUS: [string, string, string | null, string | null, number | null][] = 
  ["emedama","【中古：A(美品)】Samsung Galaxy S24 Ultra　SC-52E 512GB チタニウム ブラック SIMフリー 《納期約1－2週間》",null,null,null],
  ["emedama","テレホンリース 7520PXL7AHB 猫耳ケース mimi TPU×(PC×PMMA) BK（GooglePixel7a用）",null,null,null],
  ["emedama","エレコム PM-G224HVCKCR ハイブリッドケース 極み クリア〔Galaxy A53 5G用〕",null,null,null],
+ ["emedama","アイパッド 中古 タブレット 本体 SIMフリーモデル 高品質端末 【中古：AA(新品同様)】 Apple iPad （第8世代） Wi-Fi+Cellular 32GB シルバー SIMフリー【2WAYスタイラスペン付属】 アイパッド 中古 タブレット 本体 SIMフリーモデル 高品質端末",null,null,null],
+ ["emedama","【中古：A(美品)】Apple 11インチ iPad（A16） Wi-Fi 256GB シルバー 《納期約1－2週間》",null,null,null],
+ ["garakei","バッテリー新品交換済 【中古】 iPhone16e 128GB ブラック Aランク SIMフリー 本体 スマホ バッテリーが持つ 長持ち 多い 電池 最大容量 アイフォン アップル apple 【あす楽】 【保証あり】 【送料無料】 ip16emtm2908a",null,null,null],
+ ["garakei","バッテリー新品交換済 【中古】 iPhone17e 256GB ブラック Aランク SIMフリー 本体 スマホ バッテリーが持つ 長持ち 多い 電池 最大容量 アイフォン アップル apple 【あす楽】 【保証あり】 【送料無料】 ip17emtm3138a",null,null,null],
+ ["garakei","【中古】 iPhoneSE2 128GB ブラック 本体 スマホ iPhoneSE第2世代 アイフォン アップル apple 【あす楽】 【保証あり】 【送料無料】 ipse2mtm704","B",null,null],
 ];
 const FIXTURE = "scripts/fixtures/rakuten-normalize.expected.json";
 let failures = 0;
