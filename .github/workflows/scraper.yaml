@@ -26,6 +26,10 @@ on:
         description: 'ダイワンテレコムの取得数'
         required: true
         default: '100'
+      rakuten_retry:
+        description: '楽天の JSON の取り直し回数（自動で付く。手動では 0 のまま）'
+        required: false
+        default: '0'
 
 # 手動実行と定期実行が重ならないように（楽天の洗い替え・書き出し・rsync --delete が同時に走らない）
 concurrency:
@@ -100,14 +104,23 @@ jobs:
       # 楽天市場店の在庫: サーバーの fetch.php（cron。この20分前）が書き出した JSON を HTTPS で取ってきて取り込む。
       # 失敗しても前回の在庫のまま書き出しは続ける（ジョブは失敗として通知される）
       - name: 楽天市場店の在庫を取り込む
+        id: rakuten
         if: ${{ !cancelled() && env.RAKUTEN_DATA_URL != '' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        # 1店の取得に失敗しても、取れた店の分は取り込む（失敗はジョブの失敗として通知される）
+          RAKUTEN_RETRY: ${{ inputs.rakuten_retry || '0' }}
+        # 1店の取得に失敗しても、取れた店の分は取り込む。
+        # Actions の実行環境によってはシンに 10 分以上つながらないことがある（10/7 15時・10/8 9時）。
+        # そのときは失敗にせず、最後に別の実行環境でこのワークフローをやり直す（2回まで。3回目の失敗でジョブを失敗＝通知）
         run: |
           fetch_ok=0
           bash scripts/ci-deploy.sh fetch-rakuten || fetch_ok=1
           npx tsx scripts/ingest-rakuten.ts rakuten-data
+          if [ "$fetch_ok" = 1 ] && [ "$RAKUTEN_RETRY" -lt 2 ]; then
+            echo "::warning::楽天の JSON を取得できなかった。別の実行環境でやり直す（$((RAKUTEN_RETRY + 1)) 回目）"
+            echo "retry=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           exit "$fetch_ok"
 
       # にこスマ・イオシスの iPad は店の表記のまま入るので、lib/ipadCatalog.ts の正式名にそろえる
@@ -173,3 +186,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/scraper.yaml/enable"
+
+      # 上の「楽天市場店の在庫を取り込む」で取得できなかったとき、別の実行環境でもう一度（GITHUB_TOKEN でも
+      # workflow_dispatch は新しい実行を作れる。concurrency でこの実行が終わってから始まる）
+      - name: 楽天の取得をやり直す
+        if: ${{ !cancelled() && steps.rakuten.outputs.retry == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RAKUTEN_RETRY: ${{ inputs.rakuten_retry || '0' }}
+        run: gh workflow run scraper.yaml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}" -f rakuten_retry="$((RAKUTEN_RETRY + 1))"
