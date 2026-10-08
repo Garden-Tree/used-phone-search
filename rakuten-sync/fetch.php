@@ -24,8 +24,8 @@ $onlyShops = array_values(array_filter($args, fn($a) => $a !== '--dry'));
 
 const ENDPOINT = 'https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701';
 // 取り込むショップ（楽天の shopCode）。受け口 lib/rakutenShops.ts の RAKUTEN_SHOPS と揃える
-// kamaya-awards・garakei はニューズドテック1号店・2号店、emedama はカメラのキタムラ、pc-good はイオシス（2026-10-08〜）
-const SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'kamaya-awards', 'garakei', 'emedama', 'pc-good'];
+// kamaya-awards・garakei はニューズドテック1号店・2号店、emedama はカメラのキタムラ、ekosuta はエムティーエム、pc-good はイオシス（2026-10-08〜）
+const SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'kamaya-awards', 'garakei', 'emedama', 'ekosuta', 'pc-good'];
 // 1ショップ分として、この検索語の結果をまとめて送る（受け口はショップ単位で洗い替えるため）
 // Pixel・Galaxy は 2026-09-30〜（アクセサリも当たるが、受け口の lib/rakutenPixel.ts・rakutenGalaxy.ts が本体以外を落とす）
 const KEYWORDS = ['iPhone', 'iPad', 'Pixel', 'Galaxy'];

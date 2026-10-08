@@ -50,6 +50,8 @@ export const SHOPS: Shop[] = [
   { name: "カメラのキタムラ（楽天市場店）", label: "カメラのキタムラ", note: "楽天市場店", pixel: true, galaxy: true, ipad: true, battery: "over80",
     warranty: "初期不良のみ到着後14日以内（中古品の保証はなし）", redRom: "無期限保証（商品ページに記載）",
     guaranteeUrl: "https://www.rakuten.co.jp/emedama/info.html" },
+  { name: "エムティーエム（楽天市場店）", label: "エムティーエム", note: "楽天市場店", pixel: true, galaxy: true, ipad: true, battery: "none",
+    warranty: "記載なし（楽天の店舗情報に保証期間の記載がない。商品ページを確認）", redRom: "記載なし", guaranteeUrl: "https://www.rakuten.co.jp/ekosuta/info.html" },
   { name: "にこスマ", label: "にこスマ", galaxy: true, pixel: true, ipad: true, battery: "exact",
     warranty: "1年間の返品・交換", redRom: "永久保証", guaranteeUrl: "https://www.nicosuma.com/about/shopping-guide" },
   { name: "ダイワンテレコム", label: "ダイワンテレコム", galaxy: true, pixel: true, ipad: false, battery: "over80",
