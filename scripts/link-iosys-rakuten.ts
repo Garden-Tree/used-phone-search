@@ -19,32 +19,41 @@ const key = (t: string) => `concat_ws('|',
   lower(regexp_replace(${t}."modelName", '\\s', '', 'g')), ${t}."storage", ${t}."color",
   coalesce(${t}."carrier", ''), ${t}."conditionRank", coalesce(${t}."batteryHealth", 80) < 80)`;
 
+// 鍵は両方とも先に1回ずつ計算してから結合する（行ごとに相手を全部なめると 3千×3千件で10秒を超える。10/8 の初回）
 async function main() {
-  const [reset, linked, hidden] = await prisma.$transaction([
-    prisma.$executeRawUnsafe(
+  const [reset, linked, hidden] = await prisma.$transaction(async (tx) => [
+    await tx.$executeRawUnsafe(
       `UPDATE "DeviceInventory" SET "altPrice" = NULL, "altUrl" = NULL WHERE "shopName" = $1 AND "altPrice" IS NOT NULL`,
       OFFICIAL,
     ),
     // 同じ商品が楽天に複数あれば安いほう
-    prisma.$executeRawUnsafe(
-      `UPDATE "DeviceInventory" o SET "altPrice" = m.price, "altUrl" = m.url
-       FROM (
+    await tx.$executeRawUnsafe(
+      `WITH m AS (
          SELECT DISTINCT ON (k) k, price, url
          FROM (SELECT ${key("r")} AS k, r.price, r.url FROM "DeviceInventory" r WHERE r."shopName" = $2) x
          ORDER BY k, price
-       ) m
-       WHERE o."shopName" = $1 AND o."isSoldOut" = false AND ${key("o")} = m.k`,
-      OFFICIAL, RAKUTEN_IOSYS_SHOP,
-    ),
-    prisma.$executeRawUnsafe(
-      `UPDATE "DeviceInventory" r SET "isSoldOut" = EXISTS (
-         SELECT 1 FROM "DeviceInventory" o
-         WHERE o."shopName" = $1 AND o."isSoldOut" = false AND o.price <= r.price AND ${key("o")} = ${key("r")}
+       ), o AS (
+         SELECT d.id, ${key("d")} AS k FROM "DeviceInventory" d WHERE d."shopName" = $1 AND d."isSoldOut" = false
        )
-       WHERE r."shopName" = $2`,
+       UPDATE "DeviceInventory" t SET "altPrice" = m.price, "altUrl" = m.url
+       FROM o JOIN m ON m.k = o.k
+       WHERE t.id = o.id`,
       OFFICIAL, RAKUTEN_IOSYS_SHOP,
     ),
-  ]);
+    // 公式に同じ商品があり、公式のいちばん安い値段が楽天以下なら隠す
+    await tx.$executeRawUnsafe(
+      `WITH o AS (
+         SELECT ${key("d")} AS k, min(d.price) AS price FROM "DeviceInventory" d
+         WHERE d."shopName" = $1 AND d."isSoldOut" = false GROUP BY 1
+       ), r AS (
+         SELECT d.id, ${key("d")} AS k, d.price FROM "DeviceInventory" d WHERE d."shopName" = $2
+       )
+       UPDATE "DeviceInventory" t SET "isSoldOut" = (o.price IS NOT NULL AND o.price <= r.price)
+       FROM r LEFT JOIN o ON o.k = r.k
+       WHERE t.id = r.id`,
+      OFFICIAL, RAKUTEN_IOSYS_SHOP,
+    ),
+  ], { timeout: 60_000 });
   const visible = await prisma.deviceInventory.count({ where: { shopName: RAKUTEN_IOSYS_SHOP, isSoldOut: false } });
   console.log(JSON.stringify({ reset, officialLinked: linked, rakutenRows: hidden, rakutenVisible: visible }));
   await prisma.$disconnect();
