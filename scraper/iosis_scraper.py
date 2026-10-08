@@ -5,6 +5,7 @@
 - iPad:   /items/tablet/ipad?page=N（機種名は店の表記のまま入れ、npm run normalize:ipad で正式名にそろえる）
 """
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
@@ -17,6 +18,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 }
 # (一覧の URL, 読み取り関数, 最大ページ数) はファイル末尾の CATEGORIES
+BATCH = 4  # 同時に取るページ数（店への負担を抑えるため 4 まで）
 
 
 def parse_rank(li) -> str:
@@ -233,38 +235,64 @@ CATEGORIES = [
 ]
 
 
-def fetch_page(url_template: str, parse, page: int) -> list[dict]:
+def fetch_page_raw(url_template: str, parse, page: int):
+    """(読み取れた商品, li.item の総数) を返す。取得に失敗したら None（0件の「最後のページ」と区別する）。一時的な失敗は2回まで再試行"""
     url = url_template.format(page=page)
-    try:
-        response = requests.get(url, headers=HEADERS, timeout=10)
-        response.raise_for_status()
-        response.encoding = "utf-8"
-    except Exception as e:
-        print(f"  {url}: Error - {e}")
-        return []
+    response = None
+    for attempt in range(3):
+        try:
+            response = requests.get(url, headers=HEADERS, timeout=20)
+            response.raise_for_status()
+            response.encoding = "utf-8"
+            break
+        except Exception as e:
+            response = None
+            print(f"  {url}: Error - {e}")
+            time.sleep(2 * (attempt + 1))
+    if response is None:
+        return None
     soup = BeautifulSoup(response.text, "html.parser")
-    items = [item for li in soup.select("li.item") if (item := parse(li))]
+    lis = soup.select("li.item")
+    items = [item for li in lis if (item := parse(li))]
     for item in items:
         item.pop("_storage_label", None)
     print(f"  {url}: {len(items)} items")
-    return items
+    return items, len(lis)
 
 
-def scrape_iosis(max_pages=20):
-    """iPhone・iPad・Pixel・Galaxy の一覧を max_pages ページずつ並列取得する（在庫のないページは0件で返る）"""
+def fetch_page(url_template: str, parse, page: int) -> list[dict]:
+    result = fetch_page_raw(url_template, parse, page)
+    return result[0] if result else []
+
+
+def scrape_iosis(max_pages=200):
+    """iPhone・iPad・Pixel・Galaxy の一覧を、カテゴリごとに4ページずつ並列で取得する。
+    一覧は最後のページの先が li.item 0件になるので、そこで打ち切る（10/8 時点で iPhone 106・iPad 13・Pixel 14・Galaxy 13 ページ）。
+    max_pages は暴走を防ぐ上限。以前は上限 100 に iPhone が当たり、101 ページ目以降（約120件）を取りこぼしていた。
+    一覧ページの見出しの「9,520件」は在庫の台数（1商品に複数台）で、商品の数は約2,500"""
     print("Starting requests scraper for Iosis...")
-    jobs = [
-        (tpl, parse, page)
-        for tpl, parse, cap in CATEGORIES
-        for page in range(1, min(max_pages, cap or max_pages) + 1)
-    ]
     all_items = []
-    with ThreadPoolExecutor(max_workers=15) as executor:
-        for items in executor.map(lambda job: fetch_page(*job), jobs):
-            all_items.extend(items)
+    with ThreadPoolExecutor(max_workers=BATCH) as executor:
+        for tpl, parse, cap in CATEGORIES:
+            last = min(max_pages, cap or max_pages)
+            page = 1
+            done = False
+            while page <= last and not done:
+                pages = list(range(page, min(page + BATCH, last + 1)))
+                results = list(executor.map(lambda p: fetch_page_raw(tpl, parse, p), pages))
+                for result in results:
+                    if result is None:
+                        continue  # 取得失敗のページは終わりの印にしない（上限までは続ける）
+                    all_items.extend(result[0])
+                    if result[1] == 0:
+                        done = True  # 商品のないページ＝最後のページの先
+                page += BATCH
+                time.sleep(0.5)  # 4ページごとに間を空ける（店に負担をかけない）
+            if not done and page > last:
+                print(f"  警告: {tpl} は上限 {last} ページに達しても終わらなかった（取りこぼしの恐れ。max_pages を見直す）")
     print(f"Finished scraping. Total items found: {len(all_items)}")
     return all_items
 
 
 if __name__ == "__main__":
-    run_scraper(SHOP_NAME, lambda limit: scrape_iosis(max_pages=limit), 5)
+    run_scraper(SHOP_NAME, lambda limit: scrape_iosis(max_pages=limit), 200)

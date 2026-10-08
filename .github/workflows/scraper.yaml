@@ -15,9 +15,9 @@ on:
         required: true
         default: '100'
       iosis_limit:
-        description: 'イオシスの取得数'
+        description: 'イオシスの取得数（ページ数の上限。商品のないページで止まる。iPhone が 106 ページ）'
         required: true
-        default: '100'
+        default: '200'
       mmoba_limit:
         description: 'エムモバの取得数'
         required: true
@@ -82,7 +82,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           # フォームからの入力値を渡す。定期実行(cron)の時は空になるので '100' をフォールバックとして渡す
           NICOSUMA_LIMIT: ${{ inputs.nicosuma_limit || '100' }}
-          IOSIS_LIMIT: ${{ inputs.iosis_limit || '100' }}
+          IOSIS_LIMIT: ${{ inputs.iosis_limit || '200' }}
           MMOBA_LIMIT: ${{ inputs.mmoba_limit || '100' }}
           DAIWAN_LIMIT: ${{ inputs.daiwan_limit || '100' }}
         run: |

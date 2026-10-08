@@ -75,7 +75,7 @@ def main():
     # ゲオは公式ECが自動アクセスを拒否しているため、楽天API（rakuten-sync/）で取得している
     limits = {
         "nicosuma_scraper.py": int(os.environ.get("NICOSUMA_LIMIT", 100)),
-        "iosis_scraper.py": int(os.environ.get("IOSIS_LIMIT", 100)),
+        "iosis_scraper.py": int(os.environ.get("IOSIS_LIMIT", 200)),
         "mmoba_scraper.py": int(os.environ.get("MMOBA_LIMIT", 100)),
         "daiwan_scraper.py": int(os.environ.get("DAIWAN_LIMIT", 100)),
     }
