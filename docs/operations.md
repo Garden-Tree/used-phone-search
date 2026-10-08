@@ -103,8 +103,9 @@
 - 本番で試すなら、サーバーの Cron に一度だけ `php fetch.php` を追加し、終わったら削除する（`fetch.log` と、起動された Actions の取り込みログで確認）
 
 ### 楽天市場のショップを追加する
-1. `lib/rakutenShops.ts` の `RAKUTEN_SHOPS` に shopCode・ショップ名・商品名の解析関数を追加（例: `lib/rakutenJanpara.ts`）
-2. `rakuten-sync/fetch.php` の `SHOP_CODES` に shopCode を追加 → サーバーへ上書きアップロード
+1. `lib/rakutenShops.ts` の `RAKUTEN_SHOPS` に shopCode・ショップ名・商品名の解析関数を追加（例: `lib/rakutenJanpara.ts`。1つの店名で複数の楽天店を見せるときは `sharedShopName: true`＝ニューズドテック）
+   商品名は楽天の公開ページ（`search.rakuten.co.jp/search/mall/iPhone/?sid=<店の番号>`。商品ページは EUC-JP）から集めて `scripts/test-normalizers.ts` の CORPUS に足す
+2. `rakuten-sync/fetch.php` の `SHOP_CODES` と `scripts/ci-deploy.sh` の `SHOP_CODES` に shopCode を追加 → fetch.php をサーバーへ上書き（先にサーバー、次の取得で JSON ができてから Actions が取りに行く）
 3. `lib/shops.ts` の `SHOPS` に1行足す（トップの在庫数・絞り込み・OG 画像・説明文の店舗数はここから作られる。バッテリー表記の種類、
    保証・赤ロムの扱いと出典 URL もここ。保証は**その店の公式ページで確かめてから**書く）。
    店名が楽天の shopName とずれていないかは `npm run test:normalize` が確かめる

@@ -23,7 +23,13 @@ export async function replaceRakutenShop(shopCode: string, items: RakutenItem[],
   const rows = items.map(shop.normalize).filter((r) => r !== null);
   const skipped = items.filter((item) => shop.normalize(item) === null);
 
-  const existing = await prisma.deviceInventory.count({ where: { shopName: shop.shopName } });
+  // 1つのショップ名を複数の店で分け合うとき（ニューズドテック）は、この店の商品 URL の行だけを対象にする
+  const scope = shop.sharedShopName
+    ? { shopName: shop.shopName, url: { startsWith: `https://item.rakuten.co.jp/${shopCode}/` } }
+    : { shopName: { in: [shop.shopName, ...shop.alsoReplace] } };
+  const existing = await prisma.deviceInventory.count({
+    where: shop.sharedShopName ? scope : { shopName: shop.shopName },
+  });
   if (!force && existing >= MIN_EXISTING_TO_CHECK && rows.length < existing * MIN_REPLACE_RATIO) {
     return {
       ok: false,
@@ -36,7 +42,7 @@ export async function replaceRakutenShop(shopCode: string, items: RakutenItem[],
   await prisma.$transaction(
     async (tx) => {
       // 旧スクレイパーで取り込んだ古い在庫（旧ゲオなど）も、楽天経由の在庫に置き換える
-      await tx.deviceInventory.deleteMany({ where: { shopName: { in: [shop.shopName, ...shop.alsoReplace] } } });
+      await tx.deviceInventory.deleteMany({ where: scope });
       for (let i = 0; i < rows.length; i += INSERT_CHUNK) {
         await tx.deviceInventory.createMany({ data: rows.slice(i, i + INSERT_CHUNK) });
       }

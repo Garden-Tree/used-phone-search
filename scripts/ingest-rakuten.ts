@@ -41,8 +41,13 @@ async function main() {
     }
     // fetch.php の取得中（約25分）に Actions が始まると、前回取り込んだファイルが残っている。
     // その店の在庫の最終更新より古いファイルは取り込まない（取り込むと更新日時だけ新しくなり、監視が気づかない）
+    // 1つのショップ名を複数の店で分け合うとき（ニューズドテック）は、この店の商品 URL の行で見る
+    // （ショップ名で見ると、同じ回に先に取り込んだもう1店の更新日時でこの店のファイルが「前回の分」に見える）
+    const shop = RAKUTEN_SHOPS[shopCode];
     const last = await prisma.deviceInventory.aggregate({
-      where: { shopName: RAKUTEN_SHOPS[shopCode].shopName },
+      where: shop.sharedShopName
+        ? { shopName: shop.shopName, url: { startsWith: `https://item.rakuten.co.jp/${shopCode}/` } }
+        : { shopName: shop.shopName },
       _max: { updatedAt: true },
     });
     if (!allowOld && last._max.updatedAt && statSync(file).mtimeMs <= last._max.updatedAt.getTime()) {

@@ -24,6 +24,7 @@
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**（保証・赤ロムは各店の公式で確認・毎月1日に見直す）
 - **スペック・保証期限・発売年月は公式（Apple・Google・Samsung・キャリア）で確かめた値だけ載せる**（`lib/*Specs.ts`・`pixelCatalog.ts`・`galaxyCatalog.ts`）
 - **店へのクリックは GA4 の `shop_click` で見る**（10/7〜。`docs/measurement.md`）
+- **楽天の店は6つ（5店名）**: ゲオ・じゃんぱら・ソフマップ＋ニューズドテック（1号・2号を1店として表示）・カメラのキタムラ（10/8〜。ideas/10-08）
 - **掲載機種**: iPhone（iOS 27 対応＋旧機種 X/XS/XR/8/7）・iPad 32・Pixel 24・Galaxy 29。18 系・iPhone Duo は中古在庫が出てから（台帳 11月）
 
 ## 確認台帳（計測・判定）

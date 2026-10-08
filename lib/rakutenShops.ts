@@ -6,6 +6,8 @@ import { RAKUTEN_SOFMAP_SHOP, normalizeSofmapItem } from "@/lib/rakutenSofmap";
 import { normalizeGeoIpad, normalizeJanparaIpad, normalizeSofmapIpad } from "@/lib/rakutenIpad";
 import { normalizeGeoPixel, normalizeJanparaPixel, normalizeSofmapPixel } from "@/lib/rakutenPixel";
 import { normalizeGeoGalaxy, normalizeJanparaGalaxy, normalizeSofmapGalaxy } from "@/lib/rakutenGalaxy";
+import { RAKUTEN_NEWSEDTECH_SHOP, normalizeNewsedtechItem } from "@/lib/rakutenNewsedtech";
+import { RAKUTEN_KITAMURA_SHOP, normalizeKitamuraItem } from "@/lib/rakutenKitamura";
 
 export type { RakutenItem };
 
@@ -14,6 +16,11 @@ type RakutenShop = {
   shopName: string;
   /** 洗い替えのときに一緒に消す旧ショップ名 */
   alsoReplace: string[];
+  /**
+   * 複数の楽天の店（shopCode）を1つのショップ名で見せる（ニューズドテックの1号店・2号店）。
+   * true のときの洗い替えは、そのショップ名の行のうち、この shopCode の商品 URL（item.rakuten.co.jp/<shopCode>/）の行だけを入れ替える
+   */
+  sharedShopName?: boolean;
   normalize: (item: RakutenItem) => Prisma.DeviceInventoryCreateManyInput | null;
 };
 
@@ -47,6 +54,11 @@ export const RAKUTEN_SHOPS: Record<string, RakutenShop> = {
     alsoReplace: [],
     normalize: byDevice(normalizeSofmapItem, normalizeSofmapIpad, normalizeSofmapPixel, normalizeSofmapGalaxy, RAKUTEN_SOFMAP_SHOP),
   },
+  // ニューズドテック（2026-10-08〜）。1号店・2号店とも同じ書き方で、画面では1つの店として出す
+  "kamaya-awards": { shopName: RAKUTEN_NEWSEDTECH_SHOP, alsoReplace: [], sharedShopName: true, normalize: normalizeNewsedtechItem },
+  garakei: { shopName: RAKUTEN_NEWSEDTECH_SHOP, alsoReplace: [], sharedShopName: true, normalize: normalizeNewsedtechItem },
+  // カメラのキタムラ（2026-10-08〜）
+  emedama: { shopName: RAKUTEN_KITAMURA_SHOP, alsoReplace: [], normalize: normalizeKitamuraItem },
 };
 
 /** 楽天経由の在庫のショップ名（リンクは楽天アフィリエイトだけにする） */
