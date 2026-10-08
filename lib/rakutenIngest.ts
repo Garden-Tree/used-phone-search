@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { RAKUTEN_SHOPS, type RakutenItem } from "@/lib/rakutenShops";
+import { YAHOO_SHOPS } from "@/lib/yahooShops";
 
 /**
  * 楽天市場店の在庫の洗い替え（ショップ単位）。
@@ -16,8 +17,16 @@ export type IngestResult =
   | { ok: true; shop: string; received: number; inserted: number; skipped: number; skippedSamples: string[] }
   | { ok: false; status: number; error: string; detail?: string };
 
-export async function replaceRakutenShop(shopCode: string, items: RakutenItem[], force = false): Promise<IngestResult> {
-  const shop = RAKUTEN_SHOPS[shopCode];
+/** どの店の一覧から探すか（楽天は shopCode、Yahoo!ショッピングはストアID。Yahoo は scripts/fetch-yahoo.ts が楽天と同じ形の JSON を作る） */
+export type ShopFamily = "rakuten" | "yahoo";
+
+/** 取り込む店の一覧（family で切り替える）。Yahoo の店には旧ショップ名・店の分け合いはない */
+export function shopsOf(family: ShopFamily): Record<string, { shopName: string; alsoReplace?: string[]; sharedShopName?: boolean; normalize: (item: RakutenItem) => ReturnType<(typeof RAKUTEN_SHOPS)[string]["normalize"]> }> {
+  return family === "yahoo" ? YAHOO_SHOPS : RAKUTEN_SHOPS;
+}
+
+export async function replaceRakutenShop(shopCode: string, items: RakutenItem[], force = false, family: ShopFamily = "rakuten"): Promise<IngestResult> {
+  const shop = shopsOf(family)[shopCode];
   if (!shop) return { ok: false, status: 400, error: "unknown shop", detail: shopCode };
 
   const rows = items.map(shop.normalize).filter((r) => r !== null);
@@ -26,7 +35,7 @@ export async function replaceRakutenShop(shopCode: string, items: RakutenItem[],
   // 1つのショップ名を複数の店で分け合うとき（ニューズドテック）は、この店の商品 URL の行だけを対象にする
   const scope = shop.sharedShopName
     ? { shopName: shop.shopName, url: { startsWith: `https://item.rakuten.co.jp/${shopCode}/` } }
-    : { shopName: { in: [shop.shopName, ...shop.alsoReplace] } };
+    : { shopName: { in: [shop.shopName, ...(shop.alsoReplace ?? [])] } };
   const existing = await prisma.deviceInventory.count({
     where: shop.sharedShopName ? scope : { shopName: shop.shopName },
   });

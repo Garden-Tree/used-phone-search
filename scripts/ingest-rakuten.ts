@@ -2,9 +2,11 @@
  * 楽天市場店の在庫を取り込む（静的書き出し版）。
  * シンレンタルサーバーの rakuten-sync/fetch.php（output_dir を設定したとき）が書き出した <shopCode>.json.gz を、
  * GitHub Actions が SSH で取ってきてから実行する:
- *   npx tsx scripts/ingest-rakuten.ts <ディレクトリ> [--allow-shrink] [--allow-old]
+ *   npx tsx scripts/ingest-rakuten.ts <ディレクトリ> [--allow-shrink] [--allow-old] [--family yahoo]
  *   --allow-shrink … 件数が前回の半分未満でも洗い替える（安全装置を外す。品切れが本当に多いときだけ）
  *   --allow-old    … 前回取り込んだファイル・7時間より古いファイルも取り込む
+ *   --family yahoo … 楽天（RAKUTEN_SHOPS）の代わりに Yahoo!ショッピングの店（YAHOO_SHOPS）を取り込む。
+ *                    ディレクトリは scripts/fetch-yahoo.ts の出力（<ストアID>.json.gz）。洗い替え・安全装置・前回ファイルの判定は同じ
  * 1ショップの失敗で他を止めない。前回取り込んだファイル（fetch.php の取得がまだ終わっていない回）は警告だけで、失敗にはしない
  * （止まったことは /health.json の24時間判定で気づく）
  */
@@ -12,21 +14,25 @@ import "dotenv/config";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { gunzipSync } from "node:zlib";
-import { replaceRakutenShop } from "@/lib/rakutenIngest";
-import { RAKUTEN_SHOPS, type RakutenItem } from "@/lib/rakutenShops";
+import { replaceRakutenShop, shopsOf, type ShopFamily } from "@/lib/rakutenIngest";
+import type { RakutenItem } from "@/lib/rakutenShops";
 import prisma from "@/lib/prisma";
 
 // fetch.php は6時間ごと。これより古いファイルは前回分なので取り込まない
 const MAX_AGE_HOURS = 7;
 
 async function main() {
-  const dir = process.argv[2];
+  const args = process.argv.slice(2);
+  const familyIndex = args.indexOf("--family");
+  const family: ShopFamily = familyIndex >= 0 && args[familyIndex + 1] === "yahoo" ? "yahoo" : "rakuten";
+  const dir = args.find((a, i) => !a.startsWith("--") && i !== familyIndex + 1);
+  const SHOPS = shopsOf(family);
   const allowShrink = process.argv.includes("--allow-shrink");
   const allowOld = process.argv.includes("--allow-old");
-  if (!dir) throw new Error("使い方: tsx scripts/ingest-rakuten.ts <ディレクトリ> [--allow-shrink] [--allow-old]");
+  if (!dir) throw new Error("使い方: tsx scripts/ingest-rakuten.ts <ディレクトリ> [--allow-shrink] [--allow-old] [--family yahoo]");
 
   let failed = 0;
-  for (const shopCode of Object.keys(RAKUTEN_SHOPS)) {
+  for (const shopCode of Object.keys(SHOPS)) {
     const file = join(dir, `${shopCode}.json.gz`);
     if (!existsSync(file)) {
       console.error(`${shopCode}: ${file} がない`);
@@ -35,7 +41,7 @@ async function main() {
     }
     const ageHours = (Date.now() - statSync(file).mtimeMs) / 3_600_000;
     if (!allowOld && ageHours > MAX_AGE_HOURS) {
-      console.error(`${shopCode}: ファイルが ${ageHours.toFixed(1)} 時間前のもの（fetch.php が失敗している）。取り込まない`);
+      console.error(`${shopCode}: ファイルが ${ageHours.toFixed(1)} 時間前のもの（fetch.php・fetch-yahoo.ts が失敗している）。取り込まない`);
       failed++;
       continue;
     }
@@ -43,7 +49,7 @@ async function main() {
     // その店の在庫の最終更新より古いファイルは取り込まない（取り込むと更新日時だけ新しくなり、監視が気づかない）
     // 1つのショップ名を複数の店で分け合うとき（ニューズドテック）は、この店の商品 URL の行で見る
     // （ショップ名で見ると、同じ回に先に取り込んだもう1店の更新日時でこの店のファイルが「前回の分」に見える）
-    const shop = RAKUTEN_SHOPS[shopCode];
+    const shop = SHOPS[shopCode];
     const last = await prisma.deviceInventory.aggregate({
       where: shop.sharedShopName
         ? { shopName: shop.shopName, url: { startsWith: `https://item.rakuten.co.jp/${shopCode}/` } }
@@ -57,7 +63,7 @@ async function main() {
     try {
       const items: RakutenItem[] = JSON.parse(gunzipSync(readFileSync(file)).toString("utf8")).items;
       if (!Array.isArray(items)) throw new Error("items is not an array");
-      const result = await replaceRakutenShop(shopCode, items, allowShrink);
+      const result = await replaceRakutenShop(shopCode, items, allowShrink, family);
       console.log(`${shopCode}: ${JSON.stringify(result)}`);
       if (!result.ok) failed++;
     } catch (error) {

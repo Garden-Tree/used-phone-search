@@ -11,7 +11,7 @@ const BATTERY_OPTIONS = [80, 85, 90, 95];
 // 楽天市場店は「じゃんぱら（楽天）」のように短く出す
 const SHOP_OPTIONS = [
   { id: 'all', name: 'すべて' },
-  ...SHOPS.map((s) => ({ id: s.name, name: s.note ? `${s.label}（楽天）` : s.label })),
+  ...SHOPS.map((s) => ({ id: s.name, name: s.note ? `${s.label}（${s.note.startsWith("Yahoo") ? "Yahoo!" : "楽天"}）` : s.label })),
 ];
 
 export default function FilterPanel() {

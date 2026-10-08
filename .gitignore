@@ -66,4 +66,5 @@ rakuten-sync/config.php
 rakuten-sync/*.log
 rakuten-sync/sample.json
 /rakuten-data/
+/yahoo-data/
 /.wrangler/

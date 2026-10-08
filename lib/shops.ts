@@ -7,7 +7,7 @@
  */
 
 export type Shop = {
-  /** DeviceInventory.shopName（楽天の店は lib/rakutenShops.ts の shopName と同じ） */
+  /** DeviceInventory.shopName（楽天の店は lib/rakutenShops.ts、Yahoo!ショッピングの店は lib/yahooShops.ts の shopName と同じ） */
   name: string;
   /** 画面に出す短い名前 */
   label: string;
@@ -52,6 +52,9 @@ export const SHOPS: Shop[] = [
     guaranteeUrl: "https://www.rakuten.co.jp/emedama/info.html" },
   { name: "エムティーエム（楽天市場店）", label: "エムティーエム", note: "楽天市場店", pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "記載なし（楽天の店舗情報に保証期間の記載がない。商品ページを確認）", redRom: "記載なし", guaranteeUrl: "https://www.rakuten.co.jp/ekosuta/info.html" },
+  // Yahoo!ショッピングの店は YAHOO_APP_ID（GitHub Secrets）を入れて初回の取り込みが通ってから有効にする（0件のまま一覧に出さない）
+  // { name: "Quality Shop（Yahoo!ショッピング店）", label: "Quality Shop", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "none",
+  //   warranty: "記載なし（確認中）", redRom: "記載なし（確認中）", guaranteeUrl: "https://store.shopping.yahoo.co.jp/quality-shop/info.html" },
   { name: "にこスマ", label: "にこスマ", galaxy: true, pixel: true, ipad: true, battery: "exact",
     warranty: "1年間の返品・交換", redRom: "永久保証", guaranteeUrl: "https://www.nicosuma.com/about/shopping-guide" },
   { name: "ダイワンテレコム", label: "ダイワンテレコム", galaxy: true, pixel: true, ipad: false, battery: "over80",

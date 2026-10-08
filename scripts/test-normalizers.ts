@@ -6,6 +6,7 @@
  */
 import { writeFileSync, readFileSync } from "node:fs";
 import { RAKUTEN_SHOPS } from "@/lib/rakutenShops";
+import { YAHOO_SHOPS } from "@/lib/yahooShops";
 import { IPAD_MODELS, canonicalIpadModel } from "@/lib/ipadCatalog";
 import { IPAD_SPECS, IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { matchesModel } from "@/lib/deviceSearch";
@@ -142,13 +143,28 @@ const CORPUS: [string, string, string | null, string | null, number | null][] = 
  ["ekosuta","【新品未使用】 Google Pixel Buds Pro 2 ムーンストーン イヤホン Google",null,null,null],
  ["ekosuta","【中古】安心保証 超美品 SCR01 Galaxy 5G Mobile Wi-Fi ホワイト 本体 即日発送",null,null,null],
  ["ekosuta","【中古】iPhone14 バッテリー100% 全色 SIMフリー 128GB 256GB 512GB 本体 土日祝発送OK",null,null,null],
+ // Quality Shop（Yahoo!ショッピング店 quality-shop。2026-10-09 に店の検索ページから集めた商品名）
+ ["quality-shop","[中古 Sランク]極美品 SIMフリー iPhone16 [ブラック][128GB]   [国内正規品]  [バッテリー最大容量100%]",null,null,null],
+ ["quality-shop","[中古 Bランク]  SIMフリー iPhone SE 3th [スターライト][64GB]   [国内正規品]",null,null,null],
+ ["quality-shop","[中古 Aランク] 美品 SIMフリー iPhone14 ProMax [シルバー] [256GB]   [国内正規品]",null,null,null],
+ ["quality-shop","【中古】Cランク SIMフリー iPhone SE 2th 第2世代 64GB Black ブラック[アップル/アイフォン]",null,null,null],
+ ["quality-shop","[中古 Aランク] 美品 バッテリー最大容量:95％以上 SIMフリー iPhone12mini white [64GB] [国内正規品]",null,null,null],
+ ["quality-shop","[中古 Aランク] 美品 iPad Air 6th 11in Wi-Fi blue [128GB] [国内正規品]",null,null,null],
+ ["quality-shop","【中古】Cランク SIMフリー iPad Pro 11インチ 第3世代 WiFi+Cellular 256GB スペースグレイ NHW73J/A [Softbankモデル]",null,null,null],
+ ["quality-shop","[中古 Bランク]  SIMフリー Pixel 7 obsidian [128GB] [auモデルSIMフリー]",null,null,null],
+ ["quality-shop","【中古】 美品 SIMフリー Google Pixel 9 Pro 256GB Porcelain","B",null,null],
+ ["quality-shop","[中古 Bランク]  SIMフリー Galaxy Z Flip5 SCG23 mint [256GB] [auモデルSIMフリー]",null,null,null],
+ ["quality-shop","【中古】SIMフリー Galaxy S23 Ultra SCG20 256GB グリーン",null,null,null],
+ ["quality-shop","[中古 Jランク] ジャンク品 SIMフリー iPhone12 [ホワイト][128GB]   [国内正規品]",null,null,null],
+ ["quality-shop","【新品 未開封品】SIMフリー iPhone 17 Pro 256GB [コズミックオレンジ][アップル][eSIM専用端末]",null,null,null],
+ ["quality-shop","[中古 Cランク]  iPad mini3 Cellular gold  [展示用端末 ※デモ機]",null,null,null],
 ];
 const FIXTURE = "scripts/fixtures/rakuten-normalize.expected.json";
 let failures = 0;
 
 // 1. 楽天3店の商品名の読み取り（期待値はファイル）
 const out = CORPUS.map(([shop, name, rank, car, batt]) =>
-  RAKUTEN_SHOPS[shop].normalize({ code: "x", name, price: 1000, url: u, rank, nw: "○", car, batt }),
+  (RAKUTEN_SHOPS[shop] ?? YAHOO_SHOPS[shop]).normalize({ code: "x", name, price: 1000, url: u, rank, nw: "○", car, batt }),
 );
 if (process.argv.includes("--update")) {
   writeFileSync(FIXTURE, JSON.stringify(out, null, 1));
@@ -194,7 +210,7 @@ for (const [q, name, want] of MATCH_CASES) {
   if (matchesModel(q, name) !== want) { failures++; console.log(`照合: "${q}" と "${name}" → ${!want}（期待 ${want}）`); }
 }
 
-// 4. 店の一覧（lib/shops.ts）に楽天の店名がそろっているか（ずれるとトップの件数・絞り込みが 0 件になる）
+// 4. 店の一覧（Yahoo!ショッピングの店は稼働前は一覧に載せないので、ここでは見ない）（lib/shops.ts）に楽天の店名がそろっているか（ずれるとトップの件数・絞り込みが 0 件になる）
 for (const { shopName } of Object.values(RAKUTEN_SHOPS)) {
   if (!findShop(shopName)) { failures++; console.log(`店の一覧: lib/shops.ts に「${shopName}」がない`); }
 }

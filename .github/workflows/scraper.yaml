@@ -1,5 +1,5 @@
 name: Phone Inventory Scraper
-# Cloudflare Pages 版（cloudflare-pages ブランチ・docs/cloudflare-pages.md）: 在庫の取得 → 楽天分の取り込み → 価格推移 →
+# Cloudflare Pages 版（cloudflare-pages ブランチ・docs/cloudflare-pages.md）: 在庫の取得 → Yahoo!ショッピング・楽天分の取り込み → 価格推移 →
 # サイトの書き出し（next build）→ Cloudflare Pages へ配置、までを1本で行う。
 # Cloudflare の Secrets（CLOUDFLARE_*）が無いあいだは、書き出しまでで止まる
 
@@ -50,6 +50,8 @@ jobs:
       # 楽天の在庫を置く URL（シンレンタルサーバー）と Cloudflare Pages。値は Secrets・Variables（docs/cloudflare-pages.md）
       RAKUTEN_DATA_URL: ${{ secrets.RAKUTEN_DATA_URL }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # Yahoo!ショッピング 商品検索API の Client ID。未登録のあいだは Yahoo の取り込みを飛ばす
+      YAHOO_APP_ID: ${{ secrets.YAHOO_APP_ID }}
       CF_PAGES_PROJECT: ${{ vars.CF_PAGES_PROJECT || 'used-phone-search' }}
       HAS_CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
 
@@ -100,6 +102,18 @@ jobs:
       - name: Node.js の依存ライブラリのインストール
         if: ${{ !cancelled() }}
         run: npm ci
+
+      # Yahoo!ショッピングの店（lib/yahooShops.ts）の在庫: Actions から商品検索API を直接呼んで取り込む（IP 制限なし。約3〜5分）。
+      # 楽天の取り込みと同様、失敗しても前回の在庫のまま書き出しは続ける（ジョブは失敗として通知される。取得に失敗した店のファイルは書かれず、取り込みも飛ばされる）
+      - name: Yahoo!ショッピングの在庫を取り込む
+        if: ${{ !cancelled() && env.YAHOO_APP_ID != '' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          failed=0
+          npx tsx scripts/fetch-yahoo.ts || failed=1
+          npx tsx scripts/ingest-rakuten.ts yahoo-data --family yahoo || failed=1
+          exit "$failed"
 
       # 楽天市場店の在庫: サーバーの fetch.php（cron。この20分前）が書き出した JSON を HTTPS で取ってきて取り込む。
       # 失敗しても前回の在庫のまま書き出しは続ける（ジョブは失敗として通知される）
@@ -162,6 +176,9 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXT_PUBLIC_SITE_URL: https://used.gadelog.com
           NEXT_PUBLIC_GA_ID: G-YV3ZR0N6B1 # used 専用の GA4（公開される値）
+          # ValueCommerce のサイトID・プロモーションID（Yahoo!ショッピングのリンク用。リンクの URL に出る公開の値。未登録なら商品ページへ直接リンク）
+          NEXT_PUBLIC_VC_SID: ${{ secrets.VC_SID }}
+          NEXT_PUBLIC_VC_PID: ${{ secrets.VC_PID }}
         run: |
           npx next build
           test -f out/index.html && test -f out/data/inventory/index.json
