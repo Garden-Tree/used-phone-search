@@ -8,6 +8,7 @@
 | --- | --- | --- |
 | GA4 測定ID | **`G-YV3ZR0N6B1`**（2026-09-27〜） | ワークフロー（`.github/workflows/scraper.yaml`）の `NEXT_PUBLIC_GA_ID`。`@next/third-parties` で読み込み。変えたら次の書き出しから反映 |
 | GA4 プロパティ | **556047315「used.gadelog.com（中古スマホ一括検索）」**（アカウント 207926838 GardenTree・ストリーム 15850141203） | used 専用。タイムゾーン日本・通貨 円・拡張計測オン（離脱クリック含む） |
+| 内部トラフィック | 自宅の IP（`240b:252:6222:1bf0::/64`・`14.12.98.34`）を除外（データフィルタ 有効） | IP が変わったら GA4 の管理 → データストリーム → タグ設定 → 内部トラフィックの定義を直す |
 | Search Console | URL プレフィックス `https://used.gadelog.com/`（HTML タグで所有権確認・2026-09-27） | sitemap `https://used.gadelog.com/sitemap.xml` 送信済み（初回 41 URL → 9/27 再送信・現在 134） |
 | 構造化データ | 機種別: Product（AggregateOffer）+ BreadcrumbList／比較: BreadcrumbList | リッチリザルトテストで確認可能 |
 | OGP | 機種別・比較は専用画像（1時間ごとに再生成）、その他は共通画像 | X の投稿画面に URL を貼ると確認できる |

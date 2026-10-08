@@ -31,6 +31,8 @@ export type Shop = {
   redRom: string;
   /** 保証の出典（各店の公式ページ）。2026-09-28 に確認 */
   guaranteeUrl: string;
+  /** 同じ店の別の売り場（イオシス楽天市場店 → "イオシス"）。店の数・一覧には数えず、絞り込みでは本店と一緒に出す */
+  alias?: string;
 };
 
 export const SHOPS: Shop[] = [
@@ -56,6 +58,15 @@ export const SHOPS: Shop[] = [
     warranty: "1ヶ月（レビュー投稿で1年に延長。延長分は代金の30%返金）", redRom: "保証期間に関わらず交換・返金", guaranteeUrl: "https://ec.emcom.site/pages/guarantee" },
 ];
 
+/**
+ * 本店と同じ店の別の売り場（SHOPS には入れない）。イオシス楽天市場店は公式と在庫を共有していて、
+ * 同じ商品は公式のカードに「楽天市場でも販売」として添える（scripts/link-iosys-rakuten.ts）。公式で取れなかった商品だけがこの名前で残る
+ */
+export const ALIAS_SHOPS: Shop[] = [
+  { name: "イオシス（楽天市場店）", label: "イオシス", note: "楽天市場店", alias: "イオシス", galaxy: true, pixel: true, ipad: true, battery: "over80",
+    warranty: "中古3ヶ月（未使用品は6ヶ月。商品名に記載）", redRom: "保証期間に関わらず対象", guaranteeUrl: "https://www.rakuten.co.jp/pc-good/info.html" },
+];
+
 export const IPAD_SHOPS = SHOPS.filter((s) => s.ipad);
 
 /** 機種（iPhone / iPad）を扱うショップ */
@@ -68,4 +79,4 @@ export const shopsFor = (model: string): Shop[] =>
 /** 「イオシス・じゃんぱら・…」 */
 export const shopLabels = (shops: Shop[] = SHOPS): string => shops.map((s) => s.label).join("・");
 
-export const findShop = (name: string): Shop | undefined => SHOPS.find((s) => s.name === name);
+export const findShop = (name: string): Shop | undefined => [...SHOPS, ...ALIAS_SHOPS].find((s) => s.name === name);

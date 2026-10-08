@@ -11,7 +11,7 @@
 [GitHub Actions scraper.yaml]  起動: 上の workflow_dispatch／定期実行 0:00/6:00/12:00/18:00 UTC（＝9/15/21/3時。数時間遅れ・取りこぼしあり）
  1. 4店のスクレイプ（イオシス・にこスマ・エムモバ・ダイワン）→ Neon（店ごとに洗い替え）
  2. 楽天3店の json.gz を HTTPS で取得（Secrets の RAKUTEN_DATA_URL）→ scripts/ingest-rakuten.ts → Neon
- 3. iPad の機種名をそろえる → 価格推移の記録 → scripts/check-health.ts
+ 3. iPad の機種名をそろえる → イオシスの公式と楽天の突き合わせ（scripts/link-iosys-rakuten.ts）→ 価格推移の記録 → scripts/check-health.ts
  4. next build（output: "export"）→ out/ → scripts/ci-deploy.sh deploy（wrangler pages deploy）
                                    ↓
               Cloudflare Pages（used.gadelog.com・プロジェクト used-phone-search）
@@ -77,6 +77,13 @@
 
 ### サイトを今すぐ更新したい
 - GitHub の Actions → Phone Inventory Scraper → Run workflow（main）。10分ほどで配置まで終わる
+
+### イオシスの公式と楽天市場店（2026-10-08〜）
+- 2つは在庫を共有していて、同じ商品が両方に並ぶ（楽天が数%高い）。毎回の取り込みの後に `scripts/link-iosys-rakuten.ts` が
+  機種（空白を除く）・容量・色・キャリア・ランク・バッテリー80%未満かで突き合わせ、公式の行に楽天の価格・URL（`altPrice`・`altUrl`）を添え、
+  公式のほうが安い（か同じ）楽天の行を `isSoldOut` で隠す。カードの下に「楽天市場でも販売」のリンク（楽天アフィリエイト）が出る
+- 突き合わせのため、`lib/rakutenIosys.ts` は容量・色・キャリアを `scraper/iosis_scraper.py` と同じ読み方にしている。片方を変えたらもう片方も
+- 店の数・一覧には数えない（`lib/shops.ts` の `ALIAS_SHOPS`。絞り込みの「イオシス」に含める）
 
 ### iPad の機種名
 - 楽天3店の iPad は `lib/ipadCatalog.ts` の `canonicalIpadModel` で Apple の正式名にそろえる（チップ⇔世代の対応表込み）。

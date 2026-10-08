@@ -7,7 +7,7 @@
 #   CLOUDFLARE_API_TOKEN・CLOUDFLARE_ACCOUNT_ID（wrangler が読む）・CF_PAGES_PROJECT（既定 used-phone-search）
 set -euo pipefail
 
-SHOP_CODES=(geo-mobile janpara akiba-u-shop kamaya-awards garakei emedama)
+SHOP_CODES=(geo-mobile janpara akiba-u-shop kamaya-awards garakei emedama pc-good)
 PROJECT="${CF_PAGES_PROJECT:-used-phone-search}"
 # Cloudflare Pages の無料プランの上限（docs/cloudflare-pages.md）
 MAX_FILES=20000

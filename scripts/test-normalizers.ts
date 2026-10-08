@@ -9,7 +9,7 @@ import { RAKUTEN_SHOPS } from "@/lib/rakutenShops";
 import { IPAD_MODELS, canonicalIpadModel } from "@/lib/ipadCatalog";
 import { IPAD_SPECS, IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { matchesModel } from "@/lib/deviceSearch";
-import { SHOPS } from "@/lib/shops";
+import { findShop } from "@/lib/shops";
 import { PICKS } from "@/lib/picks";
 import { PIXEL_INFO, PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
 import { PIXEL_SPECS } from "@/lib/pixelSpecs";
@@ -97,6 +97,22 @@ const CORPUS: [string, string, string | null, string | null, number | null][] = 
  ["garakei","バッテリー新品交換済 【中古】 iPhone16e 128GB ブラック Aランク SIMフリー 本体 スマホ バッテリーが持つ 長持ち 多い 電池 最大容量 アイフォン アップル apple 【あす楽】 【保証あり】 【送料無料】 ip16emtm2908a",null,null,null],
  ["garakei","バッテリー新品交換済 【中古】 iPhone17e 256GB ブラック Aランク SIMフリー 本体 スマホ バッテリーが持つ 長持ち 多い 電池 最大容量 アイフォン アップル apple 【あす楽】 【保証あり】 【送料無料】 ip17emtm3138a",null,null,null],
  ["garakei","【中古】 iPhoneSE2 128GB ブラック 本体 スマホ iPhoneSE第2世代 アイフォン アップル apple 【あす楽】 【保証あり】 【送料無料】 ipse2mtm704","B",null,null],
+ // イオシス 楽天市場店（2026-10-08〜）
+ ["pc-good","【中古】iPhone14 A2881 (MPUD3J/A) 128GB ミッドナイト 【au版SIMフリー】 Apple スマホ スマートフォン 当社3ヶ月間保証 送料無料 イオシス","B",null,null],
+ ["pc-good","【中古】【バッテリー80%未満】【SIMロック解除済】【第2世代】 au iPhoneSE A2296 (MHGQ3J/A) 64GB ホワイト Apple スマホ スマートフォン 当社3ヶ月間保証 送料無料 イオシス","C",null,null],
+ ["pc-good","【中古】iPhone13 mini A2626 (MLJC3J/A) 128GB ミッドナイト 【au版SIMフリー】 Apple スマホ スマートフォン 当社3ヶ月間保証 送料無料 イオシス","A",null,null],
+ ["pc-good","【未使用】iPhone17e A3575 (MHRP4J/A) 256GB ホワイト 【SoftBank版SIMフリー】 Apple スマホ スマートフォン 当社6ヶ月保証 送料無料 利用制限▲/赤ロム永久保証 イオシス",null,null,null],
+ ["pc-good","【ネットワーク利用制限▲】iPhone14 A2881 (MR3Q3J/A) 128GB イエロー【楽天版 SIMフリー】 Apple 当社3ヶ月間保証 中古 【 中古スマホとタブレット販売のイオシス 】","B",null,null],
+ ["pc-good","【中古】iPhone Air A3516 (MG2A4J/A) 256GB スカイブルー 【国内版SIMフリー】 Apple スマホ スマートフォン 当社3ヶ月間保証 送料無料 イオシス","A",null,null],
+ ["pc-good","【第9世代】 iPad2021 Wi-Fi+Cellular 64GB スペースグレイ MK473J/A A2604 【au版SIMフリー】 Apple 当社3ヶ月間保証 中古 イオシス","B",null,null],
+ ["pc-good","【第11世代】 iPad(A16) 2025 Wi-Fi 128GB イエロー MD4D4J/A A3354 Apple 当社6ヶ月保証 未使用 イオシス",null,null,null],
+ ["pc-good","【第7世代】 iPad Air(M3) 11インチ Wi-Fi 256GB スペースグレイ MCA14J/A A3266 Apple 当社3ヶ月間保証 中古 イオシス","A",null,null],
+ ["pc-good","Google Pixel7a G82U8 スノー 【国内版SIMフリー】 Google 当社3ヶ月間保証 中古 イオシス","B",null,null],
+ ["pc-good","【ネットワーク利用制限▲】Google Pixel11 Pro XL G4HCD 16GB/512GB オブシディアン 【SoftBank版SIMフリー】 Google 当社3ヶ月間保証 中古 イオシス","A",null,null],
+ ["pc-good","Galaxy S25 SM-S931Z ネイビー 【SoftBank版SIMフリー】 SAMSUNG 当社3ヶ月間保証 中古 イオシス","B",null,null],
+ ["pc-good","Galaxy S24 Ultra SM-S928Q 512GB チタニウムブラック 【国内版SIMフリー】 SAMSUNG 当社3ヶ月間保証 中古 イオシス","C",null,null],
+ ["pc-good","SAMSUNG Galaxy Buds2 SM-R177NLVAXJP [Lavender] [未使用] 【当社1ヶ月間保証】 イオシス",null,null,null],
+ ["pc-good","CYBER PARK Limited iPhone12 Pro 耐衝撃TPUソフトケース クリア [新品] 【当社1週間保証】 イオシス",null,null,null],
 ];
 const FIXTURE = "scripts/fixtures/rakuten-normalize.expected.json";
 let failures = 0;
@@ -151,7 +167,7 @@ for (const [q, name, want] of MATCH_CASES) {
 
 // 4. 店の一覧（lib/shops.ts）に楽天の店名がそろっているか（ずれるとトップの件数・絞り込みが 0 件になる）
 for (const { shopName } of Object.values(RAKUTEN_SHOPS)) {
-  if (!SHOPS.some((s) => s.name === shopName)) { failures++; console.log(`店の一覧: lib/shops.ts に「${shopName}」がない`); }
+  if (!findShop(shopName)) { failures++; console.log(`店の一覧: lib/shops.ts に「${shopName}」がない`); }
 }
 
 // 5. iPad のスペック（lib/ipadSpecs.ts）がカタログの機種名とそろっているか（名前がずれると機種ページのスペック欄が消える）

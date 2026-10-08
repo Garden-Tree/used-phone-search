@@ -8,6 +8,7 @@ import { normalizeGeoPixel, normalizeJanparaPixel, normalizeSofmapPixel } from "
 import { normalizeGeoGalaxy, normalizeJanparaGalaxy, normalizeSofmapGalaxy } from "@/lib/rakutenGalaxy";
 import { RAKUTEN_NEWSEDTECH_SHOP, normalizeNewsedtechItem } from "@/lib/rakutenNewsedtech";
 import { RAKUTEN_KITAMURA_SHOP, normalizeKitamuraItem } from "@/lib/rakutenKitamura";
+import { RAKUTEN_IOSYS_SHOP, normalizeIosysItem } from "@/lib/rakutenIosys";
 
 export type { RakutenItem };
 
@@ -59,6 +60,8 @@ export const RAKUTEN_SHOPS: Record<string, RakutenShop> = {
   garakei: { shopName: RAKUTEN_NEWSEDTECH_SHOP, alsoReplace: [], sharedShopName: true, normalize: normalizeNewsedtechItem },
   // カメラのキタムラ（2026-10-08〜）
   emedama: { shopName: RAKUTEN_KITAMURA_SHOP, alsoReplace: [], normalize: normalizeKitamuraItem },
+  // イオシス（2026-10-08〜）。公式サイトと同じ商品は、取り込みのあと scripts/link-iosys-rakuten.ts が公式の行に添えて消す
+  "pc-good": { shopName: RAKUTEN_IOSYS_SHOP, alsoReplace: [], normalize: normalizeIosysItem },
 };
 
 /** 楽天経由の在庫のショップ名（リンクは楽天アフィリエイトだけにする） */

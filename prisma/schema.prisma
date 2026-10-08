@@ -26,7 +26,10 @@ model DeviceInventory {
   price           Int      // 価格
   url             String   // 商品URL（アフィリエイトリンク）
   isSoldOut       Boolean  @default(false) // 在庫ステータス
-  
+  // 同じ商品を楽天市場店でも売っているとき（イオシス公式の行に、イオシス楽天市場店の価格・URL を添える。scripts/link-iosys-rakuten.ts）
+  altPrice        Int?
+  altUrl          String?
+
   // メタ情報
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

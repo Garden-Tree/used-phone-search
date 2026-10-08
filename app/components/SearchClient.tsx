@@ -10,6 +10,7 @@ import AdDisclosure from '@/app/components/AdDisclosure';
 import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from '@/lib/catalog';
 import { SEARCH_DEVICES, findSearchDevice, matchesModel, splitModelQuery } from '@/lib/modelMatch';
 import type { InventoryFile, InventoryIndex } from '@/lib/searchData';
+import { findShop } from '@/lib/shops';
 
 /**
  * 検索ページの中身（静的書き出し版）。ビルド時に書き出した機種ごとの在庫 JSON（lib/searchData.ts）を読み込み、
@@ -88,6 +89,8 @@ function toDevices(key: string, file: InventoryFile): Device[] {
     price: r[9],
     url: r[10],
     isSoldOut: false,
+    altPrice: r[11] ?? null,
+    altUrl: r[12] ?? null,
   }));
 }
 
@@ -137,7 +140,7 @@ export default function SearchClient() {
     const batterySort = currentSort === 'battery_desc' || currentSort === 'battery_asc';
     const filtered = all.filter((d) =>
       (models.length === 0 || models.some((q) => matchesModel(q, d.modelName))) &&
-      (!hasShop || d.shopName === shopQuery) &&
+      (!hasShop || d.shopName === shopQuery || findShop(d.shopName)?.alias === shopQuery) &&
       (minPrice === undefined || d.price >= minPrice) &&
       (maxPrice === undefined || d.price <= maxPrice) &&
       (storage === undefined || d.storage === storage) &&

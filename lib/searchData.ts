@@ -23,6 +23,9 @@ export type InventoryRow = [
   shop: number, // InventoryFile.shops の添字
   price: number,
   url: string,
+  // 同じ商品の楽天市場店の価格・URL（イオシス公式の行だけ。ないときは要素ごと省いてファイルを小さくする）
+  altPrice?: number,
+  altUrl?: string,
 ];
 
 export type InventoryFile = {
@@ -81,6 +84,7 @@ export async function inventoryFile(key: string): Promise<InventoryFile> {
     select: {
       modelName: true, storage: true, color: true, conditionRank: true, batteryHealth: true,
       networkStatus: true, simUnlocked: true, carrier: true, shopName: true, price: true, url: true,
+      altPrice: true, altUrl: true,
     },
     orderBy: [{ price: "asc" }, { id: "asc" }],
   });
@@ -88,10 +92,14 @@ export async function inventoryFile(key: string): Promise<InventoryFile> {
   return {
     model,
     shops,
-    rows: items.map((i) => [
-      i.modelName, i.storage, i.color, i.conditionRank, i.batteryHealth, i.networkStatus,
-      i.simUnlocked ? 1 : 0, i.carrier, shops.indexOf(i.shopName), i.price, i.url,
-    ]),
+    rows: items.map((i): InventoryRow => {
+      const row: InventoryRow = [
+        i.modelName, i.storage, i.color, i.conditionRank, i.batteryHealth, i.networkStatus,
+        i.simUnlocked ? 1 : 0, i.carrier, shops.indexOf(i.shopName), i.price, i.url,
+      ];
+      if (i.altPrice && i.altUrl) row.push(i.altPrice, i.altUrl);
+      return row;
+    }),
   };
 }
 

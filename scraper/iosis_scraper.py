@@ -47,8 +47,8 @@ def parse_name(li) -> str:
 
 
 def parse_storage(raw_name: str):
-    """(容量GB, 容量の表記) を返す。見つからなければ (0, None)"""
-    m = re.search(r"(\d+)(GB|TB)", raw_name)
+    """(容量GB, 容量の表記) を返す。見つからなければ (0, None)。「16GB/512GB」（メモリ/容量）は後ろが容量"""
+    m = re.search(r"\d+GB/(\d+)(GB|TB)", raw_name) or re.search(r"(\d+)(GB|TB)", raw_name)
     if not m:
         return 0, None
     val = int(m.group(1))
