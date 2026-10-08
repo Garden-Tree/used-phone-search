@@ -24,8 +24,8 @@ $onlyShops = array_values(array_filter($args, fn($a) => $a !== '--dry'));
 
 const ENDPOINT = 'https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701';
 // 取り込むショップ（楽天の shopCode）。受け口 lib/rakutenShops.ts の RAKUTEN_SHOPS と揃える
-// kamaya-awards・garakei はニューズドテック1号店・2号店、emedama はカメラのキタムラ（2026-10-08〜）
-const SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'kamaya-awards', 'garakei', 'emedama'];
+// kamaya-awards・garakei はニューズドテック1号店・2号店、emedama はカメラのキタムラ、pc-good はイオシス（2026-10-08〜）
+const SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'kamaya-awards', 'garakei', 'emedama', 'pc-good'];
 // 1ショップ分として、この検索語の結果をまとめて送る（受け口はショップ単位で洗い替えるため）
 // Pixel・Galaxy は 2026-09-30〜（アクセサリも当たるが、受け口の lib/rakutenPixel.ts・rakutenGalaxy.ts が本体以外を落とす）
 const KEYWORDS = ['iPhone', 'iPad', 'Pixel', 'Galaxy'];
@@ -98,9 +98,11 @@ function compactItem(array $item): array
 {
     $caption = (string)($item['itemCaption'] ?? '');
     $catchcopy = (string)($item['catchcopy'] ?? '');
-    // ランク: ゲオは「【程度】A」、ソフマップは「〔商品ランクA〕」、ニューズドテックはキャッチコピーの「【Bランク】」
+    // ランク: ゲオは「【程度】A」、ソフマップは「〔商品ランクA〕」、ニューズドテックはキャッチコピーの「【Bランク】」、
+    // イオシスは「この商品は<span class="b_rank">中古Bランク</span>です」
     if (!preg_match('/【程度】\s*([^\s【]+)/u', $caption, $rank)
-        && !preg_match('/〔商品ランク\s*([A-Z])〕/u', $caption, $rank)) {
+        && !preg_match('/〔商品ランク\s*([A-Z])〕/u', $caption, $rank)
+        && !preg_match('/この商品は(?:<[^>]*>|\s)*(?:中古)?([SABC])ランク/u', $caption, $rank)) {
         preg_match('/【([SABC])ランク】/u', $catchcopy, $rank);
     }
     // キャリア: ソフマップは「〔キャリア〕docomoロック解除SIMフリー」
@@ -165,9 +167,12 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
             $res = fetchPage($config, $shopCode, KEYWORDS[0], $page, 1, 999999);
             foreach ($res['Items'] ?? $res['items'] ?? [] as $item) {
                 $items[] = compactItem($item['Item'] ?? $item);
+                // 新しい店の読み取りを作るとき用に、API の生の応答（説明文など）も残す
+                $raw[] = $item['Item'] ?? $item;
             }
         }
         file_put_contents(__DIR__ . "/sample-{$shopCode}.json", json_encode($items, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        file_put_contents(__DIR__ . "/sample-{$shopCode}-raw.json", json_encode($raw ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         logLine("{$shopCode} dry run: saved sample-{$shopCode}.json (" . count($items) . ' items)');
         return true;
     }
