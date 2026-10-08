@@ -3,6 +3,7 @@ import type { Device } from "@/app/components/DeviceCard";
 import prisma from "@/lib/prisma";
 import { groupMinPrice, medianPrice, modelWhere, type PriceGroup } from "@/lib/modelInventory";
 import { minBatteryWhere } from "@/lib/deviceSearch";
+import { findShop } from "@/lib/shops";
 
 export type PriceRow = PriceGroup;
 
@@ -62,7 +63,8 @@ export const getModelStats = cache(async (model: string): Promise<ModelStats> =>
     minPrice: agg._min.price,
     maxPrice: agg._max.price,
     medianPrice: await medianPrice(where, count),
-    shopCount: byShop.length,
+    // 「イオシス（楽天市場店）」は「イオシス」と同じ店として数える
+    shopCount: new Set(byShop.map((r) => findShop(r.key)?.alias ?? r.key)).size,
     lastUpdated: agg._max.updatedAt,
     byStorage: byStorage.sort((a, b) => Number(a.key) - Number(b.key)),
     byRank: mergeUpper(byRank).sort(
