@@ -37,7 +37,8 @@ async function main() {
   const familyIndex = args.indexOf("--family");
   const familyArg = familyIndex >= 0 ? args[familyIndex + 1] : "";
   const family: ShopFamily = familyArg === "yahoo" ? "yahoo" : familyArg === "amazon" ? "amazon" : "rakuten";
-  const dir = args.find((a, i) => !a.startsWith("--") && i !== familyIndex + 1);
+  // --family がないとき familyIndex は -1 なので、先頭の引数を除外しないようにする（10/9 朝に3回失敗した原因）
+  const dir = args.find((a, i) => !a.startsWith("--") && !(familyIndex >= 0 && i === familyIndex + 1));
   const SHOPS = shopsOf(family);
   const allowShrink = process.argv.includes("--allow-shrink");
   const allowOld = process.argv.includes("--allow-old");
