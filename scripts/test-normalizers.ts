@@ -209,6 +209,13 @@ const CORPUS: [string, string, string | null, string | null, number | null][] = 
  ["be-stocktsb","中古 タブレット iPad 第6世代 Wi-Fiモデル 32GB 本体 9.7インチ iPadOS Apple アップル 6ヶ月保証","B",null,null],
  ["be-stocktsb","中古 タブレット iPad Air2 Wi-Fiモデル 64GB 本体 9.7インチ iPadOS Apple アップル 6ヶ月保証",null,null,null],
  ["be-stocktsb","中古 スマートフォン Galaxy A21 シンプル au(エーユー) ブラック 本体 5.8インチ AndroidOS SAMSUNG",null,null,null],
+ // Amazon 実機の応答（2026-10-09 の取り込みログ）で読めなかった題名: SE の「(第2世代)」・全角数字の iPad 世代
+ ["amazon","【整備済み品】 Apple iPhone SE(第2世代) 64GB ブラック SIMフリー (整備済み品)",null,null,null],
+ ["amazon","【整備済み品】 Apple iPhone SE（第3世代） 64GB ミッドナイト SIMフリー (整備済み品)",null,null,null],
+ ["amazon","Apple iPhone SE (第3世代) (128 GB) - スターライト (整備済み品)",null,null,null],
+ ["amazon","【整備済み品】 Apple iPad (第６世代) Wi-Fi + Cellular 32GB シルバー (整備済み品)",null,null,null],
+ ["amazon","【整備済み品】 Apple iPad Air (第４世代) Wi-Fi 64GB スカイブルー (整備済み品)",null,null,null],
+ ["amazon","【整備済み品】Apple iPad Pro 12.9インチ (第３世代) Wi-Fi 64GB シルバー",null,null,null],
 ];
 const FIXTURE = "scripts/fixtures/rakuten-normalize.expected.json";
 let failures = 0;

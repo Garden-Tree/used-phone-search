@@ -80,11 +80,11 @@ function colorOf(s: string): string {
 /** iPhone の機種部分。「12mini」「SE 3th」「8 Plus」「16 Pro Max」→ 正式名（読めなければ null） */
 export function iphoneModelOf(s: string): { modelName: string; end: number } | null {
   const m = s.match(
-    /iPhone\s?(SE\s?(?:[23]\s?(?:th|rd|nd)?|第[23]世代)?|XS\s?Max|XS|XR|X(?![A-Za-z])|\d{1,2}e|\d{1,2}|Air)(?:\s?(mini|Plus|Pro\s?Max|Pro|Max))?(?![A-Za-z0-9])/i,
+    /iPhone\s?(SE\s?(?:[23]\s?(?:th|rd|nd)?|[（(]?\s?第[23]世代\s?[）)]?)?|XS\s?Max|XS|XR|X(?![A-Za-z])|\d{1,2}e|\d{1,2}|Air)(?:\s?(mini|Plus|Pro\s?Max|Pro|Max))?(?![A-Za-z0-9])/i,
   );
   if (!m) return null;
   let part = m[1].replace(/\s+/g, " ").trim();
-  const se = part.match(/^SE\s?(?:([23])|第([23])世代)?/i);
+  const se = part.match(/^SE\s?(?:([23])|[（(]?\s?第([23])世代)?/i);
   if (se) {
     const gen = se[1] ?? se[2];
     if (!gen) return null;

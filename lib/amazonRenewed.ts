@@ -39,7 +39,8 @@ function colorOf(after: string): string {
 
 export function normalizeAmazonItem(item: RakutenItem): Row | null {
   if (!item.url || !(item.price > 0)) return null;
-  const name = item.name.replace(/&nbsp;/g, " ").replace(/[\s　]+/g, " ").trim();
+  // NFKC: 「第６世代」の全角数字・全角括弧を半角にそろえる（iPad の世代・SE の世代が読めなくなる）
+  const name = item.name.normalize("NFKC").replace(/&nbsp;/g, " ").replace(/[\s　]+/g, " ").trim();
   if (ACCESSORY_RE.test(name)) return null;
 
   const storages = [...name.matchAll(/(\d+)\s*(GB|TB)/gi)];
