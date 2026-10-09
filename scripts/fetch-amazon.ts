@@ -118,6 +118,14 @@ async function search(keywords: string, itemPage: number): Promise<{ total: numb
         printedRaw = true;
         console.log("応答のキー:", Object.keys(data), "totalResultCount:", data.searchResult?.totalResultCount);
         console.log("最初の1商品:", JSON.stringify(items[0], null, 1));
+        // 読み取りを合わせるため、最初の応答の全商品を1行ずつ（題名・出品の状態・価格・出品者・特徴欄）
+        for (const it of items) {
+          const l = (it.offersV2?.listings ?? []).find((x) => x.isBuyBoxWinner) ?? it.offersV2?.listings?.[0];
+          console.log("商品:", JSON.stringify({
+            title: it.itemInfo?.title?.displayValue, cond: l?.condition, price: l?.price?.money, seller: l?.merchantInfo?.name,
+            avail: l?.availability?.type, features: (it.itemInfo?.features?.displayValues ?? []).slice(0, 4),
+          }));
+        }
       }
       return { total: Number(data.searchResult?.totalResultCount ?? 0), items };
     }
