@@ -29,7 +29,7 @@ const CARRIER_WORD_RE = /(?<![A-Za-z])(softbank|docomo|au)(?![A-Za-z])|ドコモ
 function colorOf(after: string): string {
   const color = after
     .replace(/[（(][^）)]*整備済み[^）)]*[）)]/g, " ")
-    .replace(/整備済み品?|SIMフリー|SIMロック解除済み?|Wi-?Fi(?:\+Cellular)?(?:モデル)?|Cellular|セルラー|国内版|[\[\]【】]/gi, " ")
+    .replace(/整備済み品?|SIMフリー|SIMロック解除済み?|Wi-?Fi(?:\+Cellular)?(?:モデル)?|Cellular|セルラー|国内版|[45]G対応|[\[\]【】]/gi, " ")
     .replace(/(?:^|\s)\+(?=\s|$)/g, " ") // 「Wi-Fi + Cellular」の + が残る
     .replace(/[\s　]+/g, " ")
     .replace(/^[\s)）\-–:：]+|[\s(（\-–]+$/g, "") // 「(256 GB) - ブラック (整備済み品)」の「) -」
@@ -49,7 +49,8 @@ export function normalizeAmazonItem(item: RakutenItem): Row | null {
   const head = name.slice(0, storages[0].index).replace(/[（(]\s*$/, ""); // 機種名は容量の前（「iPhone 18 Pro (256 GB)」の「(」は落とす）
   const after = name.slice((storages[0].index ?? 0) + storages[0][0].length);
 
-  const simFree = /SIMフリー|SIMロック解除/i.test(name);
+  // Amazon の整備済み品はキャリア名がなければ SIM フリー（「SIMフリー」と書かない出品も多い）
+  const simFree = /SIMフリー|SIMロック解除/i.test(name) || !CARRIER_WORD_RE.test(name);
   const carrierWord = name.match(CARRIER_WORD_RE)?.[0] ?? null;
   const common = {
     price: item.price, url: item.url, isSoldOut: false, shopName: AMAZON_RENEWED_SHOP, networkStatus: null,

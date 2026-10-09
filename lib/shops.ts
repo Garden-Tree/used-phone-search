@@ -76,9 +76,9 @@ export const SHOPS: Shop[] = [
   // { name: "Be-Stock（Yahoo!ショッピング店）", label: "Be-Stock", note: "Yahoo!ショッピング店", ipad: true, battery: "none",
   //   warranty: "商品ごとの保証期間（商品名に6ヶ月など。お買い物ガイドは180日以内）", redRom: "記載なし（確認中）",
   //   guaranteeUrl: "https://store.shopping.yahoo.co.jp/be-stocktsb/guide.html", marketplace: "yahoo" },
-  // Amazon 整備済み品は AMAZON_CREDENTIAL_*（GitHub Secrets）を入れて初回の取り込みが通ってから有効にする（0件のまま一覧に出さない）
-  // { name: "Amazon 整備済み品", label: "Amazon 整備済み品", note: "Amazon", pixel: true, galaxy: true, ipad: true, battery: "over80",
-  //   warranty: "Amazon 整備済み品の保証（180日返品）", redRom: "記載なし（商品ページを確認）", guaranteeUrl: "https://www.amazon.co.jp/b?node=8130460051", marketplace: "amazon" },
+  // Amazon 整備済み品（2026-10-09〜。Creators API で取得。出品者は各中古店で、保証は Amazon のプログラム。価格は取得時点を添える＝DeviceCard）
+  { name: "Amazon 整備済み品", label: "Amazon 整備済み品", note: "Amazon", pixel: true, galaxy: true, ipad: true, battery: "over80",
+    warranty: "Amazon 整備済み品の保証（180日返品）", redRom: "記載なし（商品ページを確認）", guaranteeUrl: "https://www.amazon.co.jp/b?node=8130460051", marketplace: "amazon" },
   { name: "にこスマ", label: "にこスマ", galaxy: true, pixel: true, ipad: true, battery: "exact",
     warranty: "1年間の返品・交換", redRom: "永久保証", guaranteeUrl: "https://www.nicosuma.com/about/shopping-guide" },
   { name: "ダイワンテレコム", label: "ダイワンテレコム", galaxy: true, pixel: true, ipad: false, battery: "over80",
