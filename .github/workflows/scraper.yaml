@@ -14,6 +14,10 @@ on:
         description: 'にこスマの取得数'
         required: true
         default: '100'
+      amazon_mode:
+        description: 'Amazon: dry なら先頭3機種だけ取得して応答を表示し、取り込まない（応答の形を確かめるとき）'
+        required: false
+        default: ''
       iosis_limit:
         description: 'イオシスの取得数（ページ数の上限。商品のないページで止まる。iPhone が 106 ページ）'
         required: true
@@ -129,6 +133,10 @@ jobs:
           AMAZON_PARTNER_TAG: ${{ secrets.AMAZON_PARTNER_TAG }}
           AMAZON_CREDENTIAL_VERSION: ${{ vars.AMAZON_CREDENTIAL_VERSION || '3.3' }}
         run: |
+          if [ "${{ inputs.amazon_mode }}" = "dry" ]; then
+            npx tsx scripts/fetch-amazon.ts --debug --dry
+            exit 0
+          fi
           failed=0
           npx tsx scripts/fetch-amazon.ts || failed=1
           npx tsx scripts/ingest-rakuten.ts amazon-data --family amazon || failed=1
