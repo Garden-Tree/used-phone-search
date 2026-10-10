@@ -11,7 +11,7 @@
  *
  * - 機種（lib/catalog.ts の ALL_DEVICE_PAGE_MODELS）ごとに「<機種> 整備済み品」で検索し、1機種あたり最大 5 ページ（1ページ10件）。
  *   ページが10件に満たない・総件数に達した・3ページ目以降で整備済み品が1件もないときは打ち切る
- * - API は 1 秒に 1 回・1日 8,640 回まで。1.1 秒あける。429・5xx は待って 3 回までやり直す。401 はトークンを取り直す
+ * - API は 1 秒に 1 回・1日 8,640 回まで。1.5 秒あける（1.1 秒では 10/10 に 429 が続いた）。429 は 30・60・90・120 秒待って 5 回まで、5xx は 3 回までやり直す。401 はトークンを取り直す
  * - 整備済み品 = 購入ボタンの出品（isBuyBoxWinner。なければ先頭）の condition が Refurbished、またはタイトルに「整備済み」
  * - リンクは detailPageURL をそのまま使う（アソシエイトのタグ付き。変更不可）。価格は1時間までしか持てない（規約）→ 取り込み側で古いファイルは隠す
  * - 失敗したらファイルは書かず終了コード 1（前回のファイルが古くなり、取り込み側が在庫を隠す）
@@ -32,7 +32,7 @@ const TOKEN_URLS: Record<string, string> = {
 const PAGE_SIZE = 10;
 const MAX_PAGES = 5;
 const EARLY_STOP_PAGE = 3; // このページ以降で整備済み品が1件もなければ打ち切る
-const INTERVAL_MS = 1100;
+const INTERVAL_MS = 1500;
 const RESOURCES = [
   "itemInfo.title", "itemInfo.features", "itemInfo.byLineInfo",
   "offersV2.listings.price", "offersV2.listings.condition", "offersV2.listings.merchantInfo",
@@ -132,9 +132,9 @@ async function search(keywords: string, itemPage: number): Promise<{ total: numb
     if (status === 401) token = null; // 次の試行でトークンを取り直す
     const detail = `HTTP ${status} "${keywords}" page=${itemPage} ${body.slice(0, 300)}`;
     // 直らない 4xx（401・429 以外）は即失敗
-    if (attempt >= 3 || (status >= 400 && status < 500 && status !== 429 && status !== 401)) throw new Error(detail);
+    if (attempt >= (status === 429 ? 5 : 3) || (status >= 400 && status < 500 && status !== 429 && status !== 401)) throw new Error(detail);
     console.warn(`retry ${attempt}: ${detail}`);
-    await sleep(status === 429 ? 5000 * attempt : 3000 * attempt);
+    await sleep(status === 429 ? 30_000 * attempt : 3000 * attempt);
   }
 }
 
