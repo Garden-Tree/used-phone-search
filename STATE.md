@@ -46,7 +46,7 @@
 ## 次にやる（順序）
 
 ```
-10/13 の判定後 Claude 全ページのリデザイン（案 https://claude.ai/artifact/AwneVtExWwgB4aGtFPmsXG・ideas/10-10）
+10/13 の判定後 Claude 全ページのリデザイン（案と経緯は ideas/10-10）
 ```
 
 ## 期限のあるもの
