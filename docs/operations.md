@@ -33,7 +33,7 @@
 | 楽天の JSON の場所 | GitHub Secrets `RAKUTEN_DATA_URL`（`https://gadelog.com/<推測されにくいフォルダ>/`）と `config.php` の `output_dir` | フォルダ名は Git に書かない |
 | Yahoo!ショッピング API | GitHub Secrets `YAHOO_APP_ID`（Yahoo! デベロッパーネットワークのアプリの Client ID） | ユーザーが登録。未登録のあいだは Yahoo の取り込みを飛ばす。Claude は値を扱わない |
 | Amazon Creators API | GitHub Secrets `AMAZON_CREDENTIAL_ID`・`AMAZON_CREDENTIAL_SECRET`・`AMAZON_PARTNER_TAG`（アソシエイトのトラッキングID）、Variables `AMAZON_CREDENTIAL_VERSION`（認証情報のバージョン。未設定は 3.3＝極東。3.1 北米・3.2 欧州） | ユーザーが登録。`AMAZON_CREDENTIAL_ID` が空なら Amazon の取り込みを飛ばす。Claude は値を扱わない |
-| ValueCommerce のリンク | GitHub Secrets `VC_SID`（サイトID）・`VC_PID`（プロモーションID）→ ビルド時に `NEXT_PUBLIC_VC_SID`/`NEXT_PUBLIC_VC_PID` | リンクの URL に出る公開の値。未登録なら Yahoo の商品へ直接リンク（収益なし） |
+| ValueCommerce のリンク | GitHub Secrets `VC_SID`（サイトID）・`VC_PID`（プロモーションID）→ ビルド時に `NEXT_PUBLIC_VC_SID`/`NEXT_PUBLIC_VC_PID` | リンクの URL に出る公開の値。未登録なら Yahoo のリンクはもしもアフィリエイト経由（a_id 5840289・p_id 1225。入れると ValueCommerce に切り替わる） |
 | Actions の即時起動 | `config.php` の `github_dispatch_token`（Fine-grained・このリポジトリだけ・Actions: Read and write） | **期限 2027/10/05**。ユーザーが作成・入力 |
 | 楽天API | `config.php`（アプリID・Access Key） | アプリ「中古スマホ一括検索」・Backend・許可IP 210.157.79.113 |
 | サイトURL・GA4 | ワークフローの `NEXT_PUBLIC_SITE_URL`・`NEXT_PUBLIC_GA_ID=G-YV3ZR0N6B1`（公開される値なので直書き） | GA4 の詳細は `measurement.md` |
@@ -121,7 +121,7 @@
    店名が楽天の shopName とずれていないかは `npm run test:normalize` が確かめる
 4. 規約上、リンクは楽天アフィリエイトのみ（`DeviceCard.tsx` は `RAKUTEN_SHOP_NAMES` で自動判定）
 
-### Yahoo!ショッピングの店を追加する（2026-10-09〜。Quality Shop・モバステ・エムコム・リユスマ・Joshin 中古アウトレット・MyWiT・Be-Stock。`lib/shops.ts` の行はどれもコメントアウト＝稼働前）
+### Yahoo!ショッピングの店を追加する（2026-10-09〜。Quality Shop・モバステ・エムコム・リユスマ・Joshin 中古アウトレット・MyWiT・Be-Stock。`lib/shops.ts` に 10/10〜載せている）
 - 流れ: Actions の「Yahoo!ショッピングの在庫を取り込む」が `scripts/fetch-yahoo.ts`（商品検索API v3 を直接呼ぶ。2秒に1回（30回ほどで 429 になったため。429 は30秒待って3回まで再試行）・先頭1,000件を超える検索は価格帯を割って取得）→
   `yahoo-data/<ストアID>.json.gz` → `scripts/ingest-rakuten.ts yahoo-data --family yahoo`（楽天と同じ洗い替え・半分未満なら中止の安全装置）。`YAHOO_APP_ID` が空なら飛ばす
 1. `lib/yahooShops.ts` の `YAHOO_SHOPS` にストアID（`store.shopping.yahoo.co.jp/<ストアID>/` の部分）・ショップ名・商品名の解析関数を追加（例: `lib/yahooQualityShop.ts`）。
@@ -129,7 +129,7 @@
    （`shopping.yahoo.co.jp/search?...&sid=` は店で絞り込まれない）
    （商品検索API v3 を `seller_id=<ストアID>&condition=used&in_stock=true` で呼んでも商品名を集められる。`description` にランク・バッテリー・キャリアが書かれている店が多く、`fetch-yahoo.ts` の `extract` が読む。保証は店の `guide.html`（`info.html` は会社概要だけ）にある）
 2. `lib/shops.ts` の `SHOPS` に1行足す（`note` が "Yahoo!" で始まる店は絞り込みで「（Yahoo!）」と出る。保証・赤ロムは**その店の公式ページで確かめてから**書く）
-3. リンクは ValueCommerce 経由（`lib/affiliate.ts` の `valueCommerceUrl`。GA4 の `link_type` は `vc`）。Yahoo の商品ページ以外へは張らない
+3. リンクは、バリューコマース（サイト ID 3784061）の提携が通るまで**もしもアフィリエイト経由**（`lib/affiliate.ts` の `moshimoYahooUrl`。a_id 5840289・p_id 1225・メディア「中古スマホ一括検索」692048。GA4 の `link_type` は `moshimo`）。Secrets の `VC_SID`・`VC_PID` を入れると自動で ValueCommerce（2%。`vc`）に切り替わる。Yahoo の商品ページ以外へは張らない
 4. API の応答の形・件数の上限を確かめるとき: `YAHOO_APP_ID=... npx tsx scripts/fetch-yahoo.ts --debug --shop <ストアID>`（最初の1商品の生の応答を出す）
 - Yahoo! JAPAN のウェブサービスを使う側の表記（クレジット）は未対応。API 規約を確認して `app/components/AdDisclosure.tsx` に足す
 

@@ -268,8 +268,8 @@ for (const [q, name, want] of MATCH_CASES) {
   if (matchesModel(q, name) !== want) { failures++; console.log(`照合: "${q}" と "${name}" → ${!want}（期待 ${want}）`); }
 }
 
-// 4. 店の一覧（Yahoo!ショッピングの店は稼働前は一覧に載せないので、ここでは見ない）（lib/shops.ts）に楽天の店名がそろっているか（ずれるとトップの件数・絞り込みが 0 件になる）
-for (const { shopName } of Object.values(RAKUTEN_SHOPS)) {
+// 4. 店の一覧（lib/shops.ts）に楽天・Yahoo!ショッピングの店名がそろっているか（ずれるとトップの件数・絞り込みが 0 件になる）
+for (const { shopName } of [...Object.values(RAKUTEN_SHOPS), ...Object.values(YAHOO_SHOPS)]) {
   if (!findShop(shopName)) { failures++; console.log(`店の一覧: lib/shops.ts に「${shopName}」がない`); }
 }
 

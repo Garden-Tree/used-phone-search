@@ -54,7 +54,7 @@
 ## 店へのクリック（2026-10-07〜）
 
 - 商品カードを押すと GA4 に **`shop_click`** イベントを送る（`app/components/ShopClickTracker.tsx`。カードの `data-*` を読む）
-  - パラメータ: `shop_name`・`model_name`・`storage`・`condition_rank`・`price`・`link_type`（`rakuten`／`a8`／`vc`＝Yahoo!ショッピングの ValueCommerce／`direct`＝収益にならない直リンク）
+  - パラメータ: `shop_name`・`model_name`・`storage`・`condition_rank`・`price`・`link_type`（`rakuten`／`a8`／`vc`＝Yahoo!ショッピングの ValueCommerce／`moshimo`＝Yahoo!ショッピングのもしもアフィリエイト／`amazon`／`direct`＝収益にならない直リンク）
   - 5つ（price 以外）をカスタムディメンション（イベント）に登録済み。レポートに出るのは登録した日（10/7）以降のデータだけ
 - 見方: レポート → エンゲージメント → イベント → `shop_click`、または探索で 行=shop_name／link_type／ページパス、値=イベント数
 - アフィリエイト側の数字（A8 のサイト別「中古スマホ一括検索」・楽天アフィリエイト）とも突き合わせる。楽天のアフィリエイト ID はブログと共通なので、楽天側ではサイトを分けられない
