@@ -1,24 +1,19 @@
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { Search } from "lucide-react";
 
+/** label は旧デザインの右上の補足。今は使わない（呼び出し側の互換のため受け取るだけ） */
 export default function SiteHeader({ label }: { label?: string }) {
+  void label;
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center">
-          <Link href="/" className="group flex items-center mr-1 text-slate-400 hover:text-blue-600 transition-all hover:-translate-x-1" aria-label="トップページへ戻る">
-            <ChevronLeft className="w-8 h-8 -ml-2" />
-          </Link>
-          <div className="flex flex-col">
-            <Link href="/" className="text-xl font-extrabold tracking-tight text-slate-900 leading-none mb-1">
-              中古スマホ一括検索
-            </Link>
-            <a href="https://gadelog.com" target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-slate-400 hover:text-blue-600 transition-colors tracking-tighter uppercase leading-none">
-              powered by gadelog.com
-            </a>
-          </div>
-        </div>
-        {label && <div className="text-sm font-medium text-slate-500">{label}</div>}
+    <header className="bg-brand-900 sticky top-0 z-20">
+      <div className="max-w-[1120px] mx-auto h-[52px] pl-4 pr-1 flex items-center justify-between">
+        <Link href="/" className="flex flex-col text-white">
+          <span className="text-base font-bold tracking-wide leading-tight">中古スマホ一括検索</span>
+          <span className="text-[10px] text-brand-200 tracking-[0.08em] leading-tight">by ガデログ</span>
+        </Link>
+        <Link href="/search" aria-label="在庫を検索" className="w-11 h-11 flex items-center justify-center text-white hover:text-brand-200">
+          <Search className="w-[22px] h-[22px]" aria-hidden="true" />
+        </Link>
       </div>
     </header>
   );

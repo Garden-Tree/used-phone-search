@@ -21,9 +21,9 @@ export const metadata: Metadata = {
 
 export default function SearchPage() {
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans">
+    <div className="min-h-screen bg-ground text-ink">
       <SiteHeader label="在庫検索" />
-      <main className="max-w-6xl mx-auto px-4 py-6">
+      <main className="pb-24 md:pb-6">
         {/* useSearchParams を使うクライアント部品は Suspense で包む（静的書き出しの決まり） */}
         <Suspense>
           <SearchClient />

@@ -11,7 +11,7 @@ type Props = {
   has64GB: boolean;
 };
 
-export default function InspectionTips({ model, has64GB }: Props) {
+export function inspectionTips({ model, has64GB }: Props) {
   const searchWithBattery = `/search?${new URLSearchParams({ model, minBattery: "85" }).toString()}`;
   const tips: { title: string; body: ReactNode }[] = [
     {
@@ -19,7 +19,7 @@ export default function InspectionTips({ model, has64GB }: Props) {
       body: (
         <>
           多くの店で最大容量は値段に反映されていないので、同じ値段なら最大容量が高い個体を選ぶだけで得をします。
-          <Link href={searchWithBattery} className="text-blue-600 font-bold hover:underline ml-1">
+          <Link href={searchWithBattery} className="text-brand-600 font-bold hover:underline ml-1">
             {model}をバッテリー85%以上で絞り込む &rarr;
           </Link>
         </>
@@ -48,22 +48,27 @@ export default function InspectionTips({ model, has64GB }: Props) {
     });
   }
 
+  return tips;
+}
+
+export default function InspectionTips({ model, has64GB }: Props) {
+  const tips = inspectionTips({ model, has64GB });
   return (
-    <section className="mb-10 rounded-3xl border border-amber-200 bg-amber-50/60 p-5 md:p-6">
-      <h2 className="text-lg md:text-xl font-bold mb-1">検品担当が見るポイント</h2>
-      <p className="text-xs text-slate-500 mb-4">運営者は中古スマホ店で検品を担当しています</p>
+    <section id="points" className="scroll-mt-16 rounded-xl border border-inspect-line bg-inspect-50 p-3.5 md:p-4">
+      <h2 className="text-[15px] font-bold">検品担当が見るポイント</h2>
+      <p className="text-xs text-inspect-800 mb-3">運営者は中古スマホ店で検品を担当しています</p>
       <ol className="space-y-3">
         {tips.map((t, i) => (
-          <li key={t.title} className="flex gap-3">
-            <span className="shrink-0 w-6 h-6 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
-            <div>
-              <p className="font-bold text-slate-800">{t.title}</p>
-              <p className="text-sm text-slate-600 leading-relaxed">{t.body}</p>
+          <li key={t.title} className="flex gap-2.5">
+            <span className="shrink-0 w-[22px] h-[22px] rounded-full bg-inspect-700 text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
+            <div className="flex flex-col gap-0.5">
+              <p className="text-sm font-bold">{t.title}</p>
+              <p className="text-[13px] text-gray-700 leading-[1.7]">{t.body}</p>
             </div>
           </li>
         ))}
       </ol>
-      <a href={GUIDE_URL} target="_blank" rel="noopener" className="inline-block mt-4 text-sm font-bold text-amber-700 hover:underline">
+      <a href={GUIDE_URL} target="_blank" rel="noopener" className="inline-block mt-3 text-[13px] font-bold text-brand-600 hover:underline">
         詳しくは「検品担当が教える、買ってはいけない個体と狙い目」 &rarr;
       </a>
     </section>

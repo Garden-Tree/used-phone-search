@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { IBM_Plex_Sans_JP } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 import ShopClickTracker from "./components/ShopClickTracker";
 import { SHOPS } from "@/lib/shops";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// 日本語の字形は Google Fonts の unicode-range 分割で配信される（latin だけ先読み）
+const plex = IBM_Plex_Sans_JP({
+  variable: "--font-plex",
+  weight: ["400", "500", "700"],
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
@@ -56,7 +54,7 @@ export default function RootLayout({
     <html
       lang="ja"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${plex.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
       {GA_ID && <GoogleAnalytics gaId={GA_ID} />}

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import DeviceCard from "@/app/components/DeviceCard";
+import DeviceCard, { DeviceList } from "@/app/components/DeviceCard";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
@@ -108,11 +108,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 function Cell({ row }: { row?: PriceRow }) {
   return row ? (
     <>
-      <span className="font-black text-red-600 whitespace-nowrap">{yen(row.minPrice)}</span>
-      <span className="block text-xs text-slate-400">{row.count.toLocaleString()}件</span>
+      <span className="font-bold text-price whitespace-nowrap">{yen(row.minPrice)}</span>
+      <span className="block text-xs text-ink-mute">{row.count.toLocaleString()}件</span>
     </>
   ) : (
-    <span className="text-slate-300">在庫なし</span>
+    <span className="text-gray-300">在庫なし</span>
   );
 }
 
@@ -125,13 +125,13 @@ function CompareTable({ title, rows, labelOf, a, b }: {
 }) {
   if (rows.length === 0) return null;
   return (
-    <section className="bg-white rounded-3xl border border-slate-200 overflow-hidden mb-6">
-      <h2 className="px-5 py-4 text-base font-bold text-slate-800 bg-slate-50 border-b border-slate-100">{title}</h2>
+    <section className="bg-white rounded-xl border border-line overflow-hidden mb-6">
+      <h2 className="px-5 py-4 text-base font-bold text-ink bg-ground border-b border-line-soft">{title}</h2>
       {/* スマホ幅では列が収まらないことがあるので、表だけ横にスクロールできるようにする */}
       <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-xs text-slate-500">
+          <tr className="text-xs text-ink-mute">
             <th className="text-left font-semibold pl-4 pr-2 sm:px-5 py-2"></th>
             <th className="text-right font-semibold px-2 sm:px-5 py-2">{a}</th>
             <th className="text-right font-semibold px-2 sm:px-5 py-2">{b}</th>
@@ -142,11 +142,11 @@ function CompareTable({ title, rows, labelOf, a, b }: {
           {rows.map((r) => {
             const diff = r.a && r.b ? r.b.minPrice - r.a.minPrice : null;
             return (
-              <tr key={r.key} className="border-t border-slate-100">
-                <td className="pl-4 pr-2 sm:px-5 py-3 font-bold text-slate-700 whitespace-nowrap">{labelOf(r.key)}</td>
+              <tr key={r.key} className="border-t border-line-soft">
+                <td className="pl-4 pr-2 sm:px-5 py-3 font-bold text-ink-sub whitespace-nowrap">{labelOf(r.key)}</td>
                 <td className="px-2 sm:px-5 py-3 text-right"><Cell row={r.a} /></td>
                 <td className="px-2 sm:px-5 py-3 text-right"><Cell row={r.b} /></td>
-                <td className="pl-2 pr-4 sm:px-5 py-3 text-right text-slate-600 whitespace-nowrap">
+                <td className="pl-2 pr-4 sm:px-5 py-3 text-right text-ink-sub whitespace-nowrap">
                   {diff === null ? "-" : `${diff > 0 ? "+" : diff < 0 ? "-" : "±"}${Math.abs(diff).toLocaleString()}円`}
                 </td>
               </tr>
@@ -165,12 +165,12 @@ function SpecTable({ a, b }: { a: string; b: string }) {
   const sb = specOf(b);
   if (!sa || !sb) return null;
   return (
-    <section className="bg-white rounded-3xl border border-slate-200 overflow-hidden mb-10">
-      <h2 className="px-5 py-4 text-base font-bold text-slate-800 bg-slate-50 border-b border-slate-100">スペックの違い</h2>
+    <section className="bg-white rounded-xl border border-line overflow-hidden mb-10">
+      <h2 className="px-5 py-4 text-base font-bold text-ink bg-ground border-b border-line-soft">スペックの違い</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-xs text-slate-500">
+            <tr className="text-xs text-ink-mute">
               <th className="text-left font-semibold pl-4 pr-2 sm:px-5 py-2"></th>
               <th className="text-left font-semibold px-2 sm:px-5 py-2">{a}</th>
               <th className="text-left font-semibold pl-2 pr-4 sm:px-5 py-2">{b}</th>
@@ -180,10 +180,10 @@ function SpecTable({ a, b }: { a: string; b: string }) {
             {SPEC_ROWS.map((r) => {
               const va = r.value(sa);
               const vb = r.value(sb);
-              const diff = va !== vb ? "font-bold text-slate-900" : "text-slate-500";
+              const diff = va !== vb ? "font-bold text-ink" : "text-ink-mute";
               return (
-                <tr key={r.label} className="border-t border-slate-100">
-                  <td className="pl-4 pr-2 sm:px-5 py-2.5 font-bold text-slate-400 whitespace-nowrap">{r.label}</td>
+                <tr key={r.label} className="border-t border-line-soft">
+                  <td className="pl-4 pr-2 sm:px-5 py-2.5 font-bold text-ink-mute whitespace-nowrap">{r.label}</td>
                   <td className={`px-2 sm:px-5 py-2.5 ${diff}`}>{va}</td>
                   <td className={`pl-2 pr-4 sm:px-5 py-2.5 ${diff}`}>{vb}</td>
                 </tr>
@@ -192,20 +192,20 @@ function SpecTable({ a, b }: { a: string; b: string }) {
           </tbody>
         </table>
       </div>
-      <p className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">
+      <p className="px-5 py-3 border-t border-line-soft text-xs text-ink-mute">
         {sa.source && specUrl(sa) === specUrl(sb) ? (
-          <>出典: <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{specSourceName(sa, a)}</a></>
+          <>出典: <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-800">{specSourceName(sa, a)}</a></>
         ) : sa.source || sb.source ? (
           // 機種ごとに出典のページが違う（Galaxy はドコモの機種ごとの仕様ページ）
           <>
-            出典: <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{specSourceName(sa, a)}</a>・<a href={specUrl(sb)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{specSourceName(sb, b)}</a>
-            {sa.extraSource && <>・<a href={sa.extraSource.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{sa.extraSource.name}</a></>}
+            出典: <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-800">{specSourceName(sa, a)}</a>・<a href={specUrl(sb)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-800">{specSourceName(sb, b)}</a>
+            {sa.extraSource && <>・<a href={sa.extraSource.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-800">{sa.extraSource.name}</a></>}
           </>
         ) : (
           <>
             出典: Apple の技術仕様（
-            <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{a}</a>・
-            <a href={specUrl(sb)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{b}</a>）
+            <a href={specUrl(sa)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-800">{a}</a>・
+            <a href={specUrl(sb)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-800">{b}</a>）
           </>
         )}
       </p>
@@ -227,12 +227,12 @@ function PixelUpdateTable({ a, b }: { a: string; b: string }) {
     { label: "保証の残り", va: left(a), vb: left(b) },
   ];
   return (
-    <section className="bg-white rounded-3xl border border-slate-200 overflow-hidden mb-10">
-      <h2 className="px-5 py-4 text-base font-bold text-slate-800 bg-slate-50 border-b border-slate-100">アップデート保証の違い</h2>
+    <section className="bg-white rounded-xl border border-line overflow-hidden mb-10">
+      <h2 className="px-5 py-4 text-base font-bold text-ink bg-ground border-b border-line-soft">アップデート保証の違い</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-xs text-slate-500">
+            <tr className="text-xs text-ink-mute">
               <th className="text-left font-semibold pl-4 pr-2 sm:px-5 py-2"></th>
               <th className="text-left font-semibold px-2 sm:px-5 py-2">{a}</th>
               <th className="text-left font-semibold pl-2 pr-4 sm:px-5 py-2">{b}</th>
@@ -240,10 +240,10 @@ function PixelUpdateTable({ a, b }: { a: string; b: string }) {
           </thead>
           <tbody>
             {rows.map((r) => {
-              const diff = r.va !== r.vb ? "font-bold text-slate-900" : "text-slate-500";
+              const diff = r.va !== r.vb ? "font-bold text-ink" : "text-ink-mute";
               return (
-                <tr key={r.label} className="border-t border-slate-100">
-                  <td className="pl-4 pr-2 sm:px-5 py-2.5 font-bold text-slate-400 whitespace-nowrap">{r.label}</td>
+                <tr key={r.label} className="border-t border-line-soft">
+                  <td className="pl-4 pr-2 sm:px-5 py-2.5 font-bold text-ink-mute whitespace-nowrap">{r.label}</td>
                   <td className={`px-2 sm:px-5 py-2.5 ${diff}`}>{r.va}</td>
                   <td className={`pl-2 pr-4 sm:px-5 py-2.5 ${diff}`}>{r.vb}</td>
                 </tr>
@@ -252,10 +252,10 @@ function PixelUpdateTable({ a, b }: { a: string; b: string }) {
           </tbody>
         </table>
       </div>
-      <p className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400 leading-relaxed">
+      <p className="px-5 py-3 border-t border-line-soft text-xs text-ink-mute leading-relaxed">
         販売開始は米国 Google ストアの年月、保証の終わりはそれに保証の年数を足したものです。出典: Google「
-        <a href="https://support.google.com/pixelphone/answer/4457705" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">Pixel のアップデート保証期間</a>」「
-        <a href="https://support.google.com/pixelphone/answer/15738422" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">デバイスが利用可能になった時期</a>」
+        <a href="https://support.google.com/pixelphone/answer/4457705" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-800">Pixel のアップデート保証期間</a>」「
+        <a href="https://support.google.com/pixelphone/answer/15738422" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-800">デバイスが利用可能になった時期</a>」
       </p>
     </section>
   );
@@ -292,35 +292,35 @@ export default async function ComparePage({ params }: Props) {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans">
+    <div className="min-h-screen text-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader label="中古価格の比較" />
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <nav aria-label="パンくずリスト" className="text-xs text-slate-400 mb-4">
-          <Link href="/" className="hover:text-blue-600">トップ</Link>
+      <main className="max-w-[1120px] mx-auto px-4 py-6">
+        <nav aria-label="パンくずリスト" className="text-xs text-ink-mute mb-4">
+          <Link href="/" className="hover:text-brand-800">トップ</Link>
           <span className="mx-2">›</span>
-          <span className="text-slate-600">{a} と {b} の比較</span>
+          <span className="text-ink-sub">{a} と {b} の比較</span>
         </nav>
 
-        <h1 className="text-2xl md:text-4xl font-extrabold text-slate-900 mb-3">
+        <h1 className="text-2xl md:text-3xl font-bold text-ink mb-3">
           {a} と {b}<br className="md:hidden" /> 中古はどっちがお得？
         </h1>
-        <p className="text-slate-600 mb-4 leading-relaxed">{verdict(a, b, sa, sb)}{pixelNote(a, b)}{galaxyNote(a, b)}</p>
+        <p className="text-ink-sub mb-4 leading-relaxed">{verdict(a, b, sa, sb)}{pixelNote(a, b)}{galaxyNote(a, b)}</p>
         <AdDisclosure compact />
 
         {/* 2モデルのサマリーを横に並べる */}
         <section className="grid grid-cols-2 gap-3 md:gap-6 my-6">
           {models.map(({ name, stats }) => (
-            <div key={name} className="rounded-3xl border border-slate-200 p-4 md:p-6">
-              <h2 className="text-base md:text-2xl font-extrabold mb-3">
-                <Link href={modelPagePath(name)} className="hover:text-blue-600">{name}</Link>
+            <div key={name} className="bg-white rounded-xl border border-line p-4 md:p-6">
+              <h2 className="text-base md:text-2xl font-bold mb-3">
+                <Link href={modelPagePath(name)} className="hover:text-brand-800">{name}</Link>
               </h2>
-              <p className="text-xs font-bold text-slate-400">中古の最安値</p>
-              <p className="text-2xl md:text-4xl font-black text-red-600 tracking-tight mb-3">
+              <p className="text-xs font-bold text-ink-mute">中古の最安値</p>
+              <p className="text-2xl md:text-3xl font-bold text-price tracking-tight mb-3">
                 {stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし"}
               </p>
-              <dl className="text-xs md:text-sm text-slate-600 space-y-1">
+              <dl className="text-xs md:text-sm text-ink-sub space-y-1">
                 <div className="flex justify-between"><dt>相場（中央値）</dt><dd className="font-bold">{stats.medianPrice !== null ? yen(stats.medianPrice) : "-"}</dd></div>
                 <div className="flex justify-between"><dt>在庫数</dt><dd className="font-bold">{stats.count.toLocaleString()}件</dd></div>
                 <div className="flex justify-between"><dt>取扱ショップ</dt><dd className="font-bold">{stats.shopCount}店</dd></div>
@@ -328,7 +328,7 @@ export default async function ComparePage({ params }: Props) {
               {badgesOf(name).length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-4">
                   {badgesOf(name).map((badge) => (
-                    <span key={badge} className="px-2 py-1 rounded-md text-[10px] md:text-xs font-semibold bg-slate-50 text-slate-600 border border-slate-200">{badge}</span>
+                    <span key={badge} className="px-2 py-1 rounded-md text-[10px] md:text-xs font-semibold bg-ground text-ink-sub border border-line">{badge}</span>
                   ))}
                 </div>
               )}
@@ -338,7 +338,7 @@ export default async function ComparePage({ params }: Props) {
 
         <CompareTable title="容量別の最安値" rows={storageRows} labelOf={storageLabel} a={a} b={b} />
         <CompareTable title="状態ランク別の最安値" rows={rankRows} labelOf={(k) => `ランク ${k}`} a={a} b={b} />
-        <p className="text-xs text-slate-400 mb-10">差額は「{b} − {a}」の最安値の差です。</p>
+        <p className="text-xs text-ink-mute mb-10">差額は「{b} − {a}」の最安値の差です。</p>
 
         <SpecTable a={a} b={b} />
         <PixelUpdateTable a={a} b={b} />
@@ -348,13 +348,13 @@ export default async function ComparePage({ params }: Props) {
           <section key={name} className="mb-10">
             <div className="flex items-end justify-between mb-4">
               <h2 className="text-xl font-bold">いま一番安い{name}</h2>
-              <Link href={modelPagePath(name)} className="text-sm font-bold text-blue-600 hover:underline underline-offset-4">
+              <Link href={modelPagePath(name)} className="text-sm font-bold text-brand-600 hover:underline underline-offset-4">
                 {name}の価格まとめ &rarr;
               </Link>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {stats.cheapest.slice(0, 3).map((d) => <DeviceCard key={d.id} device={d} />)}
-            </div>
+            <DeviceList>
+              {stats.cheapest.slice(0, 3).map((d) => <DeviceCard key={d.id} device={d} showModel={false} />)}
+            </DeviceList>
           </section>
         ))}
 
@@ -364,7 +364,7 @@ export default async function ComparePage({ params }: Props) {
             <div className="flex flex-wrap gap-2">
               {related.map(([x, y]) => (
                 <Link key={compareSlug(x, y)} href={comparePath(x, y)}
-                  className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                  className="px-3.5 min-h-10 inline-flex items-center rounded-full text-sm font-bold bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
                   {x} vs {y}
                 </Link>
               ))}

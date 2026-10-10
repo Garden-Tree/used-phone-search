@@ -3,14 +3,16 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import DeviceCard, { type Device } from '@/app/components/DeviceCard';
+import { SlidersHorizontal, X } from 'lucide-react';
+import DeviceCard, { DeviceList, type Device } from '@/app/components/DeviceCard';
 import SortSelect from '@/app/components/SortSelect';
-import FilterPanel from '@/app/components/FilterPanel';
+import FilterPanel, { useUpdateParams } from '@/app/components/FilterPanel';
 import AdDisclosure from '@/app/components/AdDisclosure';
 import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from '@/lib/catalog';
 import { SEARCH_DEVICES, findSearchDevice, matchesModel, splitModelQuery } from '@/lib/modelMatch';
 import type { InventoryFile, InventoryIndex } from '@/lib/searchData';
 import { findShop } from '@/lib/shops';
+import { BUILD_TIME } from '@/lib/buildTime';
 
 /**
  * 検索ページの中身（静的書き出し版）。ビルド時に書き出した機種ごとの在庫 JSON（lib/searchData.ts）を読み込み、
@@ -130,6 +132,12 @@ export default function SearchClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadKey]);
 
+  // 機種の指定だけで絞った件数（「全○件」）
+  const total = useMemo(
+    () => (all ? all.filter((d) => models.length === 0 || models.some((q) => matchesModel(q, d.modelName))).length : 0),
+    [all, models],
+  );
+
   const devices = useMemo(() => {
     if (!all) return [];
     const minPrice = toInt(params.get('minPrice'));
@@ -166,78 +174,176 @@ export default function SearchClient() {
     document.title = `${heading} | 中古スマホ一括検索`;
   }, [heading]);
 
+  const updateParams = useUpdateParams();
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  // 適用中の条件（チップ）。それぞれ URL のパラメータと対応していて、× でそのパラメータを外す
+  const chips: { label: string; clear: Record<string, null> }[] = [];
+  if (hasShop) chips.push({ label: shopQuery!, clear: { shop: null } });
+  const storage = toInt(params.get('storage'));
+  if (storage !== undefined) chips.push({ label: storage >= 1024 ? `${storage / 1024}TB` : `${storage}GB`, clear: { storage: null } });
+  if (params.get('rank')) chips.push({ label: `ランク${params.get('rank')}`, clear: { rank: null } });
+  const mb = toInt(params.get('minBattery'));
+  if (mb !== undefined) chips.push({ label: `バッテリー${mb}%以上`, clear: { minBattery: null } });
+  const lo = toInt(params.get('minPrice'));
+  const hi = toInt(params.get('maxPrice'));
+  if (lo !== undefined || hi !== undefined) {
+    const label = lo !== undefined && hi !== undefined ? `${lo.toLocaleString()}〜${hi.toLocaleString()}円`
+      : lo !== undefined ? `${lo.toLocaleString()}円〜` : `〜${hi!.toLocaleString()}円`;
+    chips.push({ label, clear: { minPrice: null, maxPrice: null } });
+  }
+  const clearAll = () => updateParams({ shop: null, storage: null, rank: null, minBattery: null, minPrice: null, maxPrice: null });
+  const minShown = devices.length ? devices.reduce((m, d) => Math.min(m, d.price), Infinity) : null;
+
+  // 絞り込みの画面（スマホ）を開いている間は背面をスクロールさせず、Esc で閉じる
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSheetOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [sheetOpen]);
+
+  const filterKey = `${params.get('minPrice') ?? ''}-${params.get('maxPrice') ?? ''}`;
+
   return (
     <>
-      <div className="mb-8 flex flex-col gap-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 mb-2">{heading}</h1>
-            <p className="text-slate-600">
-              {all ? `在庫 ${devices.length.toLocaleString()}件。スクロールでさらに表示します。` : error ? '在庫を読み込めませんでした。' : '在庫を読み込んでいます...'}
+      <section className="bg-white border-b border-line">
+        <div className="max-w-[1120px] mx-auto px-4 pt-3.5 pb-3 flex flex-col gap-2">
+          <h1 className="text-xl font-bold">{heading}</h1>
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <p className="text-[13px] text-ink-sub">
+              {all ? (
+                <>
+                  <strong className="text-ink">{devices.length.toLocaleString()}件</strong>
+                  {devices.length !== total && `（全${total.toLocaleString()}件）`}
+                  {minShown !== null && <> ・ 最安 <span className="text-price font-bold">{minShown.toLocaleString()}円</span></>}
+                </>
+              ) : error ? '在庫を読み込めませんでした。' : '在庫を読み込んでいます...'}
+              {pageModel && (
+                <> ・ <Link href={modelPagePath(pageModel)} className="text-brand-600 hover:text-brand-800">相場まとめ ›</Link></>
+              )}
             </p>
-            {pageModel && (
-              <Link href={modelPagePath(pageModel)} className="inline-block mt-2 text-sm font-bold text-blue-600 hover:underline underline-offset-4">
-                {pageModel}の容量別・ランク別の最安値まとめを見る &rarr;
-              </Link>
-            )}
+            {/* PC では並び替えをここに置く（スマホは画面下の固定バー） */}
+            <div className="hidden md:flex items-center gap-2">
+              <label htmlFor="sort-pc" className="text-sm text-ink-sub">並び替え</label>
+              <SortSelect currentSort={currentSort} idSuffix="pc" />
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <label htmlFor="sort" className="text-sm font-medium text-slate-600">並び替え:</label>
-            <SortSelect currentSort={currentSort} />
-          </div>
+          {/* 種類の切り替え（機種を指定していないとき）。店の指定は引き継ぐ */}
+          {!modelQuery && (
+            <nav aria-label="種類" className="flex flex-wrap gap-2">
+              {SEARCH_DEVICES.map((d) => {
+                const qs = new URLSearchParams({ device: d.key, ...(hasShop ? { shop: shopQuery! } : {}) });
+                return (
+                  <Link key={d.key} href={`/search?${qs.toString()}`}
+                    aria-current={device.key === d.key ? 'page' : undefined}
+                    className={`h-9 px-3.5 inline-flex items-center rounded-full text-[13px] font-medium border transition-colors ${
+                      device.key === d.key ? 'bg-brand-800 text-white border-brand-800' : 'bg-white border-gray-300 text-gray-700 hover:border-brand-600 hover:text-brand-600'
+                    }`}>
+                    {d.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+
+          {chips.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {chips.map((c) => (
+                <button key={c.label} type="button" aria-label={`${c.label}の条件を外す`} onClick={() => updateParams(c.clear)}
+                  className="h-8 pl-3 pr-2 rounded-full bg-brand-50 text-brand-800 text-xs flex items-center gap-1 hover:bg-brand-200">
+                  {c.label}
+                  <X className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+              ))}
+              <button type="button" onClick={clearAll} className="h-8 px-2.5 text-xs text-ink-mute hover:text-ink">すべて解除</button>
+            </div>
+          )}
+
+          <AdDisclosure compact />
+          <p className="text-[11px] text-ink-mute">更新 {BUILD_TIME}</p>
         </div>
+      </section>
 
-        <AdDisclosure compact />
+      <div className="max-w-[1120px] mx-auto px-4 mt-3 md:grid md:grid-cols-[280px_minmax(0,1fr)] md:gap-6 md:items-start">
+        {/* PC: 絞り込みを左に常に表示 */}
+        <aside className="hidden md:block bg-white border border-line rounded-xl p-4" aria-label="絞り込み">
+          <h2 className="text-base font-bold mb-4">絞り込み</h2>
+          <FilterPanel key={filterKey} />
+        </aside>
 
-        {/* 種類の切り替え（機種を指定していないとき）。店の指定は引き継ぐ */}
-        {!modelQuery && (
-          <nav aria-label="種類" className="flex flex-wrap gap-2">
-            {SEARCH_DEVICES.map((d) => {
-              const qs = new URLSearchParams({ device: d.key, ...(hasShop ? { shop: shopQuery! } : {}) });
-              return (
-                <Link key={d.key} href={`/search?${qs.toString()}`}
-                  className={`px-4 py-2 rounded-xl text-sm font-bold border transition-colors ${
-                    device.key === d.key ? 'bg-slate-900 text-white border-slate-900' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'
-                  }`}>
-                  {d.label}
-                </Link>
-              );
-            })}
-          </nav>
-        )}
-
-        <FilterPanel key={`${params.get('minPrice') ?? ''}-${params.get('maxPrice') ?? ''}`} />
+        <div className="min-w-0">
+          {!all ? (
+            error ? (
+              <div className="text-center py-16 bg-white rounded-xl border border-line">
+                <p className="text-ink-sub">在庫を読み込めませんでした。</p>
+                <p className="text-sm text-ink-mute mt-2">時間をおいて、ページを読み込み直してください。</p>
+              </div>
+            ) : (
+              <div className="bg-white border border-line rounded-xl overflow-hidden" aria-busy="true">
+                {Array.from({ length: 8 }, (_, i) => (
+                  <div key={i} className="h-[88px] border-b border-line-soft bg-ground/60 animate-pulse" />
+                ))}
+              </div>
+            )
+          ) : devices.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-xl border border-line">
+              <p className="text-ink-sub">在庫が見つかりませんでした。</p>
+              <p className="text-sm text-ink-mute mt-2">条件を変更して検索してみてください。</p>
+            </div>
+          ) : (
+            // 検索条件が変わったら作り直して、表示件数を最初に戻す
+            <ClientDeviceList key={params.toString()} devices={devices} showModel={models.length !== 1} />
+          )}
+        </div>
       </div>
 
-      {!all ? (
-        error ? (
-          <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-200">
-            <p className="text-slate-500 text-lg">在庫を読み込めませんでした。</p>
-            <p className="text-sm text-slate-400 mt-2">時間をおいて、ページを読み込み直してください。</p>
+      {/* スマホ: 画面下の固定バー（絞り込み・並び替え） */}
+      <div className="md:hidden fixed inset-x-0 bottom-0 z-30 px-4 pt-2.5 pb-[max(1rem,env(safe-area-inset-bottom))] bg-white border-t border-line grid grid-cols-2 gap-2">
+        <button type="button" onClick={() => setSheetOpen(true)} aria-haspopup="dialog"
+          className="h-12 rounded-xl bg-brand-600 text-white text-[15px] font-bold flex items-center justify-center gap-1.5 hover:bg-brand-800">
+          <SlidersHorizontal className="w-[18px] h-[18px]" aria-hidden="true" />
+          絞り込み（{chips.length}）
+        </button>
+        <SortSelect
+          currentSort={currentSort}
+          idSuffix="sp"
+          className="h-12 rounded-xl border border-gray-300 bg-white text-ink text-[15px] font-bold px-3 text-center cursor-pointer"
+        />
+      </div>
+
+      {/* スマホ: 絞り込みを下から出す画面 */}
+      {sheetOpen && (
+        <div className="md:hidden fixed inset-0 z-40" role="dialog" aria-modal="true" aria-label="絞り込み">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSheetOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 max-h-[85vh] flex flex-col bg-white rounded-t-2xl">
+            <div className="flex items-center justify-between px-4 h-14 border-b border-line shrink-0">
+              <h2 className="text-base font-bold">絞り込み</h2>
+              <button type="button" onClick={() => setSheetOpen(false)} aria-label="閉じる" className="w-11 h-11 -mr-2 flex items-center justify-center text-ink-sub">
+                <X className="w-5 h-5" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="overflow-y-auto px-4 py-4">
+              <FilterPanel key={filterKey} />
+            </div>
+            <div className="shrink-0 px-4 pt-2.5 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-line grid grid-cols-[auto_1fr] gap-2">
+              <button type="button" onClick={clearAll} className="h-12 px-4 rounded-xl border border-gray-300 text-[15px] font-bold text-ink">すべて解除</button>
+              <button type="button" onClick={() => setSheetOpen(false)} className="h-12 rounded-xl bg-brand-600 text-white text-[15px] font-bold hover:bg-brand-800">
+                {all ? `${devices.length.toLocaleString()}件を見る` : '閉じる'}
+              </button>
+            </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" aria-busy="true">
-            {Array.from({ length: 6 }, (_, i) => (
-              <div key={i} className="h-72 rounded-[2rem] border border-slate-100 bg-slate-50 animate-pulse" />
-            ))}
-          </div>
-        )
-      ) : devices.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-200">
-          <p className="text-slate-500 text-lg">在庫が見つかりませんでした。</p>
-          <p className="text-sm text-slate-400 mt-2">条件を変更して検索してみてください。</p>
         </div>
-      ) : (
-        // 検索条件が変わったら作り直して、表示件数を最初に戻す
-        <ClientDeviceList key={params.toString()} devices={devices} />
       )}
     </>
   );
 }
 
 /** 絞り込んだ在庫を 20 件ずつ表示する（スクロールで続きを出す） */
-function ClientDeviceList({ devices }: { devices: Device[] }) {
+function ClientDeviceList({ devices, showModel }: { devices: Device[]; showModel: boolean }) {
   const [shown, setShown] = useState(PAGE_SIZE);
   const target = useRef<HTMLDivElement>(null);
   const hasMore = shown < devices.length;
@@ -254,25 +360,23 @@ function ClientDeviceList({ devices }: { devices: Device[] }) {
   }, [hasMore]);
 
   return (
-    <div className="space-y-12">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div>
+      <DeviceList>
         {devices.slice(0, shown).map((device) => (
-          <DeviceCard key={device.id} device={device} />
+          <DeviceCard key={device.id} device={device} showModel={showModel} />
         ))}
-      </div>
+      </DeviceList>
 
       {hasMore ? (
-        <div ref={target} className="flex justify-center py-12">
-          <span className="text-sm font-medium text-slate-500">
-            {shown.toLocaleString()} / {devices.length.toLocaleString()}件
+        <div ref={target} className="flex justify-center py-6">
+          <span className="text-xs text-ink-mute">
+            {shown.toLocaleString()} / {devices.length.toLocaleString()}件・スクロールで続きを表示
           </span>
         </div>
       ) : (
-        <div className="text-center py-16 border-t border-slate-100 mt-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 text-slate-500 text-sm font-medium">
-            すべての在庫を表示しました（合計 {devices.length.toLocaleString()} 件）
-          </div>
-        </div>
+        <p className="text-center py-6 text-xs text-ink-mute">
+          すべての在庫を表示しました（合計 {devices.length.toLocaleString()} 件）
+        </p>
       )}
     </div>
   );

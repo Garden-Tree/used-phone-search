@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import DeviceCard from "@/app/components/DeviceCard";
+import DeviceCard, { DeviceList } from "@/app/components/DeviceCard";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
@@ -69,40 +69,40 @@ export default async function PickPage({ params }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans">
+    <div className="min-h-screen text-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader label="目的・予算から探す" />
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <nav aria-label="パンくずリスト" className="text-xs text-slate-400 mb-4">
-          <Link href="/" className="hover:text-blue-600">トップ</Link>
+      <main className="max-w-[1120px] mx-auto px-4 py-6">
+        <nav aria-label="パンくずリスト" className="text-xs text-ink-mute mb-4">
+          <Link href="/" className="hover:text-brand-800">トップ</Link>
           <span className="mx-2">›</span>
           {pick.ipad && (
             <>
-              <Link href="/ipad" className="hover:text-blue-600">中古iPad</Link>
+              <Link href="/ipad" className="hover:text-brand-800">中古iPad</Link>
               <span className="mx-2">›</span>
             </>
           )}
           {pick.pixel && (
             <>
-              <Link href="/pixel" className="hover:text-blue-600">中古Google Pixel</Link>
+              <Link href="/pixel" className="hover:text-brand-800">中古Google Pixel</Link>
               <span className="mx-2">›</span>
             </>
           )}
           {pick.galaxy && (
             <>
-              <Link href="/galaxy" className="hover:text-blue-600">中古Galaxy</Link>
+              <Link href="/galaxy" className="hover:text-brand-800">中古Galaxy</Link>
               <span className="mx-2">›</span>
             </>
           )}
-          <span className="text-slate-600">{pick.title}</span>
+          <span className="text-ink-sub">{pick.title}</span>
         </nav>
 
-        <h1 className="text-2xl md:text-4xl font-extrabold mb-3">{pick.title}</h1>
-        <p className="text-slate-600 mb-4 leading-relaxed">{pick.lead}</p>
+        <h1 className="text-2xl md:text-3xl font-bold mb-3">{pick.title}</h1>
+        <p className="text-ink-sub mb-4 leading-relaxed">{pick.lead}</p>
         {pick.source && (
-          <p className="text-xs text-slate-400 mb-4">
-            対象機種の出典: <a href={pick.source.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">{pick.source.label}</a>
+          <p className="text-xs text-ink-mute mb-4">
+            対象機種の出典: <a href={pick.source.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">{pick.source.label}</a>
           </p>
         )}
         <AdDisclosure compact />
@@ -113,21 +113,21 @@ export default async function PickPage({ params }: Props) {
             <Link
               key={name}
               href={modelPagePath(name)}
-              className="group rounded-3xl border border-slate-200 p-4 md:p-5 hover:border-blue-300 hover:bg-blue-50/40 transition-colors"
+              className="group bg-white rounded-xl border border-line p-4 md:p-5 hover:border-brand-200 hover:bg-ground"
             >
-              <p className="font-extrabold text-slate-800 group-hover:text-blue-600">{name}</p>
-              <p className="text-xs font-bold text-slate-400 mt-3">中古の最安値</p>
-              <p className="text-2xl font-black text-red-600 tracking-tight">
+              <p className="font-bold text-ink group-hover:text-brand-800">{name}</p>
+              <p className="text-xs font-bold text-ink-mute mt-3">中古の最安値</p>
+              <p className="text-2xl font-bold text-price tracking-tight">
                 {stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし"}
               </p>
-              <p className="text-xs text-slate-500 mt-1">{stats.count.toLocaleString()}件の在庫</p>
+              <p className="text-xs text-ink-mute mt-1">{stats.count.toLocaleString()}件の在庫</p>
               {badgesOf(name).length > 0 && (
-                <p className="text-[11px] text-slate-400 mt-3 line-clamp-2">{badgesOf(name).join("・")}</p>
+                <p className="text-[11px] text-ink-mute mt-3 line-clamp-2">{badgesOf(name).join("・")}</p>
               )}
               {updateUntil(name) && (
-                <p className="text-[11px] text-slate-400 mt-3">アップデート保証 {jaMonth(updateUntil(name)!)}まで</p>
+                <p className="text-[11px] text-ink-mute mt-3">アップデート保証 {jaMonth(updateUntil(name)!)}まで</p>
               )}
-              <p className="text-xs font-bold text-blue-600 mt-3">価格まとめを見る &rarr;</p>
+              <p className="text-xs font-bold text-brand-600 mt-3">価格まとめを見る &rarr;</p>
             </Link>
           ))}
         </section>
@@ -135,21 +135,21 @@ export default async function PickPage({ params }: Props) {
         {cheapest.length > 0 && (
           <section className="mb-10">
             <h2 className="text-xl md:text-2xl font-bold mb-1">いま安い順</h2>
-            <p className="text-xs text-slate-400 mb-4">ジャンク品（ランクJ）を除いています</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <p className="text-xs text-ink-mute mb-4">ジャンク品（ランクJ）を除いています</p>
+            <DeviceList>
               {cheapest.map((d) => <DeviceCard key={d.id} device={d} />)}
-            </div>
+            </DeviceList>
           </section>
         )}
 
         <div className="text-center mb-10">
           <Link
             href={pickSearchHref(pick)}
-            className="inline-flex items-center px-8 py-4 bg-slate-900 text-white rounded-full font-bold hover:bg-blue-600 transition-colors"
+            className="inline-flex items-center px-8 h-12 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-800"
           >
             すべての在庫を見る（{totalCount.toLocaleString()}件）&rarr;
           </Link>
-          <p className="text-xs text-slate-400 mt-3">容量・状態ランク・価格帯で絞り込めます</p>
+          <p className="text-xs text-ink-mute mt-3">容量・状態ランク・価格帯で絞り込めます</p>
         </div>
 
         {/* ほかの目的 */}
@@ -158,7 +158,7 @@ export default async function PickPage({ params }: Props) {
           <div className="flex flex-wrap gap-2">
             {PICKS.filter((p) => p.slug !== pick.slug && pickDevice(p) === pickDevice(pick)).map((p) => (
               <Link key={p.slug} href={pickPath(p.slug)}
-                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                className="px-3.5 min-h-10 inline-flex items-center rounded-full text-sm font-bold bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
                 {p.title}
               </Link>
             ))}

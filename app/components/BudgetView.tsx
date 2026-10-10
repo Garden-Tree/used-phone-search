@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import DeviceCard from "@/app/components/DeviceCard";
+import DeviceCard, { DeviceList } from "@/app/components/DeviceCard";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
@@ -118,25 +118,25 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans">
+    <div className="min-h-screen text-ink">
       <SiteHeader label="予算から探す" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <nav aria-label="パンくずリスト" className="text-xs text-slate-400 mb-4">
-          <Link href="/" className="hover:text-blue-600">トップ</Link>
+      <main className="max-w-[1120px] mx-auto px-4 py-6">
+        <nav aria-label="パンくずリスト" className="text-xs text-ink-mute mb-4">
+          <Link href="/" className="hover:text-brand-800">トップ</Link>
           <span className="mx-2">›</span>
           {t.hub && (
             <>
-              <Link href={t.hub.path} className="hover:text-blue-600">{t.hub.name}</Link>
+              <Link href={t.hub.path} className="hover:text-brand-800">{t.hub.name}</Link>
               <span className="mx-2">›</span>
             </>
           )}
-          <span className="text-slate-600">{label}以下の{t.name}</span>
+          <span className="text-ink-sub">{label}以下の{t.name}</span>
         </nav>
 
-        <h1 className="text-2xl md:text-4xl font-extrabold mb-3">{label}以下で買える{t.name}</h1>
-        <p className="text-slate-600 mb-4 leading-relaxed">
+        <h1 className="text-2xl md:text-3xl font-bold mb-3">{label}以下で買える{t.name}</h1>
+        <p className="text-ink-sub mb-4 leading-relaxed">
           {rows.length > 0 ? (
             <>
               {label}以下で買える{t.name}は <strong>{rows.length}機種・{totalCount.toLocaleString()}件</strong>
@@ -159,10 +159,10 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
             <Link
               key={b}
               href={budgetPath(b, device)}
-              className={`px-4 py-2 rounded-xl text-sm font-bold border transition-colors ${
+              className={`px-3.5 min-h-10 inline-flex items-center rounded-full text-sm font-bold border ${
                 b === max
-                  ? "bg-slate-900 text-white border-slate-900"
-                  : "bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600"
+                  ? "bg-brand-800 text-white border-brand-800"
+                  : "bg-white border-line text-ink-sub hover:border-brand-200 hover:text-brand-800"
               }`}
             >
               {budgetLabel(b)}以下
@@ -173,9 +173,9 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
         {supported.length > 0 && (
           <section className="mb-10">
             <h2 className="text-xl md:text-2xl font-bold mb-1">{label}以下で買える機種（{t.byRelease === false ? "シリーズ順" : "新しい順"}）</h2>
-            <p className="text-xs text-slate-400 mb-4">{t.supportedNote}</p>
-            <div className="rounded-2xl border border-slate-200 overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 bg-slate-50 text-xs font-bold text-slate-500">
+            <p className="text-xs text-ink-mute mb-4">{t.supportedNote}</p>
+            <div className="bg-white rounded-xl border border-line overflow-hidden">
+              <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 bg-ground text-xs font-bold text-ink-mute">
                 <span>機種</span>
                 <span className="text-right">最安値</span>
                 <span className="text-right w-16">在庫</span>
@@ -184,14 +184,14 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
                 <Link
                   key={r.model}
                   href={modelPagePath(r.model)}
-                  className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 border-t border-slate-100 hover:bg-blue-50 transition-colors items-center"
+                  className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 border-t border-line-soft hover:bg-ground items-center"
                 >
                   <span className="min-w-0">
-                    <span className="block font-bold text-slate-800">{r.model} <span className="text-slate-300">›</span></span>
-                    {t.subOf?.(r.model) && <span className="block text-[11px] text-slate-400">{t.subOf(r.model)}</span>}
+                    <span className="block font-bold text-ink">{r.model} <span className="text-gray-300">›</span></span>
+                    {t.subOf?.(r.model) && <span className="block text-[11px] text-ink-mute">{t.subOf(r.model)}</span>}
                   </span>
-                  <span className="text-right font-black text-red-600">{yen(r.minPrice)}</span>
-                  <span className="text-right w-16 text-sm text-slate-500">{r.count.toLocaleString()}件</span>
+                  <span className="text-right font-bold text-price">{yen(r.minPrice)}</span>
+                  <span className="text-right w-16 text-sm text-ink-mute">{r.count.toLocaleString()}件</span>
                 </Link>
               ))}
             </div>
@@ -201,22 +201,22 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
         {picks.length > 0 && (
           <section className="mb-10">
             <h2 className="text-xl md:text-2xl font-bold mb-1">{t.byRelease === false ? "機種ごとの最安在庫" : "新しい機種の最安在庫"}</h2>
-            <p className="text-xs text-slate-400 mb-4">上の表の{t.byRelease === false ? "上から6機種の" : "新しい機種から、"}それぞれいちばん安い在庫</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <p className="text-xs text-ink-mute mb-4">上の表の{t.byRelease === false ? "上から6機種の" : "新しい機種から、"}それぞれいちばん安い在庫</p>
+            <DeviceList>
               {picks.map((d) => <DeviceCard key={d.id} device={d} />)}
-            </div>
+            </DeviceList>
           </section>
         )}
 
         {legacy.length > 0 && (
           <section className="mb-10">
             <h2 className="text-lg font-bold mb-1">{t.legacyTitle}</h2>
-            <p className="text-xs text-slate-400 mb-3">{t.legacyNote}</p>
+            <p className="text-xs text-ink-mute mb-3">{t.legacyNote}</p>
             <div className="flex flex-wrap gap-2">
               {legacy.map((r) => (
                 <Link key={r.model} href={modelPagePath(r.model)}
-                  className="px-4 py-2 rounded-xl text-sm bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
-                  {r.model} <span className="font-bold text-red-600">{yen(r.minPrice)}〜</span>
+                  className="px-3.5 min-h-10 inline-flex items-center rounded-full text-sm bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
+                  {r.model} <span className="font-bold text-price">{yen(r.minPrice)}〜</span>
                 </Link>
               ))}
             </div>
@@ -231,7 +231,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
               const b = budgetsOf(d).find((x) => x >= max) ?? budgetsOf(d)[budgetsOf(d).length - 1];
               return (
                 <Link key={d} href={budgetPath(b, d)}
-                  className="px-4 py-2 rounded-xl text-sm bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                  className="px-3.5 min-h-10 inline-flex items-center rounded-full text-sm bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
                   {budgetLabel(b)}以下の{BUDGET_NAMES[d]}
                 </Link>
               );
@@ -243,11 +243,11 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
           {/* 検索ページは機種の指定がないと iPhone だけの一覧になるので、iPad・Pixel は機種一覧へ */}
           <Link
             href={t.hub ? t.hub.path : `/search?${new URLSearchParams({ maxPrice: String(max) }).toString()}`}
-            className="inline-flex items-center px-8 py-4 bg-slate-900 text-white rounded-full font-bold hover:bg-blue-600 transition-colors"
+            className="inline-flex items-center px-8 h-12 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-800"
           >
             {t.hub ? t.hub.cta : `${label}以下の在庫をすべて見る`} &rarr;
           </Link>
-          <p className="text-xs text-slate-400 mt-3">
+          <p className="text-xs text-ink-mute mt-3">
             {t.hub ? t.hub.ctaNote : "容量・状態ランク・バッテリー残量で絞り込めます"}
           </p>
         </div>

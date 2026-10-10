@@ -29,6 +29,10 @@ export type Shop = {
   warranty: string;
   /** ネットワーク利用制限（赤ロム）の保証 */
   redRom: string;
+  /** 在庫の行に出す保証の短いタグ（warranty の要約。例「保証3ヶ月」）。docs/design.md */
+  warrantyShort: string;
+  /** 在庫の行に出す赤ロムの短いタグ（redRom の要約。例「赤ロム永久」） */
+  redRomShort: string;
   /** 保証の出典（各店の公式ページ）。2026-09-28 に確認 */
   guaranteeUrl: string;
   /** 同じ店の別の売り場（イオシス楽天市場店 → "イオシス"）。店の数・一覧には数えず、絞り込みでは本店と一緒に出す */
@@ -39,48 +43,65 @@ export type Shop = {
 
 export const SHOPS: Shop[] = [
   { name: "イオシス", label: "イオシス", galaxy: true, pixel: true, ipad: true, battery: "over80",
-    warranty: "中古3ヶ月（未使用品は6ヶ月）", redRom: "保証期間に関わらず対象", guaranteeUrl: "https://iosys.co.jp/guide/support/guarantee.html" },
+    warranty: "中古3ヶ月（未使用品は6ヶ月）", redRom: "保証期間に関わらず対象", warrantyShort: "保証3ヶ月", redRomShort: "赤ロム保証",
+    guaranteeUrl: "https://iosys.co.jp/guide/support/guarantee.html" },
   { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "exact",
-    warranty: "商品ごと（iPhone は多くが1ヶ月）", redRom: "永久保証", guaranteeUrl: "https://www.janpara.co.jp/contents/faq/" },
+    warranty: "商品ごと（iPhone は多くが1ヶ月）", redRom: "永久保証", warrantyShort: "保証 商品ごと", redRomShort: "赤ロム永久",
+    guaranteeUrl: "https://www.janpara.co.jp/contents/faq/" },
   { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "none",
-    warranty: "到着後30日以内の返品・交換", redRom: "永久保証（期間を問わず交換・返金）", guaranteeUrl: "https://www.rakuten.ne.jp/gold/geo-mobile/info_henpin.html" },
+    warranty: "到着後30日以内の返品・交換", redRom: "永久保証（期間を問わず交換・返金）", warrantyShort: "30日返品", redRomShort: "赤ロム永久",
+    guaranteeUrl: "https://www.rakuten.ne.jp/gold/geo-mobile/info_henpin.html" },
   { name: "ソフマップ（楽天市場店）", label: "ソフマップ", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "exact",
-    warranty: "初期不良は到着後30日以内に返金（返品保証10日間）", redRom: "到着から3年以内は返品可（商品ページに記載）", guaranteeUrl: "https://www.rakuten.co.jp/akiba-u-shop/info.html" },
+    warranty: "初期不良は到着後30日以内に返金（返品保証10日間）", redRom: "到着から3年以内は返品可（商品ページに記載）", warrantyShort: "初期不良30日", redRomShort: "赤ロム 3年以内返品可",
+    guaranteeUrl: "https://www.rakuten.co.jp/akiba-u-shop/info.html" },
   { name: "ニューズドテック（楽天市場店）", label: "ニューズドテック", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "到着から1ヶ月（レビュー投稿で3ヶ月に延長。延長分は代金の30%返金）", redRom: "永久保証（商品ページに記載）",
+    warrantyShort: "保証1ヶ月", redRomShort: "赤ロム永久",
     guaranteeUrl: "https://www.rakuten.co.jp/kamaya-awards/info.html" },
   { name: "カメラのキタムラ（楽天市場店）", label: "カメラのキタムラ", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "over80",
     warranty: "初期不良のみ到着後14日以内（中古品の保証はなし）", redRom: "無期限保証（商品ページに記載）",
+    warrantyShort: "初期不良14日", redRomShort: "赤ロム無期限",
     guaranteeUrl: "https://www.rakuten.co.jp/emedama/info.html" },
   { name: "エムティーエム（楽天市場店）", label: "エムティーエム", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "none",
-    warranty: "記載なし（楽天の店舗情報に保証期間の記載がない。商品ページを確認）", redRom: "記載なし", guaranteeUrl: "https://www.rakuten.co.jp/ekosuta/info.html" },
+    warranty: "記載なし（楽天の店舗情報に保証期間の記載がない。商品ページを確認）", redRom: "記載なし", warrantyShort: "保証 記載なし", redRomShort: "赤ロム 記載なし",
+    guaranteeUrl: "https://www.rakuten.co.jp/ekosuta/info.html" },
   // Yahoo!ショッピングの店（2026-10-10〜。リンクはもしもアフィリエイト経由。保証・赤ロムは 2026-10-09 に各店のお買い物ガイド（guide.html。info.html は会社概要だけ）の文面から（要・再確認））
   { name: "Quality Shop（Yahoo!ショッピング店）", label: "Quality Shop", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "none",
-    warranty: "記載なし（確認中）", redRom: "記載なし（確認中）", guaranteeUrl: "https://store.shopping.yahoo.co.jp/quality-shop/info.html", marketplace: "yahoo" },
+    warranty: "記載なし（確認中）", redRom: "記載なし（確認中）", warrantyShort: "保証 記載なし", redRomShort: "赤ロム 記載なし",
+    guaranteeUrl: "https://store.shopping.yahoo.co.jp/quality-shop/info.html", marketplace: "yahoo" },
   { name: "モバステ（Yahoo!ショッピング店）", label: "モバステ", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "exact",
     warranty: "初期不良は到着後100日間（未開封・未使用品は30日間）", redRom: "ネットワーク利用制限補償は無期限（同等機種と交換）",
+    warrantyShort: "初期不良100日", redRomShort: "赤ロム無期限",
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/mobilestation/guide.html", marketplace: "yahoo" },
   { name: "リユスマ（Yahoo!ショッピング店）", label: "リユスマ", note: "Yahoo!ショッピング店", galaxy: true, ipad: true, battery: "over80",
     warranty: "安心保証90日（商品名に記載）", redRom: "赤ロム永久保証（商品名に記載）",
+    warrantyShort: "保証90日", redRomShort: "赤ロム永久",
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/reusma/guide.html", marketplace: "yahoo" },
   { name: "Joshin 中古アウトレット（Yahoo!ショッピング店）", label: "Joshin 中古アウトレット", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "商品ごと（中古品は3ヶ月・1ヶ月・10日間のいずれか。商品ページに記載）", redRom: "記載なし（確認中）",
+    warrantyShort: "保証 商品ごと", redRomShort: "赤ロム 記載なし",
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/jtus2014/guide.html", marketplace: "yahoo" },
   { name: "MyWiT（Yahoo!ショッピング店）", label: "MyWiT", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: false, battery: "over80",
     warranty: "初期不良は到着後30日以内（ストアレビュー投稿で90日に延長）", redRom: "購入日数に関係なく同等品と交換または返金",
+    warrantyShort: "初期不良30日", redRomShort: "赤ロム交換・返金",
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/mywit/guide.html", marketplace: "yahoo" },
   { name: "Be-Stock（Yahoo!ショッピング店）", label: "Be-Stock", note: "Yahoo!ショッピング店", ipad: true, battery: "none",
     warranty: "商品ごとの保証期間（商品名に6ヶ月など。お買い物ガイドは180日以内）", redRom: "記載なし（確認中）",
+    warrantyShort: "保証 商品ごと", redRomShort: "赤ロム 記載なし",
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/be-stocktsb/guide.html", marketplace: "yahoo" },
   // Amazon 整備済み品（2026-10-09〜。Creators API で取得。出品者は各中古店で、保証は Amazon のプログラム。価格は取得時点を添える＝DeviceCard）
   { name: "Amazon 整備済み品", label: "Amazon 整備済み品", note: "Amazon", pixel: true, galaxy: true, ipad: true, battery: "over80",
-    warranty: "Amazon 整備済み品の保証（180日返品）", redRom: "記載なし（商品ページを確認）", guaranteeUrl: "https://www.amazon.co.jp/b?node=8130460051", marketplace: "amazon" },
+    warranty: "Amazon 整備済み品の保証（180日返品）", redRom: "記載なし（商品ページを確認）", warrantyShort: "180日返品", redRomShort: "赤ロム 記載なし",
+    guaranteeUrl: "https://www.amazon.co.jp/b?node=8130460051", marketplace: "amazon" },
   { name: "にこスマ", label: "にこスマ", galaxy: true, pixel: true, ipad: true, battery: "exact",
-    warranty: "1年間の返品・交換", redRom: "永久保証", guaranteeUrl: "https://www.nicosuma.com/about/shopping-guide" },
+    warranty: "1年間の返品・交換", redRom: "永久保証", warrantyShort: "返品・交換1年", redRomShort: "赤ロム永久",
+    guaranteeUrl: "https://www.nicosuma.com/about/shopping-guide" },
   { name: "ダイワンテレコム", label: "ダイワンテレコム", galaxy: true, pixel: true, ipad: false, battery: "over80",
-    warranty: "1年間の全額返金（不具合時）", redRom: "無期限で同等品と交換", guaranteeUrl: "https://www.dai-one.jp/guide/warranty/" },
+    warranty: "1年間の全額返金（不具合時）", redRom: "無期限で同等品と交換", warrantyShort: "1年返金", redRomShort: "赤ロム無期限",
+    guaranteeUrl: "https://www.dai-one.jp/guide/warranty/" },
   { name: "エムモバ", label: "エムモバ", ipad: false, battery: "none",
-    warranty: "1ヶ月（レビュー投稿で1年に延長。延長分は代金の30%返金）", redRom: "保証期間に関わらず交換・返金", guaranteeUrl: "https://ec.emcom.site/pages/guarantee" },
+    warranty: "1ヶ月（レビュー投稿で1年に延長。延長分は代金の30%返金）", redRom: "保証期間に関わらず交換・返金", warrantyShort: "保証1ヶ月", redRomShort: "赤ロム保証",
+    guaranteeUrl: "https://ec.emcom.site/pages/guarantee" },
 ];
 
 /**
@@ -89,9 +110,11 @@ export const SHOPS: Shop[] = [
  */
 export const ALIAS_SHOPS: Shop[] = [
   { name: "イオシス（楽天市場店）", label: "イオシス", note: "楽天市場店", alias: "イオシス", marketplace: "rakuten", galaxy: true, pixel: true, ipad: true, battery: "over80",
-    warranty: "中古3ヶ月（未使用品は6ヶ月。商品名に記載）", redRom: "保証期間に関わらず対象", guaranteeUrl: "https://www.rakuten.co.jp/pc-good/info.html" },
+    warranty: "中古3ヶ月（未使用品は6ヶ月。商品名に記載）", redRom: "保証期間に関わらず対象", warrantyShort: "保証3ヶ月", redRomShort: "赤ロム保証",
+    guaranteeUrl: "https://www.rakuten.co.jp/pc-good/info.html" },
   { name: "エムコム（Yahoo!ショッピング店）", label: "エムコム", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "over80",
     warranty: "7日間の返品保証・1か月の通常保証（レビュー投稿で最大1年に延長）", redRom: "商品の見出しに「赤ロム保証」（期間は記載なし・確認中）",
+    warrantyShort: "保証1ヶ月", redRomShort: "赤ロム保証",
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/mcom2022/guide.html", alias: "エムモバ", marketplace: "yahoo" },
 ];
 

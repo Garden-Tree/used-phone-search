@@ -25,212 +25,144 @@ export type Device = {
   altUrl?: string | null;
 };
 
-export default function DeviceCard({ device }: { device: Device }) {
+/** 在庫の行を縦に積む白い角丸の入れ物（区切り線つき）。docs/design.md「在庫の行」 */
+export function DeviceList({ children }: { children: React.ReactNode }) {
+  return <div className="bg-white border border-line rounded-xl overflow-hidden">{children}</div>;
+}
+
+// ランクの四角。必ず文字付き（色だけに頼らない）
+const RANK_STYLES: Record<string, string> = {
+  S: 'bg-[#FEF3C7] text-[#92400E]',
+  A: 'bg-[#DCFCE7] text-[#166534]',
+  B: 'bg-[#DBEAFE] text-[#1E40AF]',
+  C: 'bg-[#FFEDD5] text-[#9A3412]',
+};
+const rankStyle = (rank: string) => RANK_STYLES[rank.toUpperCase()] ?? 'bg-gray-100 text-gray-600';
+
+/** キャリア・SIMロック状態の文言（行の2行目に出す） */
+function simLabel(device: Device): string {
+  const carrier = device.carrier;
+  // iPad の Wi-Fi モデル（SIM を使わない）
+  if (carrier === 'Wi-Fiモデル') return 'Wi-Fiモデル';
+  // Apple直販 / 国内版SIMフリー
+  if (carrier === '国内版SIMフリー' || carrier === 'Apple') return 'SIMフリー（Apple版）';
+  const hasCarrier = carrier && carrier !== '不明';
+  // 「版」が既に含まれているかチェック
+  const carrierName = hasCarrier ? (carrier.endsWith('版') ? carrier : `${carrier}版`) : '';
+  return device.simUnlocked
+    ? hasCarrier ? `SIMフリー（${carrierName}）` : 'SIMフリー'
+    : hasCarrier ? `SIMロック（${carrierName}）` : 'SIMロックあり';
+}
+
+/** 電池の文言と、80%未満かどうか（赤系の文字にする） */
+function batteryLabel(device: Device): { text: string; low: boolean } | null {
+  const h = device.batteryHealth;
+  if (h === null) return null;
+  if (h === 100) return { text: '100%', low: false };
+  if (findShop(device.shopName)?.battery === 'over80') {
+    return h >= 80 ? { text: '80%以上', low: false } : { text: '80%未満', low: true };
+  }
+  return { text: `${h}%`, low: h < 80 };
+}
+
+/**
+ * 在庫の1行（約90px）。左にランクの四角、右に3行（容量・色／価格、電池・SIM・利用制限、店名／保証の短いタグ）。
+ * 同じ商品をモール店でも売っているときは、行の下に「楽天市場でも販売」の帯を付ける。
+ * showModel: 機種名を1行目の頭に出す（機種が混ざる一覧用。1機種だけの一覧では false）
+ */
+export default function DeviceCard({ device, showModel = true }: { device: Device; showModel?: boolean }) {
   const href = affiliateUrl(device.shopName, device.url);
   const rel = isAffiliateUrl(href) ? 'sponsored noopener noreferrer' : 'noopener noreferrer';
-
-  // キャリア・SIMロック状態のバッジ表示ロジック
-  const renderStatusBadges = () => {
-    const carrier = device.carrier;
-
-    // iPad の Wi-Fi モデル（SIM を使わない）
-    if (carrier === 'Wi-Fiモデル') {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200">
-          Wi-Fiモデル
-        </span>
-      );
-    }
-
-    const isDomesticSimFree = carrier === '国内版SIMフリー' || carrier === 'Apple';
-
-    // 1. パターンA（Apple直販 / 国内版SIMフリーの場合）
-    if (isDomesticSimFree) {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 ring-1 ring-inset ring-emerald-500/20">
-          SIMフリー（Apple版）
-        </span>
-      );
-    }
-
-    const hasCarrier = carrier && carrier !== '不明';
-
-    // 「版」が既に含まれているかチェック
-    const carrierName = hasCarrier ? (carrier.endsWith('版') ? carrier : `${carrier}版`) : '';
-
-    return (
-      <div className="flex flex-wrap gap-1.5">
-        {device.simUnlocked ? (
-          // 2. パターンB（SIMロック解除済みの場合）
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 ring-1 ring-inset ring-blue-500/20">
-            {hasCarrier ? `SIMフリー（${carrierName}）` : 'SIMフリー'}
-          </span>
-        ) : (
-          // 3. パターンC（SIMロックありの場合）
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 ring-1 ring-inset ring-rose-500/20">
-            {hasCarrier ? `SIMロック（${carrierName}）` : 'SIMロックあり'}
-          </span>
-        )}
-
-        {/* 利用制限バッジ（不明・null以外の場合のみ表示） */}
-        {device.networkStatus && device.networkStatus !== '不明' && (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200">
-            利用制限: {device.networkStatus}
-          </span>
-        )}
-      </div>
-    );
-  };
-
-  // ランクごとのスタイルを取得（SIMバッジと同じく「薄い背景＋濃い文字」に変更）
-  const getRankStyles = (rank: string) => {
-    switch (rank.toUpperCase()) {
-      case 'S':
-        return 'bg-amber-100 text-amber-700 ring-1 ring-inset ring-amber-500/20';
-      case 'A':
-        return 'bg-emerald-100 text-emerald-700 ring-1 ring-inset ring-emerald-500/20';
-      case 'B':
-        return 'bg-blue-100 text-blue-700 ring-1 ring-inset ring-blue-500/20';
-      case 'C':
-        return 'bg-orange-100 text-orange-700 ring-1 ring-inset ring-orange-500/20';
-      case 'D':
-        return 'bg-rose-100 text-rose-700 ring-1 ring-inset ring-rose-500/20';
-      case 'J':
-      case 'ジャンク':
-        return 'bg-zinc-100 text-zinc-700 ring-1 ring-inset ring-zinc-500/20';
-      default:
-        return 'bg-slate-100 text-slate-600';
-    }
-  };
+  const shop = findShop(device.shopName);
+  const bat = batteryLabel(device);
+  const modelName = device.modelName.replace(/iPhone(\d+)/i, 'iPhone $1');
+  const spec = `${showModel ? `${modelName} ` : ''}${device.storage}GB・${device.color}`;
+  const showNetwork = !!device.networkStatus && device.networkStatus !== '不明' && device.networkStatus !== '-';
+  const tag = shop ? `${shop.warrantyShort}・${shop.redRomShort}` : '';
+  const sold = device.isSoldOut;
 
   // 同じ商品のモール店のリンク。売り場は URL のホストで見分ける（楽天: イオシス、Yahoo!ショッピング: エムモバ）。知らないホストは出さない
-  const alt = device.altPrice && device.altUrl && !device.isSoldOut ? altChannel(device.shopName, device.altUrl) : null;
+  const alt = device.altPrice && device.altUrl && !sold ? altChannel(device.shopName, device.altUrl) : null;
 
-  const card = (
-    <a
-      href={device.isSoldOut ? '#' : href}
-      target={device.isSoldOut ? '_self' : '_blank'}
-      rel={rel}
-      // ShopClickTracker が読んで GA4 の shop_click イベントに載せる（どの店・機種・価格のカードが押されたか）
-      data-shop-click={device.isSoldOut ? undefined : ''}
-      data-shop={device.shopName}
-      data-model={device.modelName}
-      data-storage={device.storage}
-      data-rank={device.conditionRank}
-      data-price={device.price}
-      data-link-type={affiliateLinkType(href)}
-      className={`group relative bg-white rounded-[2rem] p-6 shadow-sm hover:shadow-xl transition-all duration-500 border border-slate-200/60 hover:-translate-y-1.5 flex flex-col h-full overflow-hidden ${device.isSoldOut ? 'cursor-not-allowed' : 'cursor-pointer'
-        }`}
-    >
-      {/* Top Section: Rank & Battery */}
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex gap-2">
-          <span className={`px-4 py-2 text-sm font-black rounded-full uppercase tracking-wider ${getRankStyles(device.conditionRank)}`}>
-            Rank {device.conditionRank}
-          </span>
-          {device.batteryHealth !== null ? (
-            <span className={`px-4 py-2 text-sm font-bold rounded-full ring-1 ring-inset ${device.batteryHealth >= 80
-              ? 'bg-emerald-50 text-emerald-600 ring-emerald-500/20'
-              : 'bg-rose-50 text-rose-600 ring-rose-500/20'
-              }`}>
-              {(() => {
-                if (device.batteryHealth === 100) return '🔋 100%';
-                if (findShop(device.shopName)?.battery === 'over80') {
-                  return device.batteryHealth >= 80 ? '🔋 80%以上' : '🔋 80%未満';
-                }
-                return `🔋 ${device.batteryHealth}%`;
-              })()}
-            </span>
-          ) : (
-            <span className="px-4 py-2 text-sm font-bold rounded-full bg-slate-50 text-slate-400 ring-1 ring-inset ring-slate-500/10">
-              🔋 -
-            </span>
-          )}
-        </div>
-        {device.isSoldOut && (
-          <span className="px-3 py-1.5 text-xs font-black rounded-full bg-rose-600 text-white animate-pulse">
-            SOLD OUT
-          </span>
-        )}
-      </div>
-
-      {/* Main Info: Model & Storage */}
-      <div className="mb-5">
-        <h2 className="text-2xl font-extrabold text-slate-900 leading-tight mb-2 group-hover:text-blue-600 transition-colors">
-          {device.modelName.replace(/iPhone(\d+)/i, 'iPhone $1')}
-        </h2>
-        <div className="flex items-center gap-3 text-base font-bold text-slate-400">
-          <span>{device.storage}GB</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
-          <span className="truncate font-medium">{device.color}</span>
-        </div>
-      </div>
-
-      {/* Smart Badges */}
-      <div className="mb-8 flex-grow">
-        {renderStatusBadges()}
-      </div>
-
-      {/* 楽天の店名（「じゃんぱら（楽天市場店）」など）は長く、横に並べると価格が見切れるので、店名を価格の上の行に置く */}
-      <div className="mt-auto pt-5 border-t border-slate-100">
-        <p className="mb-1 text-xs font-bold text-slate-400 tracking-wide break-words">
-          {device.shopName}
-        </p>
-
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-baseline gap-1">
-            <span className="text-lg font-bold text-red-600">¥</span>
-            <span className="text-3xl font-black text-red-600 tracking-tighter">
-              {device.price.toLocaleString()}
-            </span>
-          </div>
-
-          {/* Transition Icon */}
-          <div className={`flex flex-shrink-0 items-center justify-center w-10 h-10 rounded-full transition-all ${device.isSoldOut
-            ? 'bg-slate-50 text-slate-200'
-            : 'bg-slate-50 text-slate-400 group-hover:bg-blue-600 group-hover:text-white shadow-sm'
-            }`}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Amazon の価格は取得時点を添える（Creators API の規約。時刻はサイトを書き出した時刻） */}
-        {findShop(device.shopName)?.marketplace === 'amazon' && (
-          <p className="mt-1 text-[11px] text-slate-400">価格は {BUILD_TIME} 時点</p>
-        )}
-      </div>
-    </a>
-  );
-
-  if (!alt) return card;
-
-  // 同じ商品の楽天市場店へのリンク。カード全体が1つのリンクなので（リンクの入れ子はできない）、カードのすぐ下に置く
+  // リンクの入れ子はできないので、本体のリンクと「でも販売」の帯は兄弟として並べる
   return (
-    <div className="flex flex-col gap-2 h-full [&>a:first-child]:h-auto [&>a:first-child]:flex-grow">
-      {card}
+    <div className={`border-b border-line-soft last:border-b-0 ${sold ? 'opacity-60' : ''}`}>
       <a
-        href={alt.href}
-        target="_blank"
-        rel="sponsored noopener noreferrer"
-        data-shop-click=""
-        data-shop={alt.shop}
+        href={sold ? '#' : href}
+        target={sold ? '_self' : '_blank'}
+        rel={rel}
+        // ShopClickTracker が読んで GA4 の shop_click イベントに載せる（どの店・機種・価格の行が押されたか）
+        data-shop-click={sold ? undefined : ''}
+        data-shop={device.shopName}
         data-model={device.modelName}
         data-storage={device.storage}
         data-rank={device.conditionRank}
-        data-price={device.altPrice ?? undefined}
-        data-link-type={affiliateLinkType(alt.href)}
-        className="flex items-center justify-between gap-2 rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 hover:border-red-200 hover:text-red-600 transition-colors"
+        data-price={device.price}
+        data-link-type={affiliateLinkType(href)}
+        className={`flex gap-2.5 px-3.5 py-3 text-ink hover:bg-ground focus-visible:bg-ground ${sold ? 'cursor-not-allowed' : ''}`}
       >
-        <span>{alt.label}</span>
-        <span className="whitespace-nowrap text-red-600">¥{device.altPrice!.toLocaleString()} →</span>
+        <span
+          className={`shrink-0 w-[30px] h-[30px] rounded-lg flex items-center justify-center text-[13px] font-bold ${rankStyle(device.conditionRank)}`}
+          aria-label={`ランク${device.conditionRank}`}
+        >
+          {device.conditionRank}
+        </span>
+        <span className="flex-1 min-w-0 flex flex-col gap-[3px]">
+          <span className="flex justify-between items-baseline gap-2">
+            <span className="text-sm font-bold min-w-0">{spec}</span>
+            <span className="text-[17px] font-bold text-price whitespace-nowrap">
+              {sold ? <span className="text-xs text-ink-mute font-bold">売り切れ</span> : `${device.price.toLocaleString()}円`}
+            </span>
+          </span>
+          <span className="text-xs text-gray-700">
+            {bat ? (
+              <span className={`font-bold ${bat.low ? 'text-warn' : 'text-safe'}`}>電池 {bat.text}</span>
+            ) : (
+              <span className="text-ink-mute">電池 -</span>
+            )}
+            {' ・ '}
+            {simLabel(device)}
+            {showNetwork && ` ・ 利用制限 ${device.networkStatus}`}
+          </span>
+          <span className="flex justify-between gap-2 text-[11px] text-ink-mute">
+            <span className="min-w-0 break-words">{shopLabel(device.shopName)}</span>
+            <span className="text-right shrink-0 max-w-[55%]">{tag}</span>
+          </span>
+          {/* Amazon の価格は取得時点を添える（Creators API の規約。時刻はサイトを書き出した時刻） */}
+          {shop?.marketplace === 'amazon' && <span className="text-[11px] text-ink-mute">価格は {BUILD_TIME} 時点</span>}
+        </span>
       </a>
+      {alt && (
+        <a
+          href={alt.href}
+          target="_blank"
+          rel="sponsored noopener noreferrer"
+          data-shop-click=""
+          data-shop={alt.shop}
+          data-model={device.modelName}
+          data-storage={device.storage}
+          data-rank={device.conditionRank}
+          data-price={device.altPrice ?? undefined}
+          data-link-type={affiliateLinkType(alt.href)}
+          className="flex justify-between gap-2 -mt-1 mb-2.5 ml-[54px] mr-3.5 px-2.5 py-1.5 bg-ground rounded-lg text-xs text-gray-700 hover:text-brand-800"
+        >
+          <span>{alt.label}</span>
+          <span className="whitespace-nowrap">{device.altPrice!.toLocaleString()}円 ›</span>
+        </a>
+      )}
     </div>
   );
 }
 
 /** 公式の行に添える、同じ商品のモール店のリンク。楽天（イオシス）・Yahoo!ショッピング（エムモバ→エムコム）。知らないホストは null */
+/** 行に出す店名。モール店は「モバステ（Yahoo!）」のように短くする（スマホで2行に折り返さないように） */
+function shopLabel(shopName: string): string {
+  const s = findShop(shopName);
+  if (!s || !s.note || s.marketplace === 'amazon') return s?.label ?? shopName;
+  const note = s.marketplace === 'rakuten' ? '楽天' : s.marketplace === 'yahoo' ? 'Yahoo!' : s.note;
+  return `${s.label}（${note}）`;
+}
+
 function altChannel(shopName: string, altUrl: string): { href: string; label: string; shop: string } | null {
   let host: string;
   try {

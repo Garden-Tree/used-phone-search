@@ -25,27 +25,27 @@ const BATTERY_TEXT: Record<(typeof SHOPS)[number]["battery"], string> = {
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
     <section id={id} className="mb-10 scroll-mt-20">
-      <h2 className="text-xl font-bold mb-3 pb-2 border-b border-slate-100">{title}</h2>
-      <div className="text-sm md:text-base text-slate-700 leading-relaxed space-y-3">{children}</div>
+      <h2 className="text-xl font-bold mb-3 pb-2 border-b border-line-soft">{title}</h2>
+      <div className="text-sm md:text-base text-ink-sub leading-relaxed space-y-3">{children}</div>
     </section>
   );
 }
 
-const ext = "text-blue-600 font-bold hover:underline underline-offset-4";
+const ext = "text-brand-600 font-bold hover:underline underline-offset-4";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans">
+    <div className="min-h-screen text-ink">
       <SiteHeader label="このサイトについて" />
 
       <main className="max-w-3xl mx-auto px-4 py-6">
-        <nav aria-label="パンくずリスト" className="text-xs text-slate-400 mb-4">
-          <Link href="/" className="hover:text-blue-600">トップ</Link>
+        <nav aria-label="パンくずリスト" className="text-xs text-ink-mute mb-4">
+          <Link href="/" className="hover:text-brand-800">トップ</Link>
           <span className="mx-2">›</span>
-          <span className="text-slate-600">このサイトについて</span>
+          <span className="text-ink-sub">このサイトについて</span>
         </nav>
 
-        <h1 className="text-2xl md:text-3xl font-extrabold mb-6">このサイトについて</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-6">このサイトについて</h1>
 
         <Section id="operator" title="運営者">
           <p>
@@ -77,9 +77,9 @@ export default function AboutPage() {
         <Section id="notation" title="ショップごとの表記の違い">
           <p>状態ランク（S・A・B・C など）の基準は店ごとに異なります。ランクは各店の表記をそのまま載せています。</p>
           <p>バッテリー最大容量は、店によって載せ方が違います。</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border border-slate-200 rounded-xl">
-              <thead className="bg-slate-50 text-slate-500 text-xs">
+          <div className="overflow-x-auto bg-white border border-line rounded-xl">
+            <table className="w-full text-sm">
+              <thead className="bg-ground text-ink-mute text-xs">
                 <tr>
                   <th className="text-left font-semibold px-3 py-2">ショップ</th>
                   <th className="text-left font-semibold px-3 py-2">バッテリー最大容量</th>
@@ -90,8 +90,8 @@ export default function AboutPage() {
               </thead>
               <tbody>
                 {SHOPS.map((s) => (
-                  <tr key={s.name} className="border-t border-slate-100">
-                    <td className="px-3 py-2 font-bold whitespace-nowrap">{s.label}{s.note && <span className="block text-[10px] text-slate-400">{s.note}</span>}</td>
+                  <tr key={s.name} className="border-t border-line-soft">
+                    <td className="px-3 py-2 font-bold whitespace-nowrap">{s.label}{s.note && <span className="block text-[10px] text-ink-mute">{s.note}</span>}</td>
                     <td className="px-3 py-2">{BATTERY_TEXT[s.battery]}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{s.ipad ? "あり" : "なし"}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{s.pixel ? "あり" : "なし"}</td>
@@ -103,9 +103,9 @@ export default function AboutPage() {
           </div>
           <p>バッテリーで絞り込むと、数値の載っていない店の在庫は（未使用品を除いて）対象外になります。</p>
           <p className="pt-2">保証（故障・初期不良）と、ネットワーク利用制限（赤ロム）になった場合の扱いも店ごとに違います。各店の公式ページで確認した内容です（2026年9月28日時点）。</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border border-slate-200 rounded-xl">
-              <thead className="bg-slate-50 text-slate-500 text-xs">
+          <div className="overflow-x-auto bg-white border border-line rounded-xl">
+            <table className="w-full text-sm">
+              <thead className="bg-ground text-ink-mute text-xs">
                 <tr>
                   <th className="text-left font-semibold px-3 py-2">ショップ</th>
                   <th className="text-left font-semibold px-3 py-2">保証</th>
@@ -114,10 +114,10 @@ export default function AboutPage() {
               </thead>
               <tbody>
                 {SHOPS.map((s) => (
-                  <tr key={s.name} className="border-t border-slate-100">
+                  <tr key={s.name} className="border-t border-line-soft">
                     <td className="px-3 py-2 font-bold whitespace-nowrap">
-                      <a href={s.guaranteeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-blue-600">{s.label}</a>
-                      {s.note && <span className="block text-[10px] text-slate-400">{s.note}</span>}
+                      <a href={s.guaranteeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-800">{s.label}</a>
+                      {s.note && <span className="block text-[10px] text-ink-mute">{s.note}</span>}
                     </td>
                     <td className="px-3 py-2">{s.warranty}</td>
                     <td className="px-3 py-2">{s.redRom}</td>
@@ -147,7 +147,7 @@ export default function AboutPage() {
 
         <Section id="privacy" title="プライバシーポリシー">
           <p>当サイトには会員登録や入力フォームがなく、氏名やメールアドレスなどの個人情報を直接お預かりすることはありません。</p>
-          <h3 className="font-bold text-slate-800 pt-2">アクセス解析</h3>
+          <h3 className="font-bold text-ink pt-2">アクセス解析</h3>
           <p>
             当サイトは Google が提供するアクセス解析ツール「Google アナリティクス」を利用しています。
             Google アナリティクスはトラフィックデータの収集のために Cookie を使用します。このデータは匿名で収集されており、個人を特定するものではありません。
@@ -159,12 +159,12 @@ export default function AboutPage() {
             <a href="https://policies.google.com/technologies/partner-sites?hl=ja" target="_blank" rel="noopener noreferrer" className={ext}>Google のポリシー</a>
             をご覧ください。
           </p>
-          <h3 className="font-bold text-slate-800 pt-2">アフィリエイト</h3>
+          <h3 className="font-bold text-ink pt-2">アフィリエイト</h3>
           <p>
             ショップへのリンクから移動した際、成果の計測のために A8.net・楽天などの事業者が Cookie を使用することがあります。
             取得された情報は各事業者のプライバシーポリシーに従って取り扱われます。
           </p>
-          <h3 className="font-bold text-slate-800 pt-2">免責事項</h3>
+          <h3 className="font-bold text-ink pt-2">免責事項</h3>
           <p>
             掲載している価格・在庫・商品の状態は各ショップの情報をもとにしていますが、正確さや最新であることを保証するものではありません。
             商品の購入は各ショップとの取引となり、当サイトはその内容について責任を負いかねます。

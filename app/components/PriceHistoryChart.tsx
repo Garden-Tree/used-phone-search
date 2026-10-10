@@ -47,7 +47,6 @@ function Chart({ points }: { points: PricePoint[] }) {
 
   const line = xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x},${ys[i]}`).join(' ');
   const baseline = yOf(ticks[0]);
-  const area = `${line} L${xs[xs.length - 1]},${baseline} L${xs[0]},${baseline} Z`;
   const last = points.length - 1;
   const active = hover ?? last;
 
@@ -74,28 +73,27 @@ function Chart({ points }: { points: PricePoint[] }) {
         {/* 目盛り線（1px の実線、背景からひと段階だけ濃いグレー） */}
         {ticks.map((t) => (
           <g key={t}>
-            <line x1={PAD.left} x2={W - PAD.right} y1={yOf(t)} y2={yOf(t)} stroke="#e7e5e4" strokeWidth={1} />
-            <text x={PAD.left - 8} y={yOf(t)} textAnchor="end" dominantBaseline="middle" fontSize={11} fill="#78716c">
+            <line x1={PAD.left} x2={W - PAD.right} y1={yOf(t)} y2={yOf(t)} stroke="#F0F1F4" strokeWidth={1} />
+            <text x={PAD.left - 8} y={yOf(t)} textAnchor="end" dominantBaseline="middle" fontSize={11} fill="#6B7280">
               {t >= 10000 ? `${t / 10000}万` : t.toLocaleString()}
             </text>
           </g>
         ))}
         {xLabelIdx.map((i) => (
-          <text key={i} x={xs[i]} y={H - 8} fontSize={11} fill="#78716c"
+          <text key={i} x={xs[i]} y={H - 8} fontSize={11} fill="#6B7280"
             textAnchor={i === 0 && last > 0 ? 'start' : i === last && last > 0 ? 'end' : 'middle'}>
             {shortDate(points[i].date)}
           </text>
         ))}
 
-        <path d={area} fill="#2a78d6" fillOpacity={0.1} />
-        <path d={line} fill="none" stroke="#2a78d6" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        <path d={line} fill="none" stroke="#4338CA" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
 
         {/* クロスヘア */}
         {hover !== null && (
           <line x1={xs[active]} x2={xs[active]} y1={PAD.top} y2={baseline} stroke="#a8a29e" strokeWidth={1} />
         )}
         {/* 注目点（白い2pxのリングで線の上でも見やすく） */}
-        <circle cx={xs[active]} cy={ys[active]} r={5} fill="#2a78d6" stroke="#ffffff" strokeWidth={2} />
+        <circle cx={xs[active]} cy={ys[active]} r={5} fill="#4338CA" stroke="#ffffff" strokeWidth={2} />
 
         {/* ホバー判定用の透明な領域（線より広く取る） */}
         <rect x={PAD.left} y={PAD.top} width={PLOT_W} height={PLOT_H} fill="transparent"
@@ -103,12 +101,12 @@ function Chart({ points }: { points: PricePoint[] }) {
       </svg>
 
       <div
-        className="pointer-events-none absolute top-0 -translate-x-1/2 rounded-xl bg-white/95 border border-slate-200 shadow-sm px-3 py-2 text-xs whitespace-nowrap"
+        className="pointer-events-none absolute top-0 -translate-x-1/2 rounded-lg bg-white border border-line px-3 py-2 text-xs whitespace-nowrap"
         style={{ left: `clamp(70px, ${tipLeftPct}%, calc(100% - 70px))` }}
       >
-        <p className="text-slate-500">{p.date.replaceAll('-', '/')}{hover === null && '（最新）'}</p>
-        <p className="font-black text-slate-900 text-sm">最安 {yen(p.minPrice)}</p>
-        <p className="text-slate-500">中央値 {yen(p.medianPrice)}・在庫 {p.count}件</p>
+        <p className="text-ink-mute">{p.date.replaceAll('-', '/')}{hover === null && '（最新）'}</p>
+        <p className="font-bold text-ink text-sm">最安 {yen(p.minPrice)}</p>
+        <p className="text-ink-mute">中央値 {yen(p.medianPrice)}・在庫 {p.count}件</p>
       </div>
     </div>
   );
@@ -124,7 +122,7 @@ export default function PriceHistoryChart({ history, model }: { history: PriceHi
 
   if (points.length < 2) {
     return (
-      <p className="text-sm text-slate-500 bg-slate-50 rounded-2xl p-5">
+      <p className="text-sm text-ink-mute bg-ground rounded-lg p-4">
         {points.length === 1
           ? `${points[0].date.replaceAll('-', '/')} から価格の記録を始めました。2日分以上たまるとグラフを表示します。`
           : `${model}の価格の記録はまだありません。`}
@@ -139,11 +137,11 @@ export default function PriceHistoryChart({ history, model }: { history: PriceHi
   return (
     <div>
       {storages.length > 1 && (
-        <div className="flex flex-wrap gap-2 mb-4" role="tablist" aria-label="容量">
+        <div className="flex flex-wrap gap-1.5 mb-3" role="tablist" aria-label="容量">
           {storages.map((s) => (
             <button key={s} role="tab" aria-selected={s === storage} onClick={() => setStorage(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
-                s === storage ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-400'
+              className={`h-8 px-3 rounded-full text-xs border transition-colors ${
+                s === storage ? 'bg-brand-800 border-brand-800 text-white' : 'bg-white border-gray-300 text-ink'
               }`}>
               {storageLabel(s)}
             </button>
@@ -151,9 +149,9 @@ export default function PriceHistoryChart({ history, model }: { history: PriceHi
         </div>
       )}
 
-      <p className="text-sm text-slate-600 mb-3">
+      <p className="text-xs text-ink-sub mb-2">
         {first.date.replaceAll('-', '/')} から {last.date.replaceAll('-', '/')} までに、最安値は
-        <span className="font-bold text-slate-900">
+        <span className="font-bold text-ink">
           {diff === 0 ? '変わっていません' : `${yen(Math.abs(diff))}${diff < 0 ? '下がりました' : '上がりました'}`}
         </span>
         。
@@ -161,11 +159,11 @@ export default function PriceHistoryChart({ history, model }: { history: PriceHi
 
       <Chart key={storage} points={points} />
 
-      <details className="mt-3 text-sm">
-        <summary className="cursor-pointer text-slate-500 hover:text-slate-800">表で見る</summary>
-        <div className="max-h-72 overflow-y-auto mt-2 border border-slate-100 rounded-xl">
+      <details className="mt-2 text-sm">
+        <summary className="cursor-pointer text-brand-600 hover:text-brand-800">表で見る</summary>
+        <div className="max-h-72 overflow-y-auto mt-2 border border-line-soft rounded-lg">
           <table className="w-full">
-            <thead className="sticky top-0 bg-slate-50 text-xs text-slate-500">
+            <thead className="sticky top-0 bg-ground text-xs text-ink-mute">
               <tr>
                 <th className="text-left font-semibold px-4 py-2">日付</th>
                 <th className="text-right font-semibold px-4 py-2">最安値</th>
@@ -175,11 +173,11 @@ export default function PriceHistoryChart({ history, model }: { history: PriceHi
             </thead>
             <tbody>
               {[...points].reverse().map((pt) => (
-                <tr key={pt.date} className="border-t border-slate-100">
-                  <td className="px-4 py-1.5 text-slate-600">{pt.date.replaceAll('-', '/')}</td>
-                  <td className="px-4 py-1.5 text-right font-bold text-slate-900">{yen(pt.minPrice)}</td>
-                  <td className="px-4 py-1.5 text-right text-slate-600">{yen(pt.medianPrice)}</td>
-                  <td className="px-4 py-1.5 text-right text-slate-500">{pt.count}件</td>
+                <tr key={pt.date} className="border-t border-line-soft">
+                  <td className="px-4 py-1.5 text-ink-sub">{pt.date.replaceAll('-', '/')}</td>
+                  <td className="px-4 py-1.5 text-right font-bold text-ink">{yen(pt.minPrice)}</td>
+                  <td className="px-4 py-1.5 text-right text-ink-sub">{yen(pt.medianPrice)}</td>
+                  <td className="px-4 py-1.5 text-right text-ink-mute">{pt.count}件</td>
                 </tr>
               ))}
             </tbody>

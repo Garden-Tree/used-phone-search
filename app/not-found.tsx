@@ -16,13 +16,13 @@ const POPULAR_MODELS = ["iPhone 13", "iPhone 14", "iPhone 15", "iPhone 16", "iPh
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans">
+    <div className="min-h-screen text-ink">
       <SiteHeader />
 
       <main className="max-w-3xl mx-auto px-4 py-12">
-        <p className="text-sm font-bold text-slate-400 mb-2">404</p>
-        <h1 className="text-2xl md:text-3xl font-extrabold mb-3">ページが見つかりませんでした</h1>
-        <p className="text-slate-600 mb-8 leading-relaxed">
+        <p className="text-sm font-bold text-ink-mute mb-2">404</p>
+        <h1 className="text-2xl md:text-3xl font-bold mb-3">ページが見つかりませんでした</h1>
+        <p className="text-ink-sub mb-8 leading-relaxed">
           URL が変わったか、掲載をやめた機種のページかもしれません。機種名で検索するか、下のページから探してください。
         </p>
 
@@ -31,9 +31,9 @@ export default function NotFound() {
             type="text"
             name="model"
             placeholder="例: iPhone 15 Pro"
-            className="flex-1 min-w-0 px-4 py-3 border-2 border-slate-200 rounded-2xl focus:border-blue-500 outline-none"
+            className="flex-1 min-w-0 px-3.5 h-12 border border-[#C7CBD4] rounded-xl text-base focus:border-brand-600 outline-none bg-white"
           />
-          <button type="submit" className="px-5 py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-blue-600 transition-colors">
+          <button type="submit" className="px-[18px] h-12 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-800">
             検索
           </button>
         </form>
@@ -43,12 +43,12 @@ export default function NotFound() {
           <div className="flex flex-wrap gap-2">
             {POPULAR_MODELS.map((m) => (
               <Link key={m} href={modelPagePath(m)}
-                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                className="px-3.5 min-h-10 inline-flex items-center rounded-full text-sm font-bold bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
                 {m}
               </Link>
             ))}
             <Link href="/ipad"
-              className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+              className="px-3.5 min-h-10 inline-flex items-center rounded-full text-sm font-bold bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
               iPad
             </Link>
           </div>
@@ -59,14 +59,14 @@ export default function NotFound() {
           <div className="flex flex-wrap gap-2">
             {BUDGETS.map((max) => (
               <Link key={max} href={budgetPath(max)}
-                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                className="px-3.5 min-h-10 inline-flex items-center rounded-full text-sm font-bold bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
                 {budgetLabel(max)}以下
               </Link>
             ))}
           </div>
         </section>
 
-        <Link href="/" className="inline-block text-sm font-bold text-blue-600 hover:underline underline-offset-4">
+        <Link href="/" className="inline-block text-sm font-bold text-brand-600 hover:underline underline-offset-4">
           トップページへ &rarr;
         </Link>
       </main>

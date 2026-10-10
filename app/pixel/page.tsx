@@ -43,23 +43,23 @@ export default async function PixelIndexPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans">
+    <div className="min-h-screen text-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader label="Google Pixel" />
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <nav aria-label="パンくずリスト" className="text-xs text-slate-400 mb-4">
-          <Link href="/" className="hover:text-blue-600">トップ</Link>
+      <main className="max-w-[1120px] mx-auto px-4 py-6">
+        <nav aria-label="パンくずリスト" className="text-xs text-ink-mute mb-4">
+          <Link href="/" className="hover:text-brand-800">トップ</Link>
           <span className="mx-2">›</span>
-          <span className="text-slate-600">中古Google Pixel</span>
+          <span className="text-ink-sub">中古Google Pixel</span>
         </nav>
 
-        <h1 className="text-2xl md:text-4xl font-extrabold mb-3">中古Google Pixelの相場・最安値</h1>
-        <p className="text-slate-600 mb-4 leading-relaxed">
+        <h1 className="text-2xl md:text-3xl font-bold mb-3">中古Google Pixelの相場・最安値</h1>
+        <p className="text-ink-sub mb-4 leading-relaxed">
           {shopLabels(PIXEL_SHOPS)}の中古Pixel <strong>{total.toLocaleString()}件</strong>
           を機種別にまとめています。機種名から容量別・状態別の最安値へ。
         </p>
-        <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+        <p className="text-sm text-ink-mute mb-4 leading-relaxed">
           Pixel は機種ごとに Google のアップデート保証の期限が決まっています（Pixel 8 以降は販売開始から7年、Pixel 6〜7 シリーズ・Pixel Fold は5年）。
           中古で買うときは、値段と一緒に「あと何年使えるか」も見てください。
         </p>
@@ -71,7 +71,7 @@ export default async function PixelIndexPage() {
           <div className="flex flex-wrap gap-2">
             {PIXEL_PICKS.map((p) => (
               <Link key={p.slug} href={pickPath(p.slug)}
-                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                className="px-3.5 min-h-10 inline-flex items-center rounded-full text-sm font-bold bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
                 {p.title}
               </Link>
             ))}
@@ -80,7 +80,7 @@ export default async function PixelIndexPage() {
           <div className="flex flex-wrap gap-2">
             {PIXEL_BUDGETS.map((max) => (
               <Link key={max} href={budgetPath(max, "pixel")}
-                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                className="px-3.5 min-h-10 inline-flex items-center rounded-full text-sm font-bold bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
                 {budgetLabel(max)}以下
               </Link>
             ))}
@@ -93,8 +93,8 @@ export default async function PixelIndexPage() {
           <div className="flex flex-wrap gap-2">
             {COMPARE_PAIRS.filter(([a]) => isPixel(a)).map(([a, b]) => (
               <Link key={comparePath(a, b)} href={comparePath(a, b)}
-                className="px-4 py-2 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
-                {a} <span className="text-slate-400 font-medium">vs</span> {b}
+                className="px-3.5 min-h-10 inline-flex items-center rounded-full text-sm font-bold bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
+                {a} <span className="text-ink-mute font-medium">vs</span> {b}
               </Link>
             ))}
           </div>
@@ -103,7 +103,7 @@ export default async function PixelIndexPage() {
         {PIXEL_CATALOG.map((series) => (
           <section key={series.series} className="my-8">
             <h2 className="text-xl font-bold mb-3">{series.series}</h2>
-            <div className="rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-xl border border-line overflow-hidden">
               {series.models.map((model, i) => {
                 const s = stats.get(model);
                 const info = PIXEL_INFO[model];
@@ -112,21 +112,21 @@ export default async function PixelIndexPage() {
                   <Link
                     key={model}
                     href={modelPagePath(model)}
-                    className={`grid grid-cols-[1fr_auto_auto_auto] gap-x-4 px-5 py-3 hover:bg-blue-50 transition-colors items-center ${i > 0 ? "border-t border-slate-100" : ""}`}
+                    className={`grid grid-cols-[1fr_auto_auto_auto] gap-x-4 px-5 py-3 hover:bg-ground items-center ${i > 0 ? "border-t border-line-soft" : ""}`}
                   >
                     <span className="min-w-0">
-                      <span className="block font-bold text-slate-800">{model} <span className="text-slate-300">›</span></span>
+                      <span className="block font-bold text-ink">{model} <span className="text-gray-300">›</span></span>
                       {info && until && (
-                        <span className="block text-[11px] text-slate-400">{`${jaMonth(info.available)}発売・${PIXEL_SPECS[model]?.chip.replace("Google ", "") ?? ""}・保証 ${jaMonth(until)}まで`.replace("・・", "・")}</span>
+                        <span className="block text-[11px] text-ink-mute">{`${jaMonth(info.available)}発売・${PIXEL_SPECS[model]?.chip.replace("Google ", "") ?? ""}・保証 ${jaMonth(until)}まで`.replace("・・", "・")}</span>
                       )}
                     </span>
                     <span className="text-right">
-                      {s && <><span className="block text-[10px] text-slate-400">相場</span><span className="font-black text-slate-800">{yen(s.medianPrice)}</span></>}
+                      {s && <><span className="block text-[10px] text-ink-mute">相場</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
                     </span>
                     <span className="text-right">
-                      {s ? <><span className="block text-[10px] text-slate-400">最安値</span><span className="font-black text-red-600">{yen(s.minPrice)}</span></> : <span className="text-slate-300 font-normal text-sm">在庫なし</span>}
+                      {s ? <><span className="block text-[10px] text-ink-mute">最安値</span><span className="font-bold text-price">{yen(s.minPrice)}</span></> : <span className="text-gray-300 font-normal text-sm">在庫なし</span>}
                     </span>
-                    <span className="text-right w-16 text-sm text-slate-500">{(s?.count ?? 0).toLocaleString()}件</span>
+                    <span className="text-right w-16 text-sm text-ink-mute">{(s?.count ?? 0).toLocaleString()}件</span>
                   </Link>
                 );
               })}
@@ -134,10 +134,10 @@ export default async function PixelIndexPage() {
           </section>
         ))}
 
-        <p className="text-xs text-slate-400 leading-relaxed">
+        <p className="text-xs text-ink-mute leading-relaxed">
           発売＝米国 Google ストアで販売が始まった年月。保証の期限はその年月に保証の年数を足したものです。
-          出典: Google「<a href="https://support.google.com/pixelphone/answer/4457705" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">Pixel のアップデート保証期間</a>」
-          「<a href="https://support.google.com/pixelphone/answer/15738422" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">デバイスが利用可能になった時期</a>」
+          出典: Google「<a href="https://support.google.com/pixelphone/answer/4457705" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">Pixel のアップデート保証期間</a>」
+          「<a href="https://support.google.com/pixelphone/answer/15738422" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">デバイスが利用可能になった時期</a>」
         </p>
       </main>
 

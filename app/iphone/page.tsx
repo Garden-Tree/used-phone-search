@@ -30,9 +30,9 @@ type Row = { model: string; market?: ModelMarket };
 
 function MarketTable({ rows }: { rows: Row[] }) {
   return (
-    <div className="rounded-2xl border border-slate-200 overflow-x-auto">
+    <div className="bg-white rounded-xl border border-line overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className="bg-slate-50 text-xs text-slate-500">
+        <thead className="bg-ground text-xs text-ink-mute">
           <tr>
             <th className="text-left font-semibold pl-4 pr-2 py-2">機種</th>
             <th className="text-right font-semibold px-2 py-2">相場</th>
@@ -46,15 +46,15 @@ function MarketTable({ rows }: { rows: Row[] }) {
           {rows.map(({ model, market }) => {
             const spec = specOf(model);
             return (
-              <tr key={model} className="border-t border-slate-100 hover:bg-blue-50/50">
+              <tr key={model} className="border-t border-line-soft hover:bg-ground">
                 <td className="pl-4 pr-2 py-2.5">
-                  <Link href={modelPagePath(model)} className="font-bold text-slate-800 hover:text-blue-600 whitespace-nowrap">{model}</Link>
+                  <Link href={modelPagePath(model)} className="font-bold text-ink hover:text-brand-800 whitespace-nowrap">{model}</Link>
                 </td>
-                <td className="px-2 py-2.5 text-right font-black text-slate-800 whitespace-nowrap">{market ? yen(market.medianPrice) : "-"}</td>
-                <td className="px-2 py-2.5 text-right font-bold text-red-600 whitespace-nowrap">{market ? yen(market.minPrice) : <span className="text-slate-300 font-normal">在庫なし</span>}</td>
-                <td className="px-2 py-2.5 text-right text-slate-500 whitespace-nowrap hidden sm:table-cell">{market ? `${market.count.toLocaleString()}件` : "-"}</td>
-                <td className="px-2 py-2.5 text-slate-500 whitespace-nowrap hidden md:table-cell">{spec?.released ?? "-"}</td>
-                <td className="pl-2 pr-4 py-2.5 text-slate-500 whitespace-nowrap hidden md:table-cell">{spec?.port ?? "-"}</td>
+                <td className="px-2 py-2.5 text-right font-bold text-ink whitespace-nowrap">{market ? yen(market.medianPrice) : "-"}</td>
+                <td className="px-2 py-2.5 text-right font-bold text-price whitespace-nowrap">{market ? yen(market.minPrice) : <span className="text-gray-300 font-normal">在庫なし</span>}</td>
+                <td className="px-2 py-2.5 text-right text-ink-mute whitespace-nowrap hidden sm:table-cell">{market ? `${market.count.toLocaleString()}件` : "-"}</td>
+                <td className="px-2 py-2.5 text-ink-mute whitespace-nowrap hidden md:table-cell">{spec?.released ?? "-"}</td>
+                <td className="pl-2 pr-4 py-2.5 text-ink-mute whitespace-nowrap hidden md:table-cell">{spec?.port ?? "-"}</td>
               </tr>
             );
           })}
@@ -85,26 +85,26 @@ export default async function IphoneIndexPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans">
+    <div className="min-h-screen text-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader label="相場一覧" />
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <nav aria-label="パンくずリスト" className="text-xs text-slate-400 mb-4">
-          <Link href="/" className="hover:text-blue-600">トップ</Link>
+      <main className="max-w-[1120px] mx-auto px-4 py-6">
+        <nav aria-label="パンくずリスト" className="text-xs text-ink-mute mb-4">
+          <Link href="/" className="hover:text-brand-800">トップ</Link>
           <span className="mx-2">›</span>
-          <span className="text-slate-600">中古iPhoneの相場一覧</span>
+          <span className="text-ink-sub">中古iPhoneの相場一覧</span>
         </nav>
 
-        <h1 className="text-2xl md:text-4xl font-extrabold mb-3">中古iPhoneの相場一覧</h1>
-        <p className="text-slate-600 mb-4 leading-relaxed">
+        <h1 className="text-2xl md:text-3xl font-bold mb-3">中古iPhoneの相場一覧</h1>
+        <p className="text-ink-sub mb-4 leading-relaxed">
           大手中古ショップ{SHOPS.length}社の中古iPhone <strong>{total.toLocaleString()}件</strong>から、機種ごとの相場（中央値）と最安値をまとめています。
           在庫は6時間ごとに更新しています。
         </p>
         <AdDisclosure compact />
 
-        <details className="my-6 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-          <summary className="font-bold text-slate-700 cursor-pointer">「相場」の出し方</summary>
+        <details className="my-6 rounded-xl bg-ground p-4 text-sm text-ink-sub">
+          <summary className="font-bold text-ink-sub cursor-pointer">「相場」の出し方</summary>
           <p className="mt-2 leading-relaxed">
             販売中の在庫の価格を安い順に並べた<strong>ちょうど真ん中の値（中央値）</strong>を相場としています。
             最安値は1台だけの特価やジャンク品のことが多く、実際に買う値段の目安にはなりにくいためです。
@@ -117,7 +117,7 @@ export default async function IphoneIndexPage() {
         {cheapest.length > 0 && (
           <section className="my-8">
             <h2 className="text-xl md:text-2xl font-bold mb-1">相場が安い中古iPhone TOP{cheapest.length}</h2>
-            <p className="text-xs text-slate-400 mb-4">iOS 27 に対応する機種のうち、在庫10件以上のもの</p>
+            <p className="text-xs text-ink-mute mb-4">iOS 27 に対応する機種のうち、在庫10件以上のもの</p>
             <MarketTable rows={cheapest} />
           </section>
         )}
@@ -131,12 +131,12 @@ export default async function IphoneIndexPage() {
 
         <section className="my-8">
           <h2 className="text-lg md:text-xl font-bold mb-1">旧機種（iOS 27 非対応）</h2>
-          <p className="text-xs text-slate-400 mb-3">最新の iOS が入らないため、サブ機・撮影用向けです</p>
+          <p className="text-xs text-ink-mute mb-3">最新の iOS が入らないため、サブ機・撮影用向けです</p>
           <MarketTable rows={LEGACY_SERIES.flatMap((s) => s.models).map(rowOf)} />
         </section>
 
         <p className="text-sm">
-          <Link href="/ipad" className="font-bold text-blue-600 hover:underline underline-offset-4">中古iPadの相場はこちら &rarr;</Link>
+          <Link href="/ipad" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPadの相場はこちら &rarr;</Link>
         </p>
       </main>
 

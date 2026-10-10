@@ -2,7 +2,8 @@
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
-export default function SortSelect({ currentSort }: { currentSort: string }) {
+/** 並び替え。見た目は className で変える（PC は文字つきの選択欄、スマホの下の固定バーはボタン風） */
+export default function SortSelect({ currentSort, className, idSuffix }: { currentSort: string; className?: string; idSuffix?: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -15,12 +16,16 @@ export default function SortSelect({ currentSort }: { currentSort: string }) {
   };
 
   return (
-    <select 
-      name="sort" 
-      id="sort"
+    <select
+      name="sort"
+      id={idSuffix ? `sort-${idSuffix}` : 'sort'}
+      aria-label="並び替え"
       value={currentSort}
       onChange={handleSortChange}
-      className="bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 shadow-sm transition-colors cursor-pointer outline-none"
+      className={
+        className ??
+        'h-10 bg-white border border-gray-300 text-ink text-sm rounded-lg px-3 cursor-pointer focus:outline-2 focus:outline-brand-600'
+      }
     >
       <option value="price_asc">価格が安い順</option>
       <option value="price_desc">価格が高い順</option>
