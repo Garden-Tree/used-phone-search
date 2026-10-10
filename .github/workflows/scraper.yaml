@@ -170,13 +170,13 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run normalize:ipad
 
-      # イオシスの公式と楽天市場店の同じ商品を突き合わせる（公式のカードに楽天の価格を添え、楽天の重複を隠す）。
+      # 公式（イオシス・エムモバ）とモール店（楽天・Yahoo!ショッピング）の同じ商品を突き合わせる（公式のカードにモール店の価格を添え、重複を隠す）。
       # 公式・楽天の取り込みと iPad の機種名そろえの後に行う
-      - name: イオシスの公式と楽天を突き合わせる
+      - name: 公式とモール店（イオシス楽天・エムコム Yahoo）の同じ商品を突き合わせる
         if: ${{ !cancelled() }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx tsx scripts/link-iosys-rakuten.ts
+        run: npx tsx scripts/link-duplicate-shops.ts
 
       # 一部のショップの取得に失敗しても、取れた分で価格推移は記録する（ジョブ自体は失敗のまま通知される）
       - name: 価格推移の記録

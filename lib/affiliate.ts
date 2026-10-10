@@ -33,6 +33,11 @@ export function valueCommerceUrl(itemUrl: string): string {
   return `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=${VC_SID}&pid=${VC_PID}&vc_url=${encodeURIComponent(itemUrl)}`;
 }
 
+/** Yahoo!ショッピングの商品URLのアフィリエイトリンク。ValueCommerce（2%）のほうが料率が高いので、SID・PID が入ったらそちらを優先。それまではもしも（1.54%）。商品ページへの直リンクにはしない */
+export function yahooAffiliateUrl(url: string): string {
+  return VC_SID && VC_PID ? valueCommerceUrl(url) : moshimoYahooUrl(url);
+}
+
 // A8.net の提携プログラム（ショップ名 → a8mat）。提携が増えたらここに足す（イオシスは審査待ち）
 const A8_PROGRAMS: Record<string, string> = {
   "にこスマ": "45IED7+DCGUQI+4O7U+BW0YB",
@@ -47,10 +52,7 @@ const A8_PROGRAMS: Record<string, string> = {
  */
 export function affiliateUrl(shopName: string, url: string): string {
   if (RAKUTEN_SHOP_NAMES.has(shopName)) return rakutenAffiliateUrl(url);
-  if (YAHOO_SHOP_NAMES.has(shopName)) {
-    // ValueCommerce（2%）のほうが料率が高いので、SID・PID が入ったらそちらを優先。それまではもしも（1.54%）。商品ページへの直リンクにはしない
-    return VC_SID && VC_PID ? valueCommerceUrl(url) : moshimoYahooUrl(url);
-  }
+  if (YAHOO_SHOP_NAMES.has(shopName)) return yahooAffiliateUrl(url);
   // Amazon は Creators API が返す detailPageURL（アソシエイトのタグ付き）をそのまま使う。URL の加工は規約違反
   if (AMAZON_SHOP_NAMES.has(shopName)) return url;
   const a8mat = A8_PROGRAMS[shopName];

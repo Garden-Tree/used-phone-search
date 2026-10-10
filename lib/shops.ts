@@ -60,9 +60,6 @@ export const SHOPS: Shop[] = [
   { name: "モバステ（Yahoo!ショッピング店）", label: "モバステ", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "exact",
     warranty: "初期不良は到着後100日間（未開封・未使用品は30日間）", redRom: "ネットワーク利用制限補償は無期限（同等機種と交換）",
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/mobilestation/guide.html", marketplace: "yahoo" },
-  { name: "エムコム（Yahoo!ショッピング店）", label: "エムコム", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "over80",
-    warranty: "7日間の返品保証・1か月の通常保証（レビュー投稿で最大1年に延長）", redRom: "商品の見出しに「赤ロム保証」（期間は記載なし・確認中）",
-    guaranteeUrl: "https://store.shopping.yahoo.co.jp/mcom2022/guide.html", marketplace: "yahoo" },
   { name: "リユスマ（Yahoo!ショッピング店）", label: "リユスマ", note: "Yahoo!ショッピング店", galaxy: true, ipad: true, battery: "over80",
     warranty: "安心保証90日（商品名に記載）", redRom: "赤ロム永久保証（商品名に記載）",
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/reusma/guide.html", marketplace: "yahoo" },
@@ -87,12 +84,15 @@ export const SHOPS: Shop[] = [
 ];
 
 /**
- * 本店と同じ店の別の売り場（SHOPS には入れない）。イオシス楽天市場店は公式と在庫を共有していて、
- * 同じ商品は公式のカードに「楽天市場でも販売」として添える（scripts/link-iosys-rakuten.ts）。公式で取れなかった商品だけがこの名前で残る
+ * 本店と同じ店の別の売り場（SHOPS には入れない）。イオシス楽天市場店は公式と在庫を共有していて、エムコム（Yahoo!ショッピング店）はエムモバと同じ会社（エムコム）で、
+ * 同じ商品は公式のカードに「楽天市場でも販売」「Yahoo!ショッピングでも販売」として添える（scripts/link-duplicate-shops.ts）。公式で取れなかった商品だけがこの名前で残る
  */
 export const ALIAS_SHOPS: Shop[] = [
   { name: "イオシス（楽天市場店）", label: "イオシス", note: "楽天市場店", alias: "イオシス", marketplace: "rakuten", galaxy: true, pixel: true, ipad: true, battery: "over80",
     warranty: "中古3ヶ月（未使用品は6ヶ月。商品名に記載）", redRom: "保証期間に関わらず対象", guaranteeUrl: "https://www.rakuten.co.jp/pc-good/info.html" },
+  { name: "エムコム（Yahoo!ショッピング店）", label: "エムコム", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "over80",
+    warranty: "7日間の返品保証・1か月の通常保証（レビュー投稿で最大1年に延長）", redRom: "商品の見出しに「赤ロム保証」（期間は記載なし・確認中）",
+    guaranteeUrl: "https://store.shopping.yahoo.co.jp/mcom2022/guide.html", alias: "エムモバ", marketplace: "yahoo" },
 ];
 
 export const IPAD_SHOPS = SHOPS.filter((s) => s.ipad);

@@ -11,7 +11,7 @@ import { WIFI_MODEL } from "@/lib/rakutenIpad";
  *
  * 公式サイト（scraper/iosis_scraper.py）と在庫を共有していて、商品名も公式とほぼ同じ書き方
  * （頭に「【中古】」、後ろに「Apple スマホ … イオシス」が付くだけ）。公式と同じ商品を突き合わせられるよう、
- * 容量・色・キャリア・利用制限・バッテリーは iosis_scraper.py と同じ読み方にする（scripts/link-iosys-rakuten.ts）。
+ * 容量・色・キャリア・利用制限・バッテリーは iosis_scraper.py と同じ読み方にする（scripts/link-duplicate-shops.ts）。
  * 機種名だけは他の楽天の店と同じ正式名（「iPhone 14」）にする（突き合わせは空白を除いて比べる）。
  *
  * 商品名の例:

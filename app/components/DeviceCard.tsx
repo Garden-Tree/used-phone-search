@@ -1,6 +1,7 @@
 import React from 'react';
-import { affiliateLinkType, affiliateUrl, isAffiliateUrl, rakutenAffiliateUrl } from '@/lib/affiliate';
+import { affiliateLinkType, affiliateUrl, isAffiliateUrl, rakutenAffiliateUrl, yahooAffiliateUrl } from '@/lib/affiliate';
 import { findShop } from '@/lib/shops';
+import { YAHOO_MCOM } from '@/lib/yahooMcom';
 import { BUILD_TIME } from '@/lib/buildTime';
 
 // Define the type for the device object
@@ -19,7 +20,7 @@ export type Device = {
   price: number;
   url: string;
   isSoldOut: boolean;
-  /** 同じ商品を楽天市場店でも売っているときの価格・商品URL（イオシス。scripts/link-iosys-rakuten.ts） */
+  /** 同じ商品をモール店（楽天・Yahoo!ショッピング）でも売っているときの価格・商品URL（イオシス・エムモバ。scripts/link-duplicate-shops.ts） */
   altPrice?: number | null;
   altUrl?: string | null;
 };
@@ -102,7 +103,8 @@ export default function DeviceCard({ device }: { device: Device }) {
     }
   };
 
-  const altHref = device.altPrice && device.altUrl && !device.isSoldOut ? rakutenAffiliateUrl(device.altUrl) : null;
+  // 同じ商品のモール店のリンク。売り場は URL のホストで見分ける（楽天: イオシス、Yahoo!ショッピング: エムモバ）。知らないホストは出さない
+  const alt = device.altPrice && device.altUrl && !device.isSoldOut ? altChannel(device.shopName, device.altUrl) : null;
 
   const card = (
     <a
@@ -202,30 +204,47 @@ export default function DeviceCard({ device }: { device: Device }) {
     </a>
   );
 
-  if (!altHref) return card;
+  if (!alt) return card;
 
   // 同じ商品の楽天市場店へのリンク。カード全体が1つのリンクなので（リンクの入れ子はできない）、カードのすぐ下に置く
   return (
     <div className="flex flex-col gap-2 h-full [&>a:first-child]:h-auto [&>a:first-child]:flex-grow">
       {card}
       <a
-        href={altHref}
+        href={alt.href}
         target="_blank"
         rel="sponsored noopener noreferrer"
         data-shop-click=""
-        data-shop={`${device.shopName}（楽天市場店）`}
+        data-shop={alt.shop}
         data-model={device.modelName}
         data-storage={device.storage}
         data-rank={device.conditionRank}
         data-price={device.altPrice ?? undefined}
-        data-link-type="rakuten"
+        data-link-type={affiliateLinkType(alt.href)}
         className="flex items-center justify-between gap-2 rounded-2xl border border-slate-200/60 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 hover:border-red-200 hover:text-red-600 transition-colors"
       >
-        <span>楽天市場でも販売（ポイント付き）</span>
+        <span>{alt.label}</span>
         <span className="whitespace-nowrap text-red-600">¥{device.altPrice!.toLocaleString()} →</span>
       </a>
     </div>
   );
+}
+
+/** 公式の行に添える、同じ商品のモール店のリンク。楽天（イオシス）・Yahoo!ショッピング（エムモバ→エムコム）。知らないホストは null */
+function altChannel(shopName: string, altUrl: string): { href: string; label: string; shop: string } | null {
+  let host: string;
+  try {
+    host = new URL(altUrl).hostname;
+  } catch {
+    return null;
+  }
+  if (host === 'item.rakuten.co.jp') {
+    return { href: rakutenAffiliateUrl(altUrl), label: '楽天市場でも販売（ポイント付き）', shop: `${shopName}（楽天市場店）` };
+  }
+  if (host === 'store.shopping.yahoo.co.jp') {
+    return { href: yahooAffiliateUrl(altUrl), label: 'Yahoo!ショッピングでも販売（ポイント付き）', shop: YAHOO_MCOM };
+  }
+  return null;
 }
 
 // アフィリエイトリンクの生成ヘルパー
