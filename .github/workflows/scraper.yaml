@@ -126,6 +126,7 @@ jobs:
       # 取得に失敗した回は amazon-data/amazon.json.gz が書かれず、取り込みが Amazon の在庫を隠す（価格は24時間を超えて出せない）
       - name: Amazon 整備済み品を取り込む
         if: ${{ !cancelled() && env.AMAZON_CREDENTIAL_ID != '' }}
+        timeout-minutes: 20
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           AMAZON_CREDENTIAL_SECRET: ${{ secrets.AMAZON_CREDENTIAL_SECRET }}
@@ -136,8 +137,13 @@ jobs:
             npx tsx scripts/fetch-amazon.ts --debug --dry
             exit 0
           fi
+          # 前回の取り込みから10時間たっていなければ取らない（終了コード 78。呼び出しの上限に当たらないよう1日2〜3回に間引く。
+          # 価格は20時間で隠すので、1回失敗しても次で間に合う）
           failed=0
-          npx tsx scripts/fetch-amazon.ts || failed=1
+          code=0
+          npx tsx scripts/fetch-amazon.ts --min-age-hours 10 || code=$?
+          if [ "$code" = 78 ]; then exit 0; fi
+          [ "$code" = 0 ] || failed=1
           npx tsx scripts/ingest-rakuten.ts amazon-data --family amazon || failed=1
           exit "$failed"
 

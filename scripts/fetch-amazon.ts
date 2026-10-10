@@ -8,6 +8,9 @@
  *            AMAZON_CREDENTIAL_VERSION（既定 3.3。3.1 は北米、3.2 は英国の認証サーバー）・AMAZON_OUT_DIR（既定 amazon-data）
  *   --debug … 最初の1商品の生の応答を表示する（応答の形を確かめるとき）
  *   --dry   … 先頭3機種だけ
+ *   --min-age-hours N … 前回の取り込み（DB の最終更新）から N 時間たっていなければ取らずに終了コード 78 で終わる。
+ *                       1日に何度も起動されるので、呼び出しの上限（429）に当たらないよう間引く（10/10 に 429 が続いた）
+ * - 全体で 15 分を超えたら打ち切って失敗にする（ジョブの上限 60 分を食いつぶさないように）
  *
  * - 機種（lib/catalog.ts の ALL_DEVICE_PAGE_MODELS）ごとに「<機種> 整備済み品」で検索し、1機種あたり最大 5 ページ（1ページ10件）。
  *   ページが10件に満たない・総件数に達した・3ページ目以降で整備済み品が1件もないときは打ち切る
@@ -21,6 +24,8 @@ import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { ALL_DEVICE_PAGE_MODELS } from "@/lib/catalog";
 import type { RakutenItem } from "@/lib/rakutenCommon";
+import { AMAZON_RENEWED_SHOP } from "@/lib/amazonRenewed";
+import prisma from "@/lib/prisma";
 
 const MARKETPLACE = "www.amazon.co.jp";
 const API = "https://creatorsapi.amazon/catalog/v1/searchItems";
@@ -41,6 +46,11 @@ const RESOURCES = [
 
 const debug = process.argv.includes("--debug");
 const dry = process.argv.includes("--dry");
+const minAgeIndex = process.argv.indexOf("--min-age-hours");
+const minAgeHours = minAgeIndex >= 0 ? Number(process.argv[minAgeIndex + 1]) : 0;
+const TIME_BUDGET_MS = 15 * 60_000;
+/** 取らずに終わったときの終了コード（ワークフローが取り込みを飛ばす） */
+const EXIT_SKIPPED = 78;
 const credentialId = process.env.AMAZON_CREDENTIAL_ID ?? "";
 const credentialSecret = process.env.AMAZON_CREDENTIAL_SECRET ?? "";
 const partnerTag = process.env.AMAZON_PARTNER_TAG ?? "";
@@ -172,12 +182,23 @@ function toItem(it: ApiItem): RakutenItem | null {
 
 async function main() {
   if (!credentialId || !credentialSecret || !partnerTag) throw new Error("AMAZON_CREDENTIAL_ID / AMAZON_CREDENTIAL_SECRET / AMAZON_PARTNER_TAG がない");
+  if (minAgeHours > 0 && !dry) {
+    const last = await prisma.deviceInventory.aggregate({ where: { shopName: AMAZON_RENEWED_SHOP }, _max: { updatedAt: true } });
+    await prisma.$disconnect();
+    const updated = last._max.updatedAt;
+    if (updated && Date.now() - updated.getTime() < minAgeHours * 3_600_000) {
+      console.log(`前回の取り込み（${updated.toISOString()}）から ${minAgeHours} 時間たっていないので取らない`);
+      process.exit(EXIT_SKIPPED);
+    }
+  }
+  const startedAt = Date.now();
   const models = dry ? ALL_DEVICE_PAGE_MODELS.slice(0, 3) : ALL_DEVICE_PAGE_MODELS;
   console.log(`機種 ${models.length} 件 × 最大 ${MAX_PAGES} ページ = 最大 ${models.length * MAX_PAGES} リクエスト（約 ${Math.ceil((models.length * MAX_PAGES * INTERVAL_MS) / 60000)} 分。1日の上限 8,640）`);
 
   const items = new Map<string, RakutenItem>();
   for (const model of models) {
     for (let page = 1; page <= MAX_PAGES; page++) {
+      if (Date.now() - startedAt > TIME_BUDGET_MS) throw new Error(`${TIME_BUDGET_MS / 60_000} 分を超えたので打ち切る（${requestCount} リクエスト・${items.size} 件）。ファイルは書かない`);
       const { total, items: hits } = await search(`${model} 整備済み品`, page);
       let renewed = 0;
       for (const hit of hits) {
