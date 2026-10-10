@@ -28,8 +28,13 @@ const AMAZON_MAX_AGE_HOURS = 20;
 /** Amazon の在庫のうち、最後の取り込みが20時間より前のものを売り切れ扱いにして隠す（価格は24時間を超えて出せない）。新しい行は触らない */
 async function hideStaleAmazon(shopName: string) {
   const before = new Date(Date.now() - AMAZON_MAX_AGE_HOURS * 3_600_000);
-  const hidden = await prisma.deviceInventory.updateMany({ where: { shopName, isSoldOut: false, updatedAt: { lt: before } }, data: { isSoldOut: true } });
-  if (hidden.count > 0) console.error(`${shopName}: 古い Amazon の在庫 ${hidden.count} 件を隠した`);
+  // updateMany は updatedAt を今の時刻にするため、監視（health の最終更新）が取得の停止に気づけなくなる。生の SQL で updatedAt を残す
+  const hidden = await prisma.$executeRawUnsafe(
+    `UPDATE "DeviceInventory" SET "isSoldOut" = true WHERE "shopName" = $1 AND "isSoldOut" = false AND "updatedAt" < $2`,
+    shopName,
+    before,
+  );
+  if (hidden > 0) console.error(`${shopName}: 古い Amazon の在庫 ${hidden} 件を隠した`);
 }
 
 async function main() {
