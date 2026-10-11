@@ -15,7 +15,7 @@
 
 ## 決定事項
 
-- **GA4 は used 専用プロパティ 556047315（`G-YV3ZR0N6B1`）**（9/27〜。shop_click・除外 IP は docs/measurement.md）
+- **GA4 は used 専用プロパティ 556047315（`G-YV3ZR0N6B1`）**（9/27〜。詳細は docs/measurement.md）
 - **ホスティング**: Cloudflare Pages（静的書き出し。10/6 9:03 に DNS 切り替え完了。Vercel は戻せるよう 10/20 ごろまで残す。手順・戻し方 `docs/cloudflare-pages.md`）
 - **DB**: Neon は Launch（9/27〜）。使用量は Free に収まる（10/8 判定）→ Vercel を止めた後に Free へ。DB は Neon のまま（ideas/10-04）
 - **データ更新**: シンの cron が楽天の JSON を書き出し → Actions を起動（＋定期実行）→ 直取得・Amazon・楽天の取り込み・書き出し・配置（`docs/operations.md`）
