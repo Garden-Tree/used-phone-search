@@ -47,6 +47,12 @@ async function main() {
   const SHOPS = shopsOf(family);
   const allowShrink = process.argv.includes("--allow-shrink");
   const allowOld = process.argv.includes("--allow-old");
+  // Amazon の取得ができない回（資格なしなど）: 取り込まずに、24時間を超えそうな古い価格を隠すだけにする
+  if (process.argv.includes("--hide-only")) {
+    if (family !== "amazon") throw new Error("--hide-only は --family amazon のときだけ");
+    for (const shopCode of Object.keys(SHOPS)) await hideStaleAmazon(SHOPS[shopCode].shopName);
+    return;
+  }
   if (!dir) throw new Error("使い方: tsx scripts/ingest-rakuten.ts <ディレクトリ> [--allow-shrink] [--allow-old] [--family yahoo|amazon]");
 
   let failed = 0;

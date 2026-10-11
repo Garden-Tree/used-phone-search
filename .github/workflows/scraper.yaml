@@ -143,6 +143,8 @@ jobs:
           code=0
           npx tsx scripts/fetch-amazon.ts --min-age-hours 10 || code=$?
           if [ "$code" = 78 ]; then exit 0; fi
+          # 79: アソシエイトが Creators API の利用条件（売上の実績）を満たしていない。失敗にせず、古い価格を隠すだけにする
+          if [ "$code" = 79 ]; then echo "::warning::Amazon: アソシエイトが Creators API の利用条件を満たしていないので取得しない（古い価格は隠す）"; npx tsx scripts/ingest-rakuten.ts amazon-data --family amazon --hide-only; exit $?; fi
           [ "$code" = 0 ] || failed=1
           npx tsx scripts/ingest-rakuten.ts amazon-data --family amazon || failed=1
           exit "$failed"

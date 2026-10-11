@@ -51,6 +51,8 @@ const minAgeHours = minAgeIndex >= 0 ? Number(process.argv[minAgeIndex + 1]) : 0
 const TIME_BUDGET_MS = 15 * 60_000;
 /** 取らずに終わったときの終了コード（ワークフローが取り込みを飛ばす） */
 const EXIT_SKIPPED = 78;
+/** アソシエイトが Creators API の利用条件（売上の実績）を満たしていないときの終了コード（ワークフローは古い価格を隠すだけにする） */
+const EXIT_NOT_ELIGIBLE = 79;
 const credentialId = process.env.AMAZON_CREDENTIAL_ID ?? "";
 const credentialSecret = process.env.AMAZON_CREDENTIAL_SECRET ?? "";
 const partnerTag = process.env.AMAZON_PARTNER_TAG ?? "";
@@ -141,6 +143,11 @@ async function search(keywords: string, itemPage: number): Promise<{ total: numb
     }
     if (status === 401) token = null; // 次の試行でトークンを取り直す
     const detail = `HTTP ${status} "${keywords}" page=${itemPage} ${body.slice(0, 300)}`;
+    // 403 AssociateNotEligible: アカウントの資格の問題で、やり直しても直らない（10/11 から。売上の実績が条件）
+    if (status === 403 && body.includes("AssociateNotEligible")) {
+      console.error(`アソシエイトが Creators API の利用条件を満たしていない（${body.slice(0, 200)}）`);
+      process.exit(EXIT_NOT_ELIGIBLE);
+    }
     // 直らない 4xx（401・429 以外）は即失敗
     if (attempt >= (status === 429 ? 5 : 3) || (status >= 400 && status < 500 && status !== 429 && status !== 401)) throw new Error(detail);
     console.warn(`retry ${attempt}: ${detail}`);

@@ -47,6 +47,9 @@ export async function checkHealth(): Promise<HealthReport> {
       _max: { updatedAt: true },
     });
     const lastSnapshot = await prisma.priceSnapshot.aggregate({ _max: { date: true } });
+    // 表示中の行がある店（Amazon は規約で古い価格を隠すので、全部隠れた店の「更新なし」は問題にしない）
+    const visible = await prisma.deviceInventory.groupBy({ by: ["shopName"], where: { isSoldOut: false }, _count: { _all: true } });
+    const visibleShops = new Set(visible.map((v) => v.shopName));
     // 店×種類の件数（DB 側で集計。1種類あたり店の数だけの行）
     const deviceCounts = new Map<string, number>();
     for (const d of DEVICES) {
@@ -68,7 +71,7 @@ export async function checkHealth(): Promise<HealthReport> {
           count: s._count._all,
           lastUpdated: updated?.toISOString() ?? null,
           ageHours,
-          stale: ageHours === null || ageHours > STALE_HOURS,
+          stale: visibleShops.has(s.shopName) && (ageHours === null || ageHours > STALE_HOURS),
           devices: Object.fromEntries(DEVICES.map((d) => [d.key, deviceCounts.get(`${s.shopName}:${d.key}`) ?? 0])),
         };
       })
