@@ -3,7 +3,8 @@ import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
 import { minPriceByModel } from "@/lib/budgetStats";
 import { getModelMarket } from "@/lib/marketStats";
 import { notoSansJp } from "@/lib/ogFont";
-import { GALAXY_SHOPS } from "@/lib/shops";
+import { GALAXY_SHOPS as ALL_GALAXY_SHOPS } from "@/lib/shops";
+import { activeShops } from "@/lib/activeShops";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 
 // 中古Galaxy 一覧（/galaxy）の OGP 画像。/ipad の画像と同じ作り。ビルドのたびに作る。
@@ -15,6 +16,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
+  const GALAXY_SHOPS = await activeShops(ALL_GALAXY_SHOPS);
   // 在庫件数は1回の集計。並べるのは在庫の多い5機種で、中央値はその分だけ取る
   const all: Map<string, { count: number }> = await minPriceByModel({ isSoldOut: false }, GALAXY_MODELS).catch((e) => { rethrowDuringBuild(e); return new Map(); });
   const total = [...all.values()].reduce((n, r) => n + r.count, 0);

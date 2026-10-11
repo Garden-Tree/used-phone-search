@@ -13,6 +13,7 @@ import { SEARCH_DEVICES, findSearchDevice, matchesModel, splitModelQuery } from 
 import type { InventoryFile, InventoryIndex } from '@/lib/searchData';
 import { findShop } from '@/lib/shops';
 import { BUILD_TIME } from '@/lib/buildTime';
+import { ranksAtLeast } from '@/lib/rankFilter';
 
 /**
  * 検索ページの中身（静的書き出し版）。ビルド時に書き出した機種ごとの在庫 JSON（lib/searchData.ts）を読み込み、
@@ -144,6 +145,8 @@ export default function SearchClient() {
     const maxPrice = toInt(params.get('maxPrice'));
     const storage = toInt(params.get('storage'));
     const rank = params.get('rank');
+    // ランク◯以上（minRank）。不明なランクは「以上」の絞り込みから外す（lib/rankFilter.ts）
+    const atLeast = ranksAtLeast(params.get('minRank'));
     const minBattery = toInt(params.get('minBattery'));
     const batterySort = currentSort === 'battery_desc' || currentSort === 'battery_asc';
     const filtered = all.filter((d) =>
@@ -153,6 +156,7 @@ export default function SearchClient() {
       (maxPrice === undefined || d.price <= maxPrice) &&
       (storage === undefined || d.storage === storage) &&
       (!rank || d.conditionRank === rank) &&
+      (!atLeast || atLeast.includes(d.conditionRank)) &&
       (!batterySort || d.batteryHealth !== null) &&
       // バッテリー最大容量が min% 以上。ランクS（未使用品）はバッテリーの表記がなくても含める（lib/deviceSearch.ts の minBatteryWhere と同じ）
       (minBattery === undefined || (d.batteryHealth ?? 0) >= minBattery || d.conditionRank === 'S'),
@@ -183,6 +187,8 @@ export default function SearchClient() {
   const storage = toInt(params.get('storage'));
   if (storage !== undefined) chips.push({ label: storage >= 1024 ? `${storage / 1024}TB` : `${storage}GB`, clear: { storage: null } });
   if (params.get('rank')) chips.push({ label: `ランク${params.get('rank')}`, clear: { rank: null } });
+  const minRank = params.get('minRank');
+  if (minRank && ranksAtLeast(minRank)) chips.push({ label: `ランク${minRank}以上`, clear: { minRank: null } });
   const mb = toInt(params.get('minBattery'));
   if (mb !== undefined) chips.push({ label: `バッテリー${mb}%以上`, clear: { minBattery: null } });
   const lo = toInt(params.get('minPrice'));
@@ -192,7 +198,7 @@ export default function SearchClient() {
       : lo !== undefined ? `${lo.toLocaleString()}円〜` : `〜${hi!.toLocaleString()}円`;
     chips.push({ label, clear: { minPrice: null, maxPrice: null } });
   }
-  const clearAll = () => updateParams({ shop: null, storage: null, rank: null, minBattery: null, minPrice: null, maxPrice: null });
+  const clearAll = () => updateParams({ shop: null, storage: null, rank: null, minRank: null, minBattery: null, minPrice: null, maxPrice: null });
   const minShown = devices.length ? devices.reduce((m, d) => Math.min(m, d.price), Infinity) : null;
 
   // 絞り込みの画面（スマホ）を開いている間は背面をスクロールさせず、Esc で閉じる

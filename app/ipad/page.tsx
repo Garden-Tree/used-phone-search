@@ -10,7 +10,8 @@ import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
 import { specOf } from "@/lib/iphoneSpecs";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
-import { IPAD_SHOPS, shopLabels } from "@/lib/shops";
+import { IPAD_SHOPS, shopLabels, type Shop } from "@/lib/shops";
+import { activeShops } from "@/lib/activeShops";
 import { IPAD_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import { IPAD_PICKS, pickPath } from "@/lib/picks";
 
@@ -18,18 +19,23 @@ import { IPAD_PICKS, pickPath } from "@/lib/picks";
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 const TITLE = "中古iPadの相場・最安値を機種別に比較【毎日更新】";
-const DESCRIPTION =
-  `中古iPad（iPad・iPad mini・iPad Air・iPad Pro）の相場（中央値）・最安値・在庫数を機種別に比較。${shopLabels(IPAD_SHOPS.slice(0, 3))}など${IPAD_SHOPS.length}店の在庫から毎日更新。`;
+// 店の数・店名は、いま在庫がある店だけ（lib/activeShops.ts）
+const describe = (shops: Shop[]) =>
+  `中古iPad（iPad・iPad mini・iPad Air・iPad Pro）の相場（中央値）・最安値・在庫数を機種別に比較。${shopLabels(shops.slice(0, 3))}など${shops.length}店の在庫から毎日更新。`;
 
-export const metadata: Metadata = {
-  title: TITLE,
-  description: DESCRIPTION,
-  alternates: { canonical: "/ipad" },
-  openGraph: { title: `${TITLE} | ${SITE_NAME}`, description: DESCRIPTION, url: "/ipad" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const description = describe(await activeShops(IPAD_SHOPS));
+  return {
+    title: TITLE,
+    description,
+    alternates: { canonical: "/ipad" },
+    openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: "/ipad" },
+  };
+}
 
 
 export default async function IpadIndexPage() {
+  const shops = await activeShops(IPAD_SHOPS);
   // 相場（中央値）・最安値・件数。/iphone・機種ページと同じ集計
   const stats = await getModelMarket(IPAD_MODELS);
   const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
@@ -57,7 +63,7 @@ export default async function IpadIndexPage() {
 
         <h1 className="text-2xl md:text-3xl font-bold mb-3">中古iPadの相場・最安値</h1>
         <p className="text-ink-sub mb-4 leading-relaxed">
-          {shopLabels(IPAD_SHOPS)}の中古iPad <strong>{total.toLocaleString()}件</strong>
+          {shopLabels(shops)}の中古iPad <strong>{total.toLocaleString()}件</strong>
           を機種別にまとめています。機種名から容量別・状態別の最安値へ。
         </p>
         <AdDisclosure compact />

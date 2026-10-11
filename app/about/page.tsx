@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import { SHOPS, shopLabels } from "@/lib/shops";
+import { activeShops } from "@/lib/activeShops";
 import { SITE_NAME } from "@/lib/site";
 
 // 運営者の一次情報を含むので、文面を変えるときは運営者の確認を取る
@@ -33,7 +34,8 @@ function Section({ id, title, children }: { id: string; title: string; children:
 
 const ext = "text-brand-600 font-bold hover:underline underline-offset-4";
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const active = await activeShops();
   return (
     <div className="min-h-screen text-ink">
       <SiteHeader label="このサイトについて" />
@@ -62,7 +64,7 @@ export default function AboutPage() {
         </Section>
 
         <Section id="data" title="在庫データの取り方と更新">
-          <p>{shopLabels()}の{SHOPS.length}店の在庫を、各店の公開ページと楽天市場の商品検索 API から自動で集めています。</p>
+          <p>{shopLabels(active)}の{active.length}店の在庫を、各店の公開ページと楽天市場の商品検索 API から自動で集めています。</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>イオシス・にこスマ・エムモバ・ダイワンテレコム: 6時間ごと（日本時間 3時・9時・15時・21時ごろ）</li>
             <li>ゲオモバイル・じゃんぱら・ソフマップ（いずれも楽天市場店）: 6時間ごと（上の約20分前）</li>

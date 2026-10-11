@@ -1,16 +1,18 @@
 import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
-import { SHOPS } from "@/lib/shops";
+import { activeShops } from "@/lib/activeShops";
 
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る
 
 // トップページ・検索ページなど、個別の画像を持たないページの共通 OGP 画像
-export const alt = `中古スマホ一括検索 | 中古iPhoneの最安値を大手${SHOPS.length}ショップから比較`;
+// alt は静的な文字列でなければならないので店の数は入れない（画像の中の文は在庫のある店の数）
+export const alt = "中古スマホ一括検索 | 中古iPhoneの最安値を大手ショップから比較";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 
 export default async function Image() {
+  const SHOPS = await activeShops();
   const title = "中古スマホ一括検索";
   const lead = `中古iPhoneの最安値を、大手${SHOPS.length}ショップから一括比較`;
   const fonts = await notoSansJp([title, lead, ...SHOPS.map((s) => s.label), "used.gadelog.com"].join(""));

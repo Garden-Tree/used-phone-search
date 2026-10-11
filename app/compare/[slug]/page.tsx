@@ -10,7 +10,7 @@ import { COMPARE_PAIRS, comparePath, compareSlug, comparesFor, slugToPair } from
 import { getModelStats, type ModelStats, type PriceRow } from "@/lib/modelStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
-import { shopsFor } from "@/lib/shops";
+import { activeShopsFor } from "@/lib/activeShops";
 import { SPEC_ROWS, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
@@ -92,7 +92,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     sa.minPrice !== null ? `${a}は${yen(sa.minPrice)}` : null,
     sb.minPrice !== null ? `${b}は${yen(sb.minPrice)}` : null,
   ].filter(Boolean).join("、");
-  const description = `${a}と${b}の中古相場を大手中古ショップ${shopsFor(a).length}社の在庫から比較。${prices ? `最安値は${prices}から。` : ""}容量別・状態ランク別の最安値と差額をまとめています。`;
+  const description = `${a}と${b}の中古相場を大手中古ショップ${(await activeShopsFor(a)).length}社の在庫から比較。${prices ? `最安値は${prices}から。` : ""}容量別・状態ランク別の最安値と差額をまとめています。`;
   const path = comparePath(a, b);
 
   return {

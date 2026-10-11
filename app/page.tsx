@@ -11,6 +11,7 @@ import { GALAXY_PICKS, IPAD_PICKS, PIXEL_PICKS, pickPath, type Pick } from "@/li
 import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetLabel, budgetPath, type BudgetDevice } from "@/lib/budgets";
 import prisma from "@/lib/prisma";
 import { SHOPS } from "@/lib/shops";
+import { activeShops } from "@/lib/activeShops";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import PriceDrops from "@/app/components/PriceDrops";
@@ -87,6 +88,8 @@ const h2 = "text-[17px] font-bold";
 
 export default async function Home() {
   const [counts, prices, drops, popular] = await Promise.all([shopCounts(), modelPrices(), getPriceDrops(7, 6), popularMarket()]);
+  // 店の数・一覧は、いま在庫がある店だけ（lib/activeShops.ts）
+  const shops = await activeShops();
   const total = SHOPS.reduce((n, s) => n + (counts.get(s.name) ?? 0), 0);
   const popularRows = POPULAR_MODELS.flatMap((m) => {
     const r = popular.get(m);
@@ -103,10 +106,10 @@ export default async function Home() {
           <h1 className="text-[25px] md:text-4xl leading-[1.35] font-bold">
             中古スマホ一括検索
             <br />
-            <span className="text-[19px] md:text-2xl">最安値を大手{SHOPS.length}店から一括比較</span>
+            <span className="text-[19px] md:text-2xl">最安値を大手{shops.length}店から一括比較</span>
           </h1>
           <p className="text-sm leading-relaxed text-ink-sub">
-            大手中古ショップ{SHOPS.length}社の iPhone・iPad・Pixel・Galaxy の価格、状態ランク、容量、バッテリーを一括比較。
+            大手中古ショップ{shops.length}社の iPhone・iPad・Pixel・Galaxy の価格、状態ランク、容量、バッテリーを一括比較。
             {total > 0 && <>在庫 {total.toLocaleString()}件。</>}
             欲しいモデルの最安値をすぐに見つけられます。
           </p>
@@ -250,12 +253,12 @@ export default async function Home() {
 
         {/* 比較している店 */}
         <section className="pt-[18px] flex flex-col gap-2.5">
-          <h2 className={h2}>比較している{SHOPS.length}店</h2>
+          <h2 className={h2}>比較している{shops.length}店</h2>
           <p className="text-xs text-ink-mute">
             {total > 0 && <>在庫 {total.toLocaleString()}件（iPhone・iPad・Pixel・Galaxy）。</>}店名を押すとその店の在庫を一覧できます
           </p>
           <ul className="bg-white border border-line rounded-xl px-3.5 py-1 grid grid-cols-2 md:grid-cols-4 gap-x-3.5">
-            {SHOPS.map((shop) => {
+            {shops.map((shop) => {
               const count = counts.get(shop.name);
               return (
                 <li key={shop.name} className="border-b border-line-soft">

@@ -3,7 +3,8 @@ import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { minPriceByModel } from "@/lib/budgetStats";
 import { getModelMarket } from "@/lib/marketStats";
 import { notoSansJp } from "@/lib/ogFont";
-import { IPAD_SHOPS } from "@/lib/shops";
+import { IPAD_SHOPS as ALL_IPAD_SHOPS } from "@/lib/shops";
+import { activeShops } from "@/lib/activeShops";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 
 // 中古iPad 一覧（/ipad）の OGP 画像。/iphone の画像と同じ作り。ビルドのたびに作る。
@@ -15,6 +16,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
+  const IPAD_SHOPS = await activeShops(ALL_IPAD_SHOPS);
   // 在庫件数は1回の集計。並べるのは在庫の多い5機種（iPad は世代の呼び名がばらばらなので、固定の人気機種より在庫で選ぶ）で、中央値はその分だけ取る
   const all: Map<string, { count: number }> = await minPriceByModel({ isSoldOut: false }, IPAD_MODELS).catch((e) => { rethrowDuringBuild(e); return new Map(); });
   const total = [...all.values()].reduce((n, r) => n + r.count, 0);

@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { ranksAtLeast } from "@/lib/rankFilter";
 import prisma from "@/lib/prisma";
 import { findSearchDevice, matchesModel } from "@/lib/modelMatch";
 
@@ -16,6 +17,8 @@ export type SearchParams = {
   maxPrice?: string | null;
   storage?: string | null;
   rank?: string | null;
+  /** ランク◯以上（minRank=B なら S・A・B）。rank（完全一致）と同時なら両方満たすものだけ */
+  minRank?: string | null;
   minBattery?: string | null;
 };
 
@@ -83,6 +86,8 @@ export function buildWhere(p: SearchParams): Prisma.DeviceInventoryWhereInput {
   if (storage !== undefined) and.push({ storage });
 
   if (p.rank) and.push({ conditionRank: p.rank });
+  const atLeast = ranksAtLeast(p.minRank);
+  if (atLeast) and.push({ conditionRank: { in: atLeast } });
 
   if (p.sort === "battery_desc" || p.sort === "battery_asc") {
     and.push({ batteryHealth: { not: null } });

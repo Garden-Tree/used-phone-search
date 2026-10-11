@@ -7,7 +7,7 @@ import PriceDrops from "@/app/components/PriceDrops";
 import { ALL_CATALOG_MODELS, ALL_PAGE_MODELS, IPHONE_CATALOG, LEGACY_SERIES, modelPagePath } from "@/lib/catalog";
 import { getModelMarket, getPriceDrops, type ModelMarket } from "@/lib/marketStats";
 import { specOf } from "@/lib/iphoneSpecs";
-import { SHOPS } from "@/lib/shops";
+import { activeShops } from "@/lib/activeShops";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
 
@@ -15,16 +15,20 @@ import { yen } from "@/lib/format";
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 const TITLE = "中古iPhoneの相場一覧【毎日更新】全機種の中古価格・最安値";
-const DESCRIPTION =
-  `中古iPhoneの相場（中央値）と最安値を全機種まとめて比較。大手中古ショップ${SHOPS.length}社の在庫から毎日更新。相場が安い順のランキングも。`;
+// 店の数は、いま在庫がある店だけ（lib/activeShops.ts）
+const describe = (shopNum: number) =>
+  `中古iPhoneの相場（中央値）と最安値を全機種まとめて比較。大手中古ショップ${shopNum}社の在庫から毎日更新。相場が安い順のランキングも。`;
 
-export const metadata: Metadata = {
-  title: TITLE,
-  description: DESCRIPTION,
-  alternates: { canonical: "/iphone" },
-  // 画像は app/iphone/opengraph-image.tsx（相場一覧専用）
-  openGraph: { title: `${TITLE} | ${SITE_NAME}`, description: DESCRIPTION, url: "/iphone" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const description = describe((await activeShops()).length);
+  return {
+    title: TITLE,
+    description,
+    alternates: { canonical: "/iphone" },
+    // 画像は app/iphone/opengraph-image.tsx（相場一覧専用）
+    openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: "/iphone" },
+  };
+}
 
 type Row = { model: string; market?: ModelMarket };
 
@@ -65,6 +69,7 @@ function MarketTable({ rows }: { rows: Row[] }) {
 }
 
 export default async function IphoneIndexPage() {
+  const shopNum = (await activeShops()).length;
   const [market, allDrops] = await Promise.all([getModelMarket(ALL_PAGE_MODELS), getPriceDrops(7, 20)]);
   const drops = allDrops.filter((d) => d.modelSlug.startsWith("iphone")).slice(0, 10);
   const rowOf = (model: string): Row => ({ model, market: market.get(model) });
@@ -98,7 +103,7 @@ export default async function IphoneIndexPage() {
 
         <h1 className="text-2xl md:text-3xl font-bold mb-3">中古iPhoneの相場一覧</h1>
         <p className="text-ink-sub mb-4 leading-relaxed">
-          大手中古ショップ{SHOPS.length}社の中古iPhone <strong>{total.toLocaleString()}件</strong>から、機種ごとの相場（中央値）と最安値をまとめています。
+          大手中古ショップ{shopNum}社の中古iPhone <strong>{total.toLocaleString()}件</strong>から、機種ごとの相場（中央値）と最安値をまとめています。
           在庫は6時間ごとに更新しています。
         </p>
         <AdDisclosure compact />

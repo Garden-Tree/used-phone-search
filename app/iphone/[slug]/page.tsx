@@ -36,6 +36,7 @@ import { getGoodConditionMin } from "@/lib/modelBest";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
 import { findShop, shopsFor } from "@/lib/shops";
+import { activeShopsFor } from "@/lib/activeShops";
 import { buildFaq, modelDescription } from "@/lib/modelFaq";
 
 // スクレイパーの後にビルドするので、在庫はその時点のもの
@@ -227,7 +228,7 @@ export default async function ModelPage({ params }: Props) {
   const series = seriesOf(model);
   const siblings = siblingModels(model);
   const path = modelPagePath(model);
-  const shopNum = shopsFor(model).length;
+  const shopNum = (await activeShopsFor(model)).length;
 
   // 同じシリーズのチップ（カタログの並び順）
   const chipModels = [model, ...siblings].sort((a, b) => ALL_DEVICE_PAGE_MODELS.indexOf(a) - ALL_DEVICE_PAGE_MODELS.indexOf(b));
@@ -324,7 +325,7 @@ export default async function ModelPage({ params }: Props) {
   // 結論の1文。条件に合う在庫がなければ出さない
   const conclusion = goodMin !== null ? (
     <p className="text-sm leading-[1.7] text-gray-700">
-      ランクB以上・バッテリー85%以上なら <strong className="text-ink">{yen(goodMin)}〜</strong>。
+      ランクB以上・バッテリー85%以上なら <Link href={searchHref(model, { minRank: "B", minBattery: "85" })} className={`font-bold underline underline-offset-2 ${LINK}`}>{yen(goodMin)}〜</Link>。
       {cheapestDevice && cheapestDevice.price < goodMin && <>最安値は{describeDevice(cheapestDevice)}の個体です。</>}
     </p>
   ) : null;
@@ -441,7 +442,7 @@ export default async function ModelPage({ params }: Props) {
                   {[
                     { label: "すべて", href: searchHref(model), current: true },
                     { label: "バッテリー85%以上", href: searchHref(model, { minBattery: "85" }) },
-                    { label: "ランクA", href: searchHref(model, { rank: "A" }) },
+                    { label: "ランクA以上", href: searchHref(model, { minRank: "A" }) },
                   ].map((c) => (
                     <Link key={c.label} href={c.href}
                       className={`shrink-0 h-9 px-3.5 rounded-full border text-[13px] flex items-center ${

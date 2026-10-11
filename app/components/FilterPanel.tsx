@@ -6,6 +6,8 @@ import { SHOPS } from '@/lib/shops';
 
 export const STORAGE_OPTIONS = [64, 128, 256, 512, 1024];
 export const RANK_OPTIONS = ['S', 'A', 'B', 'C', 'D'];
+// 「A以上」「B以上」（minRank）。完全一致（rank）と同時には持たない
+export const MIN_RANK_OPTIONS = ['A', 'B'];
 export const BATTERY_OPTIONS = [80, 85, 90, 95];
 // 楽天市場店は「じゃんぱら（楽天）」のように短く出す
 const SHOP_OPTIONS = [
@@ -121,14 +123,33 @@ export default function FilterPanel() {
 
       <Group title="状態ランク">
         <div className="flex flex-wrap gap-2">
-          {RANK_OPTIONS.map((rank) => {
-            const isActive = searchParams.get('rank') === rank;
+          {(() => {
+            const rank = searchParams.get('rank');
+            const minRank = searchParams.get('minRank');
             return (
-              <button key={rank} type="button" aria-pressed={isActive} onClick={() => toggleValue('rank', rank)} className={chipClass(isActive)}>
-                ランク{rank}
-              </button>
+              <>
+                <button type="button" aria-pressed={!rank && !minRank} onClick={() => updateParams({ rank: null, minRank: null })} className={chipClass(!rank && !minRank)}>
+                  すべて
+                </button>
+                {MIN_RANK_OPTIONS.map((r) => {
+                  const isActive = minRank === r && !rank;
+                  return (
+                    <button key={'min' + r} type="button" aria-pressed={isActive} onClick={() => updateParams({ rank: null, minRank: isActive ? null : r })} className={chipClass(isActive)}>
+                      ランク{r}以上
+                    </button>
+                  );
+                })}
+                {RANK_OPTIONS.map((r) => {
+                  const isActive = rank === r && !minRank;
+                  return (
+                    <button key={r} type="button" aria-pressed={isActive} onClick={() => updateParams({ minRank: null, rank: isActive ? null : r })} className={chipClass(isActive)}>
+                      ランク{r}のみ
+                    </button>
+                  );
+                })}
+              </>
             );
-          })}
+          })()}
         </div>
       </Group>
 

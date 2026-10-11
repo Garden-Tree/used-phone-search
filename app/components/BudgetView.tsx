@@ -9,7 +9,8 @@ import { BUDGET_NAMES, budgetLabel, budgetPath, budgetsOf, type BudgetDevice } f
 import { cheapestUnder, getBudgetModels } from "@/lib/budgetStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
-import { GALAXY_SHOPS, IPAD_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
+import { GALAXY_SHOPS, IPAD_SHOPS, PIXEL_SHOPS, SHOPS, type Shop } from "@/lib/shops";
+import { activeShops } from "@/lib/activeShops";
 import { jaMonth, updateUntil } from "@/lib/pixelCatalog";
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 
@@ -19,6 +20,7 @@ import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
  */
 type DeviceText = {
   name: string;
+  /** TEXT の値は全店の数。表示には withActiveShops でいま在庫がある店の数に置き換えたものを使う */
   shops: number;
   /** 機種一覧のページ（パンくず・下のボタン）。iPhone は検索ページへ */
   hub?: { path: string; name: string; cta: string; ctaNote: string };
@@ -73,8 +75,14 @@ const TEXT: Record<BudgetDevice, DeviceText> = {
   },
 };
 
+const SHOPS_OF: Record<BudgetDevice, Shop[]> = { iphone: SHOPS, ipad: IPAD_SHOPS, pixel: PIXEL_SHOPS, galaxy: GALAXY_SHOPS };
+
+async function withActiveShops(device: BudgetDevice): Promise<DeviceText> {
+  return { ...TEXT[device], shops: (await activeShops(SHOPS_OF[device])).length };
+}
+
 export async function budgetMetadata(max: number, device: BudgetDevice): Promise<Metadata> {
-  const t = TEXT[device];
+  const t = await withActiveShops(device);
   const rows = await getBudgetModels(max, device);
   const newest = rows.find((r) => r.supported) ?? rows[0];
   const label = budgetLabel(max);
@@ -94,7 +102,7 @@ export async function budgetMetadata(max: number, device: BudgetDevice): Promise
 }
 
 export async function BudgetView({ max, device }: { max: number; device: BudgetDevice }) {
-  const t = TEXT[device];
+  const t = await withActiveShops(device);
   const label = budgetLabel(max);
   const rows = await getBudgetModels(max, device);
   const supported = rows.filter((r) => r.supported);
