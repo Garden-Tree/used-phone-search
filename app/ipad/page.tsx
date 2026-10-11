@@ -19,7 +19,7 @@ export const dynamic = "force-static"; // 静的書き出し: ビルド時に1�
 
 const TITLE = "中古iPadの相場・最安値を機種別に比較【毎日更新】";
 const DESCRIPTION =
-  `中古iPad（iPad・iPad mini・iPad Air・iPad Pro）の相場（中央値）・最安値・在庫数を機種別に比較。${shopLabels(IPAD_SHOPS)}の在庫から毎日更新。`;
+  `中古iPad（iPad・iPad mini・iPad Air・iPad Pro）の相場（中央値）・最安値・在庫数を機種別に比較。${shopLabels(IPAD_SHOPS.slice(0, 3))}など${IPAD_SHOPS.length}店の在庫から毎日更新。`;
 
 export const metadata: Metadata = {
   title: TITLE,

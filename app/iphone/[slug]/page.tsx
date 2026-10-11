@@ -35,7 +35,8 @@ import InspectionTips, { inspectionTips } from "@/app/components/InspectionTips"
 import { getGoodConditionMin } from "@/lib/modelBest";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
-import { findShop, shopLabels, shopsFor } from "@/lib/shops";
+import { findShop, shopsFor } from "@/lib/shops";
+import { buildFaq, modelDescription } from "@/lib/modelFaq";
 
 // スクレイパーの後にビルドするので、在庫はその時点のもの
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -59,10 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const stats = await getModelStats(model);
   const title = `${model} 中古の相場・最安値【毎日更新】`;
-  const shops = shopLabels(shopsFor(model));
-  const description = stats.minPrice !== null
-    ? `${model}の中古相場（中央値）は${yen(stats.medianPrice ?? stats.minPrice)}、最安値は${yen(stats.minPrice)}。${stats.shopCount}ショップ・${stats.count}件の在庫を容量・状態ランク別に比較。${shops}の価格を毎日更新。`
-    : `${model}の中古在庫を${shops}から一括比較。容量・状態ランク別の最安値をまとめています。`;
+  const description = modelDescription(model, stats);
   const path = modelPagePath(model);
 
   return {
@@ -248,6 +246,25 @@ export default async function ModelPage({ params }: Props) {
     ? stats.lastUpdated.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false })
     : null;
 
+  // 「いつまで使えるか」は、このページに出している確認済みの情報（Pixel のアップデート保証・iOS/iPadOS の対応）がある機種だけ
+  const supportAnswer: string | null =
+    pixel && pixelUntil && pixelLeft !== undefined
+      ? (pixelLeft > 0
+        ? `Google のアップデート保証は販売開始（${jaMonth(pixel.available)}）から${pixel.updateYears}年で、${jaMonth(pixelUntil)}までです（残り約${pixelLeft}年）。`
+        : `Google のアップデート保証（販売開始から${pixel.updateYears}年・${jaMonth(pixelUntil)}まで）は終わっています。`)
+      : isIpad(model)
+        ? (IPADOS27_MODELS.has(model) ? `${model}は iPadOS 27 に対応しています。` : `${model}は iPadOS 27 には対応していません。`)
+        : isIphone
+          ? (ALL_CATALOG_MODELS.includes(model) ? `${model}は iOS 27 に対応しています。` : `${model}は iOS 27 には対応していないため、サブ機・撮影用向けです。`)
+          : null;
+  const faqs = hasStock && stats.minPrice !== null
+    ? buildFaq({
+        model, isIphone, minPrice: stats.minPrice, medianPrice: stats.medianPrice,
+        cheapestNote: cheapestDevice ? describeDevice(cheapestDevice) : null,
+        goodMin, count: stats.count, shopCount: stats.shopCount, updatedText, byShop: stats.byShop, supportAnswer,
+      })
+    : [];
+
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -273,6 +290,13 @@ export default async function ModelPage({ params }: Props) {
             offerCount: stats.count,
             availability: "https://schema.org/InStock",
           },
+        }]
+      : []),
+    ...(faqs.length > 0
+      ? [{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
         }]
       : []),
   ];
@@ -538,6 +562,19 @@ export default async function ModelPage({ params }: Props) {
                     詳しくは<Link href="/about" className={`${LINK} underline underline-offset-2`}>「このサイトについて」</Link>をご覧ください。
                   </p>
                 </Accordion>
+              </div>
+            </section>
+          )}
+
+          {faqs.length > 0 && (
+            <section className={`${SEC} mt-5 flex flex-col gap-2`}>
+              <h2 className="text-[17px] font-bold">よくある質問</h2>
+              <div className={`${CARD} overflow-hidden`}>
+                {faqs.map((f) => (
+                  <Accordion key={f.q} title={f.q}>
+                    <p className="text-[13px] leading-[1.7] text-gray-700">{f.a}</p>
+                  </Accordion>
+                ))}
               </div>
             </section>
           )}

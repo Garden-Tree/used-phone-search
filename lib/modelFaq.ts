@@ -1,0 +1,76 @@
+import { findShop, type Shop } from "@/lib/shops";
+import { yen } from "@/lib/format";
+import type { PriceRow } from "@/lib/modelStats";
+
+/** 別の売り場（イオシス楽天市場店など）を本店にまとめた、店ごとの最安値・件数（最安の売り場の保証を使う） */
+export type ShopAgg = { label: string; minPrice: number; count: number; shop?: Shop };
+
+export function foldShops(byShop: PriceRow[]): ShopAgg[] {
+  const map = new Map<string, ShopAgg>();
+  for (const r of byShop) {
+    const s = findShop(r.key);
+    const label = (s?.alias ? findShop(s.alias)?.label : undefined) ?? s?.label ?? r.key;
+    const cur = map.get(label);
+    if (!cur) map.set(label, { label, minPrice: r.minPrice, count: r.count, shop: s });
+    else {
+      cur.count += r.count;
+      if (r.minPrice < cur.minPrice) { cur.minPrice = r.minPrice; cur.shop = s; }
+    }
+  }
+  return [...map.values()];
+}
+
+/** 在庫が多い店の上位 n 件の表示名 */
+export const topStockLabels = (byShop: PriceRow[], n = 3): string[] =>
+  foldShops(byShop).sort((a, b) => b.count - a.count).slice(0, n).map((s) => s.label);
+
+/** 検索結果に出る説明文（約110字以内。重要な数字を先頭に） */
+export function modelDescription(model: string, stats: { minPrice: number | null; medianPrice: number | null; count: number; shopCount: number; byShop: PriceRow[] }): string {
+  if (stats.minPrice === null) return `${model}の中古在庫を大手中古ショップから一括比較。容量・状態ランク別の最安値をまとめています。`;
+  const top = topStockLabels(stats.byShop).join("・");
+  return `${model}の中古は最安${yen(stats.minPrice)}・相場${yen(stats.medianPrice ?? stats.minPrice)}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件を容量・状態ランク・バッテリーで比較（毎日更新）。`;
+}
+
+export type Faq = { q: string; a: string };
+
+export function buildFaq(p: {
+  model: string;
+  isIphone: boolean;
+  minPrice: number;
+  medianPrice: number | null;
+  /** 最安の個体の説明（「ランクC・バッテリー80%未満」など） */
+  cheapestNote: string | null;
+  goodMin: number | null;
+  count: number;
+  shopCount: number;
+  updatedText: string | null;
+  byShop: PriceRow[];
+  /** 「いつまで使えるか」の根拠がある機種だけ。なければ質問ごと出さない */
+  supportAnswer: string | null;
+}): Faq[] {
+  const { model } = p;
+  const a1 = [
+    `${model}の中古の最安値は${yen(p.minPrice)}${p.cheapestNote ? `（${p.cheapestNote}）` : ""}です。`,
+    p.medianPrice !== null ? `相場（在庫の中央値）は${yen(p.medianPrice)}です。` : "",
+    p.goodMin !== null ? `ランクB以上・バッテリー85%以上に絞ると${yen(p.goodMin)}〜です。` : "",
+    `現在${p.shopCount}店に${p.count.toLocaleString()}件の在庫があります${p.updatedText ? `（${p.updatedText}時点）` : ""}。`,
+  ].join("");
+
+  const cheap3 = foldShops(p.byShop).sort((a, b) => a.minPrice - b.minPrice).slice(0, 3);
+  const a2 = `${model}の最安値が低い店は、${cheap3
+    .map((s) => `${s.label}（${yen(s.minPrice)}${s.shop ? `・${s.shop.warrantyShort}・${s.shop.redRomShort}` : ""}）`)
+    .join("、")}の順です。価格と在庫は毎日変わるので、買う前に各店の最新の価格をご確認ください。`;
+
+  const battery = "多くの店でバッテリー最大容量は値段に反映されていないので、同じ値段なら最大容量が高い個体を選ぶと得をします。";
+  const rank = "状態ランクは外装の傷の話で、ランクAでもバッテリーが弱い個体、ランクBでも元気な個体があります。";
+  const red = "ネットワーク利用制限「△」は基本気にしなくてよく、大手の中古店はたいてい赤ロム保証を付けています（フリマにはこの保証がありません）。";
+  const a4 = p.isIphone ? `${battery}${rank}${red}` : `${battery}${rank}`;
+
+  const faqs: Faq[] = [
+    { q: `${model}の中古はいくらで買えますか？`, a: a1 },
+    { q: `${model}の中古はどこで買うのが安いですか？`, a: a2 },
+  ];
+  if (p.supportAnswer) faqs.push({ q: `${model}の中古はいつまで使えますか？`, a: p.supportAnswer });
+  faqs.push({ q: "中古を買うときに気をつけることは？", a: a4 });
+  return faqs;
+}
