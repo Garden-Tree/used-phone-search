@@ -22,14 +22,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function SearchPage() {
+export default async function SearchPage() {
+  // 絞り込みの店の一覧は、いま在庫がある店だけ（ビルド時に決まる）
+  const activeShopNames = (await activeShops()).map((s) => s.name);
   return (
     <div className="min-h-screen bg-ground text-ink">
       <SiteHeader label="在庫検索" />
       <main className="pb-24 md:pb-6">
         {/* useSearchParams を使うクライアント部品は Suspense で包む（静的書き出しの決まり） */}
         <Suspense>
-          <SearchClient />
+          <SearchClient activeShopNames={activeShopNames} />
         </Suspense>
       </main>
       <SiteFooter />

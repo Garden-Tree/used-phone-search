@@ -97,7 +97,7 @@ function toDevices(key: string, file: InventoryFile): Device[] {
   }));
 }
 
-export default function SearchClient() {
+export default function SearchClient({ activeShopNames }: { activeShopNames?: string[] } = {}) {
   const params = useSearchParams();
   const modelQuery = params.get('model') ?? undefined;
   const shopQuery = params.get('shop') ?? undefined;
@@ -278,7 +278,7 @@ export default function SearchClient() {
         {/* PC: 絞り込みを左に常に表示 */}
         <aside className="hidden md:block bg-white border border-line rounded-xl p-4" aria-label="絞り込み">
           <h2 className="text-base font-bold mb-4">絞り込み</h2>
-          <FilterPanel key={filterKey} />
+          <FilterPanel key={filterKey} activeShopNames={activeShopNames} />
         </aside>
 
         <div className="min-w-0">
@@ -333,7 +333,7 @@ export default function SearchClient() {
               </button>
             </div>
             <div className="overflow-y-auto px-4 py-4">
-              <FilterPanel key={filterKey} />
+              <FilterPanel key={filterKey} activeShopNames={activeShopNames} />
             </div>
             <div className="shrink-0 px-4 pt-2.5 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-line grid grid-cols-[auto_1fr] gap-2">
               <button type="button" onClick={clearAll} className="h-12 px-4 rounded-xl border border-gray-300 text-[15px] font-bold text-ink">すべて解除</button>

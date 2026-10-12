@@ -53,8 +53,13 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
  * 絞り込みの中身（ショップ・価格帯・容量・ランク・バッテリー）。常に開いた状態で出す。
  * PC では左の列に置き、スマホでは下から出る画面（SearchClient）の中に置く
  */
-export default function FilterPanel() {
+export default function FilterPanel({ activeShopNames }: { activeShopNames?: string[] } = {}) {
   const searchParams = useSearchParams();
+  // 在庫がない店は出さない（ビルド時に渡される）。URL で選ばれている店は、解除できるよう残す。未指定なら全店
+  const currentShop = searchParams.get('shop');
+  const shopOptions = activeShopNames
+    ? SHOP_OPTIONS.filter((o) => o.id === 'all' || o.id === currentShop || activeShopNames.includes(o.id))
+    : SHOP_OPTIONS;
   const updateParams = useUpdateParams();
 
   // 入力中は URL を変えないよう手元に持つ。URL 側が変わったとき（ブラウザの戻るなど）は、
@@ -77,7 +82,7 @@ export default function FilterPanel() {
     <div className="space-y-6">
       <Group title="ショップ">
         <div className="flex flex-wrap gap-2">
-          {SHOP_OPTIONS.map((shop) => {
+          {shopOptions.map((shop) => {
             const isActive = (searchParams.get('shop') || 'all') === shop.id;
             return (
               <button
