@@ -15,6 +15,7 @@ import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { IPAD_SHOPS, SHOPS } from "@/lib/shops";
 import { notoSansJp } from "@/lib/ogFont";
+import { activeShops } from "@/lib/activeShops";
 
 const OUT = process.argv[2] ?? ".";
 const IPAD = process.argv[3] === "ipad";
@@ -34,7 +35,9 @@ async function save(name: string, el: React.ReactElement, text: string) {
 
 async function main() {
   const market = await getModelMarket(K.models);
-  const footer = `大手中古ショップ${K.shops}社の在庫から・${now}`;
+  // 店数は表示中の在庫がある店だけ数える（サイトと同じ。lib/activeShops.ts）
+  const shopCount = (await activeShops(IPAD ? IPAD_SHOPS : SHOPS)).length;
+  const footer = `大手中古ショップ${shopCount}店の在庫から・${now}`;
 
   // 1. 相場が安い TOP8（/iphone の「相場が安い中古iPhone」と同じ条件）
   const top = K.models.flatMap((m) => {
