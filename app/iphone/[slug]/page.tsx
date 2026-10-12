@@ -38,6 +38,7 @@ import { yen, storageLabel } from "@/lib/format";
 import { findShop, shopsFor } from "@/lib/shops";
 import { activeShopsFor } from "@/lib/activeShops";
 import { buildFaq, modelDescription } from "@/lib/modelFaq";
+import { BUYBACK_PROGRAMS } from "@/lib/buyback";
 
 // スクレイパーの後にビルドするので、在庫はその時点のもの
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -472,6 +473,42 @@ export default async function ModelPage({ params }: Props) {
             <div className={`${SEC} mt-5`}>
               <InspectionTips model={model} has64GB={has64GB} />
             </div>
+          )}
+
+          {/* 買取（A8 テキストリンク。PR 表記必須。lib/buyback.ts） */}
+          {hasStock && (
+            <section className={`${SEC} mt-5 ${CARD} overflow-hidden`}>
+              <div className="px-3.5 pt-3 pb-2 flex flex-col gap-1">
+                <h2 className="text-[15px] font-bold flex items-center gap-2">
+                  今のスマホを売るなら
+                  <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1.5 py-0.5 leading-none">PR</span>
+                </h2>
+                <p className="text-xs text-ink-mute leading-relaxed">買い替えのときは、今使っているスマホの買取も比べておくと安心です。</p>
+              </div>
+              {BUYBACK_PROGRAMS.map((p) => (
+                <a
+                  key={p.name}
+                  href={p.href}
+                  target="_blank"
+                  rel="sponsored nofollow noopener"
+                  data-shop-click=""
+                  data-shop={`${p.name}（買取）`}
+                  data-model={model}
+                  data-link-type="a8"
+                  className="flex items-center justify-between gap-3 px-3.5 py-2.5 border-t border-line-soft hover:bg-ground"
+                >
+                  <span className="flex flex-col min-w-0">
+                    <span className="text-[13px] font-bold">{p.name}</span>
+                    <span className="text-[11px] text-ink-mute leading-snug">{p.text}</span>
+                  </span>
+                  <span className="text-ink-mute" aria-hidden="true">›</span>
+                </a>
+              ))}
+              {BUYBACK_PROGRAMS.map((p) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={p.name} src={p.imgSrc} width={1} height={1} alt="" />
+              ))}
+            </section>
           )}
 
           {hasStock && (

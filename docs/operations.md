@@ -138,6 +138,11 @@
 4. API の応答の形・件数の上限を確かめるとき: `YAHOO_APP_ID=... npx tsx scripts/fetch-yahoo.ts --debug --shop <ストアID>`（最初の1商品の生の応答を出す）
 - Yahoo! JAPAN のウェブサービスを使う側の表記（クレジット）は未対応。API 規約を確認して `app/components/AdDisclosure.tsx` に足す
 
+### 買取の A8 テキストリンク（2026-10-12〜。モデルページの「今のスマホを売るなら」）
+- `lib/buyback.ts` の `BUYBACK_PROGRAMS` に1件足せば増やせる。提携済み: モバゾウ・ノジマのスマホ買取・ダイワンテレコム（買取）
+- a8mat は A8 のサイト別（中古スマホ一括検索＝サイト 002）のもの。URL・文言・1x1 画像（0.gif）は A8 の提供そのまま使う（加工しない）
+- PR 表記を見出しの横に出している（ステマ規制）。GA4 は `shop_click`（`shop_name` 末尾に「（買取）」。docs/measurement.md）
+
 ### Amazon 整備済み品（Creators API。2026-10-09 実装・認証情報の登録待ち）
 - 流れ: Actions の「Amazon 整備済み品を取り込む」が `scripts/fetch-amazon.ts`（機種 126 件 × 「<機種> 整備済み品」で SearchItems。1機種 最大5ページ＝最大 630 リクエスト・約12分。上限は1秒1回・1日 8,640 回）→
   `amazon-data/amazon.json.gz`（`{items, fetchedAt}`）→ `scripts/ingest-rakuten.ts amazon-data --family amazon`（洗い替え・半分未満なら中止の安全装置は楽天と同じ）。`AMAZON_CREDENTIAL_ID` が空なら飛ばす
