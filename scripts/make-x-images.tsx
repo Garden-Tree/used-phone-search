@@ -188,9 +188,10 @@ if (best) {
       <div style={{ display: "flex", alignItems: "flex-end", height: 250, marginTop: 20 }}>
         {bars.map(([b, c]) => (
           <div key={b} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, margin: "0 6px" }}>
-            <span style={{ fontSize: 20, fontWeight: 900, color: c ? "#334155" : "#cbd5e1" }}>{`${c}台`}</span>
-            <div style={{ width: "100%", height: Math.max(4, Math.round((c / peak) * 190)), background: b === best!.max ? "#16a34a" : "#94a3b8", borderRadius: 6, marginTop: 4 }} />
-            <span style={{ fontSize: 22, fontWeight: 900, marginTop: 8, color: b === best!.max ? "#16a34a" : "#334155" }}>{`${b}%`}</span>
+            <span style={{ fontSize: 20, fontWeight: 900, color: "#334155", whiteSpace: "nowrap", height: 26 }}>{c ? `${c}台` : ""}</span>
+            <div style={{ width: "100%", height: c ? Math.max(4, Math.round((c / peak) * 190)) : 2, background: b === best!.max ? "#16a34a" : "#94a3b8", borderRadius: 6, marginTop: 4 }} />
+            {/* 5%刻みと一番高い値だけラベルを出す（全部出すと詰まって読めない） */}
+            <span style={{ fontSize: 20, fontWeight: 900, marginTop: 8, whiteSpace: "nowrap", height: 28, color: b === best!.max ? "#16a34a" : "#334155" }}>{b % 5 === 0 || b === best!.max ? `${b}%` : ""}</span>
           </div>
         ))}
       </div>
