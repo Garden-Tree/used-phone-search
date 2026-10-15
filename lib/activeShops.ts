@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { MAC_SHOPS, SHOPS, findShop, shopsFor, type Shop } from "@/lib/shops";
+import { AQUOS_SHOPS, MAC_SHOPS, SHOPS, XPERIA_SHOPS, findShop, shopsFor, type Shop } from "@/lib/shops";
 
 /**
  * いま在庫が1件以上見える（isSoldOut=false）店だけの一覧。ページに出す「○店」の数はこれで数える。
@@ -71,8 +71,55 @@ export async function activeMacShops(): Promise<Shop[]> {
   return MAC_SHOPS.filter((s) => names.has(s.name));
 }
 
-/** 機種の種類（iPad なら iPad を扱う店など）ごとの、いま在庫がある店。MacBook は MacBook の在庫がある店 */
-export const activeShopsFor = (model: string) => (/^MacBook/.test(model) ? activeMacShops() : activeShops(shopsFor(model)));
+/**
+ * いま Xperia・AQUOS の在庫が1件以上見える店（2026-10-15〜）。MacBook と同じ理由（イオシスは楽天市場店の在庫だけ）で、
+ * その種類の在庫で数える。DB 側で shopName ごとに集計するだけ（行は取らない）
+ */
+const activeByPrefix = new Map<string, Promise<Set<string>>>();
+
+function activePrefixShopNames(prefix: string, fallback: Shop[]): Promise<Set<string>> {
+  let p = activeByPrefix.get(prefix);
+  if (!p) {
+    p = prisma.deviceInventory
+      .groupBy({ by: ["shopName"], where: { isSoldOut: false, modelName: { startsWith: prefix } }, _count: { _all: true } })
+      .then((rows) => {
+        const names = new Set<string>();
+        for (const r of rows) {
+          const shop = findShop(r.shopName);
+          const parent = shop?.alias ? findShop(shop.alias) : shop;
+          if (parent && SHOPS.includes(parent)) names.add(parent.name);
+        }
+        return names;
+      })
+      .catch((e) => {
+        // DB に届かないときはその種類を扱う全店ある扱い（次の呼び出しで再試行する）
+        console.error(`activeShops(${prefix}): failed, falling back to all shops`, e);
+        activeByPrefix.delete(prefix);
+        return new Set(fallback.map((s) => s.name));
+      });
+    activeByPrefix.set(prefix, p);
+  }
+  return p;
+}
+
+/** Xperia の在庫がいまある店（XPERIA_SHOPS のうち） */
+export async function activeXperiaShops(): Promise<Shop[]> {
+  const names = await activePrefixShopNames("Xperia", XPERIA_SHOPS);
+  return XPERIA_SHOPS.filter((s) => names.has(s.name));
+}
+
+/** AQUOS の在庫がいまある店（AQUOS_SHOPS のうち） */
+export async function activeAquosShops(): Promise<Shop[]> {
+  const names = await activePrefixShopNames("AQUOS", AQUOS_SHOPS);
+  return AQUOS_SHOPS.filter((s) => names.has(s.name));
+}
+
+/** 機種の種類（iPad なら iPad を扱う店など）ごとの、いま在庫がある店。MacBook・Xperia・AQUOS はその種類の在庫がある店 */
+export const activeShopsFor = (model: string) =>
+  /^MacBook/.test(model) ? activeMacShops()
+  : /^Xperia/.test(model) ? activeXperiaShops()
+  : /^AQUOS/.test(model) ? activeAquosShops()
+  : activeShops(shopsFor(model));
 
 export async function isShopActive(name: string): Promise<boolean> {
   return (await activeShopNames()).has(name);

@@ -1,6 +1,6 @@
 <?php
 /**
- * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone・iPad・Google Pixel・Galaxy 在庫を取得し、
+ * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone・iPad・Google Pixel・Galaxy（と、一部の店だけ MacBook・Xperia・AQUOS）在庫を取得し、
  * used.gadelog.com の受け口（/api/ingest/rakuten?shop=<shopCode>）へショップごとに送信する。
  * Cloudflare Pages 版（cloudflare-pages ブランチ）では、config.php に output_dir を書くと、送信せずに
  * <output_dir>/<shopCode>.json.gz に保存する。output_dir は公開フォルダの中の推測されにくいフォルダにし、
@@ -32,6 +32,14 @@ const KEYWORDS = ['iPhone', 'iPad', 'Pixel', 'Galaxy'];
 // MacBook は 2026-10-15〜、Apple シリコンの在庫がある3店だけ（読み取りは lib/rakutenMac.ts）。
 // ほかの店で「MacBook」を引くとモニタ・ケーブルが数万件当たり、要求数の上限（MAX_REQUESTS）を超えて店ごと失敗するため
 const MAC_SHOP_CODES = ['janpara', 'akiba-u-shop', 'pc-good'];
+// Xperia・AQUOS は 2026-10-15〜、ゲオ・じゃんぱら・ソフマップ・イオシスの4店だけ（読み取りは lib/rakutenAndroid.ts）。
+// ニューズドテック・キタムラ・エムティーエムは件数が少ないので引かない。
+// 要求数の概算（MAX_REQUESTS=1500 に収まるか）: ゲオは Xperia 約1,200件・AQUOS 約1,250件の追加で、1ページ30件 → 約 41＋42 ＝ 約 85 要求
+// （3,000 件未満なので価格帯の分割はない）。じゃんぱら・ソフマップ・イオシスは各 数百件ずつで 約 20〜40 要求。
+// 既存の取得（全店で約350要求・イオシスは MacBook 約200要求を含む）に足しても、1店あたり 1500 に収まる見込み。
+// 取得時間は ゲオで約 +95 秒（1.1 秒間隔）。実際の要求数は fetch.log の「fetched … with N requests」で確かめる
+const ANDROID_KEYWORDS = ['Xperia', 'AQUOS'];
+const ANDROID_SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'pc-good'];
 const HITS = 30;              // 1ページの最大件数
 const MAX_PAGES = 100;        // API の上限（1検索あたり最大 3,000 件）
 const INTERVAL_US = 1100000;  // 登録した QPS=1 を守るため 1.1 秒間隔
@@ -181,6 +189,7 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
     }
 
     $keywords = in_array($shopCode, MAC_SHOP_CODES, true) ? array_merge(KEYWORDS, ['MacBook']) : KEYWORDS;
+    if (in_array($shopCode, ANDROID_SHOP_CODES, true)) $keywords = array_merge($keywords, ANDROID_KEYWORDS);
     foreach ($keywords as $keyword) {
         collectRange($config, $shopCode, $keyword, 1, 999999, $items);
     }

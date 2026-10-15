@@ -54,15 +54,15 @@ function galaxyStorageFromCode(raw: string): number {
 }
 
 /** 後ろの「Apple スマホ …」「Google 当社3ヶ月間保証 …」を落とした、公式の商品名に近い部分 */
-function core(name: string): string {
+export function core(name: string): string {
   return name
     .replace(/^【(?:中古|未使用)】/, "")
-    .split(/\s(?:Apple|Google|SAMSUNG)\s+(?:スマホ|当社)/)[0]
+    .split(/\s(?:Apple|Google|SAMSUNG|SONY|SHARP)\s+(?:スマホ|当社)/)[0]
     .trim();
 }
 
 /** iosis_scraper.py の parse_carrier と同じ（「国内版」は "Apple" で返し、Pixel・Galaxy の側で置き換える） */
-function parseCarrier(raw: string): string | null {
+export function parseCarrier(raw: string): string | null {
   const lower = raw.toLowerCase();
   if (lower.includes("au")) return "au";
   if (lower.includes("docomo")) return "docomo";
@@ -73,7 +73,7 @@ function parseCarrier(raw: string): string | null {
 }
 
 /** iosis_scraper.py の parse_network_status と同じ */
-function parseNetworkStatus(raw: string, carrier: string | null): string | null {
+export function parseNetworkStatus(raw: string, carrier: string | null): string | null {
   const m = raw.match(/ネットワーク利用制限\(?([〇△▲×－\-])\)?/);
   if (m) return ({ "▲": "△", "－": "-" } as Record<string, string>)[m[1]] ?? m[1];
   if (carrier === "Apple" || (carrier === null && raw.includes("SIMフリー"))) return null;
@@ -86,7 +86,7 @@ function parseColor(raw: string, storageLabel: string): string {
   return stripPartNumber(after.split("【")[0]) || "不明";
 }
 
-const unlockedWords = (raw: string) => /ロック解除|SIMフリー|国内版/.test(raw);
+export const unlockedWords = (raw: string) => /ロック解除|SIMフリー|国内版/.test(raw);
 
 export function normalizeIosysItem(item: RakutenItem): Row | null {
   if (!item.url || !(item.price > 0)) return null;

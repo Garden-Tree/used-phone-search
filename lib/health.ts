@@ -23,6 +23,9 @@ const DEVICES = [
   { key: "galaxy", label: "Galaxy", prefix: "Galaxy" },
   // MacBook は 2026-10-15〜。公式のイオシスは MacBook を楽天市場店（alias）の在庫で出すので、alias の件数も合わせて見る
   { key: "mac", label: "MacBook", prefix: "MacBook" },
+  // Xperia・AQUOS は 2026-10-15〜（ゲオ・じゃんぱら・ソフマップ・イオシス）。イオシスは MacBook と同じく楽天市場店（alias）の在庫で出す
+  { key: "xperia", label: "Xperia", prefix: "Xperia" },
+  { key: "aquos", label: "AQUOS", prefix: "AQUOS" },
 ] as const;
 
 export type HealthReport = {
@@ -90,7 +93,7 @@ export async function checkHealth(): Promise<HealthReport> {
       DEVICES.filter((d) => {
         if (!shop[d.key]) return false;
         const own = deviceCounts.get(`${shop.name}:${d.key}`) ?? 0;
-        const viaAlias = d.key === "mac" ? SHOPS.filter((s) => s.alias === shop.name).reduce((n, s) => n + (deviceCounts.get(`${s.name}:${d.key}`) ?? 0), 0) : 0;
+        const viaAlias = d.key === "mac" || d.key === "xperia" || d.key === "aquos" ? SHOPS.filter((s) => s.alias === shop.name).reduce((n, s) => n + (deviceCounts.get(`${s.name}:${d.key}`) ?? 0), 0) : 0;
         return own + viaAlias === 0;
       }).map((d) => `${shop.label}: ${d.label} が0件`),
     );

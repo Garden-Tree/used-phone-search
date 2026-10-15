@@ -18,10 +18,10 @@
 - **GA4 は used 専用プロパティ 556047315（`G-YV3ZR0N6B1`）**（docs/measurement.md）
 - **ホスティング**: Cloudflare Pages（10/6〜。Vercel は 10/20 ごろまで残す。`docs/cloudflare-pages.md`）
 - **DB**: Neon（Launch。Vercel を止めた後に Free へ。ideas/10-04）
-- **データ更新**: シンの cron → Actions（＋定期実行）→ 取り込み・書き出し・配置（`docs/operations.md`）
+- **データ更新**: シンの cron → Actions → 取り込み・書き出し・配置（`docs/operations.md`）
 - **デザイン**: 10/11 に全ページ作り直し（決まりは `docs/design.md`）。10/13 以降の数字はこの変更込みで見る
 - **ページ方針**: 全ページ静的（1日4回のビルド）。検索ページはブラウザで絞り込み・noindex。「検品担当が見るポイント」・`/about` の文面はユーザー確認後に変える
-- **画面の店数は表示中の在庫がある店だけ数える**（`lib/activeShops.ts`。Amazon 停止中は16店）
+- **画面の店数は表示中の在庫がある店だけ数える**（`lib/activeShops.ts`）
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**（保証は各店の公式で確認）
 - **スペック・保証期限・発売年月は公式で確かめた値だけ載せる**（`lib/*Specs.ts`・`*Catalog.ts`）
 - **楽天の店**: ゲオ・じゃんぱら・ソフマップ・ニューズドテック・キタムラ・イオシス・エムティーエム
@@ -29,7 +29,7 @@
 - **Amazon 整備済み品**: 10/11〜資格なし（売上が条件）で停止中。古い価格は自動で隠れ、資格が戻れば再開
 - **Yahoo!ショッピング 7店**: もしも経由（VC の審査後に自動で VC へ。ideas/10-10）
 - **収益の枠**: スマホの機種ページに「回線も見直すなら（PR）」＝ahamo（A8）・楽天モバイル（楽天アフィ）（`lib/simPlans.ts`・10/15〜）と「今のスマホを売るなら（PR）」＝A8 の買取3社（`lib/buyback.ts`）
-- **掲載機種**: iPhone（iOS 27 対応＋旧機種 X/XS/XR/8/7）・iPad 32・Pixel 24・Galaxy 29。18 Pro・Pro Max 以外の 18 系・iPhone Duo は中古在庫が出てから（台帳 11月）
+- **掲載機種**: iPhone（iOS 27 対応＋X/XS/XR/8/7）・iPad 32・Pixel 24・Galaxy 29・MacBook 35・Xperia 17・AQUOS 21（Mac 以降は 10/15〜・ideas/10-15）。18 系の残り・iPhone Duo は在庫が出てから
 
 ## 確認台帳（計測・判定）
 
@@ -49,8 +49,9 @@
 ## 次にやる（順序）
 
 ```
-1. X の日々の運用（ideas/x-posts-2026-10-12.md）。サイトは 10/18 まで触らない
-2. MacBook（ideas/10-15）: 10/15 本番 2,108件・トップの入口・監視も済み。次は数字の様子見
+1. Xperia・AQUOS: push → fetch.php 上書き → 取り込み後に件数・読み取りを確認
+2. Apple Watch（世代ごと1ページ。サイズ・GPS/Cellular・素材で絞り込み）
+3. X の日々の運用（ideas/x-posts-2026-10-12.md）
 ```
 
 ## 期限のあるもの

@@ -27,6 +27,7 @@ import { SPEC_ROWS, displayText, specOf, specSourceName, specUrl } from "@/lib/i
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
+import { androidInfoOf, codeRows, isAndroidJp, releasedSentence, supportSentence, updateRows, updateSource } from "@/lib/androidInfo";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
 import { BUDGET_NAMES, budgetLabel, budgetPath, type BudgetDevice } from "@/lib/budgets";
@@ -267,7 +268,8 @@ export default async function ModelPage({ params }: Props) {
   const device = deviceOf(model);
   // MacBook（2026-10-15〜）: 容量×ランクの代わりにメモリ／SSD×ランク、結論はバッテリーの条件なし、予算別ページはまだない
   const mac = device === "mac";
-  const budgetDevice: BudgetDevice | null = device === "mac" ? null : device;
+  // Xperia・AQUOS（2026-10-15〜）も予算別ページはまだない
+  const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" ? null : device;
   const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
   const [stats, history, batteryRows, matrix, macMatrix, budget, goodMin] = await Promise.all([
     getModelStats(model),
@@ -286,7 +288,12 @@ export default async function ModelPage({ params }: Props) {
   const pixel = PIXEL_INFO[model];
   const pixelUntil = updateUntil(model);
   // 保証の残り（ビルドのたびに作り直すので、その時点の年月で計算する）
-  const pixelLeft = updateYearsLeft(model, new Date().toISOString().slice(0, 7));
+  const nowYm = new Date().toISOString().slice(0, 7);
+  const pixelLeft = updateYearsLeft(model, nowYm);
+  // Xperia・AQUOS（2026-10-15〜）: メーカーの公式資料の値（型番・OS 更新・セキュリティ更新。lib/androidInfo.ts）
+  const androidInfo = androidInfoOf(model);
+  const androidUpdates = updateRows(model, nowYm);
+  const androidCodes = codeRows(model);
   const series = seriesOf(model);
   const siblings = siblingModels(model);
   const path = modelPagePath(model);
@@ -319,6 +326,8 @@ export default async function ModelPage({ params }: Props) {
         ? (IPADOS27_MODELS.has(model) ? `${model}は iPadOS 27 に対応しています。` : `${model}は iPadOS 27 には対応していません。`)
         : mac
           ? `${model}は macOS 27 Golden Gate に対応しています。`
+        : isAndroidJp(model)
+          ? supportSentence(model, nowYm)
         : isIphone
           ? (ALL_CATALOG_MODELS.includes(model) ? `${model}は iOS 27 に対応しています。` : `${model}は iOS 27 には対応していないため、サブ機・撮影用向けです。`)
           : null;
@@ -473,6 +482,8 @@ export default async function ModelPage({ params }: Props) {
                   ? (IPADOS27_MODELS.has(model) ? "iPadOS 27 に対応しています。" : "iPadOS 27 には対応していません。")
                   : deviceOf(model) === "galaxy"
                     ? (GALAXY_RELEASED[model] ? `日本では${jaMonth(GALAXY_RELEASED[model])}に発売されました。` : null)
+                  : isAndroidJp(model)
+                    ? <>{releasedSentence(model)}{supportSentence(model, nowYm)}</>
                     : mac
                       ? "macOS 27 Golden Gate に対応しています。"
                       : (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
@@ -552,7 +563,7 @@ export default async function ModelPage({ params }: Props) {
           )}
 
           {/* 回線（A8・楽天アフィリエイトのテキストリンク。PR 表記必須。lib/simPlans.ts）。スマホの機種ページだけ */}
-          {hasStock && (device === "iphone" || device === "pixel" || device === "galaxy") && (
+          {hasStock && (device === "iphone" || device === "pixel" || device === "galaxy" || device === "xperia" || device === "aquos") && (
             <section className={`${SEC} mt-5 ${CARD} overflow-hidden`}>
               <div className="px-3.5 pt-3 pb-2 flex flex-col gap-1">
                 <h2 className="text-[15px] font-bold flex items-center gap-2">
@@ -727,6 +738,32 @@ export default async function ModelPage({ params }: Props) {
                       出典: Google「<a href="https://support.google.com/pixelphone/answer/4457705" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">Pixel のアップデート保証期間</a>」
                       「<a href="https://support.google.com/pixelphone/answer/15738422" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">デバイスが利用可能になった時期</a>」。
                       保証の終わりは、販売開始の年月に年数を足したものです。
+                    </p>
+                  </Accordion>
+                )}
+                {/* Xperia・AQUOS の型番とアップデート（メーカーの公式資料の値。未確認の項目は出さない。lib/androidInfo.ts） */}
+                {androidInfo && (androidCodes.length > 0 || androidUpdates.length > 0) && (
+                  <Accordion title={`${model}の型番とアップデート`} hint={androidUpdates.find((r) => r.label === "セキュリティ更新")?.value}>
+                    <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                      {androidUpdates.map((r) => (
+                        <div key={r.label} className="contents">
+                          <dt className="text-ink-mute font-bold">{r.label}</dt>
+                          <dd>{r.value}</dd>
+                        </div>
+                      ))}
+                      {androidCodes.map((r) => (
+                        <div key={r.label} className="contents">
+                          <dt className="text-ink-mute font-bold">型番（{r.label}）</dt>
+                          <dd>{r.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                    <p className="mt-3 text-[11px] text-ink-mute leading-relaxed">
+                      出典: {updateSource(model).map((src, i) => (
+                        <span key={src.url}>{i > 0 && "・"}<a href={src.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">{src.name}</a></span>
+                      ))}。
+                      {androidUpdates.some((r) => r.label === "セキュリティ更新") && "セキュリティ更新の終わりはメーカーの法人向け資料の値です。"}
+                      {androidUpdates.length === 0 && "OS・セキュリティ更新の期間は、公式の記載を確かめられていないので載せていません。"}
                     </p>
                   </Accordion>
                 )}

@@ -2,6 +2,8 @@ import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
 import { PIXEL_CATALOG, PIXEL_MODELS, isPixel } from "@/lib/pixelCatalog";
 import { GALAXY_CATALOG, GALAXY_MODELS, isGalaxy } from "@/lib/galaxyCatalog";
 import { MAC_CATALOG, MAC_MODELS, isMac } from "@/lib/macCatalog";
+import { XPERIA_CATALOG, XPERIA_MODELS, isXperia } from "@/lib/xperiaCatalog";
+import { AQUOS_CATALOG, AQUOS_MODELS, isAquos } from "@/lib/aquosCatalog";
 
 // iOS 27（2026年9月配信）対応モデルのカタログ（トップページ・sitemap で共有）。
 // iOS 27 は iOS 26 と同じく iPhone 11 以降・SE 第2/第3世代が対象。
@@ -74,8 +76,8 @@ export const ALL_CATALOG_MODELS = IPHONE_CATALOG.flatMap((s) => s.models);
 /** モデル別ページを持つ全 iPhone（新しい順） */
 export const ALL_PAGE_MODELS = [...ALL_CATALOG_MODELS, ...LEGACY_SERIES.flatMap((s) => s.models)];
 
-/** モデル別ページを持つ全機種（iPhone・iPad・Pixel・Galaxy・MacBook）。価格推移の記録・sitemap・slug の解決に使う。MacBook は末尾（2026-10-15〜。既存機種の並びは変えない） */
-export const ALL_DEVICE_PAGE_MODELS = [...ALL_PAGE_MODELS, ...IPAD_MODELS, ...PIXEL_MODELS, ...GALAXY_MODELS, ...MAC_MODELS];
+/** モデル別ページを持つ全機種（iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS）。価格推移の記録・sitemap・slug の解決に使う。MacBook・Xperia・AQUOS は末尾（2026-10-15〜。既存機種の並びは変えない） */
+export const ALL_DEVICE_PAGE_MODELS = [...ALL_PAGE_MODELS, ...IPAD_MODELS, ...PIXEL_MODELS, ...GALAXY_MODELS, ...MAC_MODELS, ...XPERIA_MODELS, ...AQUOS_MODELS];
 
 const ORDINAL: Record<string, string> = { "1": "1st", "2": "2nd", "3": "3rd" };
 
@@ -95,11 +97,11 @@ export function slugToModel(slug: string): string | undefined {
 
 export const isIpad = (model: string) => /^iPad/.test(model);
 
-export type Device = "iphone" | "ipad" | "pixel" | "galaxy" | "mac";
+export type Device = "iphone" | "ipad" | "pixel" | "galaxy" | "mac" | "xperia" | "aquos";
 
-/** 機種の種類（URL の先頭の /iphone・/ipad・/pixel・/galaxy・/mac と同じ） */
+/** 機種の種類（URL の先頭の /iphone・/ipad・/pixel・/galaxy・/mac・/xperia・/aquos と同じ） */
 export const deviceOf = (model: string): Device =>
-  isIpad(model) ? "ipad" : isPixel(model) ? "pixel" : isGalaxy(model) ? "galaxy" : isMac(model) ? "mac" : "iphone";
+  isIpad(model) ? "ipad" : isPixel(model) ? "pixel" : isGalaxy(model) ? "galaxy" : isMac(model) ? "mac" : isXperia(model) ? "xperia" : isAquos(model) ? "aquos" : "iphone";
 
 /** 機種の種類ごとの一覧ページ（パンくず）とメーカー（構造化データ） */
 export const DEVICE_HUB: Record<Device, { path: string; name: string; brand: string }> = {
@@ -108,6 +110,8 @@ export const DEVICE_HUB: Record<Device, { path: string; name: string; brand: str
   pixel: { path: "/pixel", name: "中古Google Pixel", brand: "Google" },
   galaxy: { path: "/galaxy", name: "中古Galaxy", brand: "Samsung" },
   mac: { path: "/mac", name: "中古MacBook", brand: "Apple" },
+  xperia: { path: "/xperia", name: "中古Xperia", brand: "Sony" },
+  aquos: { path: "/aquos", name: "中古AQUOS", brand: "Sharp" },
 };
 
 export function modelPagePath(model: string): string {
@@ -116,7 +120,7 @@ export function modelPagePath(model: string): string {
 
 /** 同じシリーズの他モデル */
 export function siblingModels(model: string): string[] {
-  const group = [...IPHONE_CATALOG, ...LEGACY_SERIES, ...IPAD_CATALOG, ...PIXEL_CATALOG, ...GALAXY_CATALOG, ...MAC_CATALOG].find((s) => s.models.includes(model));
+  const group = [...IPHONE_CATALOG, ...LEGACY_SERIES, ...IPAD_CATALOG, ...PIXEL_CATALOG, ...GALAXY_CATALOG, ...MAC_CATALOG, ...XPERIA_CATALOG, ...AQUOS_CATALOG].find((s) => s.models.includes(model));
   return group ? group.models.filter((m) => m !== model) : [];
 }
 

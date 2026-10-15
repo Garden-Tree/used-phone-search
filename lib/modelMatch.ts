@@ -2,6 +2,8 @@ import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { PIXEL_MODELS } from "@/lib/pixelCatalog";
 import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
 import { MAC_MODELS } from "@/lib/macCatalog";
+import { XPERIA_MODELS } from "@/lib/xperiaCatalog";
+import { AQUOS_MODELS } from "@/lib/aquosCatalog";
 
 /**
  * 機種名の照合（DB に依存しない部分）。サーバー（lib/deviceSearch.ts）と、
@@ -67,9 +69,10 @@ export function matchesModel(query: string, modelName: string): boolean {
     if (MAC_MODELS.some((m) => m.toLowerCase() === q)) return q === name;
     return /^macbook/.test(name) && q.split(/\s+/).every((word) => name.includes(word));
   }
-  // Pixel・Galaxy も取り込み時にメーカーの表記（lib/pixelCatalog.ts・lib/galaxyCatalog.ts）にそろえている。考え方は iPad と同じ
-  // （トークン判定だと「Pixel 9」が「Pixel 9a」「Pixel 9 Pro」に、「Galaxy S24」が「Galaxy S24 Ultra」にも当たる）
-  for (const [prefix, models] of [["pixel", PIXEL_MODELS], ["galaxy", GALAXY_MODELS]] as const) {
+  // Pixel・Galaxy・Xperia・AQUOS も取り込み時にメーカーの表記（lib/pixelCatalog.ts・galaxyCatalog.ts・xperiaCatalog.ts・aquosCatalog.ts）にそろえている。考え方は iPad と同じ
+  // （トークン判定だと「Pixel 9」が「Pixel 9a」「Pixel 9 Pro」に、「Galaxy S24」が「Galaxy S24 Ultra」に、「Xperia 1 V」が「Xperia 1 VI」に、「AQUOS sense7」が「AQUOS sense7 plus」にも当たる。
+  // 正式名での検索は完全一致なので、これらは当たらない）
+  for (const [prefix, models] of [["pixel", PIXEL_MODELS], ["galaxy", GALAXY_MODELS], ["xperia", XPERIA_MODELS], ["aquos", AQUOS_MODELS]] as const) {
     const isQuery = query.trim().toLowerCase().startsWith(prefix);
     if (!isQuery && !modelName.trim().toLowerCase().startsWith(prefix)) continue;
     if (!isQuery) return false;
@@ -103,6 +106,8 @@ export const SEARCH_DEVICES = [
   { key: "pixel", label: "Pixel", prefix: "Pixel" },
   { key: "galaxy", label: "Galaxy", prefix: "Galaxy" },
   { key: "mac", label: "MacBook", prefix: "MacBook" },
+  { key: "xperia", label: "Xperia", prefix: "Xperia" },
+  { key: "aquos", label: "AQUOS", prefix: "AQUOS" },
 ] as const;
 
 export const findSearchDevice = (key: string | null | undefined) => SEARCH_DEVICES.find((d) => d.key === key);

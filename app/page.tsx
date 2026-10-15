@@ -5,6 +5,8 @@ import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { PIXEL_MODELS } from "@/lib/pixelCatalog";
 import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
 import { MAC_MODELS } from "@/lib/macCatalog";
+import { XPERIA_MODELS } from "@/lib/xperiaCatalog";
+import { AQUOS_MODELS } from "@/lib/aquosCatalog";
 import { minPriceByModel } from "@/lib/budgetStats";
 import { yen } from "@/lib/format";
 import { comparePath } from "@/lib/compare";
@@ -82,6 +84,8 @@ const DEVICE_HUBS: { label: string; path: string; models: string[] }[] = [
   { label: "Pixel", path: "/pixel", models: PIXEL_MODELS },
   { label: "Galaxy", path: "/galaxy", models: GALAXY_MODELS },
   { label: "MacBook", path: "/mac", models: MAC_MODELS },
+  { label: "Xperia", path: "/xperia", models: XPERIA_MODELS },
+  { label: "AQUOS", path: "/aquos", models: AQUOS_MODELS },
 ];
 
 const pill =
@@ -111,7 +115,7 @@ export default async function Home() {
             <span className="text-[19px] md:text-2xl">最安値を大手{shops.length}店から一括比較</span>
           </h1>
           <p className="text-sm leading-relaxed text-ink-sub">
-            大手中古ショップ{shops.length}社の iPhone・iPad・Pixel・Galaxy・MacBook の価格、状態ランク、容量、バッテリーを一括比較。
+            大手中古ショップ{shops.length}社の iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS の価格、状態ランク、容量、バッテリーを一括比較。
             {total > 0 && <>在庫 {total.toLocaleString()}件。</>}
             欲しいモデルの最安値をすぐに見つけられます。
           </p>
@@ -212,7 +216,7 @@ export default async function Home() {
         {/* シリーズから探す: 種類ごとの入口と、iPhone のシリーズ別の機種一覧 */}
         <section className="pt-[18px] flex flex-col gap-2.5">
           <h2 className={h2}>シリーズから探す</h2>
-          <div className="bg-white border border-line rounded-xl overflow-hidden grid grid-cols-2 md:grid-cols-5">
+          <div className="bg-white border border-line rounded-xl overflow-hidden grid grid-cols-2 md:grid-cols-4">
             {DEVICE_HUBS.map((h) => {
               const n = h.models.reduce((sum, m) => sum + (prices.get(m)?.count ?? 0), 0);
               return (
@@ -257,7 +261,7 @@ export default async function Home() {
         <section className="pt-[18px] flex flex-col gap-2.5">
           <h2 className={h2}>比較している{shops.length}店</h2>
           <p className="text-xs text-ink-mute">
-            {total > 0 && <>在庫 {total.toLocaleString()}件（iPhone・iPad・Pixel・Galaxy・MacBook）。</>}店名を押すとその店の在庫を一覧できます
+            {total > 0 && <>在庫 {total.toLocaleString()}件（iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS）。</>}店名を押すとその店の在庫を一覧できます
           </p>
           <ul className="bg-white border border-line rounded-xl px-3.5 py-1 grid grid-cols-2 md:grid-cols-4 gap-x-3.5">
             {shops.map((shop) => {
