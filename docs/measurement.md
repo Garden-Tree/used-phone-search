@@ -57,6 +57,7 @@
   - パラメータ: `shop_name`・`model_name`・`storage`・`condition_rank`・`price`・`link_type`（`rakuten`／`a8`／`vc`＝Yahoo!ショッピングの ValueCommerce／`moshimo`＝Yahoo!ショッピングのもしもアフィリエイト／`amazon`／`direct`＝収益にならない直リンク）
   - 5つ（price 以外）をカスタムディメンション（イベント）に登録済み。レポートに出るのは登録した日（10/7）以降のデータだけ
 - 買取リンク（モデルページの「今のスマホを売るなら」。`lib/buyback.ts`）のクリックも同じ `shop_click`。`shop_name` は「モバゾウ（買取）」のように末尾に **（買取）** が付き、`link_type` は `a8`、`model_name` は表示中の機種（容量・ランク・価格は空／0）
+- 回線リンク（スマホの機種ページの「回線も見直すなら」。`lib/simPlans.ts`・2026-10-15〜）も `shop_click`。`shop_name` は「ahamo（回線）」「楽天モバイル（回線）」、`link_type` は `a8`／`rakuten`
 - 見方: レポート → エンゲージメント → イベント → `shop_click`、または探索で 行=shop_name／link_type／ページパス、値=イベント数
 - アフィリエイト側の数字（A8 のサイト別「中古スマホ一括検索」・楽天アフィリエイト）とも突き合わせる。楽天のアフィリエイト ID はブログと共通なので、楽天側ではサイトを分けられない
 - 拡張計測の「離脱クリック」（`click`・リンクドメイン）も引き続き取れるが、楽天とブログが混ざる・店が分からないので、店ごとの判断は shop_click で行う
