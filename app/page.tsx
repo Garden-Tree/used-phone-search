@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { ALL_DEVICE_PAGE_MODELS, IPHONE_CATALOG, modelPagePath } from "@/lib/catalog";
+import { ALL_DEVICE_PAGE_MODELS, IPHONE_CATALOG, modelPagePath, slugToModel } from "@/lib/catalog";
 import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { PIXEL_MODELS } from "@/lib/pixelCatalog";
 import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
@@ -11,15 +11,15 @@ import { WATCH_MODELS } from "@/lib/watchCatalog";
 import { minPriceByModel } from "@/lib/budgetStats";
 import { yen } from "@/lib/format";
 import { comparePath } from "@/lib/compare";
-import { GALAXY_PICKS, IPAD_PICKS, PIXEL_PICKS, pickPath, type Pick } from "@/lib/picks";
-import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetLabel, budgetPath, type BudgetDevice } from "@/lib/budgets";
+import { IPHONE_PICKS, pickPath } from "@/lib/picks";
+import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import prisma from "@/lib/prisma";
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
-import PriceDrops from "@/app/components/PriceDrops";
-import { getModelMarket, getPriceDrops, type ModelMarket } from "@/lib/marketStats";
+import BudgetPicker, { type BudgetOption } from "@/app/components/BudgetPicker";
+import { getModelMarket, getPriceDrops, shortDate, type ModelMarket } from "@/lib/marketStats";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 import { BUILD_TIME } from "@/lib/buildTime";
 
@@ -90,9 +90,35 @@ const DEVICE_HUBS: { label: string; path: string; models: string[] }[] = [
   { label: "Apple Watch", path: "/watch", models: WATCH_MODELS },
 ];
 
-const pill =
-  "min-h-10 inline-flex items-center px-3.5 bg-white border border-line rounded-full text-[13px] font-medium text-ink hover:border-brand-200 hover:text-brand-800";
+// シリーズのタイルの色（docs/design.md ではなく 10/16 の決定版の見本どおり）
+const HUB_COLORS: Record<string, string> = {
+  iPhone: "bg-[#312E81]",
+  iPad: "bg-[#0F766E]",
+  "Apple Watch": "bg-[#B45309]",
+  Pixel: "bg-[#166534]",
+  Galaxy: "bg-[#6D28D9]",
+  MacBook: "bg-[#374151]",
+  Xperia: "bg-[#1E40AF]",
+  AQUOS: "bg-[#9A3412]",
+};
+// タイルの並び（見本: 件数の多い順ではなく固定）
+const HUB_ORDER = ["iPhone", "iPad", "Apple Watch", "Pixel", "Galaxy", "MacBook", "Xperia", "AQUOS"];
+
+// 末尾に名前を出す主な店（在庫がある店だけ）
+const MAIN_SHOP_LABELS = ["イオシス", "じゃんぱら", "ソフマップ", "ゲオモバイル", "にこスマ", "ダイワンテレコム"];
+
+const BUDGET_OPTIONS: BudgetOption[] = [
+  { device: "iphone", label: "iPhone", budgets: BUDGETS },
+  { device: "ipad", label: "iPad", budgets: IPAD_BUDGETS },
+  { device: "pixel", label: "Pixel", budgets: PIXEL_BUDGETS },
+  { device: "galaxy", label: "Galaxy", budgets: GALAXY_BUDGETS },
+];
+
 const h2 = "text-[17px] font-bold";
+const card = "bg-white border border-line rounded-xl";
+
+/** 在庫の総数を「7.1万」のように（1万未満はそのまま） */
+const manLabel = (n: number) => (n >= 10000 ? `${(Math.floor(n / 1000) / 10).toFixed(1)}万` : n.toLocaleString());
 
 export default async function Home() {
   const [counts, prices, drops, popular] = await Promise.all([shopCounts(), modelPrices(), getPriceDrops(7, 6), popularMarket()]);
@@ -103,25 +129,61 @@ export default async function Home() {
     const r = popular.get(m);
     return r ? [{ model: m, ...r }] : [];
   });
+  // 人気の機種の横軸: 表示機種の相場の最大値 × 1.15
+  const axisMax = Math.max(1, ...popularRows.map((r) => Math.max(r.medianPrice, r.minPrice))) * 1.15;
+
+  const hubs = HUB_ORDER.flatMap((label) => {
+    const h = DEVICE_HUBS.find((x) => x.label === label);
+    if (!h) return [];
+    return [{ ...h, n: h.models.reduce((sum, m) => sum + (prices.get(m)?.count ?? 0), 0) }];
+  });
+
+  // 値下がり（記録が足りないときは空で、節ごと出さない）。カタログから外した機種は除く
+  const dropRows = drops.flatMap((d) => {
+    const model = slugToModel(d.modelSlug);
+    return model ? [{ ...d, model }] : [];
+  });
+  const maxRate = Math.max(1, ...dropRows.map((d) => d.rate));
+
+  // よく比較される機種: 両方の最安値があるものから3つ（差は2機種の最安値の差）
+  const compareCards = FEATURED_COMPARES.flatMap(([a, b]) => {
+    const pa = prices.get(a)?.minPrice;
+    const pb = prices.get(b)?.minPrice;
+    return pa !== undefined && pb !== undefined ? [{ a, b, diff: Math.abs(pa - pb) }] : [];
+  }).slice(0, 3);
+
+  const mainShops = MAIN_SHOP_LABELS.filter((l) => shops.some((s) => s.label === l));
+  const restShops = shops.length - mainShops.length;
 
   return (
     <div className="min-h-screen text-ink">
       <SiteHeader />
 
-      {/* ヒーロー: h1・説明・検索欄 */}
+      {/* 冒頭: h1・数字タイル・検索欄 */}
       <section className="bg-white border-b border-line">
-        <div className="max-w-[1120px] mx-auto px-4 pt-[22px] pb-5 flex flex-col gap-3 md:items-start">
-          <h1 className="text-[25px] md:text-4xl leading-[1.35] font-bold">
-            中古スマホ一括検索
+        <div className="max-w-[1120px] mx-auto px-4 pt-[18px] pb-4 flex flex-col gap-3 md:items-start">
+          <h1 className="text-[22px] md:text-4xl leading-[1.3] font-bold">
+            中古スマホの最安値を
             <br />
-            <span className="text-[19px] md:text-2xl">最安値を大手{shops.length}店から一括比較</span>
+            {shops.length}店からまとめて
           </h1>
-          <p className="text-sm leading-relaxed text-ink-sub">
-            大手中古ショップ{shops.length}社の iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch の価格、状態ランク、容量、バッテリーを一括比較。
-            {total > 0 && <>在庫 {total.toLocaleString()}件。</>}
-            欲しいモデルの最安値をすぐに見つけられます。
-          </p>
-          <form action="/search" method="GET" className="flex gap-2 mt-0.5 w-full md:max-w-xl">
+          <div className="grid grid-cols-3 gap-2 w-full md:max-w-xl">
+            <div className="bg-brand-50 rounded-xl py-2.5 px-2 flex flex-col items-center">
+              <span className="text-xl font-bold text-brand-900">{shops.length}</span>
+              <span className="text-[10px] text-ink-sub">店</span>
+            </div>
+            {total > 0 && (
+              <div className="bg-brand-50 rounded-xl py-2.5 px-2 flex flex-col items-center">
+                <span className="text-xl font-bold text-brand-900">{manLabel(total)}</span>
+                <span className="text-[10px] text-ink-sub">件の在庫</span>
+              </div>
+            )}
+            <div className="bg-brand-50 rounded-xl py-2.5 px-2 flex flex-col items-center">
+              <span className="text-xl font-bold text-brand-900">4回</span>
+              <span className="text-[10px] text-ink-sub">毎日更新</span>
+            </div>
+          </div>
+          <form action="/search" method="GET" className="flex gap-2 w-full md:max-w-xl">
             <label htmlFor="q" className="sr-only">機種名</label>
             <input
               id="q"
@@ -135,169 +197,157 @@ export default async function Home() {
               検索
             </button>
           </form>
-          <Link href="/search" className="text-[13px] text-brand-600 hover:text-brand-800">
-            iPhone の在庫をすべて見る ›
-          </Link>
-          <p className="text-xs text-ink-mute">
+          <p className="text-[11px] text-ink-mute">
             更新 {BUILD_TIME} ・ <span className="border border-[#C7CBD4] rounded px-1">PR</span> アフィリエイト広告を利用しています
           </p>
         </div>
       </section>
 
-      <main className="max-w-[1120px] mx-auto px-4 pb-4">
+      <main className="max-w-[1120px] mx-auto px-4 pb-6">
+        {/* シリーズのタイル */}
+        <nav aria-label="シリーズから探す" className="pt-4 grid grid-cols-4 md:grid-cols-8 gap-2">
+          {hubs.map((h) => (
+            <Link
+              key={h.path}
+              href={h.path}
+              className={`${HUB_COLORS[h.label]} text-white rounded-xl py-3 px-1.5 flex flex-col items-center gap-0.5 hover:opacity-90`}
+            >
+              <span className="text-[13px] font-bold">{h.label === "Apple Watch" ? "Watch" : h.label}</span>
+              {h.n > 0 && <span className="text-[10px] opacity-85">{h.n.toLocaleString()}</span>}
+            </Link>
+          ))}
+        </nav>
+
         {/* 人気の機種 */}
         {popularRows.length > 0 && (
-          <section className="pt-[22px] flex flex-col gap-2.5">
+          <section className="pt-5 flex flex-col gap-2.5">
             <div className="flex items-baseline justify-between">
               <h2 className={h2}>人気の機種</h2>
-              <Link href="/iphone" className="text-[13px] text-brand-600 hover:text-brand-800">全機種の相場 ›</Link>
+              <Link href="/iphone" className="text-xs text-brand-600 hover:text-brand-800">全機種の相場 ›</Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {popularRows.map((r) => (
-                <Link key={r.model} href={modelPagePath(r.model)} className="bg-white border border-line rounded-xl p-3 flex flex-col gap-0.5 text-ink hover:border-brand-200">
-                  <span className="text-sm font-bold">{r.model}</span>
-                  <span className="text-xl font-bold text-price leading-[1.3]">
-                    {yen(r.minPrice)}<span className="text-[11px] text-ink-mute font-normal"> 〜</span>
-                  </span>
-                  <span className="text-[11px] text-ink-mute">相場 {yen(r.medianPrice)} ・ {r.count.toLocaleString()}件</span>
-                </Link>
-              ))}
+            <div className={`${card} px-3.5 py-3 flex flex-col gap-2.5`}>
+              <div className="flex gap-3 text-[10px] text-ink-mute">
+                <span className="flex items-center gap-1"><span className="w-3 h-2 bg-price rounded-sm" />最安値</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-2 bg-[#CBD5E1] rounded-sm" />相場まで</span>
+                <span className="ml-auto">横軸 0〜{Math.round(axisMax / 10000)}万円</span>
+              </div>
+              <div className="flex flex-col gap-2.5 md:grid md:grid-cols-2 md:gap-x-8">
+                {popularRows.map((r) => {
+                  const minW = (r.minPrice / axisMax) * 100;
+                  const gapW = (Math.max(r.medianPrice - r.minPrice, 0) / axisMax) * 100;
+                  return (
+                    <Link key={r.model} href={modelPagePath(r.model)} className="flex flex-col gap-[3px] text-ink">
+                      <span className="flex justify-between gap-2 text-xs">
+                        <span className="font-bold">{r.model}</span>
+                        <span className="text-right">
+                          <span className="text-price font-bold">{yen(r.minPrice)}</span>
+                          <span className="text-ink-mute"> / {yen(r.medianPrice)} ・ {r.count.toLocaleString()}件</span>
+                        </span>
+                      </span>
+                      <span className="flex h-2.5 rounded-[5px] overflow-hidden bg-line-soft">
+                        <span className="bg-price" style={{ width: `${minW}%` }} />
+                        <span className="bg-[#CBD5E1]" style={{ width: `${gapW}%` }} />
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </section>
         )}
 
-        {/* 目的・予算から探す */}
-        <section className="pt-[18px] flex flex-col gap-2.5">
-          <h2 className={h2}>目的・予算から探す</h2>
-          <div className="flex flex-wrap gap-2">
-            <Link href={pickPath("cospa")} className={pill}>迷ったらこれ！長く使えるコスパ最強（iPhone 13・14）</Link>
-            <Link href={pickPath("budget")} className={pill}>予算重視！とにかく安く使える（11・12・SE）</Link>
-            <Link href={pickPath("camera")} className={pill}>オールドコンデジ代わりにエモい写真（7・8・X）</Link>
+        {/* 予算から探す */}
+        <section className="pt-5 flex flex-col gap-2.5">
+          <h2 className={h2}>予算から探す</h2>
+          <div className="md:max-w-xl">
+            <BudgetPicker options={BUDGET_OPTIONS} />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[13px] font-bold text-ink-sub mr-1">iPhone を予算で探す</span>
-            {BUDGETS.map((max) => (
-              <Link key={max} href={budgetPath(max)} className={pill}>{budgetLabel(max)}以下</Link>
-            ))}
-          </div>
-          {/* iPad・Pixel・Galaxy の目的別・予算別（9/30〜）。トップから直接たどれるようにして、Google に早く見つけてもらう */}
-          {([
-            ["iPad", IPAD_PICKS, IPAD_BUDGETS, "ipad"],
-            ["Pixel", PIXEL_PICKS, PIXEL_BUDGETS, "pixel"],
-            ["Galaxy", GALAXY_PICKS, GALAXY_BUDGETS, "galaxy"],
-          ] as [string, Pick[], number[], BudgetDevice][]).map(([label, picks, budgets, device]) => (
-            <div key={device} className="flex flex-wrap items-center gap-2">
-              <span className="text-[13px] font-bold text-ink-sub mr-1">{label} を目的・予算で探す</span>
-              {picks.map((p) => (
-                <Link key={p.slug} href={pickPath(p.slug)} className={pill}>{p.title}</Link>
-              ))}
-              {budgets.map((max) => (
-                <Link key={max} href={budgetPath(max, device)} className={pill}>{budgetLabel(max)}以下</Link>
+          {/* JS が無いときの予算リンク（クローラーにも見える） */}
+          <noscript>
+            <div className="flex flex-col gap-1 text-xs">
+              {BUDGET_OPTIONS.map((o) => (
+                <p key={o.device} className="flex flex-wrap gap-x-3">
+                  <span className="font-bold text-ink-sub">{o.label}</span>
+                  {o.budgets.map((max) => (
+                    <Link key={max} href={budgetPath(max, o.device)} className="text-brand-600">{budgetLabel(max)}以下</Link>
+                  ))}
+                </p>
               ))}
             </div>
-          ))}
+          </noscript>
         </section>
 
-        {/* よく比較される機種 */}
-        <section className="pt-[18px] flex flex-col gap-2.5">
-          <h2 className={h2}>よく比較される機種</h2>
-          <div className="flex flex-wrap gap-2">
-            {FEATURED_COMPARES.map(([a, b]) => (
-              <Link key={comparePath(a, b)} href={comparePath(a, b)} className={pill}>
-                {a} <span className="text-ink-mute font-normal mx-1">vs</span> {b}
-              </Link>
-            ))}
-          </div>
-        </section>
+        {/* 値下がりと比較（PC は横並び） */}
+        <div className="md:grid md:grid-cols-2 md:gap-x-6">
+          {dropRows.length > 0 && (
+            <section className="pt-5 flex flex-col gap-2.5">
+              <h2 className={h2}>この1週間の値下がり</h2>
+              <div className={`${card} px-3.5 py-3 flex flex-col gap-[9px]`}>
+                {dropRows.map((d) => (
+                  <Link key={d.modelSlug} href={modelPagePath(d.model)} className="grid grid-cols-[120px_1fr_52px] items-center gap-2 text-ink">
+                    <span className="text-xs font-bold truncate">{d.model}</span>
+                    <span className="flex h-3 rounded-md overflow-hidden bg-line-soft">
+                      <span className="bg-safe" style={{ width: `${(d.rate / maxRate) * 100}%` }} />
+                    </span>
+                    <span className="text-xs text-safe font-bold text-right">−{d.rate}%</span>
+                  </Link>
+                ))}
+                <p className="text-[10px] text-ink-mute">
+                  {shortDate(dropRows[0].fromDate)} → {shortDate(dropRows[0].toDate)} の相場（中央値）の下げ幅。在庫がいちばん多い容量で比較 ・{" "}
+                  <Link href="/iphone" className="text-brand-600 hover:text-brand-800">すべて見る ›</Link>
+                </p>
+              </div>
+            </section>
+          )}
 
-        {/* 値下がり（1週間分の記録がたまってから出る） */}
-        <div className="pt-3">
-          <PriceDrops drops={drops} title="この1週間で値下がりした機種" />
+          {compareCards.length > 0 && (
+            <section className="pt-5 flex flex-col gap-2.5">
+              <h2 className={h2}>よく比較される機種</h2>
+              <div className="grid grid-cols-3 gap-2">
+                {compareCards.map(({ a, b, diff }) => (
+                  <Link key={comparePath(a, b)} href={comparePath(a, b)} className={`${card} p-2.5 flex flex-col gap-1 text-ink hover:border-brand-200`}>
+                    <span className="text-[11px] font-bold">{shortModel(a)} vs {shortModel(b)}</span>
+                    <span className="text-[10px] text-ink-mute">最安の差</span>
+                    <span className="text-sm font-bold">{yen(diff)}</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
-        {/* シリーズから探す: 種類ごとの入口と、iPhone のシリーズ別の機種一覧 */}
-        <section className="pt-[18px] flex flex-col gap-2.5">
-          <h2 className={h2}>シリーズから探す</h2>
-          <div className="bg-white border border-line rounded-xl overflow-hidden grid grid-cols-2 md:grid-cols-4">
-            {DEVICE_HUBS.map((h) => {
-              const n = h.models.reduce((sum, m) => sum + (prices.get(m)?.count ?? 0), 0);
-              return (
-                <Link key={h.path} href={h.path} className="p-3.5 flex justify-between items-baseline gap-2 border-b border-r border-line-soft text-ink hover:bg-ground">
-                  <span className="text-[15px] font-bold">中古{h.label} ›</span>
-                  {n > 0 && <span className="text-xs text-ink-mute whitespace-nowrap">{n.toLocaleString()}件</span>}
-                </Link>
-              );
-            })}
-          </div>
-          <h3 className="text-sm font-bold text-ink-sub mt-2">iPhone シリーズ別（iOS 27 対応モデル）</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {IPHONE_CATALOG.map((seriesGroup) => (
-              <div key={seriesGroup.series} className="bg-white border border-line rounded-xl overflow-hidden">
-                <div className="px-3.5 pt-3 pb-2 border-b border-line-soft">
-                  <h4 className="text-[15px] font-bold">{seriesGroup.series}</h4>
-                  <p className="text-[11px] text-ink-mute mt-0.5">{seriesGroup.badges.join("・")}</p>
-                </div>
-                <div>
-                  {seriesGroup.models.map((model) => (
-                    <Link
-                      key={model}
-                      href={modelPagePath(model)}
-                      className="flex items-center justify-between gap-2 px-3.5 py-2.5 border-b border-line-soft last:border-b-0 text-ink hover:bg-ground"
-                    >
-                      <span className="text-sm">{model}</span>
-                      <span className="flex items-center gap-1.5">
-                        {prices.has(model) && (
-                          <span className="text-sm font-bold text-price">{yen(prices.get(model)!.minPrice)}〜</span>
-                        )}
-                        <span className="text-ink-mute" aria-hidden>›</span>
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+        {/* 末尾: 比較している店・目的から探す・運営者 */}
+        <section className="pt-5 flex flex-col gap-2">
+          <p className="flex flex-wrap items-center gap-x-1.5 text-[11px] text-ink-sub">
+            <span>比較している{shops.length}店:</span>
+            {mainShops.map((l, i) => (
+              <span key={l}>{i > 0 && "・"}{l}</span>
             ))}
-          </div>
-        </section>
-
-        {/* 比較している店 */}
-        <section className="pt-[18px] flex flex-col gap-2.5">
-          <h2 className={h2}>比較している{shops.length}店</h2>
-          <p className="text-xs text-ink-mute">
-            {total > 0 && <>在庫 {total.toLocaleString()}件（iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch）。</>}店名を押すとその店の在庫を一覧できます
+            {restShops > 0 && (
+              <span>
+                ・<Link href="/about#notation" className="text-brand-600 hover:text-brand-800">ほか{restShops}店</Link>
+              </span>
+            )}
           </p>
-          <ul className="bg-white border border-line rounded-xl px-3.5 py-1 grid grid-cols-2 md:grid-cols-4 gap-x-3.5">
-            {shops.map((shop) => {
-              const count = counts.get(shop.name);
-              return (
-                <li key={shop.name} className="border-b border-line-soft">
-                  <Link
-                    href={`/search?${new URLSearchParams({ shop: shop.name }).toString()}`}
-                    className="flex justify-between items-baseline gap-2 py-2 text-xs text-ink hover:text-brand-800"
-                  >
-                    <span>
-                      {shop.label}
-                      {shop.note && <span className="block text-[10px] text-ink-mute">{shop.note}</span>}
-                    </span>
-                    {count !== undefined && <span className="text-ink-mute whitespace-nowrap">{count.toLocaleString()}件</span>}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-          <Link href="/about#notation" className="text-[13px] text-brand-600 hover:text-brand-800">各店の保証・赤ロム保証の比較 ›</Link>
-        </section>
-
-        {/* 運営者 */}
-        <section className="mt-[22px] p-4 bg-inspect-50 border border-inspect-line rounded-xl flex flex-col gap-1.5">
-          <span className="text-xs font-bold text-inspect-800">運営者について</span>
-          <span className="text-[13px] leading-[1.7] text-gray-700">
-            中古スマホ店で検品を担当している GardenTree が運営しています。値段だけでなく、バッテリーや赤ロム保証など「買ってから困らない」ための情報を載せています。
-          </span>
-          <Link href="/about" className="text-[13px] text-brand-600 hover:text-brand-800">このサイトについて ›</Link>
+          {/* iPhone の目的別ページ（/pick/…）へのリンクはここだけ。消すと孤立する */}
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-sub">
+            <span>iPhone を目的から探す:</span>
+            {IPHONE_PICKS.map((p) => (
+              <Link key={p.slug} href={pickPath(p.slug)} className="text-brand-600 hover:text-brand-800">{p.title}</Link>
+            ))}
+          </p>
+          <p className="text-[11px] text-ink-mute">
+            運営: 中古スマホ店の検品担当 ・ <Link href="/about" className="text-brand-600 hover:text-brand-800">このサイトについて</Link>
+          </p>
         </section>
       </main>
 
       <SiteFooter />
     </div>
   );
+}
+
+/** "iPhone 13" → "13"（比較カードの短い表記） */
+function shortModel(model: string): string {
+  return model.replace(/^iPhone /, "");
 }

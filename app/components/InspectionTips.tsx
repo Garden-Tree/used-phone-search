@@ -51,11 +51,12 @@ export function inspectionTips({ model, has64GB }: Props) {
   return tips;
 }
 
-export default function InspectionTips({ model, has64GB }: Props) {
+/** embedded: 折りたたみの中に入れるとき。見出しは折りたたみの題名が兼ねるので省く（文面は同じ） */
+export default function InspectionTips({ model, has64GB, embedded = false }: Props & { embedded?: boolean }) {
   const tips = inspectionTips({ model, has64GB });
   return (
     <section id="points" className="scroll-mt-16 rounded-xl border border-inspect-line bg-inspect-50 p-3.5 md:p-4">
-      <h2 className="text-[15px] font-bold">検品担当が見るポイント</h2>
+      {!embedded && <h2 className="text-[15px] font-bold">検品担当が見るポイント</h2>}
       <p className="text-xs text-inspect-800 mb-3">運営者は中古スマホ店で検品を担当しています</p>
       <ol className="space-y-3">
         {tips.map((t, i) => (

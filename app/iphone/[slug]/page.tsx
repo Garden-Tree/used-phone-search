@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { ArrowDown, ChevronDown } from "lucide-react";
+import { ArrowDown, Check, ChevronDown } from "lucide-react";
 import DeviceCard, { DeviceList, type Device } from "@/app/components/DeviceCard";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
-import AdDisclosure from "@/app/components/AdDisclosure";
 import {
   ALL_CATALOG_MODELS,
   ALL_DEVICE_PAGE_MODELS,
@@ -24,7 +23,7 @@ import {
 import { getBatteryRows, getMemorySsdRankMatrix, getModelStats, getStorageRankMatrix, macCellKey, type MemorySsdRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
 import { MAC_INFO } from "@/lib/macCatalog";
 import { WATCH_INFO, WATCHOS27_IPHONE, isWatchOS27 } from "@/lib/watchCatalog";
-import { SPEC_ROWS, displayText, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
+import { SPEC_ROWS, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
@@ -34,9 +33,16 @@ import { getPriceHistory } from "@/lib/priceHistory";
 import { BUDGET_NAMES, budgetLabel, budgetPath, type BudgetDevice } from "@/lib/budgets";
 import { smallestBudgetFor } from "@/lib/budgetStats";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
+import PriceBand from "@/app/components/PriceBand";
+import StatTiles from "@/app/components/StatTiles";
+import HeatCells, { type HeatRow } from "@/app/components/HeatCells";
+import ShopBars from "@/app/components/ShopBars";
+import StackedBar from "@/app/components/StackedBar";
+import Sparkline, { recentPoints } from "@/app/components/Sparkline";
 import InspectionTips, { inspectionTips } from "@/app/components/InspectionTips";
 import { getGoodConditionMin, getGoodRankMin } from "@/lib/modelBest";
-import { getBuyNowNotes } from "@/lib/buyNow";
+import { getBuyNowNotes, getBuyNowStats } from "@/lib/buyNow";
+import { getBreakdown, getRankSMax, getShopBars, type Breakdown, type ShopBarRow } from "@/lib/modelBreakdown";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
 import { findShop, shopsFor } from "@/lib/shops";
@@ -81,15 +87,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const CARD = "bg-white border border-line rounded-xl";
-const SEC = "mx-4 md:mx-0 mt-4";
 const LINK = "text-brand-600 hover:text-brand-800";
 
 /** 折りたたみ1つ分（ネイティブの details）。中身は閉じていても HTML に入る */
-function Accordion({ title, hint, children, open }: { title: string; hint?: string; children: React.ReactNode; open?: boolean }) {
+function Accordion({ title, hint, badge, children, open }: { title: string; hint?: string; badge?: number; children: React.ReactNode; open?: boolean }) {
   return (
     <details open={open} className="group border-b border-line-soft last:border-b-0">
       <summary className="min-h-12 flex items-center justify-between gap-3 px-3.5 text-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-ground">
-        <span className="font-bold">{title}</span>
+        <span className="flex items-center gap-2.5">
+          {badge !== undefined && (
+            <span className="w-7 h-7 rounded-lg bg-inspect-50 border border-inspect-line text-inspect-700 flex items-center justify-center text-xs font-bold" aria-hidden="true">{badge}</span>
+          )}
+          <span className="font-bold">{title}</span>
+        </span>
         <span className="flex items-center gap-1 text-xs text-ink-mute">
           {hint}
           <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" aria-hidden="true" />
@@ -133,114 +143,34 @@ function PriceList({ rows, labelOf, hrefOf, baseline, note }: {
   );
 }
 
+
 // ランクの意味は目安（基準は店ごとに違う）。S・A・B・C 以外は説明を付けない
 const RANK_HINT: Record<string, string> = { S: "未使用・新品同様", A: "美品", B: "小傷あり", C: "目立つ傷" };
 
-/** 容量 × 状態ランクの最安値。セルはその条件の検索結果へ。行でいちばん安い金額は太字 */
-function StorageRankTable({ model, matrix }: { model: string; matrix: StorageRankMatrix }) {
-  if (matrix.storages.length === 0) return null;
-  // Apple Watch（2026-10-15〜）は storage がケースのサイズ（mm）
-  const watch = deviceOf(model) === "watch";
-  return (
-    <section className={`${SEC} ${CARD} overflow-hidden`}>
-      <h2 className="px-3.5 pt-3 pb-2 text-[15px] font-bold">{watch ? "サイズ × ランクの最安値" : "容量 × ランクの最安値"}</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr>
-              <th className="text-left font-normal pl-3.5 pr-2 py-1.5"></th>
-              {matrix.ranks.map((r) => (
-                <th key={r} className="text-right font-normal text-ink-mute px-2 py-1.5 whitespace-nowrap last:pr-3.5">
-                  <span className="block text-ink font-bold text-xs">{r}</span>
-                  {RANK_HINT[r] && <span className="block text-[10px]">{RANK_HINT[r]}</span>}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {matrix.storages.map((st) => {
-              const best = Math.min(...matrix.ranks.flatMap((r) => matrix.cells.get(`${st}:${r}`)?.minPrice ?? []));
-              return (
-                <tr key={st} className="border-t border-line-soft">
-                  <td className="pl-3.5 pr-2 py-2.5 font-bold whitespace-nowrap">{storageLabel(st, model)}</td>
-                  {matrix.ranks.map((r) => {
-                    const cell = matrix.cells.get(`${st}:${r}`);
-                    return (
-                      <td key={r} className="px-2 py-2.5 text-right whitespace-nowrap last:pr-3.5">
-                        {cell ? (
-                          <Link href={searchHref(model, { storage: String(st), rank: r })} className="flex flex-col text-price hover:underline underline-offset-2">
-                            <span className={cell.minPrice === best ? "font-bold" : "font-medium"}>{cell.minPrice.toLocaleString()}</span>
-                            <span className="text-[10px] font-normal text-ink-mute">{cell.count.toLocaleString()}件</span>
-                          </Link>
-                        ) : (
-                          <span className="text-gray-300">-</span>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <p className="px-3.5 pt-2 pb-3 text-[11px] text-ink-mute">ランクの意味は目安で、基準は店ごとに違います。金額（円）を押すとその条件の在庫一覧へ移ります。太字は{watch ? "サイズ" : "容量"}ごとの最安値です。</p>
-    </section>
-  );
+/** 容量（Apple Watch はサイズ）× ランクの最安値 → ヒートマップの行。セルは今までと同じ検索へのリンク */
+function storageHeat(model: string, matrix: StorageRankMatrix): HeatRow[] {
+  return matrix.storages.map((st) => ({
+    label: storageLabel(st, model),
+    cells: matrix.ranks.map((r) => {
+      const cell = matrix.cells.get(`${st}:${r}`);
+      return cell ? { minPrice: cell.minPrice, count: cell.count, href: searchHref(model, { storage: String(st), rank: r }) } : null;
+    }),
+  }));
 }
 
-/** MacBook のメモリ・SSD × 状態ランクの最安値（容量の代わり。セルはその条件の検索結果へ。行でいちばん安い金額は太字） */
-function MemorySsdRankTable({ model, matrix }: { model: string; matrix: MemorySsdRankMatrix }) {
-  if (matrix.combos.length === 0) return null;
-  return (
-    <section className={`${SEC} ${CARD} overflow-hidden`}>
-      <h2 className="px-3.5 pt-3 pb-2 text-[15px] font-bold">メモリ／SSD × ランクの最安値</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr>
-              <th className="text-left font-normal pl-3.5 pr-2 py-1.5"></th>
-              {matrix.ranks.map((r) => (
-                <th key={r} className="text-right font-normal text-ink-mute px-2 py-1.5 whitespace-nowrap last:pr-3.5">
-                  <span className="block text-ink font-bold text-xs">{r}</span>
-                  {RANK_HINT[r] && <span className="block text-[10px]">{RANK_HINT[r]}</span>}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {matrix.combos.map((c) => {
-              const best = Math.min(...matrix.ranks.flatMap((r) => matrix.cells.get(macCellKey(c.memoryGB, c.storage, r))?.minPrice ?? []));
-              return (
-                <tr key={`${c.memoryGB ?? ""}:${c.storage}`} className="border-t border-line-soft">
-                  <td className="pl-3.5 pr-2 py-2.5 font-bold whitespace-nowrap">
-                    {c.memoryGB ? `${c.memoryGB}GB / ` : ""}{storageLabel(c.storage)}
-                  </td>
-                  {matrix.ranks.map((r) => {
-                    const cell = matrix.cells.get(macCellKey(c.memoryGB, c.storage, r));
-                    return (
-                      <td key={r} className="px-2 py-2.5 text-right whitespace-nowrap last:pr-3.5">
-                        {cell ? (
-                          <Link href={searchHref(model, { ...(c.memoryGB ? { memory: String(c.memoryGB) } : {}), storage: String(c.storage), rank: r })} className="flex flex-col text-price hover:underline underline-offset-2">
-                            <span className={cell.minPrice === best ? "font-bold" : "font-medium"}>{cell.minPrice.toLocaleString()}</span>
-                            <span className="text-[10px] font-normal text-ink-mute">{cell.count.toLocaleString()}件</span>
-                          </Link>
-                        ) : (
-                          <span className="text-gray-300">-</span>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <p className="px-3.5 pt-2 pb-3 text-[11px] text-ink-mute">メモリ／SSD は購入後に増やせません。ランクの意味は目安で、基準は店ごとに違います。金額（円）を押すとその条件の在庫一覧へ移ります。太字はメモリ・SSD ごとの最安値です。</p>
-    </section>
-  );
+/** MacBook のメモリ／SSD × ランクの最安値 → ヒートマップの行（メモリ・SSD は購入後に増やせない） */
+function memorySsdHeat(model: string, matrix: MemorySsdRankMatrix): HeatRow[] {
+  return matrix.combos.map((c) => ({
+    label: `${c.memoryGB ? `${c.memoryGB}GB / ` : ""}${storageLabel(c.storage)}`,
+    cells: matrix.ranks.map((r) => {
+      const cell = matrix.cells.get(macCellKey(c.memoryGB, c.storage, r));
+      return cell
+        ? { minPrice: cell.minPrice, count: cell.count, href: searchHref(model, { ...(c.memoryGB ? { memory: String(c.memoryGB) } : {}), storage: String(c.storage), rank: r }) }
+        : null;
+    }),
+  }));
 }
+
 
 // 店によってバッテリーの表記が違うので、表の数え方を書いておく（lib/shops.ts の battery）
 // 注記に出すのは、その機種を扱っている店だけ（Pixel は3店など）
@@ -277,7 +207,7 @@ export default async function ModelPage({ params }: Props) {
   // Xperia・AQUOS・Apple Watch（2026-10-15〜）も予算別ページはまだない
   const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || device === "watch" ? null : device;
   const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
-  const [stats, history, batteryRows, matrix, macMatrix, budget, goodMin, buyNowNotes] = await Promise.all([
+  const [stats, history, batteryRows, matrix, macMatrix, budget, goodMin, buyNowNotes, statTiles] = await Promise.all([
     getModelStats(model),
     getPriceHistory(slug),
     getBatteryRows(model),
@@ -286,7 +216,16 @@ export default async function ModelPage({ params }: Props) {
     budgetDevice ? smallestBudgetFor(model, budgetDevice) : Promise.resolve(null),
     mac || watch ? getGoodRankMin(model) : getGoodConditionMin(model),
     getBuyNowNotes(model),
+    getBuyNowStats(model),
   ]);
+  // 図の集計（在庫があるときだけ。どれも DB 側の groupBy / aggregate）
+  const emptyBreakdown: Breakdown = { ranks: [], battery: { b90: 0, b85: 0, b80: 0, low: 0, unknown: 0 }, batteryKnown: 0, total: 0 };
+  const [shopRows, breakdown, rankSMax]: [ShopBarRow[], Breakdown, number | null] = stats.count > 0
+    ? await Promise.all([getShopBars(model), getBreakdown(model), getRankSMax(model)])
+    : [[], emptyBreakdown, null];
+  const heatRanks = mac && macMatrix ? macMatrix.ranks : matrix.ranks;
+  const heatRows = mac && macMatrix ? memorySsdHeat(model, macMatrix) : storageHeat(model, matrix);
+  const sparkPoints = recentPoints(history[0] ?? []);
   const spec = specOf(model);
   const macInfo = MAC_INFO[model];
   const watchInfo = WATCH_INFO[model];
@@ -385,14 +324,20 @@ export default async function ModelPage({ params }: Props) {
       : []),
   ];
 
-  // 最安値／相場／在庫。スマホは上の白い面に横3つ、PC は右の固定サマリーに縦
+
+  // ---- 要約（スマホは上のカード、PC は右の固定サマリー。同じ部品を2か所に出す） ----
+  const hasPrices = hasStock && stats.minPrice !== null && stats.medianPrice !== null;
+  const rankMin = new Map(stats.byRank.map((r) => [r.key, r.minPrice]));
+  const rankSMin = rankMin.get("S") ?? null;
+
+  // 在庫0件のときの数字（今までの表示）
   const statCells = [
     { label: "最安値", value: stats.minPrice !== null ? yen(stats.minPrice) : "-", accent: true },
     { label: "相場（中央値）", value: stats.medianPrice !== null ? yen(stats.medianPrice) : "-" },
     { label: "在庫", value: `${stats.count.toLocaleString()}件`, sub: `${stats.shopCount}店` },
   ];
   const statBlock = (vertical: boolean) => (
-    <div className={`grid border border-line rounded-xl ${vertical ? "grid-cols-1 divide-y divide-line" : "grid-cols-3 divide-x divide-line"}`}>
+    <div className={`grid border border-line rounded-xl bg-white ${vertical ? "grid-cols-1 divide-y divide-line" : "grid-cols-3 divide-x divide-line"}`}>
       {statCells.map((c) => (
         <div key={c.label} className={`px-3 py-2.5 flex ${vertical ? "justify-between items-baseline" : "flex-col gap-0.5"}`}>
           <span className="text-[11px] text-ink-mute">{c.label}</span>
@@ -405,24 +350,130 @@ export default async function ModelPage({ params }: Props) {
     </div>
   );
 
-  // 結論の1文。条件に合う在庫がなければ出さない
-  const conclusion = goodMin !== null && (mac || watch) ? (
-    <p className="text-sm leading-[1.7] text-gray-700">
-      ランクB以上なら <Link href={searchHref(model, { minRank: "B" })} className={`font-bold underline underline-offset-2 ${LINK}`}>{yen(goodMin)}〜</Link>。
-      {cheapestDevice && cheapestDevice.price < goodMin && <>最安値は{describeDevice(cheapestDevice)}の個体です。</>}
-    </p>
-  ) : goodMin !== null ? (
-    <p className="text-sm leading-[1.7] text-gray-700">
-      ランクB以上・バッテリー85%以上なら <Link href={searchHref(model, { minRank: "B", minBattery: "85" })} className={`font-bold underline underline-offset-2 ${LINK}`}>{yen(goodMin)}〜</Link>。
-      {cheapestDevice && cheapestDevice.price < goodMin && <>最安値は{describeDevice(cheapestDevice)}の個体です。</>}
-    </p>
-  ) : null;
-
   const listButton = (
-    <a href="#list" className="h-12 rounded-xl bg-brand-600 hover:bg-brand-800 text-white flex items-center justify-center gap-1.5 text-[15px] font-bold">
+    <a href="#list" className="h-12 rounded-xl bg-brand-600 hover:bg-brand-800 text-white flex items-center justify-center gap-1.5 text-sm font-bold">
       安い順に在庫を見る
       <ArrowDown className="w-[18px] h-[18px]" aria-hidden="true" />
     </a>
+  );
+
+  const priceBand = hasPrices ? <PriceBand min={stats.minPrice!} median={stats.medianPrice!} rankSMin={rankSMin} rankSMax={rankSMax} /> : null;
+
+  // 安心ライン: 条件に合う在庫がなければ出さない（MacBook・Apple Watch はバッテリーの条件なし）
+  const safeLine = (pc: boolean) =>
+    goodMin === null ? null : (
+      <div className={`bg-[#ECFDF5] border border-[#A7F3D0] flex items-center gap-2.5 ${pc ? "rounded-[10px] px-3 py-2.5" : "rounded-xl px-3.5 py-3"}`}>
+        {!pc && <Check className="w-[22px] h-[22px] text-safe shrink-0" aria-hidden="true" />}
+        <div className="flex flex-col">
+          <span className="text-[11px] text-[#065F46]">{mac || watch ? "ランクB以上なら" : "ランクB以上・バッテリー85%以上なら"}</span>
+          <Link href={mac || watch ? searchHref(model, { minRank: "B" }) : searchHref(model, { minRank: "B", minBattery: "85" })} className="text-lg font-bold text-safe hover:underline underline-offset-2">
+            {yen(goodMin)}〜
+          </Link>
+        </div>
+      </div>
+    );
+
+  const summaryCard = (pc: boolean) => (
+    <div className={`bg-white border border-line rounded-xl flex flex-col ${pc ? "p-4 gap-3.5" : "p-3.5 gap-3"}`}>
+      {pc && <p className="text-sm font-bold">{model}</p>}
+      {pc ? (
+        <>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[11px] text-ink-mute">最安値</span>
+            <span className="text-4xl font-bold text-price leading-[1.1]">{stats.minPrice!.toLocaleString()}<span className="text-[15px]">円</span></span>
+          </div>
+          <div className="flex justify-between">
+            <div className="flex flex-col"><span className="text-[11px] text-ink-mute">相場（中央値）</span><span className="text-xl font-bold">{yen(stats.medianPrice!)}</span></div>
+            <div className="flex flex-col items-end"><span className="text-[11px] text-ink-mute">在庫</span><span className="text-xl font-bold">{stats.count.toLocaleString()}件 <span className="text-[11px] font-normal text-ink-mute">{stats.shopCount}店</span></span></div>
+          </div>
+        </>
+      ) : (
+        <div className="flex items-end justify-between gap-2">
+          <div className="flex flex-col"><span className="text-[11px] text-ink-mute">最安値</span><span className="text-[32px] font-bold text-price leading-[1.1]">{stats.minPrice!.toLocaleString()}<span className="text-sm">円</span></span></div>
+          <div className="flex flex-col items-end"><span className="text-[11px] text-ink-mute">相場（中央値）</span><span className="text-xl font-bold leading-[1.1]">{stats.medianPrice!.toLocaleString()}<span className="text-xs">円</span></span></div>
+        </div>
+      )}
+      {priceBand}
+      <StatTiles tiles={statTiles} />
+      {pc && safeLine(true)}
+      {listButton}
+    </div>
+  );
+
+  // ---- 回線・買取（PR）のタイル。リンク・data-shop-click・rel は今までと同じ。1x1 の計測画像は下で1回だけ出す ----
+  const showSim = hasStock && (device === "iphone" || device === "pixel" || device === "galaxy" || device === "xperia" || device === "aquos");
+  const showBuyback = hasStock && !mac && !watch;
+  const PR_BADGE = <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1 py-px leading-none">PR</span>;
+  const prTiles = (extra: string) =>
+    showSim || showBuyback ? (
+      <div className={`grid gap-2 items-start ${showSim && showBuyback ? "grid-cols-2" : "grid-cols-1"} ${extra}`}>
+        {showSim && (
+          <div className="bg-white border border-line rounded-xl p-3 flex flex-col gap-1">
+            <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">回線も見直す {PR_BADGE}</span>
+            {SIM_PLANS.map((p) => (
+              <a
+                key={p.name}
+                href={p.href}
+                target="_blank"
+                rel="sponsored nofollow noopener"
+                data-shop-click=""
+                data-shop={`${p.name}（回線）`}
+                data-model={model}
+                data-link-type={p.linkType}
+                className="flex flex-col py-1 hover:bg-ground rounded"
+              >
+                <span className="text-[13px] font-bold text-ink">{p.name} <span className="text-ink-mute" aria-hidden="true">›</span></span>
+                <span className="text-[10px] text-ink-mute leading-snug">{p.text}</span>
+              </a>
+            ))}
+            <span className="text-[10px] text-ink-mute leading-snug">料金・対応機種は各社の公式ページで確認してください。</span>
+          </div>
+        )}
+        {showBuyback && (
+          <div className="bg-white border border-line rounded-xl p-3 flex flex-col gap-1">
+            <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">今のスマホを売る {PR_BADGE}</span>
+            {BUYBACK_PROGRAMS.map((p) => (
+              <a
+                key={p.name}
+                href={p.href}
+                target="_blank"
+                rel="sponsored nofollow noopener"
+                data-shop-click=""
+                data-shop={`${p.name}（買取）`}
+                data-model={model}
+                data-link-type="a8"
+                className="flex flex-col py-1 hover:bg-ground rounded"
+              >
+                <span className="text-[13px] font-bold text-ink">{p.name} <span className="text-ink-mute" aria-hidden="true">›</span></span>
+                <span className="text-[10px] text-ink-mute leading-snug">{p.text}</span>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    ) : null;
+
+  // ---- 図のカード ----
+  const heatTitle = mac ? "メモリ／SSD × ランクの最安値" : watch ? "サイズ × ランクの最安値" : "容量 × ランクの最安値";
+  const showHeat = hasStock && heatRows.length > 0;
+  const showShops = hasStock && shopRows.length > 2;
+  const showSpark = sparkPoints.length >= 2;
+
+  const priceLists = (
+    <>
+      {/* MacBook・Apple Watch はバッテリーの表記がない店が多いので、在庫がなければ出さない */}
+      {!((mac || watch) && batteryRows.length === 0) && (
+        <Accordion title="バッテリー最大容量別の最安値" hint="80〜95%">
+          {/* 多くの店で最大容量は値段に反映されていないので、少し足すだけで状態のよい個体が買えることを見せる */}
+          <PriceList rows={batteryRows} labelOf={(k) => `${k}%以上`}
+            hrefOf={(k) => searchHref(model, { minBattery: k })} baseline={stats.minPrice} note={batteryNote(model)} />
+        </Accordion>
+      )}
+      <Accordion title="状態ランク別の最安値" hint={stats.byRank.map((r) => r.key).join("・")}>
+        <PriceList rows={stats.byRank} labelOf={(k) => `ランク ${k}${RANK_HINT[k] ? `（${RANK_HINT[k]}の目安）` : ""}`}
+          hrefOf={(k) => searchHref(model, { rank: k })} />
+      </Accordion>
+    </>
   );
 
   return (
@@ -433,10 +484,11 @@ export default async function ModelPage({ params }: Props) {
       />
       <SiteHeader label="価格比較" />
 
-      <main className="max-w-[1120px] mx-auto pb-24 md:pb-10 md:px-4 md:pt-5 md:grid md:grid-cols-[minmax(0,1fr)_340px] md:gap-6 md:items-start">
-        <div className="min-w-0">
-          <section className="bg-white px-4 pt-3 pb-4 flex flex-col gap-2.5 border-b border-line md:border md:rounded-xl">
-            <nav aria-label="パンくずリスト" className="text-xs text-ink-mute">
+      <main className="max-w-[1120px] mx-auto pb-24 md:pb-10 md:px-4 min-[1152px]:px-0 md:pt-5 md:grid md:grid-cols-[minmax(0,1fr)_340px] md:gap-6 md:items-start">
+        {/* 左の本文。PC は2列のグリッド（md:order で、スマホとは並びを変える） */}
+        <div className="min-w-0 px-4 md:px-0 pt-3 md:pt-0 grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-4 content-start">
+          <div className="md:col-span-2 flex flex-col gap-1.5">
+            <nav aria-label="パンくずリスト" className="text-[11px] md:text-xs text-ink-mute">
               <Link href="/" className={LINK}>トップ</Link>
               <span className="mx-1.5">›</span>
               <Link href={listPath} className={LINK}>{listName}</Link>
@@ -444,106 +496,56 @@ export default async function ModelPage({ params }: Props) {
               <span>{model}</span>
             </nav>
 
-            <h1 className="text-[22px] md:text-[26px] leading-[1.35] font-bold">{model} 中古の相場・最安値</h1>
+            <h1 className="text-[22px] md:text-[28px] leading-[1.3] font-bold">{model} 中古の相場・最安値</h1>
 
-            <div className="flex flex-col gap-1">
-              <p className="text-xs text-ink-mute">
-                {updatedText && <>更新 {updatedText} ・ </>}
-                {shopNum}店を比較 ・ 運営: 中古スマホ店の検品担当
-              </p>
-              <AdDisclosure compact />
-            </div>
+            <p className="text-[11px] md:text-xs text-ink-mute leading-relaxed">
+              {updatedText && <>更新 {updatedText} ・ </>}
+              {shopNum}店を比較{hasStock && <> ・ {stats.count.toLocaleString()}件</>} ・ 運営: 中古スマホ店の検品担当 ・{" "}
+              <span className="inline-block mr-1 px-1 py-px rounded border border-line font-bold">PR</span>
+              本ページはアフィリエイト広告を利用しています
+            </p>
 
             {chipModels.length > 1 && (
-              <nav aria-label="同じシリーズの機種" className="flex gap-1.5 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
+              <nav aria-label="同じシリーズの機種" className="flex gap-1.5 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap pt-1">
                 {chipModels.map((m) =>
                   m === model ? (
                     <span key={m} aria-current="page" className="shrink-0 h-8 px-3 rounded-full bg-brand-800 text-white text-xs flex items-center">{m}</span>
                   ) : (
-                    <Link key={m} href={modelPagePath(m)} className="shrink-0 h-8 px-3 rounded-full border border-gray-300 text-ink text-xs flex items-center hover:border-brand-600">{m}</Link>
+                    <Link key={m} href={modelPagePath(m)} className="shrink-0 h-8 px-3 rounded-full bg-white border border-gray-300 text-ink text-xs flex items-center hover:border-brand-600">{m}</Link>
                   ),
                 )}
               </nav>
             )}
+          </div>
 
-            {/* スマホ: ここに数字・結論・ボタン。PC は右の固定サマリーに出す */}
-            <div className="md:hidden flex flex-col gap-2.5">
-              {statBlock(false)}
-              {conclusion}
-              {hasStock && listButton}
-            </div>
-
-            {/* 紹介文（発売・スペックと、いまの中古相場） */}
-            <p className="text-sm leading-[1.7] text-gray-700">
-              {spec && (
-                <>{model}は{spec.released}発売（{spec.chip}・{displayText(spec).replace(" ", "")}・{spec.port}）。</>
-              )}
-              {macInfo && (
-                <>{model}は{macInfo.year}年発売（{macInfo.chip}・{macInfo.inch}インチ）。</>
-              )}
-              {stats.minPrice !== null && stats.medianPrice !== null && (
-                <>中古の最安値は<strong>{yen(stats.minPrice)}</strong>、相場（在庫の中央値）は<strong>{yen(stats.medianPrice)}</strong>で、{stats.shopCount}ショップに{stats.count.toLocaleString()}件の在庫があります。</>
-              )}
-              {pixel && pixelUntil && pixelLeft !== undefined
-                ? (pixelLeft > 0
-                  ? <>Google のアップデート保証は販売開始（{jaMonth(pixel.available)}）から{pixel.updateYears}年で、<strong>{jaMonth(pixelUntil)}まで</strong>（残り約{pixelLeft}年）です。</>
-                  : <>Google のアップデート保証（販売開始から{pixel.updateYears}年・{jaMonth(pixelUntil)}まで）は終わっています。</>)
-                : isIpad(model)
-                  ? (IPADOS27_MODELS.has(model) ? "iPadOS 27 に対応しています。" : "iPadOS 27 には対応していません。")
-                  : deviceOf(model) === "galaxy"
-                    ? (GALAXY_RELEASED[model] ? `日本では${jaMonth(GALAXY_RELEASED[model])}に発売されました。` : null)
-                  : isAndroidJp(model)
-                    ? <>{releasedSentence(model)}{supportSentence(model, nowYm)}</>
-                    : mac
-                      ? "macOS 27 Golden Gate に対応しています。"
-                      : watch
-                        ? (isWatchOS27(model) ? "watchOS 27 に対応しています（Apple 公式）。" : "watchOS 27 には対応していません（Apple 公式）。")
-                      : (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
-            </p>
-            <p className="text-[11px] text-ink-mute leading-relaxed">
-              相場＝販売中の在庫を安い順に並べた真ん中の値。最安値は1台だけの特価やジャンク品のことが多いので、買う値段の目安には相場を見てください。
-            </p>
-
-            {/* 相場の見方（実データから自動生成。lib/buyNow.ts。在庫がなければ空） */}
-            {buyNowNotes.length > 0 && (
-              <div className="flex flex-col gap-1.5">
-                <h2 className="text-[13px] font-bold text-ink">相場の見方（今日のデータから）</h2>
-                {buyNowNotes.map((t) => (
-                  <p key={t} className="text-[13px] text-ink-sub leading-[1.7]">{t}</p>
-                ))}
-              </div>
-            )}
-
-            {/* この機種が買える予算（予算別ページへの導線。lib/budgetStats.ts の smallestBudgetFor） */}
-            {budget && budgetDevice && (
-              <p className="text-[13px] text-ink-sub leading-[1.7]">
-                {model}はジャンク品を除いて{yen(budget.minPrice)}から買えます。同じ予算のほかの機種は{" "}
-                <Link href={budgetPath(budget.max, budgetDevice)} className={`font-bold ${LINK} hover:underline underline-offset-2`}>
-                  {budgetLabel(budget.max)}以下で買える{BUDGET_NAMES[budgetDevice]}
-                </Link>
-                で比べられます。
-              </p>
-            )}
-          </section>
+          {/* スマホ: 要約カードと安心ライン。PC は右の固定サマリーに出す */}
+          <div className="md:hidden flex flex-col gap-2.5">
+            {hasPrices ? summaryCard(false) : statBlock(false)}
+            {safeLine(false)}
+          </div>
 
           {!hasStock ? (
-            <div className={`${SEC} ${CARD} text-center py-14 px-4`}>
+            <div className={`${CARD} text-center py-14 px-4 md:col-span-2`}>
               <p className="text-ink-sub text-base">現在、{model}の在庫はありません。</p>
               <p className="text-xs text-ink-mute mt-2">在庫は6時間ごとに更新されます。同じシリーズの他モデルもチェックしてみてください。</p>
             </div>
           ) : (
             <>
-              {isIphone && tips.length > 0 && (
-                <section className={`${SEC} bg-inspect-50 border border-inspect-line rounded-xl p-3.5 flex flex-col gap-1.5`}>
-                  <span className="text-xs font-bold text-inspect-800">検品担当のひとこと</span>
-                  <p className="text-[13px] leading-[1.7] text-gray-700">{tips[0].body}</p>
-                  <a href="#points" className={`text-[13px] ${LINK}`}>検品で見る{tips.length}つのポイント ›</a>
-                </section>
+              {showHeat && (
+                <div className={`md:order-1 ${showShops ? "" : "md:col-span-2"}`}>
+                  <HeatCells title={heatTitle} ranks={heatRanks} rows={heatRows} labelWidth={mac ? 88 : 52} />
+                </div>
               )}
+              {showShops && (
+                <div className={`md:order-2 ${showHeat ? "" : "md:col-span-2"}`}>
+                  <ShopBars rows={shopRows} hrefOf={(shopName) => searchHref(model, { shop: shopName })} />
+                </div>
+              )}
+              <div className={`md:order-3 ${showSpark ? "" : "md:col-span-2"}`}>
+                <StackedBar breakdown={breakdown} rankMin={rankMin} rankHref={(r) => searchHref(model, { rank: r })} />
+              </div>
 
-              {mac && macMatrix ? <MemorySsdRankTable model={model} matrix={macMatrix} /> : <StorageRankTable model={model} matrix={matrix} />}
-
-              <section id="list" className={`${SEC} mt-5 flex flex-col gap-2 scroll-mt-16`}>
+              <section id="list" className="md:order-5 md:col-span-2 flex flex-col gap-2 scroll-mt-16">
                 <h2 className="text-[17px] font-bold">安い在庫</h2>
                 <div className="flex gap-1.5 overflow-x-auto">
                   {[
@@ -569,138 +571,77 @@ export default async function ModelPage({ params }: Props) {
                   </Link>
                 </DeviceList>
               </section>
-            </>
-          )}
 
-          <section className={`${SEC} mt-5 ${CARD} p-3.5 flex flex-col gap-2`}>
-            <h2 className="text-[15px] font-bold">最安値の推移</h2>
-            <PriceHistoryChart history={history} model={model} />
-          </section>
-
-          {/* 運営者（検品担当）の視点。iPhone のみ */}
-          {isIphone && (
-            <div className={`${SEC} mt-5`}>
-              <InspectionTips model={model} has64GB={has64GB} />
-            </div>
-          )}
-
-          {/* 回線（A8・楽天アフィリエイトのテキストリンク。PR 表記必須。lib/simPlans.ts）。スマホの機種ページだけ */}
-          {hasStock && (device === "iphone" || device === "pixel" || device === "galaxy" || device === "xperia" || device === "aquos") && (
-            <section className={`${SEC} mt-5 ${CARD} overflow-hidden`}>
-              <div className="px-3.5 pt-3 pb-2 flex flex-col gap-1">
-                <h2 className="text-[15px] font-bold flex items-center gap-2">
-                  回線も見直すなら
-                  <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1.5 py-0.5 leading-none">PR</span>
-                </h2>
-                <p className="text-xs text-ink-mute leading-relaxed">SIM フリーの中古スマホは、今の回線のままでも、乗り換えても使えます。料金・対応機種は各社の公式ページで確認してください。</p>
-              </div>
-              {SIM_PLANS.map((p) => (
-                <a
-                  key={p.name}
-                  href={p.href}
-                  target="_blank"
-                  rel="sponsored nofollow noopener"
-                  data-shop-click=""
-                  data-shop={`${p.name}（回線）`}
-                  data-model={model}
-                  data-link-type={p.linkType}
-                  className="flex items-center justify-between gap-3 px-3.5 py-2.5 border-t border-line-soft hover:bg-ground"
-                >
-                  <span className="flex flex-col min-w-0">
-                    <span className="text-[13px] font-bold">{p.name}</span>
-                    <span className="text-[11px] text-ink-mute leading-snug">{p.text}</span>
-                  </span>
-                  <span className="text-ink-mute" aria-hidden="true">›</span>
-                </a>
-              ))}
-              {SIM_PLANS.flatMap((p) =>
-                p.imgSrc ? [
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={`${p.name}-imp`} src={p.imgSrc} width={1} height={1} alt="" />,
-                ] : [],
-              )}
-            </section>
-          )}
-
-          {/* 買取（A8 テキストリンク。PR 表記必須。lib/buyback.ts）。「今のスマホを売るなら」なので MacBook・Apple Watch には出さない */}
-          {hasStock && !mac && !watch && (
-            <section className={`${SEC} mt-5 ${CARD} overflow-hidden`}>
-              <div className="px-3.5 pt-3 pb-2 flex flex-col gap-1">
-                <h2 className="text-[15px] font-bold flex items-center gap-2">
-                  今のスマホを売るなら
-                  <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1.5 py-0.5 leading-none">PR</span>
-                </h2>
-                <p className="text-xs text-ink-mute leading-relaxed">買い替えのときは、今使っているスマホの買取も比べておくと安心です。</p>
-              </div>
-              {BUYBACK_PROGRAMS.map((p) => (
-                <a
-                  key={p.name}
-                  href={p.href}
-                  target="_blank"
-                  rel="sponsored nofollow noopener"
-                  data-shop-click=""
-                  data-shop={`${p.name}（買取）`}
-                  data-model={model}
-                  data-link-type="a8"
-                  className="flex items-center justify-between gap-3 px-3.5 py-2.5 border-t border-line-soft hover:bg-ground"
-                >
-                  <span className="flex flex-col min-w-0">
-                    <span className="text-[13px] font-bold">{p.name}</span>
-                    <span className="text-[11px] text-ink-mute leading-snug">{p.text}</span>
-                  </span>
-                  <span className="text-ink-mute" aria-hidden="true">›</span>
-                </a>
-              ))}
-              {BUYBACK_PROGRAMS.map((p) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={p.name} src={p.imgSrc} width={1} height={1} alt="" />
-              ))}
-            </section>
-          )}
-
-          {hasStock && (
-            <section className={`${SEC} mt-5 flex flex-col gap-2`}>
-              <h2 className="text-[17px] font-bold">くわしく見る</h2>
-              <div className={`${CARD} overflow-hidden`}>
-                {/* MacBook はバッテリーの表記がない店が多いので、在庫がなければ出さない */}
-                {!((mac || watch) && batteryRows.length === 0) && (
-                <Accordion title="バッテリー最大容量別の最安値" hint="80〜95%">
-                  {/* 多くの店で最大容量は値段に反映されていないので、少し足すだけで状態のよい個体が買えることを見せる */}
-                  <PriceList rows={batteryRows} labelOf={(k) => `${k}%以上`}
-                    hrefOf={(k) => searchHref(model, { minBattery: k })} baseline={stats.minPrice} note={batteryNote(model)} />
-                </Accordion>
+              {/* 最安値の推移（30日）。容量別・長い期間のグラフ（クライアント部品）は折りたたみの中 */}
+              <div className="md:order-4 flex flex-col gap-2">
+                {showSpark ? (
+                  <>
+                    <Sparkline points={sparkPoints} />
+                    <details className="group bg-white border border-line rounded-xl">
+                      <summary className="min-h-11 flex items-center justify-between gap-3 px-3.5 text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden hover:bg-ground rounded-xl">
+                        <span className="font-bold">容量別・長い期間のグラフ</span>
+                        <ChevronDown className="w-4 h-4 text-ink-mute transition-transform group-open:rotate-180" aria-hidden="true" />
+                      </summary>
+                      <div className="px-3.5 pb-3.5"><PriceHistoryChart history={history} model={model} /></div>
+                    </details>
+                  </>
+                ) : (
+                  <section className={`${CARD} p-3.5 flex flex-col gap-2`}>
+                    <h2 className="text-[15px] font-bold">最安値の推移</h2>
+                    <PriceHistoryChart history={history} model={model} />
+                  </section>
                 )}
-                <Accordion title="状態ランク別の最安値" hint={stats.byRank.map((r) => r.key).join("・")}>
-                  <PriceList rows={stats.byRank} labelOf={(k) => `ランク ${k}${RANK_HINT[k] ? `（${RANK_HINT[k]}の目安）` : ""}`}
-                    hrefOf={(k) => searchHref(model, { rank: k })} />
-                </Accordion>
-                <Accordion title="ショップ別の最安値と保証" hint={`${stats.byShop.length}店`}>
-                  <div>
-                    {stats.byShop.map((r) => {
-                      const s = findShop(r.key);
-                      return (
-                        <div key={r.key} className="py-2.5 border-t border-line-soft first:border-t-0">
-                          <Link href={searchHref(model, { shop: r.key })} className="flex items-center justify-between gap-2 hover:bg-ground">
-                            <span className="flex flex-col gap-0.5 min-w-0">
-                              <span className="text-[13px] font-bold">{r.key}</span>
-                              {s && (mac || watch
-                                ? <span className="text-[11px] text-safe">{s.warrantyShort}</span>
-                                : <span className="text-[11px] text-safe">{s.warrantyShort}・{s.redRomShort}</span>)}
-                            </span>
-                            <span className="text-[15px] font-bold text-price whitespace-nowrap">{yen(r.minPrice)}</span>
-                          </Link>
-                          {s && (mac || watch
-                            ? <p className="mt-1 text-[11px] text-ink-mute leading-snug">保証は商品ごとに違います。詳しくは<a href={s.guaranteeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">{s.label}の公式ページ</a>で確認してください。</p>
-                            : <p className="mt-1 text-[11px] text-ink-mute leading-snug">保証: {s.warranty}／赤ロム: {s.redRom}</p>)}
-                        </div>
-                      );
-                    })}
-                    <p className="pt-2 border-t border-line-soft text-[11px] text-ink-mute leading-relaxed">
-                      保証は各店の公式ページで確認した内容です（詳しくは
-                      <Link href="/about" className={`${LINK} underline underline-offset-2`}>「このサイトについて」</Link>）。
-                    </p>
-                  </div>
-                </Accordion>
+              </div>
+
+              {/* 折りたたみ。スマホは1枚のカード、PC は2列 */}
+              <div className="md:order-6 md:col-span-2 bg-white border border-line rounded-xl overflow-hidden md:bg-transparent md:border-0 md:rounded-none md:overflow-visible md:grid md:grid-cols-2 md:gap-4 md:items-start">
+                <div className="md:bg-white md:border md:border-line md:rounded-xl md:overflow-hidden">
+                  {/* 運営者（検品担当）の視点。iPhone のみ */}
+                  {isIphone && tips.length > 0 && (
+                    <Accordion title="検品担当が見るポイント" badge={tips.length}>
+                      <InspectionTips model={model} has64GB={has64GB} embedded />
+                    </Accordion>
+                  )}
+                  <Accordion title="店ごとの保証" hint={`${stats.byShop.length}店`}>
+                    <div>
+                      {stats.byShop.map((r) => {
+                        const s = findShop(r.key);
+                        return (
+                          <div key={r.key} className="py-2.5 border-t border-line-soft first:border-t-0">
+                            <Link href={searchHref(model, { shop: r.key })} className="flex items-center justify-between gap-2 hover:bg-ground">
+                              <span className="flex flex-col gap-0.5 min-w-0">
+                                <span className="text-[13px] font-bold">{r.key}</span>
+                                {s && (mac || watch
+                                  ? <span className="text-[11px] text-safe">{s.warrantyShort}</span>
+                                  : <span className="text-[11px] text-safe">{s.warrantyShort}・{s.redRomShort}</span>)}
+                              </span>
+                              <span className="text-[15px] font-bold text-price whitespace-nowrap">{yen(r.minPrice)}</span>
+                            </Link>
+                            {s && (mac || watch
+                              ? <p className="mt-1 text-[11px] text-ink-mute leading-snug">保証は商品ごとに違います。詳しくは<a href={s.guaranteeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">{s.label}の公式ページ</a>で確認してください。</p>
+                              : <p className="mt-1 text-[11px] text-ink-mute leading-snug">保証: {s.warranty}／赤ロム: {s.redRom}</p>)}
+                          </div>
+                        );
+                      })}
+                      <p className="pt-2 border-t border-line-soft text-[11px] text-ink-mute leading-relaxed">
+                        保証は各店の公式ページで確認した内容です（詳しくは
+                        <Link href="/about" className={`${LINK} underline underline-offset-2`}>「このサイトについて」</Link>）。
+                      </p>
+                    </div>
+                  </Accordion>
+                  {/* 相場の見方（実データから自動生成。lib/buyNow.ts。在庫がなければ空） */}
+                  {buyNowNotes.length > 0 && (
+                    <Accordion title="相場の見方（今日のデータから）">
+                      <div className="flex flex-col gap-1.5">
+                        {buyNowNotes.map((t) => (
+                          <p key={t} className="text-[13px] text-ink-sub leading-[1.7]">{t}</p>
+                        ))}
+                      </div>
+                    </Accordion>
+                  )}
+                  {priceLists}
+                </div>
+                <div className="border-t border-line-soft md:border-t-0 md:bg-white md:border md:border-line md:rounded-xl md:overflow-hidden">
                 {/* 基本スペック（確かめた機種だけ。lib/iphoneSpecs.ts） */}
                 {spec && (
                   <Accordion title={`${model}の基本スペック`} hint={spec.released}>
@@ -804,6 +745,7 @@ export default async function ModelPage({ params }: Props) {
                         </div>
                       ))}
                     </dl>
+                    {releasedSentence(model) && <p className="mt-3 text-[13px] leading-[1.7] text-gray-700">{releasedSentence(model)}</p>}
                     <p className="mt-3 text-[11px] text-ink-mute leading-relaxed">
                       出典: {updateSource(model).map((src, i) => (
                         <span key={src.url}>{i > 0 && "・"}<a href={src.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">{src.name}</a></span>
@@ -811,6 +753,12 @@ export default async function ModelPage({ params }: Props) {
                       {androidUpdates.some((r) => r.label === "セキュリティ更新") && "セキュリティ更新の終わりはメーカーの法人向け資料の値です。"}
                       {androidUpdates.length === 0 && "OS・セキュリティ更新の期間は、公式の記載を確かめられていないので載せていません。"}
                     </p>
+                  </Accordion>
+                )}
+                {/* Galaxy の発売時期（lib/galaxyCatalog.ts。紹介文を外したので折りたたみの中に残す） */}
+                {deviceOf(model) === "galaxy" && GALAXY_RELEASED[model] && (
+                  <Accordion title={`${model}の基本情報`} hint={jaMonth(GALAXY_RELEASED[model])}>
+                    <p className="text-[13px] leading-[1.7] text-gray-700">日本では{jaMonth(GALAXY_RELEASED[model])}に発売されました。</p>
                   </Accordion>
                 )}
                 {/* モデルの特徴 */}
@@ -823,66 +771,101 @@ export default async function ModelPage({ params }: Props) {
                     </div>
                   </Accordion>
                 )}
-                <Accordion title="価格・在庫データの集め方" hint={`${shopNum}店・1日4回`}>
-                  <p className="text-[13px] leading-[1.7] text-gray-700">
-                    {shopNum}店の公開在庫を1日4回（6時間ごと）取得し、売り切れを除いた在庫をまとめています。
-                    相場は販売中の在庫を安い順に並べた真ん中の値（中央値）で、最安値にはジャンク品が含まれることがあります。
-                    価格・在庫は取得した時点のもので、売り切れや値下げが反映されるまで最大6時間ほどかかります。
-                    詳しくは<Link href="/about" className={`${LINK} underline underline-offset-2`}>「このサイトについて」</Link>をご覧ください。
-                  </p>
-                </Accordion>
-              </div>
-            </section>
-          )}
-
-          {faqs.length > 0 && (
-            <section className={`${SEC} mt-5 flex flex-col gap-2`}>
-              <h2 className="text-[17px] font-bold">よくある質問</h2>
-              <div className={`${CARD} overflow-hidden`}>
-                {faqs.map((f) => (
-                  <Accordion key={f.q} title={f.q}>
-                    <p className="text-[13px] leading-[1.7] text-gray-700">{f.a}</p>
+                  <Accordion title="価格・在庫データの集め方" hint={`${shopNum}店・1日4回`}>
+                    <p className="text-[13px] leading-[1.7] text-gray-700">
+                      {shopNum}店の公開在庫を1日4回（6時間ごと）取得し、売り切れを除いた在庫をまとめています。
+                      相場は販売中の在庫を安い順に並べた真ん中の値（中央値）で、最安値にはジャンク品が含まれることがあります。
+                      価格・在庫は取得した時点のもので、売り切れや値下げが反映されるまで最大6時間ほどかかります。
+                      詳しくは<Link href="/about" className={`${LINK} underline underline-offset-2`}>「このサイトについて」</Link>をご覧ください。
+                    </p>
                   </Accordion>
-                ))}
+                  {faqs.length > 0 && (
+                    <Accordion title="よくある質問" hint={`${faqs.length}件`}>
+                      <div className="flex flex-col gap-3">
+                        {faqs.map((f) => (
+                          <div key={f.q} className="flex flex-col gap-1">
+                            <h3 className="text-[13px] font-bold">{f.q}</h3>
+                            <p className="text-[13px] leading-[1.7] text-gray-700">{f.a}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </Accordion>
+                  )}
+                </div>
               </div>
-            </section>
+
+              {/* スマホ: 回線・買取のタイル。PC は右の固定サマリーの下に出す */}
+              {prTiles("md:hidden")}
+            </>
           )}
 
-          {/* このモデルを含む比較 */}
-          {comparesFor(model).length > 0 && (
-            <section className={`${SEC} mt-5`}>
-              <h2 className="text-[15px] font-bold mb-2">{model}と他モデルの中古価格を比較</h2>
+          {/* 関連モデル・比較・予算別への導線 */}
+          <div className="md:col-span-2 md:order-7 flex flex-col gap-4">
+            {/* このモデルを含む比較 */}
+            {comparesFor(model).length > 0 && (
+              <section>
+                <h2 className="text-[15px] font-bold mb-2">{model}と他モデルの中古価格を比較</h2>
+                <div className="flex flex-wrap gap-1.5">
+                  {comparesFor(model).map(([x, y]) => (
+                    <Link key={comparePath(x, y)} href={comparePath(x, y)}
+                      className="h-9 px-3.5 rounded-full text-[13px] bg-brand-50 border border-brand-200 text-brand-800 flex items-center hover:border-brand-600">
+                      {x} vs {y}
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* 関連モデル */}
+            <section>
+              <h2 className="text-[15px] font-bold mb-2">関連モデルの中古価格</h2>
               <div className="flex flex-wrap gap-1.5">
-                {comparesFor(model).map(([x, y]) => (
-                  <Link key={comparePath(x, y)} href={comparePath(x, y)}
-                    className="h-9 px-3.5 rounded-full text-[13px] bg-brand-50 border border-brand-200 text-brand-800 flex items-center hover:border-brand-600">
-                    {x} vs {y}
+                {[...siblings, ...neighborSeries.flatMap((s) => s.models)].map((m) => (
+                  <Link key={m} href={modelPagePath(m)}
+                    className="h-9 px-3.5 rounded-full text-[13px] bg-white border border-gray-300 text-ink flex items-center hover:border-brand-600">
+                    {m}
                   </Link>
                 ))}
               </div>
+              {/* この機種が買える予算（予算別ページへの導線。lib/budgetStats.ts の smallestBudgetFor） */}
+              {budget && budgetDevice && (
+                <p className="mt-2.5 text-[13px] text-ink-sub leading-[1.7]">
+                  {model}はジャンク品を除いて{yen(budget.minPrice)}から買えます。同じ予算のほかの機種は{" "}
+                  <Link href={budgetPath(budget.max, budgetDevice)} className={`font-bold ${LINK} hover:underline underline-offset-2`}>
+                    {budgetLabel(budget.max)}以下で買える{BUDGET_NAMES[budgetDevice]}
+                  </Link>
+                  で比べられます。
+                </p>
+              )}
             </section>
-          )}
+          </div>
 
-          {/* 関連モデル */}
-          <section className={`${SEC} mt-5`}>
-            <h2 className="text-[15px] font-bold mb-2">関連モデルの中古価格</h2>
-            <div className="flex flex-wrap gap-1.5">
-              {[...siblings, ...neighborSeries.flatMap((s) => s.models)].map((m) => (
-                <Link key={m} href={modelPagePath(m)}
-                  className="h-9 px-3.5 rounded-full text-[13px] bg-white border border-gray-300 text-ink flex items-center hover:border-brand-600">
-                  {m}
-                </Link>
-              ))}
-            </div>
-          </section>
+          {/* 回線・買取の A8 インプレッション計測用の 1x1 画像（ページに1回だけ） */}
+          <div className="absolute h-0 w-0 overflow-hidden" aria-hidden="true">
+            {showSim && SIM_PLANS.flatMap((p) =>
+              p.imgSrc ? [
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={`${p.name}-imp`} src={p.imgSrc} width={1} height={1} alt="" />,
+              ] : [],
+            )}
+            {showBuyback && BUYBACK_PROGRAMS.map((p) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={p.name} src={p.imgSrc} width={1} height={1} alt="" />
+            ))}
+          </div>
         </div>
 
         {/* PC: 右の固定サマリー */}
-        <aside className="hidden md:flex flex-col gap-3 sticky top-[68px] bg-white border border-line rounded-xl p-4" aria-label={`${model}のサマリー`}>
-          <p className="text-sm font-bold">{model}</p>
-          {statBlock(true)}
-          {conclusion}
-          {hasStock && listButton}
+        <aside className="hidden md:flex flex-col gap-3 sticky top-[68px]" aria-label={`${model}のサマリー`}>
+          {hasPrices ? (
+            summaryCard(true)
+          ) : (
+            <div className="bg-white border border-line rounded-xl p-4 flex flex-col gap-3">
+              <p className="text-sm font-bold">{model}</p>
+              {statBlock(true)}
+            </div>
+          )}
+          {prTiles("")}
         </aside>
       </main>
 

@@ -60,20 +60,52 @@ const getMedianTrend = cache(async (model: string) => {
   return { now: latest.medianPrice, before: past.medianPrice, days };
 });
 
+/** 文章（getBuyNowNotes）と数字タイル（getBuyNowStats）が共有する、今日のデータから言える事実。DB の読みは1回分 */
+type BuyNowFacts = {
+  min: number;
+  median: number;
+  trend: { now: number; before: number; days: number } | null;
+  rankS: { minPrice: number } | null;
+  rankA: { minPrice: number } | null;
+  prev: { name: string; median: number } | null;
+};
+
+const getBuyNowFacts = cache(async (model: string): Promise<BuyNowFacts | null> => {
+  const stats = await getModelStats(model);
+  if (stats.count === 0 || stats.minPrice === null || stats.medianPrice === null) return null;
+  const trend = await getMedianTrend(model);
+  const s = stats.byRank.find((r) => r.key === "S");
+  const a = stats.byRank.find((r) => r.key === "A");
+  let prev: BuyNowFacts["prev"] = null;
+  const prevName = previousGeneration(model);
+  if (prevName) {
+    const market = (await getModelMarket([prevName])).get(prevName);
+    if (market && market.count >= 3) prev = { name: prevName, median: market.medianPrice };
+  }
+  return {
+    min: stats.minPrice,
+    median: stats.medianPrice,
+    trend,
+    rankS: s && s.minPrice > 0 ? { minPrice: s.minPrice } : null,
+    rankA: a && a.minPrice > 0 ? { minPrice: a.minPrice } : null,
+    prev,
+  };
+});
+
 export const getBuyNowNotes = cache(async (model: string): Promise<string[]> => {
   const notes: string[] = [];
   try {
-    const stats = await getModelStats(model);
-    if (stats.count === 0 || stats.minPrice === null || stats.medianPrice === null) return [];
+    const f = await getBuyNowFacts(model);
+    if (!f) return [];
 
     // 1. 相場と最安値の差
-    const gap = stats.medianPrice - stats.minPrice;
+    const gap = f.median - f.min;
     if (gap > 0) {
-      notes.push(`最安値は相場（中央値 ${yen(stats.medianPrice)}）より${yen(gap)}低く、${yen(stats.minPrice)}です。この差は、1台だけの特価やバッテリーの弱い個体が最安値になっているときに大きくなります。`);
+      notes.push(`最安値は相場（中央値 ${yen(f.median)}）より${yen(gap)}低く、${yen(f.min)}です。この差は、1台だけの特価やバッテリーの弱い個体が最安値になっているときに大きくなります。`);
     }
 
     // 2. 30日の値動き
-    const trend = await getMedianTrend(model);
+    const trend = f.trend;
     if (trend && trend.days >= 7 && trend.before > 0) {
       const span = trend.days >= 30 ? "この30日" : `記録のある過去${trend.days}日`;
       const diff = trend.now - trend.before;
@@ -84,25 +116,19 @@ export const getBuyNowNotes = cache(async (model: string): Promise<string[]> => 
     }
 
     // 3. 未使用品（ランクS）との差
-    const rankS = stats.byRank.find((r) => r.key === "S");
-    const rankA = stats.byRank.find((r) => r.key === "A");
-    if (rankS && rankS.minPrice > 0) {
-      let s = `未使用品（ランクS）は${yen(rankS.minPrice)}からです。`;
-      if (rankA && rankA.minPrice > 0 && rankS.minPrice > rankA.minPrice) {
-        s += `中古のランクA（最安${yen(rankA.minPrice)}）との差は${yen(rankS.minPrice - rankA.minPrice)}です。`;
+    if (f.rankS) {
+      let s = `未使用品（ランクS）は${yen(f.rankS.minPrice)}からです。`;
+      if (f.rankA && f.rankS.minPrice > f.rankA.minPrice) {
+        s += `中古のランクA（最安${yen(f.rankA.minPrice)}）との差は${yen(f.rankS.minPrice - f.rankA.minPrice)}です。`;
       }
       notes.push(s);
     }
 
     // 4. 1つ前の世代との差
-    const prev = previousGeneration(model);
-    if (prev) {
-      const market = (await getModelMarket([prev])).get(prev);
-      if (market && market.count >= 3) {
-        const d = stats.medianPrice - market.medianPrice;
-        const rel = d > 0 ? `${model}より${yen(d)}低く` : d < 0 ? `${model}より${yen(-d)}高く` : `${model}と同じで`;
-        notes.push(`1世代前の${prev}の相場は${yen(market.medianPrice)}で、${rel}${d === 0 ? "す" : "なっています"}。`);
-      }
+    if (f.prev) {
+      const d = f.median - f.prev.median;
+      const rel = d > 0 ? `${model}より${yen(d)}低く` : d < 0 ? `${model}より${yen(-d)}高く` : `${model}と同じで`;
+      notes.push(`1世代前の${f.prev.name}の相場は${yen(f.prev.median)}で、${rel}${d === 0 ? "す" : "なっています"}。`);
     }
   } catch (error) {
     rethrowDuringBuild(error);
@@ -110,4 +136,51 @@ export const getBuyNowNotes = cache(async (model: string): Promise<string[]> => 
     return [];
   }
   return notes;
+});
+
+/** 機種ページの数字タイル1枚分。tone: up=上昇（赤）・down=下落／お得（緑青）・flat=色なし */
+export type StatTile = { label: string; value: string; sub?: string; tone: "up" | "down" | "flat" };
+
+const signedYen = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : "±"}${Math.abs(n).toLocaleString()}円`;
+
+/**
+ * 数字タイル（最大4枚）。getBuyNowNotes と同じ事実から作る。データが無い項目は出さない（推測は書かない）
+ */
+export const getBuyNowStats = cache(async (model: string): Promise<StatTile[]> => {
+  const tiles: StatTile[] = [];
+  try {
+    const f = await getBuyNowFacts(model);
+    if (!f) return [];
+
+    // 1. 相場の変化（記録が7日分以上あるとき）
+    const t = f.trend;
+    if (t && t.days >= 7 && t.before > 0) {
+      const diff = t.now - t.before;
+      const label = t.days >= 30 ? "30日の相場" : `${t.days}日の相場`;
+      const sub = `${t.before.toLocaleString()} → ${t.now.toLocaleString()}`;
+      if (Math.abs(diff / t.before) <= 0.02) tiles.push({ label, value: "ほぼ横ばい", sub, tone: "flat" });
+      else if (diff > 0) tiles.push({ label, value: `↑ ${diff.toLocaleString()}円`, sub, tone: "up" });
+      else tiles.push({ label, value: `↓ ${(-diff).toLocaleString()}円`, sub, tone: "down" });
+    }
+
+    // 2. 最安値と相場の差
+    const gap = f.median - f.min;
+    if (gap > 0) tiles.push({ label: "最安値と相場の差", value: yen(gap), sub: "最安は1台だけのことも", tone: "down" });
+
+    // 3. 未使用品（ランクS）
+    if (f.rankS) {
+      const d = f.rankA && f.rankS.minPrice > f.rankA.minPrice ? f.rankS.minPrice - f.rankA.minPrice : null;
+      tiles.push({ label: "未使用品（ランクS）", value: `${yen(f.rankS.minPrice)}〜`, sub: d !== null ? `中古Aより +${d.toLocaleString()}円` : undefined, tone: "flat" });
+    }
+
+    // 4. 1世代前の相場（このモデルとの差は、1世代前から見た値）
+    if (f.prev) {
+      tiles.push({ label: `1世代前 ${f.prev.name}`, value: `相場 ${yen(f.prev.median)}`, sub: `${model}より ${signedYen(f.prev.median - f.median)}`, tone: "flat" });
+    }
+  } catch (error) {
+    rethrowDuringBuild(error);
+    console.error("buy-now stats failed:", error);
+    return [];
+  }
+  return tiles.slice(0, 4);
 });
