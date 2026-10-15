@@ -2,6 +2,7 @@
  * X（Twitter）用の画像（1200x675）を、相場一覧（/iphone）と同じ数字で作る。投稿の前に取り直す
  *   npm run x:market -- <出力先フォルダ>          … iPhone（/iphone と同じ数字）
  *   npm run x:market -- <出力先フォルダ> ipad     … iPad（/ipad と同じ数字）
+ *   npm run x:market -- <出力先フォルダ> pixel    … Pixel（アップデート保証が残っている機種）
  * 1. 相場が安い TOP8（iPhone は iOS 27 対応。在庫10件以上） 2. 最安値と相場（中央値）の差（iPhone は人気機種、iPad は在庫の多い5機種）。iPad も最新 OS（iPadOS 27）対応機種だけ
  * 文面は ideas/x-posts-*.md。DB は集計と中央値の1行だけ読む（Neon の転送量に配慮）
  */
@@ -13,13 +14,20 @@ import { ALL_CATALOG_MODELS } from "@/lib/catalog";
 import { getModelMarket } from "@/lib/marketStats";
 import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
-import { IPAD_SHOPS, SHOPS } from "@/lib/shops";
+import { IPAD_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
+import { PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
 import { notoSansJp } from "@/lib/ogFont";
 import { activeShops } from "@/lib/activeShops";
 
 const OUT = process.argv[2] ?? ".";
-const IPAD = process.argv[3] === "ipad";
-const K = IPAD
+const KIND = process.argv[3] ?? "iphone";
+const IPAD = KIND === "ipad";
+// iPhone 以外（iPad・Pixel）は機種名が長いので列を広げ、差の画像は在庫の多い5機種にする
+const WIDE = KIND !== "iphone";
+const nowYm = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" }).slice(0, 7);
+const K = KIND === "pixel"
+  ? { name: "Pixel", models: PIXEL_MODELS.filter((m) => (updateYearsLeft(m, nowYm) ?? 0) > 0), shops: PIXEL_SHOPS.length, url: "used.gadelog.com/pixel", cond: "アップデート保証あり・在庫10件以上", file: "x-pixel" }
+  : IPAD
   ? { name: "iPad", models: IPAD_MODELS.filter((m) => IPADOS27_MODELS.has(m)), shops: IPAD_SHOPS.length, url: "used.gadelog.com/ipad", cond: "iPadOS 27 対応・在庫10件以上", file: "x-ipad" }
   : { name: "iPhone", models: ALL_CATALOG_MODELS, shops: SHOPS.length, url: "used.gadelog.com/iphone", cond: "iOS 27 対応・在庫10件以上", file: "x-market" };
 const now = new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", hour: "numeric" }).replace(/\s/g, " ");
@@ -36,7 +44,7 @@ async function save(name: string, el: React.ReactElement, text: string) {
 async function main() {
   const market = await getModelMarket(K.models);
   // 店数は表示中の在庫がある店だけ数える（サイトと同じ。lib/activeShops.ts）
-  const shopCount = (await activeShops(IPAD ? IPAD_SHOPS : SHOPS)).length;
+  const shopCount = (await activeShops(IPAD ? IPAD_SHOPS : KIND === "pixel" ? PIXEL_SHOPS : SHOPS)).length;
   const footer = `大手中古ショップ${shopCount}店の在庫から・${now}`;
 
   // 1. 相場が安い TOP8（/iphone の「相場が安い中古iPhone」と同じ条件）
@@ -57,16 +65,16 @@ async function main() {
       </div>
       <div style={{ display: "flex", fontSize: 18, fontWeight: 900, color: "#94a3b8", marginTop: 14, paddingBottom: 6, borderBottom: "2px solid #e2e8f0" }}>
         <span style={{ width: 60 }}></span>
-        <span style={{ width: IPAD ? 440 : 380 }}></span>
-        <span style={{ width: IPAD ? 200 : 240, textAlign: "right" }}>相場（中央値）</span>
+        <span style={{ width: WIDE ? 440 : 380 }}></span>
+        <span style={{ width: WIDE ? 200 : 240, textAlign: "right" }}>相場（中央値）</span>
         <span style={{ width: 200, textAlign: "right" }}>最安値</span>
         <span style={{ width: 150, textAlign: "right" }}>在庫</span>
       </div>
       {top.map((r, i) => (
         <div key={r.model} style={{ display: "flex", alignItems: "baseline", padding: "7px 0", borderBottom: "2px solid #f1f5f9" }}>
           <span style={{ width: 60, fontSize: 26, fontWeight: 900, color: i < 3 ? "#dc2626" : "#94a3b8" }}>{String(i + 1)}</span>
-          <span style={{ width: IPAD ? 440 : 380, fontSize: IPAD ? 24 : 28, fontWeight: 900 }}>{r.model}</span>
-          <span style={{ width: IPAD ? 200 : 240, textAlign: "right", fontSize: 30, fontWeight: 900 }}>{`${r.medianPrice.toLocaleString()}円`}</span>
+          <span style={{ width: WIDE ? 440 : 380, fontSize: WIDE ? 24 : 28, fontWeight: 900 }}>{r.model}</span>
+          <span style={{ width: WIDE ? 200 : 240, textAlign: "right", fontSize: 30, fontWeight: 900 }}>{`${r.medianPrice.toLocaleString()}円`}</span>
           <span style={{ width: 200, textAlign: "right", fontSize: 24, fontWeight: 900, color: "#dc2626" }}>{`${r.minPrice.toLocaleString()}円`}</span>
           <span style={{ width: 150, textAlign: "right", fontSize: 20, color: "#64748b" }}>{`${r.count.toLocaleString()}件`}</span>
         </div>
@@ -79,7 +87,7 @@ async function main() {
   ), t1);
 
   // 2. 最安値と相場の差（iPhone はよく検索される世代、iPad は在庫の多い5機種を相場の安い順に）
-  const POPULAR = IPAD
+  const POPULAR = WIDE
     ? [...market.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 5).sort((a, b) => a[1].medianPrice - b[1].medianPrice).map(([m]) => m)
     : ["iPhone 12", "iPhone 13", "iPhone 14", "iPhone 15", "iPhone 16"];
   const gaps = POPULAR.flatMap((m) => {
@@ -87,7 +95,7 @@ async function main() {
     return r ? [{ model: m, ...r, gap: r.medianPrice - r.minPrice }] : [];
   });
   const maxPrice = Math.max(...gaps.map((g) => g.medianPrice));
-  const BAR = IPAD ? 560 : 620;
+  const BAR = WIDE ? 560 : 620;
   const t2 = ["最安値だけ見ると", "安く見える", "相場（在庫の真ん中の値段）との差", "最安値", "相場", "円", "差", "万円", "最安値は1台だけの特価やジャンク品のことが多い", K.url, footer,
     ...gaps.map((g) => `${g.model}最安値 ${g.minPrice.toLocaleString()}円 → 相場 ${g.medianPrice.toLocaleString()}円${man(g.gap)}`), "0123456789.+→"].join("");
   await save(`${K.file}-2.png`, (
@@ -100,7 +108,7 @@ async function main() {
       <div style={{ display: "flex", flexDirection: "column", marginTop: 22 }}>
         {gaps.map((g) => (
           <div key={g.model} style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
-            <span style={{ width: IPAD ? 260 : 200, fontSize: IPAD ? 22 : 26, fontWeight: 900 }}>{g.model}</span>
+            <span style={{ width: WIDE ? 260 : 200, fontSize: WIDE ? 22 : 26, fontWeight: 900 }}>{g.model}</span>
             <div style={{ display: "flex", flexDirection: "column", width: BAR }}>
               <div style={{ display: "flex", position: "relative", width: BAR, height: 28, background: "#f1f5f9", borderRadius: 8 }}>
                 <div style={{ position: "absolute", left: 0, top: 0, width: Math.round((g.medianPrice / maxPrice) * BAR), height: 28, background: "#cbd5e1", borderRadius: 8 }} />
