@@ -13,12 +13,20 @@ import { getModelStats } from "@/lib/modelStats";
 import { getBudgetModels } from "@/lib/budgetStats";
 import { resolveModelNames } from "@/lib/deviceSearch";
 import { notoSansJp } from "@/lib/ogFont";
+import { activeShops } from "@/lib/activeShops";
+import { findShop } from "@/lib/shops";
 
 const OUT = process.argv[2] ?? ".";
 const now = new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", hour: "numeric" }).replace(/\s/g, " ");
 const SHORT: Record<string, string> = { "ゲオモバイル（楽天市場店）": "ゲオモバイル", "じゃんぱら（楽天市場店）": "じゃんぱら", "ソフマップ（楽天市場店）": "ソフマップ" };
-const SHOPS = ["イオシス", "ゲオモバイル", "じゃんぱら", "ソフマップ", "にこスマ", "ダイワンテレコム", "エムモバ"];
 const size = { width: 1200, height: 675 };
+/** 画像に出す店名。モール店は「じゃんぱら（楽天）」のように短く */
+const shortShop = (name: string) => {
+  const s = findShop(name);
+  if (!s) return SHORT[name] ?? name;
+  const label = s.alias ?? s.label;
+  return s.marketplace === "rakuten" ? `${label}（楽天）` : s.marketplace === "yahoo" ? `${label}（Yahoo!）` : label;
+};
 
 async function save(name: string, el: React.ReactElement, text: string) {
   const fonts = await notoSansJp(text);
@@ -36,14 +44,18 @@ for (const m of exampleModels) {
   if (s.minPrice !== null) examples.push([m, s.minPrice]);
 }
 const day = now.split(" ")[0];
+// 店数・店名は表示中の在庫がある店だけ（サイトと同じ。lib/activeShops.ts）
+const active = await activeShops();
+const SHOPS = [...active.slice(0, 7).map((s) => s.label), "ほか"];
+const shopTitle = `${active.length}ショップ横断で比較`;
 // 1. 告知
-const t1 = ["中古iPhone・iPadを", "7ショップ横断で比較", total, "件の在庫", "容量・状態ランク・バッテリー最大容量で絞り込み", "6時間ごとに更新", "中古スマホ一括検索", "used.gadelog.com", `機種ごとの最安値（${day}）`, "円〜", ...SHOPS, ...examples.map(([n, p]) => n + p.toLocaleString())].join("");
+const t1 = ["中古iPhone・iPadを", shopTitle, total, "件の在庫", "容量・状態ランク・バッテリー最大容量で絞り込み", "6時間ごとに更新", "中古スマホ一括検索", "used.gadelog.com", `機種ごとの最安値（${day}）`, "円〜", ...SHOPS, ...examples.map(([n, p]) => n + p.toLocaleString())].join("");
 await save("x-promo-1.png", (
   <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", padding: "0 64px", background: "linear-gradient(135deg, #eff6ff 0%, #ffffff 60%)", fontFamily: "Noto Sans JP", color: "#0f172a" }}>
     <div style={{ display: "flex", flexDirection: "column", width: 600 }}>
       <div style={{ fontSize: 28, fontWeight: 900, color: "#2563eb" }}>中古スマホ一括検索</div>
       <div style={{ fontSize: 58, fontWeight: 900, letterSpacing: -2, marginTop: 12, lineHeight: 1.15, display: "flex", flexDirection: "column" }}>
-        <span>中古iPhone・iPadを</span><span>7ショップ横断で比較</span>
+        <span>中古iPhone・iPadを</span><span>{shopTitle}</span>
       </div>
       <div style={{ display: "flex", alignItems: "baseline", marginTop: 16 }}>
         <span style={{ fontSize: 84, fontWeight: 900, color: "#dc2626", letterSpacing: -3 }}>{total}</span>
@@ -72,11 +84,19 @@ await save("x-promo-1.png", (
 
 // 2. 店ごとの最安値（iPhone 13）
 const s13 = await getModelStats("iPhone 13");
-const rows: [string, number][] = s13.byShop.map((r) => [SHORT[r.key] ?? r.key, r.minPrice]);
+// 店ごとの最安値。店が多いと画像からはみ出すので、安い6店と一番高い店だけ出す（差額は全店の最安と最高で計算）
+// 同じ会社の別の売り場（イオシス楽天市場店など）は公式にまとめ、安い方の値段を使う
+const byParent = new Map<string, number>();
+for (const r of s13.byShop) {
+  const parent = findShop(r.key)?.alias ?? r.key;
+  byParent.set(parent, Math.min(byParent.get(parent) ?? Infinity, r.minPrice));
+}
+const allRows: [string, number][] = [...byParent].sort((a, b) => a[1] - b[1]).map(([k, p]) => [shortShop(k), p]);
+const rows: [string, number][] = allRows.length > 7 ? [...allRows.slice(0, 6), allRows[allRows.length - 1]] : allRows;
 const max = Math.max(...rows.map(([, p]) => p));
 // 差額は0.1万円単位で切り捨て（「1.6万円の差」のように控えめに言う）
 const gap = `${(Math.floor((max - rows[0][1]) / 1000) / 10).toFixed(1)}万円`;
-const t2 = ["中古 iPhone 13 の店ごとの最安値", "同じ日でも", gap, "の差", "円", `各店でいちばん安い1台（容量・状態は店ごとに違う）${now}`, "中古スマホ一括検索", "used.gadelog.com", ...rows.map(([n, p]) => n + p.toLocaleString())].join("");
+const t2 = ["中古 iPhone 13 の店ごとの最安値", "同じ日でも", gap, "の差", "円", `各店でいちばん安い1台（容量・状態は店ごとに違う）${now}`, `${allRows.length}店のうち安い6店と最も高い店`, "中古スマホ一括検索", "used.gadelog.com", ...rows.map(([n, p]) => n + p.toLocaleString())].join("");
 await save("x-promo-2.png", (
   <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", padding: "48px 80px", background: "#ffffff", fontFamily: "Noto Sans JP", color: "#0f172a" }}>
     <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
@@ -90,16 +110,16 @@ await save("x-promo-2.png", (
     <div style={{ display: "flex", flexDirection: "column", marginTop: 22 }}>
       {rows.map(([name, price], i) => (
         <div key={name} style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-          <span style={{ width: 230, fontSize: 26, fontWeight: 900, color: "#334155" }}>{name}</span>
-          <div style={{ display: "flex", width: 620, height: 34, background: "#f1f5f9", borderRadius: 8 }}>
-            <div style={{ width: Math.round((price / max) * 620), height: 34, background: i === 0 ? "#dc2626" : "#94a3b8", borderRadius: 8 }} />
+          <span style={{ width: 250, fontSize: 24, fontWeight: 900, color: "#334155", whiteSpace: "nowrap" }}>{name}</span>
+          <div style={{ display: "flex", width: 600, height: 34, background: "#f1f5f9", borderRadius: 8 }}>
+            <div style={{ width: Math.round((price / max) * 600), height: 34, background: i === 0 ? "#dc2626" : "#94a3b8", borderRadius: 8 }} />
           </div>
           <span style={{ fontSize: 28, fontWeight: 900, marginLeft: 18, color: i === 0 ? "#dc2626" : "#0f172a" }}>{price.toLocaleString()}円</span>
         </div>
       ))}
     </div>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
-      <span style={{ fontSize: 18, color: "#94a3b8" }}>{`各店でいちばん安い1台（容量・状態は店ごとに違う）${now}`}</span>
+      <span style={{ fontSize: 18, color: "#94a3b8" }}>{`${allRows.length > 7 ? `${allRows.length}店のうち安い6店と最も高い店・` : ""}各店でいちばん安い1台（容量・状態は店ごとに違う）${now}`}</span>
       <span style={{ fontSize: 22, fontWeight: 900, color: "#2563eb" }}>used.gadelog.com</span>
     </div>
   </div>
