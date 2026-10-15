@@ -163,13 +163,17 @@ jobs:
         run: |
           fetch_ok=0
           bash scripts/ci-deploy.sh fetch-rakuten || fetch_ok=1
-          npx tsx scripts/ingest-rakuten.ts rakuten-data
+          # 取得できなかった店は「ファイルがない」で exit 1 になる。bash -e でここで止まると下のやり直しに進まない
+          # （10/11・10/12・10/16 の失敗はこれ。やり直しが一度も動いていなかった）ので、終了コードを持ち越す
+          ingest_ok=0
+          npx tsx scripts/ingest-rakuten.ts rakuten-data || ingest_ok=1
           if [ "$fetch_ok" = 1 ] && [ "$RAKUTEN_RETRY" -lt 2 ]; then
             echo "::warning::楽天の JSON を取得できなかった。別の実行環境でやり直す（$((RAKUTEN_RETRY + 1)) 回目）"
             echo "retry=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          exit "$fetch_ok"
+          if [ "$fetch_ok" = 1 ]; then exit 1; fi
+          exit "$ingest_ok"
 
       # にこスマ・イオシスの iPad は店の表記のまま入るので、lib/ipadCatalog.ts の正式名にそろえる
       - name: iPad の機種名をそろえる
