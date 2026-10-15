@@ -26,6 +26,7 @@ import { ALL_DEVICE_PAGE_MODELS } from "@/lib/catalog";
 import { isMac } from "@/lib/macCatalog";
 import { isXperia } from "@/lib/xperiaCatalog";
 import { isAquos } from "@/lib/aquosCatalog";
+import { isWatch } from "@/lib/watchCatalog";
 import type { RakutenItem } from "@/lib/rakutenCommon";
 import { AMAZON_RENEWED_SHOP } from "@/lib/amazonRenewed";
 import prisma from "@/lib/prisma";
@@ -202,8 +203,8 @@ async function main() {
     }
   }
   const startedAt = Date.now();
-  // MacBook・Xperia・AQUOS（2026-10-15〜）は Amazon の整備済み品の検索に含めない（iPhone・iPad・Pixel・Galaxy だけ）
-  const searchModels = ALL_DEVICE_PAGE_MODELS.filter((m) => !isMac(m) && !isXperia(m) && !isAquos(m));
+  // MacBook・Xperia・AQUOS・Apple Watch（2026-10-15〜）は Amazon の整備済み品の検索に含めない（iPhone・iPad・Pixel・Galaxy だけ）
+  const searchModels = ALL_DEVICE_PAGE_MODELS.filter((m) => !isMac(m) && !isXperia(m) && !isAquos(m) && !isWatch(m));
   const models = dry ? searchModels.slice(0, 3) : searchModels;
   console.log(`機種 ${models.length} 件 × 最大 ${MAX_PAGES} ページ = 最大 ${models.length * MAX_PAGES} リクエスト（約 ${Math.ceil((models.length * MAX_PAGES * INTERVAL_MS) / 60000)} 分。1日の上限 8,640）`);
 

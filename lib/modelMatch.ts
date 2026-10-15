@@ -4,6 +4,7 @@ import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
 import { MAC_MODELS } from "@/lib/macCatalog";
 import { XPERIA_MODELS } from "@/lib/xperiaCatalog";
 import { AQUOS_MODELS } from "@/lib/aquosCatalog";
+import { WATCH_MODELS } from "@/lib/watchCatalog";
 
 /**
  * 機種名の照合（DB に依存しない部分）。サーバー（lib/deviceSearch.ts）と、
@@ -69,6 +70,19 @@ export function matchesModel(query: string, modelName: string): boolean {
     if (MAC_MODELS.some((m) => m.toLowerCase() === q)) return q === name;
     return /^macbook/.test(name) && q.split(/\s+/).every((word) => name.includes(word));
   }
+  // Apple Watch も取り込み時に lib/watchCatalog.ts の正式名（「Apple Watch Series 10」「Apple Watch SE（第2世代）」）にそろえている（2026-10-15〜）。
+  // 汎用の経路だと先頭の語が同じ "apple" になり、世代が混ざる。正式名なら完全一致にする
+  // （Series 1 と Series 10・11・12、Ultra と Ultra 2、SE（第1世代）と SE 3 を取り違えない）。正式名でない検索（「Apple Watch」）は、語がすべて含まれる機種に当てる
+  const watchQuery = /^\s*apple\s*watch/i.test(query);
+  if (watchQuery || /^apple watch/i.test(modelName)) {
+    if (!watchQuery) return false;
+    const q = query.trim().toLowerCase();
+    const name = modelName.trim().toLowerCase();
+    if (WATCH_MODELS.some((m) => m.toLowerCase() === q)) return q === name;
+    // 語ごとに「1語まるごと」で比べる（部分一致だと「Series 1」が「Series 10」にも当たる）
+    const tokens = new Set(name.split(/[\s（）()]+/).filter(Boolean));
+    return /^apple watch/.test(name) && q.split(/\s+/).every((word) => tokens.has(word));
+  }
   // Pixel・Galaxy・Xperia・AQUOS も取り込み時にメーカーの表記（lib/pixelCatalog.ts・galaxyCatalog.ts・xperiaCatalog.ts・aquosCatalog.ts）にそろえている。考え方は iPad と同じ
   // （トークン判定だと「Pixel 9」が「Pixel 9a」「Pixel 9 Pro」に、「Galaxy S24」が「Galaxy S24 Ultra」に、「Xperia 1 V」が「Xperia 1 VI」に、「AQUOS sense7」が「AQUOS sense7 plus」にも当たる。
   // 正式名での検索は完全一致なので、これらは当たらない）
@@ -108,6 +122,7 @@ export const SEARCH_DEVICES = [
   { key: "mac", label: "MacBook", prefix: "MacBook" },
   { key: "xperia", label: "Xperia", prefix: "Xperia" },
   { key: "aquos", label: "AQUOS", prefix: "AQUOS" },
+  { key: "watch", label: "Apple Watch", prefix: "Apple Watch" },
 ] as const;
 
 export const findSearchDevice = (key: string | null | undefined) => SEARCH_DEVICES.find((d) => d.key === key);

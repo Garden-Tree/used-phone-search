@@ -38,8 +38,8 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   // 容量別の最安値は多くても4つまで（見切れ防止）
   const storages = stats.byStorage.slice(0, 4);
 
-  // MacBook は容量＝SSD（2026-10-15〜）
-  const sideLabel = isMac(model) ? "SSD容量別の最安値" : "容量別の最安値";
+  // MacBook は容量＝SSD、Apple Watch は storage＝ケースのサイズ（mm）（2026-10-15〜）
+  const sideLabel = isMac(model) ? "SSD容量別の最安値" : model.startsWith("Apple Watch") ? "サイズ別の最安値" : "容量別の最安値";
   const priceText = stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし";
   const summary = stats.count > 0 ? `${stats.shopCount}ショップ・${stats.count.toLocaleString()}件の在庫を比較` : `大手中古ショップ${(await activeShopsFor(model)).length}社の在庫を比較`;
 
@@ -47,7 +47,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const allText = [
     displayName, "中古の最安値", "円", "〜", priceText, summary, `${updated} 更新`,
     sideLabel, "中古スマホ一括検索", "used.gadelog.com",
-    ...storages.flatMap((s) => [storageLabel(s.key), yen(s.minPrice)]),
+    ...storages.flatMap((s) => [storageLabel(s.key, model), yen(s.minPrice)]),
   ].join("");
   const fonts = await notoSansJp(allText);
 
@@ -104,7 +104,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
                     background: "#f1f5f9",
                   }}
                 >
-                  <div style={{ fontSize: 30, fontWeight: 900 }}>{storageLabel(s.key)}</div>
+                  <div style={{ fontSize: 30, fontWeight: 900 }}>{storageLabel(s.key, model)}</div>
                   <div style={{ fontSize: 34, fontWeight: 900, color: "#dc2626" }}>{`${yen(s.minPrice)}円`}</div>
                 </div>
               ))}

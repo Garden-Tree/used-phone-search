@@ -23,6 +23,7 @@ import {
 } from "@/lib/catalog";
 import { getBatteryRows, getMemorySsdRankMatrix, getModelStats, getStorageRankMatrix, macCellKey, type MemorySsdRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
 import { MAC_INFO } from "@/lib/macCatalog";
+import { WATCH_INFO, WATCHOS27_IPHONE, isWatchOS27 } from "@/lib/watchCatalog";
 import { SPEC_ROWS, displayText, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
@@ -137,9 +138,11 @@ const RANK_HINT: Record<string, string> = { S: "未使用・新品同様", A: "�
 /** 容量 × 状態ランクの最安値。セルはその条件の検索結果へ。行でいちばん安い金額は太字 */
 function StorageRankTable({ model, matrix }: { model: string; matrix: StorageRankMatrix }) {
   if (matrix.storages.length === 0) return null;
+  // Apple Watch（2026-10-15〜）は storage がケースのサイズ（mm）
+  const watch = deviceOf(model) === "watch";
   return (
     <section className={`${SEC} ${CARD} overflow-hidden`}>
-      <h2 className="px-3.5 pt-3 pb-2 text-[15px] font-bold">容量 × ランクの最安値</h2>
+      <h2 className="px-3.5 pt-3 pb-2 text-[15px] font-bold">{watch ? "サイズ × ランクの最安値" : "容量 × ランクの最安値"}</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
@@ -158,7 +161,7 @@ function StorageRankTable({ model, matrix }: { model: string; matrix: StorageRan
               const best = Math.min(...matrix.ranks.flatMap((r) => matrix.cells.get(`${st}:${r}`)?.minPrice ?? []));
               return (
                 <tr key={st} className="border-t border-line-soft">
-                  <td className="pl-3.5 pr-2 py-2.5 font-bold whitespace-nowrap">{storageLabel(st)}</td>
+                  <td className="pl-3.5 pr-2 py-2.5 font-bold whitespace-nowrap">{storageLabel(st, model)}</td>
                   {matrix.ranks.map((r) => {
                     const cell = matrix.cells.get(`${st}:${r}`);
                     return (
@@ -180,7 +183,7 @@ function StorageRankTable({ model, matrix }: { model: string; matrix: StorageRan
           </tbody>
         </table>
       </div>
-      <p className="px-3.5 pt-2 pb-3 text-[11px] text-ink-mute">ランクの意味は目安で、基準は店ごとに違います。金額（円）を押すとその条件の在庫一覧へ移ります。太字は容量ごとの最安値です。</p>
+      <p className="px-3.5 pt-2 pb-3 text-[11px] text-ink-mute">ランクの意味は目安で、基準は店ごとに違います。金額（円）を押すとその条件の在庫一覧へ移ります。太字は{watch ? "サイズ" : "容量"}ごとの最安値です。</p>
     </section>
   );
 }
@@ -268,8 +271,10 @@ export default async function ModelPage({ params }: Props) {
   const device = deviceOf(model);
   // MacBook（2026-10-15〜）: 容量×ランクの代わりにメモリ／SSD×ランク、結論はバッテリーの条件なし、予算別ページはまだない
   const mac = device === "mac";
-  // Xperia・AQUOS（2026-10-15〜）も予算別ページはまだない
-  const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" ? null : device;
+  // Apple Watch（2026-10-15〜）: サイズ（mm）×ランクの表、結論はバッテリーの条件なし（MacBook と同じ）、予算別・検品・買取・回線の枠は出さない
+  const watch = device === "watch";
+  // Xperia・AQUOS・Apple Watch（2026-10-15〜）も予算別ページはまだない
+  const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || device === "watch" ? null : device;
   const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
   const [stats, history, batteryRows, matrix, macMatrix, budget, goodMin] = await Promise.all([
     getModelStats(model),
@@ -278,10 +283,11 @@ export default async function ModelPage({ params }: Props) {
     mac ? Promise.resolve(emptyMatrix) : getStorageRankMatrix(model),
     mac ? getMemorySsdRankMatrix(model) : Promise.resolve(null),
     budgetDevice ? smallestBudgetFor(model, budgetDevice) : Promise.resolve(null),
-    mac ? getGoodRankMin(model) : getGoodConditionMin(model),
+    mac || watch ? getGoodRankMin(model) : getGoodConditionMin(model),
   ]);
   const spec = specOf(model);
   const macInfo = MAC_INFO[model];
+  const watchInfo = WATCH_INFO[model];
   const hub = DEVICE_HUB[device];
   const listPath = hub.path;
   const listName = hub.name;
@@ -326,6 +332,8 @@ export default async function ModelPage({ params }: Props) {
         ? (IPADOS27_MODELS.has(model) ? `${model}は iPadOS 27 に対応しています。` : `${model}は iPadOS 27 には対応していません。`)
         : mac
           ? `${model}は macOS 27 Golden Gate に対応しています。`
+        : watch
+          ? (isWatchOS27(model) ? `${model}は watchOS 27 に対応しています（Apple 公式）。使うには、${WATCHOS27_IPHONE}が必要です。` : `${model}は watchOS 27 には対応していません（Apple 公式）。`)
         : isAndroidJp(model)
           ? supportSentence(model, nowYm)
         : isIphone
@@ -333,7 +341,7 @@ export default async function ModelPage({ params }: Props) {
           : null;
   const faqs = hasStock && stats.minPrice !== null
     ? buildFaq({
-        model, isIphone, isMac: mac, minPrice: stats.minPrice, medianPrice: stats.medianPrice,
+        model, isIphone, isMac: mac, isWatch: watch, minPrice: stats.minPrice, medianPrice: stats.medianPrice,
         cheapestNote: cheapestDevice ? describeDevice(cheapestDevice) : null,
         goodMin, count: stats.count, shopCount: stats.shopCount, updatedText, byShop: stats.byShop, supportAnswer,
       })
@@ -396,7 +404,7 @@ export default async function ModelPage({ params }: Props) {
   );
 
   // 結論の1文。条件に合う在庫がなければ出さない
-  const conclusion = goodMin !== null && mac ? (
+  const conclusion = goodMin !== null && (mac || watch) ? (
     <p className="text-sm leading-[1.7] text-gray-700">
       ランクB以上なら <Link href={searchHref(model, { minRank: "B" })} className={`font-bold underline underline-offset-2 ${LINK}`}>{yen(goodMin)}〜</Link>。
       {cheapestDevice && cheapestDevice.price < goodMin && <>最安値は{describeDevice(cheapestDevice)}の個体です。</>}
@@ -486,6 +494,8 @@ export default async function ModelPage({ params }: Props) {
                     ? <>{releasedSentence(model)}{supportSentence(model, nowYm)}</>
                     : mac
                       ? "macOS 27 Golden Gate に対応しています。"
+                      : watch
+                        ? (isWatchOS27(model) ? "watchOS 27 に対応しています（Apple 公式）。" : "watchOS 27 には対応していません（Apple 公式）。")
                       : (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
             </p>
             <p className="text-[11px] text-ink-mute leading-relaxed">
@@ -526,8 +536,8 @@ export default async function ModelPage({ params }: Props) {
                 <div className="flex gap-1.5 overflow-x-auto">
                   {[
                     { label: "すべて", href: searchHref(model), current: true },
-                    // MacBook はバッテリーを書かない店が多い（イオシス・ソフマップ）ので、代わりにランクB以上
-                    mac
+                    // MacBook・Apple Watch はバッテリーを書かない店が多い（イオシス・ソフマップ・ゲオ）ので、代わりにランクB以上
+                    mac || watch
                       ? { label: "ランクB以上", href: searchHref(model, { minRank: "B" }) }
                       : { label: "バッテリー85%以上", href: searchHref(model, { minBattery: "85" }) },
                     { label: "ランクA以上", href: searchHref(model, { minRank: "A" }) },
@@ -600,8 +610,8 @@ export default async function ModelPage({ params }: Props) {
             </section>
           )}
 
-          {/* 買取（A8 テキストリンク。PR 表記必須。lib/buyback.ts）。「今のスマホを売るなら」なので MacBook には出さない */}
-          {hasStock && !mac && (
+          {/* 買取（A8 テキストリンク。PR 表記必須。lib/buyback.ts）。「今のスマホを売るなら」なので MacBook・Apple Watch には出さない */}
+          {hasStock && !mac && !watch && (
             <section className={`${SEC} mt-5 ${CARD} overflow-hidden`}>
               <div className="px-3.5 pt-3 pb-2 flex flex-col gap-1">
                 <h2 className="text-[15px] font-bold flex items-center gap-2">
@@ -641,7 +651,7 @@ export default async function ModelPage({ params }: Props) {
               <h2 className="text-[17px] font-bold">くわしく見る</h2>
               <div className={`${CARD} overflow-hidden`}>
                 {/* MacBook はバッテリーの表記がない店が多いので、在庫がなければ出さない */}
-                {!(mac && batteryRows.length === 0) && (
+                {!((mac || watch) && batteryRows.length === 0) && (
                 <Accordion title="バッテリー最大容量別の最安値" hint="80〜95%">
                   {/* 多くの店で最大容量は値段に反映されていないので、少し足すだけで状態のよい個体が買えることを見せる */}
                   <PriceList rows={batteryRows} labelOf={(k) => `${k}%以上`}
@@ -661,13 +671,13 @@ export default async function ModelPage({ params }: Props) {
                           <Link href={searchHref(model, { shop: r.key })} className="flex items-center justify-between gap-2 hover:bg-ground">
                             <span className="flex flex-col gap-0.5 min-w-0">
                               <span className="text-[13px] font-bold">{r.key}</span>
-                              {s && (mac
+                              {s && (mac || watch
                                 ? <span className="text-[11px] text-safe">{s.warrantyShort}</span>
                                 : <span className="text-[11px] text-safe">{s.warrantyShort}・{s.redRomShort}</span>)}
                             </span>
                             <span className="text-[15px] font-bold text-price whitespace-nowrap">{yen(r.minPrice)}</span>
                           </Link>
-                          {s && (mac
+                          {s && (mac || watch
                             ? <p className="mt-1 text-[11px] text-ink-mute leading-snug">保証は商品ごとに違います。詳しくは<a href={s.guaranteeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">{s.label}の公式ページ</a>で確認してください。</p>
                             : <p className="mt-1 text-[11px] text-ink-mute leading-snug">保証: {s.warranty}／赤ロム: {s.redRom}</p>)}
                         </div>
@@ -720,6 +730,30 @@ export default async function ModelPage({ params }: Props) {
                           : <a href="https://support.apple.com/ja-jp/108052" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">サポート（MacBook Pro の識別）</a>}
                       ・<a href="https://www.apple.com/jp/os/macos/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">macOS の対応機種</a>
                       {/^M[12] (Pro|Max)$/.test(macInfo.chip) && "。チップは機種名どおりで、Apple の識別ページの本文には記載がありません"}
+                    </p>
+                  </Accordion>
+                )}
+                {/* Apple Watch の基本情報（Apple 公式で確かめた値だけ。発売年は公式のページにないので載せない。lib/watchCatalog.ts の WATCH_INFO） */}
+                {watchInfo && (
+                  <Accordion title={`${model}の基本情報`} hint={isWatchOS27(model) ? "watchOS 27 対応" : "watchOS 27 非対応"}>
+                    <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                      <dt className="text-ink-mute font-bold">ケースのサイズ</dt>
+                      <dd>{watchInfo.sizes.map((s) => `${s}mm`).join("・")}</dd>
+                      <dt className="text-ink-mute font-bold">通信方式</dt>
+                      <dd>{watchInfo.cellularOnly ? "GPS+Cellular（Cellular モデルのみ）" : "GPS／GPS+Cellular"}</dd>
+                      <dt className="text-ink-mute font-bold">対応 OS</dt>
+                      <dd>{isWatchOS27(model) ? "watchOS 27 に対応" : "watchOS 27 には対応していません"}</dd>
+                      {isWatchOS27(model) && (
+                        <>
+                          <dt className="text-ink-mute font-bold">必要な iPhone</dt>
+                          <dd>{WATCHOS27_IPHONE}</dd>
+                        </>
+                      )}
+                    </dl>
+                    <p className="mt-3 text-[11px] text-ink-mute leading-relaxed">
+                      出典: Apple <a href="https://support.apple.com/ja-jp/108056" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">サポート（Apple Watch を識別する）</a>
+                      ・<a href="https://www.apple.com/jp/watchos/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">watchOS の対応機種</a>。
+                      バンドの有無は載せていません（商品ごとに違います）。
                     </p>
                   </Accordion>
                 )}

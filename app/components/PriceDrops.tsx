@@ -30,7 +30,7 @@ export default function PriceDrops({ drops, title }: { drops: PriceDrop[]; title
               >
                 <span className="min-w-0">
                   <span className="block text-sm font-bold truncate">{model}</span>
-                  <span className="block text-xs text-ink-mute">{d.modelSlug.startsWith("macbook-") ? "SSD " : ""}{storageLabel(d.storage)}・{yen(d.before)} → {yen(d.after)}</span>
+                  <span className="block text-xs text-ink-mute">{d.modelSlug.startsWith("macbook-") ? "SSD " : ""}{storageLabel(d.storage, d.modelSlug.startsWith("apple-watch-") ? model : undefined)}・{yen(d.before)} → {yen(d.after)}</span>
                 </span>
                 <span className="shrink-0 text-right text-safe">
                   <span className="block text-sm font-bold">↓ {yen(d.drop)}</span>

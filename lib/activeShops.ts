@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { AQUOS_SHOPS, MAC_SHOPS, SHOPS, XPERIA_SHOPS, findShop, shopsFor, type Shop } from "@/lib/shops";
+import { AQUOS_SHOPS, MAC_SHOPS, SHOPS, WATCH_SHOPS, XPERIA_SHOPS, findShop, shopsFor, type Shop } from "@/lib/shops";
 
 /**
  * いま在庫が1件以上見える（isSoldOut=false）店だけの一覧。ページに出す「○店」の数はこれで数える。
@@ -114,11 +114,18 @@ export async function activeAquosShops(): Promise<Shop[]> {
   return AQUOS_SHOPS.filter((s) => names.has(s.name));
 }
 
-/** 機種の種類（iPad なら iPad を扱う店など）ごとの、いま在庫がある店。MacBook・Xperia・AQUOS はその種類の在庫がある店 */
+/** Apple Watch の在庫がいまある店（WATCH_SHOPS のうち。2026-10-15〜） */
+export async function activeWatchShops(): Promise<Shop[]> {
+  const names = await activePrefixShopNames("Apple Watch", WATCH_SHOPS);
+  return WATCH_SHOPS.filter((s) => names.has(s.name));
+}
+
+/** 機種の種類（iPad なら iPad を扱う店など）ごとの、いま在庫がある店。MacBook・Xperia・AQUOS・Apple Watch はその種類の在庫がある店 */
 export const activeShopsFor = (model: string) =>
   /^MacBook/.test(model) ? activeMacShops()
   : /^Xperia/.test(model) ? activeXperiaShops()
   : /^AQUOS/.test(model) ? activeAquosShops()
+  : /^Apple Watch/.test(model) ? activeWatchShops()
   : activeShops(shopsFor(model));
 
 export async function isShopActive(name: string): Promise<boolean> {

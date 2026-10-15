@@ -53,7 +53,7 @@ const loadFile = (key: string) => {
 };
 
 const deviceKeyOf = (name: string) =>
-  /^\s*ipad/i.test(name) ? 'ipad' : /^\s*pixel/i.test(name) ? 'pixel' : /^\s*galaxy/i.test(name) ? 'galaxy' : /^\s*macbook/i.test(name) ? 'mac' : /^\s*xperia/i.test(name) ? 'xperia' : /^\s*aquos/i.test(name) ? 'aquos' : 'iphone';
+  /^\s*ipad/i.test(name) ? 'ipad' : /^\s*pixel/i.test(name) ? 'pixel' : /^\s*galaxy/i.test(name) ? 'galaxy' : /^\s*macbook/i.test(name) ? 'mac' : /^\s*xperia/i.test(name) ? 'xperia' : /^\s*aquos/i.test(name) ? 'aquos' : /^\s*apple\s*watch/i.test(name) ? 'watch' : 'iphone';
 
 const toInt = (v: string | null) => {
   if (!v) return undefined;
@@ -146,6 +146,8 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
     const maxPrice = toInt(params.get('maxPrice'));
     const storage = toInt(params.get('storage'));
     const memory = toInt(params.get('memory'));
+    // Apple Watch の通信方式（GPS／GPS+Cellular。carrier が同じ値）
+    const carrier = params.get('carrier');
     const rank = params.get('rank');
     // ランク◯以上（minRank）。不明なランクは「以上」の絞り込みから外す（lib/rankFilter.ts）
     const atLeast = ranksAtLeast(params.get('minRank'));
@@ -158,6 +160,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
       (maxPrice === undefined || d.price <= maxPrice) &&
       (storage === undefined || d.storage === storage) &&
       (memory === undefined || d.memoryGB === memory) &&
+      (!carrier || d.carrier === carrier) &&
       (!rank || d.conditionRank === rank) &&
       (!atLeast || atLeast.includes(d.conditionRank)) &&
       (!batterySort || d.batteryHealth !== null) &&
@@ -188,7 +191,11 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
   const chips: { label: string; clear: Record<string, null> }[] = [];
   if (hasShop) chips.push({ label: shopQuery!, clear: { shop: null } });
   const storage = toInt(params.get('storage'));
-  if (storage !== undefined) chips.push({ label: storage >= 1024 ? `${storage / 1024}TB` : `${storage}GB`, clear: { storage: null } });
+  // Apple Watch は storage がケースのサイズ（mm）
+  const watchView = device.key === 'watch' || models.some((q) => /^\s*apple\s*watch/i.test(q));
+  if (storage !== undefined) chips.push({ label: watchView ? `${storage}mm` : storage >= 1024 ? `${storage / 1024}TB` : `${storage}GB`, clear: { storage: null } });
+  const carrierParam = params.get('carrier');
+  if (carrierParam) chips.push({ label: carrierParam, clear: { carrier: null } });
   const memory = toInt(params.get('memory'));
   if (memory !== undefined) chips.push({ label: `メモリ${memory}GB`, clear: { memory: null } });
   if (params.get('rank')) chips.push({ label: `ランク${params.get('rank')}`, clear: { rank: null } });
@@ -203,7 +210,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
       : lo !== undefined ? `${lo.toLocaleString()}円〜` : `〜${hi!.toLocaleString()}円`;
     chips.push({ label, clear: { minPrice: null, maxPrice: null } });
   }
-  const clearAll = () => updateParams({ shop: null, storage: null, memory: null, rank: null, minRank: null, minBattery: null, minPrice: null, maxPrice: null });
+  const clearAll = () => updateParams({ shop: null, storage: null, memory: null, carrier: null, rank: null, minRank: null, minBattery: null, minPrice: null, maxPrice: null });
   const minShown = devices.length ? devices.reduce((m, d) => Math.min(m, d.price), Infinity) : null;
 
   // 絞り込みの画面（スマホ）を開いている間は背面をスクロールさせず、Esc で閉じる

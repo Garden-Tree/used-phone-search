@@ -25,6 +25,8 @@ export type Shop = {
   xperia?: boolean;
   /** Sharp AQUOS も取り込んでいるか（2026-10-15〜。xperia と同じ4店） */
   aquos?: boolean;
+  /** Apple Watch も取り込んでいるか（2026-10-15〜。楽天のゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック。イオシスは楽天市場店（alias）の在庫で、公式には Apple Watch がない） */
+  watch?: boolean;
   /**
    * バッテリー最大容量の表記。
    * exact: 数値（85% など）／ over80: 「80%以上」「80%未満」だけ（DB には 80・79、未使用品は 100）／
@@ -48,19 +50,19 @@ export type Shop = {
 };
 
 export const SHOPS: Shop[] = [
-  { name: "イオシス", label: "イオシス", xperia: true, aquos: true, mac: true, galaxy: true, pixel: true, ipad: true, battery: "over80",
+  { name: "イオシス", label: "イオシス", watch: true, xperia: true, aquos: true, mac: true, galaxy: true, pixel: true, ipad: true, battery: "over80",
     warranty: "中古3ヶ月（未使用品は6ヶ月）", redRom: "保証期間に関わらず対象", warrantyShort: "保証3ヶ月", redRomShort: "赤ロム保証",
     guaranteeUrl: "https://iosys.co.jp/guide/support/guarantee.html" },
-  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", marketplace: "rakuten", xperia: true, aquos: true, mac: true, pixel: true, galaxy: true, ipad: true, battery: "exact",
+  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", marketplace: "rakuten", watch: true, xperia: true, aquos: true, mac: true, pixel: true, galaxy: true, ipad: true, battery: "exact",
     warranty: "商品ごと（iPhone は多くが1ヶ月）", redRom: "永久保証", warrantyShort: "保証 商品ごと", redRomShort: "赤ロム永久",
     guaranteeUrl: "https://www.janpara.co.jp/contents/faq/" },
-  { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店", marketplace: "rakuten", xperia: true, aquos: true, pixel: true, galaxy: true, ipad: true, battery: "none",
+  { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店", marketplace: "rakuten", watch: true, xperia: true, aquos: true, pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "到着後30日以内の返品・交換", redRom: "永久保証（期間を問わず交換・返金）", warrantyShort: "30日返品", redRomShort: "赤ロム永久",
     guaranteeUrl: "https://www.rakuten.ne.jp/gold/geo-mobile/info_henpin.html" },
-  { name: "ソフマップ（楽天市場店）", label: "ソフマップ", note: "楽天市場店", marketplace: "rakuten", xperia: true, aquos: true, mac: true, pixel: true, galaxy: true, ipad: true, battery: "exact",
+  { name: "ソフマップ（楽天市場店）", label: "ソフマップ", note: "楽天市場店", marketplace: "rakuten", watch: true, xperia: true, aquos: true, mac: true, pixel: true, galaxy: true, ipad: true, battery: "exact",
     warranty: "初期不良は到着後30日以内に返金（返品保証10日間）", redRom: "到着から3年以内は返品可（商品ページに記載）", warrantyShort: "初期不良30日", redRomShort: "赤ロム 3年以内返品可",
     guaranteeUrl: "https://www.rakuten.co.jp/akiba-u-shop/info.html" },
-  { name: "ニューズドテック（楽天市場店）", label: "ニューズドテック", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "none",
+  { name: "ニューズドテック（楽天市場店）", label: "ニューズドテック", note: "楽天市場店", marketplace: "rakuten", watch: true, pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "到着から1ヶ月（レビュー投稿で3ヶ月に延長。延長分は代金の30%返金）", redRom: "永久保証（商品ページに記載）",
     warrantyShort: "保証1ヶ月", redRomShort: "赤ロム永久",
     guaranteeUrl: "https://www.rakuten.co.jp/kamaya-awards/info.html" },
@@ -115,7 +117,7 @@ export const SHOPS: Shop[] = [
  * 同じ商品は公式のカードに「楽天市場でも販売」「Yahoo!ショッピングでも販売」として添える（scripts/link-duplicate-shops.ts）。公式で取れなかった商品だけがこの名前で残る
  */
 export const ALIAS_SHOPS: Shop[] = [
-  { name: "イオシス（楽天市場店）", label: "イオシス", note: "楽天市場店", alias: "イオシス", marketplace: "rakuten", xperia: true, aquos: true, mac: true, galaxy: true, pixel: true, ipad: true, battery: "over80",
+  { name: "イオシス（楽天市場店）", label: "イオシス", note: "楽天市場店", alias: "イオシス", marketplace: "rakuten", watch: true, xperia: true, aquos: true, mac: true, galaxy: true, pixel: true, ipad: true, battery: "over80",
     warranty: "中古3ヶ月（未使用品は6ヶ月。商品名に記載）", redRom: "保証期間に関わらず対象", warrantyShort: "保証3ヶ月", redRomShort: "赤ロム保証",
     guaranteeUrl: "https://www.rakuten.co.jp/pc-good/info.html" },
   { name: "エムコム（Yahoo!ショッピング店）", label: "エムコム", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "over80",
@@ -134,9 +136,11 @@ export const MAC_SHOPS = SHOPS.filter((s) => s.mac);
 /** Xperia・AQUOS を扱う店（ゲオ・じゃんぱら・ソフマップ・イオシス。ニューズドテック・キタムラ・エムティーエムは件数が少ないので取り込まない） */
 export const XPERIA_SHOPS = SHOPS.filter((s) => s.xperia);
 export const AQUOS_SHOPS = SHOPS.filter((s) => s.aquos);
+/** Apple Watch を扱う店（ゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック。キタムラ・エムティーエムは取り込まない） */
+export const WATCH_SHOPS = SHOPS.filter((s) => s.watch);
 
 export const shopsFor = (model: string): Shop[] =>
-  /^iPad/.test(model) ? IPAD_SHOPS : /^Pixel/.test(model) ? PIXEL_SHOPS : /^Galaxy/.test(model) ? GALAXY_SHOPS : /^MacBook/.test(model) ? MAC_SHOPS : /^Xperia/.test(model) ? XPERIA_SHOPS : /^AQUOS/.test(model) ? AQUOS_SHOPS : SHOPS;
+  /^iPad/.test(model) ? IPAD_SHOPS : /^Pixel/.test(model) ? PIXEL_SHOPS : /^Galaxy/.test(model) ? GALAXY_SHOPS : /^MacBook/.test(model) ? MAC_SHOPS : /^Xperia/.test(model) ? XPERIA_SHOPS : /^AQUOS/.test(model) ? AQUOS_SHOPS : /^Apple Watch/.test(model) ? WATCH_SHOPS : SHOPS;
 
 /** 「イオシス・じゃんぱら・…」 */
 export const shopLabels = (shops: Shop[] = SHOPS): string => shops.map((s) => s.label).join("・");

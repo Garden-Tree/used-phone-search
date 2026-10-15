@@ -28,8 +28,12 @@ export const topStockLabels = (byShop: PriceRow[], n = 3): string[] =>
 export function modelDescription(model: string, stats: { minPrice: number | null; medianPrice: number | null; count: number; shopCount: number; byShop: PriceRow[] }): string {
   // MacBook（2026-10-15〜）は容量の代わりにメモリ・SSD で比べる
   const mac = /^MacBook/.test(model);
+  // Apple Watch（2026-10-15〜）は容量の代わりにケースのサイズ（mm）・通信方式（GPS／GPS+Cellular）で比べる
+  const watch = /^Apple Watch/.test(model);
+  if (stats.minPrice === null && watch) return `${model}の中古在庫を大手中古ショップから一括比較。ケースのサイズ・通信方式・状態ランク別の最安値をまとめています。`;
   if (stats.minPrice === null) return mac ? `${model}の中古在庫を大手中古ショップから一括比較。メモリ・SSD・状態ランク別の最安値をまとめています。` : `${model}の中古在庫を大手中古ショップから一括比較。容量・状態ランク別の最安値をまとめています。`;
   const top = topStockLabels(stats.byShop).join("・");
+  if (watch) return `${model}の中古は最安${yen(stats.minPrice)}・相場${yen(stats.medianPrice ?? stats.minPrice)}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件をケースのサイズ・通信方式・状態ランクで比較（毎日更新）。`;
   if (mac) return `${model}の中古は最安${yen(stats.minPrice)}・相場${yen(stats.medianPrice ?? stats.minPrice)}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件をメモリ・SSD・状態ランクで比較（毎日更新）。`;
   return `${model}の中古は最安${yen(stats.minPrice)}・相場${yen(stats.medianPrice ?? stats.minPrice)}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件を容量・状態ランク・バッテリーで比較（毎日更新）。`;
 }
@@ -41,6 +45,8 @@ export function buildFaq(p: {
   isIphone: boolean;
   /** MacBook（2026-10-15〜）。ランクB以上の最安値（バッテリーの条件なし）・保証の言い回し・買うときの注意を Mac 用にする */
   isMac?: boolean;
+  /** Apple Watch（2026-10-15〜）。ランクB以上の最安値（バッテリーの条件なし）・保証の言い回し・買うときの注意を Watch 用にする */
+  isWatch?: boolean;
   minPrice: number;
   medianPrice: number | null;
   /** 最安の個体の説明（「ランクC・バッテリー80%未満」など） */
@@ -57,13 +63,13 @@ export function buildFaq(p: {
   const a1 = [
     `${model}の中古の最安値は${yen(p.minPrice)}${p.cheapestNote ? `（${p.cheapestNote}）` : ""}です。`,
     p.medianPrice !== null ? `相場（在庫の中央値）は${yen(p.medianPrice)}です。` : "",
-    p.goodMin !== null ? `${p.isMac ? "ランクB以上" : "ランクB以上・バッテリー85%以上"}に絞ると${yen(p.goodMin)}〜です。` : "",
+    p.goodMin !== null ? `${p.isMac || p.isWatch ? "ランクB以上" : "ランクB以上・バッテリー85%以上"}に絞ると${yen(p.goodMin)}〜です。` : "",
     `現在${p.shopCount}店に${p.count.toLocaleString()}件の在庫があります${p.updatedText ? `（${p.updatedText}時点）` : ""}。`,
   ].join("");
 
   const cheap3 = foldShops(p.byShop).sort((a, b) => a.minPrice - b.minPrice).slice(0, 3);
   const a2 = `${model}の最安値が低い店は、${cheap3
-    .map((s) => `${s.label}（${yen(s.minPrice)}${s.shop ? (p.isMac ? `・${s.shop.warrantyShort}` : `・${s.shop.warrantyShort}・${s.shop.redRomShort}`) : ""}）`)
+    .map((s) => `${s.label}（${yen(s.minPrice)}${s.shop ? (p.isMac || p.isWatch ? `・${s.shop.warrantyShort}` : `・${s.shop.warrantyShort}・${s.shop.redRomShort}`) : ""}）`)
     .join("、")}の順です。価格と在庫は毎日変わるので、買う前に各店の最新の価格をご確認ください。`;
 
   const battery = "多くの店でバッテリー最大容量は値段に反映されていないので、同じ値段なら最大容量が高い個体を選ぶと得をします。";
@@ -71,7 +77,9 @@ export function buildFaq(p: {
   const red = "ネットワーク利用制限「△」は基本気にしなくてよく、大手の中古店はたいてい赤ロム保証を付けています（フリマにはこの保証がありません）。";
   // MacBook: メモリ・SSD は購入後に増やせない。保証は店・商品ごとに違う
   const macNote = "メモリと SSD は購入後に増やせないので、使い方に合う組み合わせを先に決めてから値段を比べるのがおすすめです。状態ランクは外装の傷の目安で、基準は店ごとに違います。保証は店・商品ごとに違うので、買う前に商品ページで確認してください。";
-  const a4 = p.isMac ? macNote : p.isIphone ? `${battery}${rank}${red}` : `${battery}${rank}`;
+  // Apple Watch: 通信方式（GPS／GPS+Cellular）とケースのサイズは買ってから変えられない。対応 iPhone は機種ごとに違う
+  const watchNote = "通信方式（GPS／GPS+Cellular）とケースのサイズは買ってから変えられないので、先に決めてから値段を比べるのがおすすめです。GPS+Cellular が単体で通信するには、携帯会社の回線契約が別に必要です。状態ランクは外装の傷の目安で、基準は店ごとに違います。保証は店・商品ごとに違うので、買う前に商品ページで確認してください。";
+  const a4 = p.isWatch ? watchNote : p.isMac ? macNote : p.isIphone ? `${battery}${rank}${red}` : `${battery}${rank}`;
 
   const faqs: Faq[] = [
     { q: `${model}の中古はいくらで買えますか？`, a: a1 },

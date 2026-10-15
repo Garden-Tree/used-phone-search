@@ -5,7 +5,7 @@ import type { PriceHistory, PricePoint } from '@/lib/priceHistory';
 import { yen, storageLabel as gbLabel } from "@/lib/format";
 
 // 価格推移の storage=0 は「全容量」の集計
-const storageLabel = (gb: number) => (gb === 0 ? "全容量" : gbLabel(gb));
+const storageLabel = (gb: number, model?: string) => (gb === 0 ? (model?.startsWith("Apple Watch") ? "全サイズ" : "全容量") : gbLabel(gb, model));
 
 // グラフの寸法（viewBox 座標。幅は親要素に合わせて伸縮する）
 const W = 640;
@@ -143,7 +143,7 @@ export default function PriceHistoryChart({ history, model }: { history: PriceHi
               className={`h-8 px-3 rounded-full text-xs border transition-colors ${
                 s === storage ? 'bg-brand-800 border-brand-800 text-white' : 'bg-white border-gray-300 text-ink'
               }`}>
-              {storageLabel(s)}
+              {storageLabel(s, model)}
             </button>
           ))}
         </div>

@@ -27,6 +27,7 @@ export type Device = {
   /** メモリ(GB)。MacBook だけ（storage は SSD の容量）。2026-10-15〜 */
   memoryGB?: number | null;
 };
+// Apple Watch は storage がケースのサイズ（mm）、carrier が通信方式（GPS／GPS+Cellular）。2026-10-15〜
 
 /** 在庫の行を縦に積む白い角丸の入れ物（区切り線つき）。docs/design.md「在庫の行」 */
 export function DeviceList({ children }: { children: React.ReactNode }) {
@@ -81,9 +82,11 @@ export default function DeviceCard({ device, showModel = true }: { device: Devic
   const modelName = device.modelName.replace(/iPhone(\d+)/i, 'iPhone $1');
   // MacBook は容量＝SSD（1TB 以上は TB 表記）。2行目はメモリと SSD（電池はあれば）。SIM・利用制限はない
   const mac = /^MacBook/.test(device.modelName);
-  const spec = `${showModel ? `${modelName} ` : ''}${mac ? storageLabel(device.storage) : `${device.storage}GB`}・${device.color}`;
+  // Apple Watch は 1行目にケースのサイズ（46mm）と色・素材、2行目に通信方式と電池。SIM・利用制限はない
+  const watch = /^Apple Watch/.test(device.modelName);
+  const spec = `${showModel ? `${modelName} ` : ''}${mac ? storageLabel(device.storage) : watch ? storageLabel(device.storage, device.modelName) : `${device.storage}GB`}・${device.color}`;
   const showNetwork = !!device.networkStatus && device.networkStatus !== '不明' && device.networkStatus !== '-';
-  const tag = shop ? (mac ? shop.warrantyShort : `${shop.warrantyShort}・${shop.redRomShort}`) : '';
+  const tag = shop ? (mac || watch ? shop.warrantyShort : `${shop.warrantyShort}・${shop.redRomShort}`) : '';
   const sold = device.isSoldOut;
 
   // 同じ商品のモール店のリンク。売り場は URL のホストで見分ける（楽天: イオシス、Yahoo!ショッピング: エムモバ）。知らないホストは出さない
@@ -119,7 +122,17 @@ export default function DeviceCard({ device, showModel = true }: { device: Devic
               {sold ? <span className="text-xs text-ink-mute font-bold">売り切れ</span> : `${device.price.toLocaleString()}円`}
             </span>
           </span>
-          {mac ? (
+          {watch ? (
+            <span className="text-xs text-gray-700">
+              {device.carrier ?? ''}
+              {bat && (
+                <>
+                  {device.carrier ? ' ・ ' : ''}
+                  <span className={`font-bold ${bat.low ? 'text-warn' : 'text-safe'}`}>電池 {bat.text}</span>
+                </>
+              )}
+            </span>
+          ) : mac ? (
             <span className="text-xs text-gray-700">
               {device.memoryGB ? `メモリ ${device.memoryGB}GB・` : ''}SSD {storageLabel(device.storage)}
               {bat && (

@@ -2,7 +2,8 @@
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { MAC_SHOPS, SHOPS } from '@/lib/shops';
+import { MAC_SHOPS, SHOPS, WATCH_SHOPS } from '@/lib/shops';
+import { WATCH_CARRIERS, WATCH_SIZE_OPTIONS } from '@/lib/watchCatalog';
 
 export const STORAGE_OPTIONS = [64, 128, 256, 512, 1024];
 export const RANK_OPTIONS = ['S', 'A', 'B', 'C', 'D'];
@@ -65,7 +66,10 @@ export default function FilterPanel({ activeShopNames }: { activeShopNames?: str
   const activeOptions = activeShopNames
     ? SHOP_OPTIONS.filter((o) => o.id === 'all' || o.id === currentShop || activeShopNames.includes(o.id))
     : SHOP_OPTIONS;
-  const shopOptions = mac ? activeOptions.filter((o) => o.id === 'all' || o.id === currentShop || MAC_SHOPS.some((s) => s.name === o.id)) : activeOptions;
+  // Apple Watch（2026-10-15〜）: ?device=watch または機種が Apple Watch のとき、Apple Watch を扱う店だけ。容量の代わりにケースのサイズ（mm）、通信方式（GPS／GPS+Cellular）の項目を足す。メモリは出さない
+  const watch = searchParams.get('device') === 'watch' || /^\s*apple\s*watch/i.test(searchParams.get('model') ?? '');
+  const kindShops = mac ? MAC_SHOPS : watch ? WATCH_SHOPS : null;
+  const shopOptions = kindShops ? activeOptions.filter((o) => o.id === 'all' || o.id === currentShop || kindShops.some((s) => s.name === o.id)) : activeOptions;
   const updateParams = useUpdateParams();
 
   // 入力中は URL を変えないよう手元に持つ。URL 側が変わったとき（ブラウザの戻るなど）は、
@@ -119,18 +123,33 @@ export default function FilterPanel({ activeShopNames }: { activeShopNames?: str
         </div>
       </Group>
 
-      <Group title={mac ? 'SSD容量' : '容量'}>
+      <Group title={mac ? 'SSD容量' : watch ? 'サイズ' : '容量'}>
         <div className="flex flex-wrap gap-2">
-          {(mac ? MAC_STORAGE_OPTIONS : STORAGE_OPTIONS).map((val) => {
+          {(mac ? MAC_STORAGE_OPTIONS : watch ? WATCH_SIZE_OPTIONS : STORAGE_OPTIONS).map((val) => {
             const isActive = searchParams.get('storage') === String(val);
             return (
               <button key={val} type="button" aria-pressed={isActive} onClick={() => toggleValue('storage', String(val))} className={chipClass(isActive)}>
-                {val >= 1024 ? `${val / 1024}TB` : `${val}GB`}
+                {watch ? `${val}mm` : val >= 1024 ? `${val / 1024}TB` : `${val}GB`}
               </button>
             );
           })}
         </div>
       </Group>
+
+      {watch && (
+        <Group title="通信方式">
+          <div className="flex flex-wrap gap-2">
+            {WATCH_CARRIERS.map((val) => {
+              const isActive = searchParams.get('carrier') === val;
+              return (
+                <button key={val} type="button" aria-pressed={isActive} onClick={() => toggleValue('carrier', val)} className={chipClass(isActive)}>
+                  {val}
+                </button>
+              );
+            })}
+          </div>
+        </Group>
+      )}
 
       {mac && (
         <Group title="メモリ">

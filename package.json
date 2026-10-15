@@ -14,6 +14,7 @@
     "test:normalize": "tsx scripts/test-normalizers.ts",
     "test:mac": "tsx scripts/test-mac-normalize.ts",
     "test:android": "tsx scripts/test-xperia-aquos.ts",
+    "test:watch": "tsx scripts/test-watch.ts",
     "x:images": "tsx scripts/make-x-images.tsx",
     "x:market": "tsx scripts/make-x-market-images.tsx"
   },

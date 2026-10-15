@@ -29,20 +29,20 @@
 - **Amazon 整備済み品**: 10/11〜資格なし（売上が条件）で停止中。古い価格は自動で隠れ、資格が戻れば再開
 - **Yahoo!ショッピング 7店**: もしも経由（VC の審査後に自動で VC へ。ideas/10-10）
 - **収益の枠**: スマホの機種ページに「回線も見直すなら（PR）」＝ahamo（A8）・楽天モバイル（楽天アフィ）（`lib/simPlans.ts`・10/15〜）と「今のスマホを売るなら（PR）」＝A8 の買取3社（`lib/buyback.ts`）
-- **掲載機種**: iPhone（iOS 27 対応＋X/XS/XR/8/7）・iPad 32・Pixel 24・Galaxy 29・MacBook 35・Xperia 17・AQUOS 21（Mac 以降は 10/15〜・ideas/10-15）。18 系の残り・iPhone Duo は在庫が出てから
+- **掲載機種**: iPhone（iOS 27 対応＋X/XS/XR/8/7）・iPad 32・Pixel 24・Galaxy 29・MacBook 35・Xperia 17・AQUOS 21・Apple Watch 14（Mac 以降は 10/15〜・ideas/10-15。Watch は storage＝mm・carrier＝GPS/Cellular）。18 系の残り・iPhone Duo は在庫が出てから
 
 ## 確認台帳（計測・判定）
 
 | 確認日 | 何を見るか | 基準・判断 |
 | --- | --- | --- |
-| **10/18** | GSC の 10/11〜17（デザイン・説明文・FAQ の効果）・/iphone/iphone-18-pro の登録 | 7日200表示未満は判定しない（ideas/10-12） |
+| **10/18** | GSC の 10/11〜17（デザイン・説明文・FAQ）・/iphone/iphone-18-pro の登録 | 7日200表示未満は判定しない（ideas/10-12） |
 | **10/26** | 価格推移グラフ（30日分）が意味のある形か／値下がり X 投稿の検討 | |
 | **11月上旬** | iPhone Duo・18 系の中古在庫 | 出たら `lib/catalog.ts` に追加 |
 | **毎月1日** | 出典の開き直し（iOS 対応・新機種・楽天API・各社規約） | |
 
 ## 進行中・外部条件待ち
 
-- **A8（10/15）**: バックマーケット・楽天モバイル（A8 版）審査中
+- **A8**: バックマーケット・楽天モバイル（A8 版）審査中
 - **VC の審査（サイト 3784061）**: 通れば Yahoo!ショッピング（2025875）に提携して sid/pid を Secrets へ
 - **Vercel の後片付け（10/20 ごろ・ユーザー）**: Vercel のプロジェクトを止める → Neon を Free に（ideas/10-03〜06）
 
@@ -50,7 +50,7 @@
 
 ```
 1. Xperia・AQUOS: push → fetch.php 上書き → 取り込み後に件数・読み取りを確認
-2. Apple Watch（世代ごと1ページ。サイズ・GPS/Cellular・素材で絞り込み）
+2. Apple Watch: push → fetch.php 上書き → 取り込み後に件数・色・SE の世代不明を確認
 3. X の日々の運用（ideas/x-posts-2026-10-12.md）
 ```
 

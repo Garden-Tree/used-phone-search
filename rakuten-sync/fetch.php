@@ -1,6 +1,6 @@
 <?php
 /**
- * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone・iPad・Google Pixel・Galaxy（と、一部の店だけ MacBook・Xperia・AQUOS）在庫を取得し、
+ * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone・iPad・Google Pixel・Galaxy（と、一部の店だけ MacBook・Xperia・AQUOS・Apple Watch）在庫を取得し、
  * used.gadelog.com の受け口（/api/ingest/rakuten?shop=<shopCode>）へショップごとに送信する。
  * Cloudflare Pages 版（cloudflare-pages ブランチ）では、config.php に output_dir を書くと、送信せずに
  * <output_dir>/<shopCode>.json.gz に保存する。output_dir は公開フォルダの中の推測されにくいフォルダにし、
@@ -40,6 +40,15 @@ const MAC_SHOP_CODES = ['janpara', 'akiba-u-shop', 'pc-good'];
 // 取得時間は ゲオで約 +95 秒（1.1 秒間隔）。実際の要求数は fetch.log の「fetched … with N requests」で確かめる
 const ANDROID_KEYWORDS = ['Xperia', 'AQUOS'];
 const ANDROID_SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'pc-good'];
+// Apple Watch は 2026-10-15〜、ゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック（1号店・2号店）の6店だけ（読み取りは lib/rakutenWatch.ts）。
+// キタムラ・エムティーエムは引かない。バンド・充電器・保護フィルムも当たるが、受け口が世代・サイズ・通信方式のそろった本体だけを残す。
+// 要求数の概算（MAX_REQUESTS=1500 は1ショップあたり）: ゲオは「Apple Watch」で約 6,000 件（バンド込み）。3,000 件を超えるので価格帯を半分ずつに割る
+// （割るたびに1ページ目を1回余計に引く: 約 5〜10 要求）。1ページ30件 → 約 6,000 ÷ 30 ＝ 約 200 要求＋分割の約 10 ＝ 約 210 要求。
+// ゲオの合計の見込み: 既存の約 350（iPhone・iPad・Pixel・Galaxy）＋ Xperia・AQUOS 約 85 ＋ Apple Watch 約 210 ＝ 約 650 要求（上限 1500 の半分以下）。
+// ほかの店は Apple Watch が数十〜数百件ずつ（約 5〜30 要求）。イオシスは MacBook 約 200 要求を含めても 約 350＋200＋40＋30 ＝ 約 620 で収まる。
+// 取得時間はゲオで約 +4 分（1.1 秒間隔×約 210）。1500 で足りる見込みなので上限は上げない。実際の要求数は fetch.log の「fetched … with N requests」で確かめる
+const WATCH_KEYWORDS = ['Apple Watch'];
+const WATCH_SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'pc-good', 'kamaya-awards', 'garakei'];
 const HITS = 30;              // 1ページの最大件数
 const MAX_PAGES = 100;        // API の上限（1検索あたり最大 3,000 件）
 const INTERVAL_US = 1100000;  // 登録した QPS=1 を守るため 1.1 秒間隔
@@ -190,6 +199,7 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
 
     $keywords = in_array($shopCode, MAC_SHOP_CODES, true) ? array_merge(KEYWORDS, ['MacBook']) : KEYWORDS;
     if (in_array($shopCode, ANDROID_SHOP_CODES, true)) $keywords = array_merge($keywords, ANDROID_KEYWORDS);
+    if (in_array($shopCode, WATCH_SHOP_CODES, true)) $keywords = array_merge($keywords, WATCH_KEYWORDS);
     foreach ($keywords as $keyword) {
         collectRange($config, $shopCode, $keyword, 1, 999999, $items);
     }

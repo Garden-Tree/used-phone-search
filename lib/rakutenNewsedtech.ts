@@ -38,7 +38,7 @@ function body(name: string): string | null {
   return (end >= 0 ? rest.slice(0, end) : rest).replace(/[\s　]+/g, " ").trim();
 }
 
-function rankFrom(name: string, item: RakutenItem, unused: boolean): string {
+export function rankFrom(name: string, item: RakutenItem, unused: boolean): string {
   if (unused) return "S";
   const inName = name.match(/(?:^|\s)([SABC])ランク(?:\s|$)/)?.[1];
   if (inName) return inName;
@@ -46,7 +46,7 @@ function rankFrom(name: string, item: RakutenItem, unused: boolean): string {
   return rankOf(item.rank);
 }
 
-function batteryFrom(name: string, item: RakutenItem): number | null {
+export function batteryFrom(name: string, item: RakutenItem): number | null {
   if (/バッテリー新品|バッテリー100[%％]/.test(name)) return 100;
   return batteryOf(item);
 }

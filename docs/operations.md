@@ -103,6 +103,7 @@
 - 機種の一覧は `scraper/common.py` の `PIXEL_MODELS` と `lib/pixelCatalog.ts` の2か所。`npm run test:normalize` がずれを見つける。新しい Pixel が出たら両方と `PIXEL_INFO`（販売開始・保証年数）に足す
 - MacBook（2026-10-15〜）: じゃんぱら・ソフマップ・イオシスだけ `fetch.php` の MAC_SHOP_CODES で「MacBook」も引く（ほかの店はモニタ等が数万件当たる）。読み取りは `lib/rakutenMac.ts`（機種は `lib/macCatalog.ts` の公式の部品番号表）。メモリは `memoryGB`、SSD は `storage`。ページができるまでトップの件数・値下がりから除き、価格の記録（PriceSnapshot）だけ先に取る
 - Xperia・AQUOS（2026-10-15〜）: ゲオ・じゃんぱら・ソフマップ・イオシスだけ `fetch.php` の ANDROID_SHOP_CODES で「Xperia」「AQUOS」も引く（ゲオで約+85要求）。読み取りは `lib/rakutenAndroid.ts`（機種は型番優先で `lib/xperiaCatalog.ts`・`aquosCatalog.ts`）。イオシスは名前に容量がないので、ドコモの型番の表（ROM を公式で確認）にある機種だけ行にする。Amazon の検索には含めない。テストは `npm run test:android`
+- Apple Watch（2026-10-15〜）: ゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック（1号店・2号店）の6店だけ `fetch.php` の WATCH_SHOP_CODES で「Apple Watch」も引く（ゲオは約6,000件＝約210要求。1店あたりの要求数は約650で MAX_REQUESTS=1500 に収まる見込み）。読み取りは `lib/rakutenWatch.ts`（機種は `lib/watchCatalog.ts`。世代・ケースのサイズ（mm）・通信方式がそろったものだけ行にし、バンド・充電器・Series 5 以前・世代の分からない SE は取らない）。DB は modelName＝世代、storage＝mm、carrier＝GPS／GPS+Cellular。Amazon の検索には含めない。テストは `npm run test:watch`。新しい Apple Watch が出たら `WATCH_CATALOG`・`WATCH_INFO`（公式のサイズ・watchOS の対応・モデル番号）に足す
 - 楽天3店: `fetch.php` の KEYWORDS に `Pixel`、読み取りは `lib/rakutenPixel.ts`（`lib/rakutenShops.ts` の byDevice で振り分け）。キャリア版も SIM フリー扱い（Pixel 6 以降は SIM ロック原則禁止の後の発売）
 - エムモバは Pixel の一覧がなく、検索ページでも Pixel 6 以降は1件（9/30）なので取り込まない
 - サーバーパネル・ファイルマネージャは 2026-09 から `https://secure.wpx.ne.jp/`（シンクラウド）。旧 `secure.shin-server.jp` は名前解決できない
