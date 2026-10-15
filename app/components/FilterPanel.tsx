@@ -209,7 +209,7 @@ export default function FilterPanel({ activeShopNames }: { activeShopNames?: str
             );
           })}
         </div>
-        <p className="text-xs text-ink-mute leading-relaxed">値段に差が出にくいのに使い心地を大きく左右するので、まず見たい項目です。未使用品（ランクS）は常に含みます</p>
+        <p className="text-xs text-ink-mute leading-relaxed">値段に差が出にくいのに使い心地を大きく左右するので、まず見たい項目です。未使用品（ランクS）は常に含みます。「80%以上」とだけ書く店の在庫は「80%以上」に入ります（85%以上には入りません）</p>
       </Group>
     </div>
   );

@@ -32,12 +32,14 @@ const BATTERY_SEGS: { key: keyof Breakdown["battery"]; label: string; short: str
   { key: "b90", label: "90%以上", short: "90%以上", cls: "bg-safe text-white" },
   { key: "b85", label: "85〜89%", short: "85〜89", cls: "bg-[#5EEAD4] text-[#134E4A]" },
   { key: "b80", label: "80〜84%", short: "80〜84", cls: "bg-[#CCFBF1] text-[#134E4A]" },
+  // 店が「80%以上」とだけ書く在庫。80〜100% のどこかなので、緑青のしま模様で区別する
+  { key: "over80", label: "80%以上（店の表記）", short: "80%以上", cls: "bg-[repeating-linear-gradient(135deg,#CCFBF1_0_4px,#99F6E4_4px_8px)] text-[#134E4A]" },
   { key: "low", label: "80%未満", short: "80未満", cls: "bg-[#D1D5DB] text-ink-sub" },
   { key: "unknown", label: "不明", short: "不明", cls: "bg-line text-ink-sub" },
 ];
 
 /**
- * ランク（S/A/B/C/その他）とバッテリー（90以上/85-89/80-84/80未満/不明）の内訳。1枚のカードに2本。
+ * ランク（S/A/B/C/その他）とバッテリー（90以上/85-89/80-84/80%以上の表記/80未満/不明）の内訳。1枚のカードに2本。
  * ランクの下に各ランクの最安値（押すとそのランクの検索へ）。バッテリーの値を持つ在庫がなければバッテリーは出さない
  */
 export default function StackedBar({ breakdown, rankMin, rankHref }: {
@@ -101,7 +103,12 @@ export default function StackedBar({ breakdown, rankMin, rankHref }: {
               </span>
             ))}
           </div>
-          {battery.unknown > 0 && <p className="text-[10px] text-ink-mute leading-relaxed">「不明」は最大容量を書かない店、または「80%以上」とだけ書く店の在庫です。</p>}
+          {(battery.over80 > 0 || battery.unknown > 0) && (
+            <p className="text-[10px] text-ink-mute leading-relaxed">
+              {battery.over80 > 0 && "「80%以上（店の表記）」は、正確な数字ではなく「80%以上」とだけ書く店の在庫です。検索の「80%以上」には含まれます。"}
+              {battery.unknown > 0 && "「不明」は最大容量を書かない店の在庫です。"}
+            </p>
+          )}
         </div>
       )}
     </section>

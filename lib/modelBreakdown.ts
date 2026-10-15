@@ -46,7 +46,7 @@ export const getShopBars = cache(async (model: string): Promise<ShopBarRow[]> =>
     .sort((a, b) => a.minPrice - b.minPrice);
 });
 
-export type BatteryBucketKey = "b90" | "b85" | "b80" | "low" | "unknown";
+export type BatteryBucketKey = "b90" | "b85" | "b80" | "over80" | "low" | "unknown";
 export type Breakdown = {
   /** ランクごとの件数（大文字にそろえる） */
   ranks: { key: string; count: number }[];
@@ -59,7 +59,7 @@ export type Breakdown = {
 
 /**
  * ランクとバッテリーの内訳。groupBy は2回（ランク、バッテリー×店）。
- * 「80%以上」としか書かない店（battery: over80）の 80 は実際の値ではないので「不明」に入れる
+ * 「80%以上」としか書かない店（battery: over80）の 80 は実際の値ではないので、別の区分「80%以上（店の表記）」に入れる
  */
 export const getBreakdown = cache(async (model: string): Promise<Breakdown> => {
   const where = await modelWhere(model);
@@ -75,7 +75,7 @@ export const getBreakdown = cache(async (model: string): Promise<Breakdown> => {
   }
   const ranks = [...rankMap.entries()].map(([key, count]) => ({ key, count }));
 
-  const battery: Record<BatteryBucketKey, number> = { b90: 0, b85: 0, b80: 0, low: 0, unknown: 0 };
+  const battery: Record<BatteryBucketKey, number> = { b90: 0, b85: 0, b80: 0, over80: 0, low: 0, unknown: 0 };
   let batteryKnown = 0;
   let total = 0;
   for (const r of batteryRows) {
@@ -83,7 +83,7 @@ export const getBreakdown = cache(async (model: string): Promise<Breakdown> => {
     total += n;
     const h = r.batteryHealth;
     if (h === null) { battery.unknown += n; continue; }
-    if (h === 80 && findShop(r.shopName)?.battery === "over80") { battery.unknown += n; continue; }
+    if (h === 80 && findShop(r.shopName)?.battery === "over80") { batteryKnown += n; battery.over80 += n; continue; }
     batteryKnown += n;
     if (h >= 90) battery.b90 += n;
     else if (h >= 85) battery.b85 += n;

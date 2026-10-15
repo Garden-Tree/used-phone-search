@@ -219,7 +219,7 @@ export default async function ModelPage({ params }: Props) {
     getBuyNowStats(model),
   ]);
   // 図の集計（在庫があるときだけ。どれも DB 側の groupBy / aggregate）
-  const emptyBreakdown: Breakdown = { ranks: [], battery: { b90: 0, b85: 0, b80: 0, low: 0, unknown: 0 }, batteryKnown: 0, total: 0 };
+  const emptyBreakdown: Breakdown = { ranks: [], battery: { b90: 0, b85: 0, b80: 0, over80: 0, low: 0, unknown: 0 }, batteryKnown: 0, total: 0 };
   const [shopRows, breakdown, rankSMax]: [ShopBarRow[], Breakdown, number | null] = stats.count > 0
     ? await Promise.all([getShopBars(model), getBreakdown(model), getRankSMax(model)])
     : [[], emptyBreakdown, null];
