@@ -2,13 +2,16 @@
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { SHOPS } from '@/lib/shops';
+import { MAC_SHOPS, SHOPS } from '@/lib/shops';
 
 export const STORAGE_OPTIONS = [64, 128, 256, 512, 1024];
 export const RANK_OPTIONS = ['S', 'A', 'B', 'C', 'D'];
 // 「A以上」「B以上」（minRank）。完全一致（rank）と同時には持たない
 export const MIN_RANK_OPTIONS = ['A', 'B'];
 export const BATTERY_OPTIONS = [80, 85, 90, 95];
+// MacBook の絞り込み（2026-10-15〜）。容量は SSD、メモリは MacBook だけの項目
+export const MAC_STORAGE_OPTIONS = [256, 512, 1024, 2048];
+export const MAC_MEMORY_OPTIONS = [8, 16, 24, 32, 36, 48, 64];
 // 楽天市場店は「じゃんぱら（楽天）」のように短く出す
 const SHOP_OPTIONS = [
   { id: 'all', name: 'すべて' },
@@ -57,9 +60,12 @@ export default function FilterPanel({ activeShopNames }: { activeShopNames?: str
   const searchParams = useSearchParams();
   // 在庫がない店は出さない（ビルド時に渡される）。URL で選ばれている店は、解除できるよう残す。未指定なら全店
   const currentShop = searchParams.get('shop');
-  const shopOptions = activeShopNames
+  // MacBook を見ているとき（?device=mac または機種が MacBook）は、MacBook を扱う店だけ・容量は SSD・メモリの項目を足す
+  const mac = searchParams.get('device') === 'mac' || /^\s*macbook/i.test(searchParams.get('model') ?? '');
+  const activeOptions = activeShopNames
     ? SHOP_OPTIONS.filter((o) => o.id === 'all' || o.id === currentShop || activeShopNames.includes(o.id))
     : SHOP_OPTIONS;
+  const shopOptions = mac ? activeOptions.filter((o) => o.id === 'all' || o.id === currentShop || MAC_SHOPS.some((s) => s.name === o.id)) : activeOptions;
   const updateParams = useUpdateParams();
 
   // 入力中は URL を変えないよう手元に持つ。URL 側が変わったとき（ブラウザの戻るなど）は、
@@ -113,9 +119,9 @@ export default function FilterPanel({ activeShopNames }: { activeShopNames?: str
         </div>
       </Group>
 
-      <Group title="容量">
+      <Group title={mac ? 'SSD容量' : '容量'}>
         <div className="flex flex-wrap gap-2">
-          {STORAGE_OPTIONS.map((val) => {
+          {(mac ? MAC_STORAGE_OPTIONS : STORAGE_OPTIONS).map((val) => {
             const isActive = searchParams.get('storage') === String(val);
             return (
               <button key={val} type="button" aria-pressed={isActive} onClick={() => toggleValue('storage', String(val))} className={chipClass(isActive)}>
@@ -125,6 +131,21 @@ export default function FilterPanel({ activeShopNames }: { activeShopNames?: str
           })}
         </div>
       </Group>
+
+      {mac && (
+        <Group title="メモリ">
+          <div className="flex flex-wrap gap-2">
+            {MAC_MEMORY_OPTIONS.map((val) => {
+              const isActive = searchParams.get('memory') === String(val);
+              return (
+                <button key={val} type="button" aria-pressed={isActive} onClick={() => toggleValue('memory', String(val))} className={chipClass(isActive)}>
+                  {val}GB
+                </button>
+              );
+            })}
+          </div>
+        </Group>
+      )}
 
       <Group title="状態ランク">
         <div className="flex flex-wrap gap-2">

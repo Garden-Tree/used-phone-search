@@ -24,8 +24,10 @@ export type InventoryRow = [
   price: number,
   url: string,
   // 同じ商品の楽天市場店の価格・URL（イオシス公式の行だけ。ないときは要素ごと省いてファイルを小さくする）
-  altPrice?: number,
-  altUrl?: string,
+  altPrice?: number | null,
+  altUrl?: string | null,
+  // メモリ(GB)。MacBook の行だけ（storage は SSD の容量）。alt が無い行は null で埋める。iPhone など他の行には付けない（2026-10-15〜）
+  memoryGB?: number | null,
 ];
 
 export type InventoryFile = {
@@ -45,13 +47,13 @@ const OTHER_PREFIX = "other-";
 
 // 機種名の先頭で種類を見分ける（DB 版の検索の startsWith と同じく大文字小文字を区別）。どれでもない名前は検索に出さない
 const deviceOfName = (name: string): Device | null =>
-  name.startsWith("iPhone") ? "iphone" : name.startsWith("iPad") ? "ipad" : name.startsWith("Pixel") ? "pixel" : name.startsWith("Galaxy") ? "galaxy" : null;
+  name.startsWith("iPhone") ? "iphone" : name.startsWith("iPad") ? "ipad" : name.startsWith("Pixel") ? "pixel" : name.startsWith("Galaxy") ? "galaxy" : name.startsWith("MacBook") ? "mac" : null;
 
 /** ファイル名（拡張子なし）の一覧。在庫の有無にかかわらず全機種＋種類ごとの other を書き出す（ブラウザ側で 404 を出さないため） */
 export function inventoryFileKeys(): string[] {
   return [
     ...ALL_DEVICE_PAGE_MODELS.map(modelToSlug),
-    ...(["iphone", "ipad", "pixel", "galaxy"] as const).map((d) => `${OTHER_PREFIX}${d}`),
+    ...(["iphone", "ipad", "pixel", "galaxy", "mac"] as const).map((d) => `${OTHER_PREFIX}${d}`),
   ];
 }
 
@@ -84,7 +86,7 @@ export async function inventoryFile(key: string): Promise<InventoryFile> {
     select: {
       modelName: true, storage: true, color: true, conditionRank: true, batteryHealth: true,
       networkStatus: true, simUnlocked: true, carrier: true, shopName: true, price: true, url: true,
-      altPrice: true, altUrl: true,
+      altPrice: true, altUrl: true, memoryGB: true,
     },
     orderBy: [{ price: "asc" }, { id: "asc" }],
   });
@@ -97,7 +99,8 @@ export async function inventoryFile(key: string): Promise<InventoryFile> {
         i.modelName, i.storage, i.color, i.conditionRank, i.batteryHealth, i.networkStatus,
         i.simUnlocked ? 1 : 0, i.carrier, shops.indexOf(i.shopName), i.price, i.url,
       ];
-      if (i.altPrice && i.altUrl) row.push(i.altPrice, i.altUrl);
+      if (i.memoryGB !== null) row.push(i.altPrice && i.altUrl ? i.altPrice : null, i.altPrice && i.altUrl ? i.altUrl : null, i.memoryGB);
+      else if (i.altPrice && i.altUrl) row.push(i.altPrice, i.altUrl);
       return row;
     }),
   };

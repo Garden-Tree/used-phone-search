@@ -21,18 +21,19 @@ import {
   siblingModels,
   slugToModel,
 } from "@/lib/catalog";
-import { getBatteryRows, getModelStats, getStorageRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
+import { getBatteryRows, getMemorySsdRankMatrix, getModelStats, getStorageRankMatrix, macCellKey, type MemorySsdRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
+import { MAC_INFO } from "@/lib/macCatalog";
 import { SPEC_ROWS, displayText, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 import { comparePath, comparesFor } from "@/lib/compare";
 import { getPriceHistory } from "@/lib/priceHistory";
-import { BUDGET_NAMES, budgetLabel, budgetPath } from "@/lib/budgets";
+import { BUDGET_NAMES, budgetLabel, budgetPath, type BudgetDevice } from "@/lib/budgets";
 import { smallestBudgetFor } from "@/lib/budgetStats";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
 import InspectionTips, { inspectionTips } from "@/app/components/InspectionTips";
-import { getGoodConditionMin } from "@/lib/modelBest";
+import { getGoodConditionMin, getGoodRankMin } from "@/lib/modelBest";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
 import { findShop, shopsFor } from "@/lib/shops";
@@ -182,6 +183,59 @@ function StorageRankTable({ model, matrix }: { model: string; matrix: StorageRan
   );
 }
 
+/** MacBook のメモリ・SSD × 状態ランクの最安値（容量の代わり。セルはその条件の検索結果へ。行でいちばん安い金額は太字） */
+function MemorySsdRankTable({ model, matrix }: { model: string; matrix: MemorySsdRankMatrix }) {
+  if (matrix.combos.length === 0) return null;
+  return (
+    <section className={`${SEC} ${CARD} overflow-hidden`}>
+      <h2 className="px-3.5 pt-3 pb-2 text-[15px] font-bold">メモリ／SSD × ランクの最安値</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr>
+              <th className="text-left font-normal pl-3.5 pr-2 py-1.5"></th>
+              {matrix.ranks.map((r) => (
+                <th key={r} className="text-right font-normal text-ink-mute px-2 py-1.5 whitespace-nowrap last:pr-3.5">
+                  <span className="block text-ink font-bold text-xs">{r}</span>
+                  {RANK_HINT[r] && <span className="block text-[10px]">{RANK_HINT[r]}</span>}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {matrix.combos.map((c) => {
+              const best = Math.min(...matrix.ranks.flatMap((r) => matrix.cells.get(macCellKey(c.memoryGB, c.storage, r))?.minPrice ?? []));
+              return (
+                <tr key={`${c.memoryGB ?? ""}:${c.storage}`} className="border-t border-line-soft">
+                  <td className="pl-3.5 pr-2 py-2.5 font-bold whitespace-nowrap">
+                    {c.memoryGB ? `${c.memoryGB}GB / ` : ""}{storageLabel(c.storage)}
+                  </td>
+                  {matrix.ranks.map((r) => {
+                    const cell = matrix.cells.get(macCellKey(c.memoryGB, c.storage, r));
+                    return (
+                      <td key={r} className="px-2 py-2.5 text-right whitespace-nowrap last:pr-3.5">
+                        {cell ? (
+                          <Link href={searchHref(model, { ...(c.memoryGB ? { memory: String(c.memoryGB) } : {}), storage: String(c.storage), rank: r })} className="flex flex-col text-price hover:underline underline-offset-2">
+                            <span className={cell.minPrice === best ? "font-bold" : "font-medium"}>{cell.minPrice.toLocaleString()}</span>
+                            <span className="text-[10px] font-normal text-ink-mute">{cell.count.toLocaleString()}件</span>
+                          </Link>
+                        ) : (
+                          <span className="text-gray-300">-</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="px-3.5 pt-2 pb-3 text-[11px] text-ink-mute">メモリ／SSD は購入後に増やせません。ランクの意味は目安で、基準は店ごとに違います。金額（円）を押すとその条件の在庫一覧へ移ります。太字はメモリ・SSD ごとの最安値です。</p>
+    </section>
+  );
+}
+
 // 店によってバッテリーの表記が違うので、表の数え方を書いておく（lib/shops.ts の battery）
 // 注記に出すのは、その機種を扱っている店だけ（Pixel は3店など）
 function batteryNote(model: string): string {
@@ -210,15 +264,21 @@ export default async function ModelPage({ params }: Props) {
   if (!model) notFound();
 
   const device = deviceOf(model);
-  const [stats, history, batteryRows, matrix, budget, goodMin] = await Promise.all([
+  // MacBook（2026-10-15〜）: 容量×ランクの代わりにメモリ／SSD×ランク、結論はバッテリーの条件なし、予算別ページはまだない
+  const mac = device === "mac";
+  const budgetDevice: BudgetDevice | null = device === "mac" ? null : device;
+  const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
+  const [stats, history, batteryRows, matrix, macMatrix, budget, goodMin] = await Promise.all([
     getModelStats(model),
     getPriceHistory(slug),
     getBatteryRows(model),
-    getStorageRankMatrix(model),
-    smallestBudgetFor(model, device),
-    getGoodConditionMin(model),
+    mac ? Promise.resolve(emptyMatrix) : getStorageRankMatrix(model),
+    mac ? getMemorySsdRankMatrix(model) : Promise.resolve(null),
+    budgetDevice ? smallestBudgetFor(model, budgetDevice) : Promise.resolve(null),
+    mac ? getGoodRankMin(model) : getGoodConditionMin(model),
   ]);
   const spec = specOf(model);
+  const macInfo = MAC_INFO[model];
   const hub = DEVICE_HUB[device];
   const listPath = hub.path;
   const listName = hub.name;
@@ -256,12 +316,14 @@ export default async function ModelPage({ params }: Props) {
         : `Google のアップデート保証（販売開始から${pixel.updateYears}年・${jaMonth(pixelUntil)}まで）は終わっています。`)
       : isIpad(model)
         ? (IPADOS27_MODELS.has(model) ? `${model}は iPadOS 27 に対応しています。` : `${model}は iPadOS 27 には対応していません。`)
+        : mac
+          ? `${model}は macOS 27 Golden Gate に対応しています。`
         : isIphone
           ? (ALL_CATALOG_MODELS.includes(model) ? `${model}は iOS 27 に対応しています。` : `${model}は iOS 27 には対応していないため、サブ機・撮影用向けです。`)
           : null;
   const faqs = hasStock && stats.minPrice !== null
     ? buildFaq({
-        model, isIphone, minPrice: stats.minPrice, medianPrice: stats.medianPrice,
+        model, isIphone, isMac: mac, minPrice: stats.minPrice, medianPrice: stats.medianPrice,
         cheapestNote: cheapestDevice ? describeDevice(cheapestDevice) : null,
         goodMin, count: stats.count, shopCount: stats.shopCount, updatedText, byShop: stats.byShop, supportAnswer,
       })
@@ -324,7 +386,12 @@ export default async function ModelPage({ params }: Props) {
   );
 
   // 結論の1文。条件に合う在庫がなければ出さない
-  const conclusion = goodMin !== null ? (
+  const conclusion = goodMin !== null && mac ? (
+    <p className="text-sm leading-[1.7] text-gray-700">
+      ランクB以上なら <Link href={searchHref(model, { minRank: "B" })} className={`font-bold underline underline-offset-2 ${LINK}`}>{yen(goodMin)}〜</Link>。
+      {cheapestDevice && cheapestDevice.price < goodMin && <>最安値は{describeDevice(cheapestDevice)}の個体です。</>}
+    </p>
+  ) : goodMin !== null ? (
     <p className="text-sm leading-[1.7] text-gray-700">
       ランクB以上・バッテリー85%以上なら <Link href={searchHref(model, { minRank: "B", minBattery: "85" })} className={`font-bold underline underline-offset-2 ${LINK}`}>{yen(goodMin)}〜</Link>。
       {cheapestDevice && cheapestDevice.price < goodMin && <>最安値は{describeDevice(cheapestDevice)}の個体です。</>}
@@ -391,6 +458,9 @@ export default async function ModelPage({ params }: Props) {
               {spec && (
                 <>{model}は{spec.released}発売（{spec.chip}・{displayText(spec).replace(" ", "")}・{spec.port}）。</>
               )}
+              {macInfo && (
+                <>{model}は{macInfo.year}年発売（{macInfo.chip}・{macInfo.inch}インチ）。</>
+              )}
               {stats.minPrice !== null && stats.medianPrice !== null && (
                 <>中古の最安値は<strong>{yen(stats.minPrice)}</strong>、相場（在庫の中央値）は<strong>{yen(stats.medianPrice)}</strong>で、{stats.shopCount}ショップに{stats.count.toLocaleString()}件の在庫があります。</>
               )}
@@ -402,18 +472,20 @@ export default async function ModelPage({ params }: Props) {
                   ? (IPADOS27_MODELS.has(model) ? "iPadOS 27 に対応しています。" : "iPadOS 27 には対応していません。")
                   : deviceOf(model) === "galaxy"
                     ? (GALAXY_RELEASED[model] ? `日本では${jaMonth(GALAXY_RELEASED[model])}に発売されました。` : null)
-                    : (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
+                    : mac
+                      ? "macOS 27 Golden Gate に対応しています。"
+                      : (ALL_CATALOG_MODELS.includes(model) ? "iOS 27 に対応しています。" : "iOS 27 には対応していないため、サブ機・撮影用向けです。")}
             </p>
             <p className="text-[11px] text-ink-mute leading-relaxed">
               相場＝販売中の在庫を安い順に並べた真ん中の値。最安値は1台だけの特価やジャンク品のことが多いので、買う値段の目安には相場を見てください。
             </p>
 
             {/* この機種が買える予算（予算別ページへの導線。lib/budgetStats.ts の smallestBudgetFor） */}
-            {budget && (
+            {budget && budgetDevice && (
               <p className="text-[13px] text-ink-sub leading-[1.7]">
                 {model}はジャンク品を除いて{yen(budget.minPrice)}から買えます。同じ予算のほかの機種は{" "}
-                <Link href={budgetPath(budget.max, device)} className={`font-bold ${LINK} hover:underline underline-offset-2`}>
-                  {budgetLabel(budget.max)}以下で買える{BUDGET_NAMES[device]}
+                <Link href={budgetPath(budget.max, budgetDevice)} className={`font-bold ${LINK} hover:underline underline-offset-2`}>
+                  {budgetLabel(budget.max)}以下で買える{BUDGET_NAMES[budgetDevice]}
                 </Link>
                 で比べられます。
               </p>
@@ -435,7 +507,7 @@ export default async function ModelPage({ params }: Props) {
                 </section>
               )}
 
-              <StorageRankTable model={model} matrix={matrix} />
+              {mac && macMatrix ? <MemorySsdRankTable model={model} matrix={macMatrix} /> : <StorageRankTable model={model} matrix={matrix} />}
 
               <section id="list" className={`${SEC} mt-5 flex flex-col gap-2 scroll-mt-16`}>
                 <h2 className="text-[17px] font-bold">安い在庫</h2>
@@ -475,8 +547,8 @@ export default async function ModelPage({ params }: Props) {
             </div>
           )}
 
-          {/* 買取（A8 テキストリンク。PR 表記必須。lib/buyback.ts） */}
-          {hasStock && (
+          {/* 買取（A8 テキストリンク。PR 表記必須。lib/buyback.ts）。「今のスマホを売るなら」なので MacBook には出さない */}
+          {hasStock && !mac && (
             <section className={`${SEC} mt-5 ${CARD} overflow-hidden`}>
               <div className="px-3.5 pt-3 pb-2 flex flex-col gap-1">
                 <h2 className="text-[15px] font-bold flex items-center gap-2">
@@ -515,11 +587,14 @@ export default async function ModelPage({ params }: Props) {
             <section className={`${SEC} mt-5 flex flex-col gap-2`}>
               <h2 className="text-[17px] font-bold">くわしく見る</h2>
               <div className={`${CARD} overflow-hidden`}>
+                {/* MacBook はバッテリーの表記がない店が多いので、在庫がなければ出さない */}
+                {!(mac && batteryRows.length === 0) && (
                 <Accordion title="バッテリー最大容量別の最安値" hint="80〜95%">
                   {/* 多くの店で最大容量は値段に反映されていないので、少し足すだけで状態のよい個体が買えることを見せる */}
                   <PriceList rows={batteryRows} labelOf={(k) => `${k}%以上`}
                     hrefOf={(k) => searchHref(model, { minBattery: k })} baseline={stats.minPrice} note={batteryNote(model)} />
                 </Accordion>
+                )}
                 <Accordion title="状態ランク別の最安値" hint={stats.byRank.map((r) => r.key).join("・")}>
                   <PriceList rows={stats.byRank} labelOf={(k) => `ランク ${k}${RANK_HINT[k] ? `（${RANK_HINT[k]}の目安）` : ""}`}
                     hrefOf={(k) => searchHref(model, { rank: k })} />
@@ -533,11 +608,15 @@ export default async function ModelPage({ params }: Props) {
                           <Link href={searchHref(model, { shop: r.key })} className="flex items-center justify-between gap-2 hover:bg-ground">
                             <span className="flex flex-col gap-0.5 min-w-0">
                               <span className="text-[13px] font-bold">{r.key}</span>
-                              {s && <span className="text-[11px] text-safe">{s.warrantyShort}・{s.redRomShort}</span>}
+                              {s && (mac
+                                ? <span className="text-[11px] text-safe">{s.warrantyShort}</span>
+                                : <span className="text-[11px] text-safe">{s.warrantyShort}・{s.redRomShort}</span>)}
                             </span>
                             <span className="text-[15px] font-bold text-price whitespace-nowrap">{yen(r.minPrice)}</span>
                           </Link>
-                          {s && <p className="mt-1 text-[11px] text-ink-mute leading-snug">保証: {s.warranty}／赤ロム: {s.redRom}</p>}
+                          {s && (mac
+                            ? <p className="mt-1 text-[11px] text-ink-mute leading-snug">保証は商品ごとに違います。詳しくは<a href={s.guaranteeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">{s.label}の公式ページ</a>で確認してください。</p>
+                            : <p className="mt-1 text-[11px] text-ink-mute leading-snug">保証: {s.warranty}／赤ロム: {s.redRom}</p>)}
                         </div>
                       );
                     })}
@@ -561,6 +640,33 @@ export default async function ModelPage({ params }: Props) {
                     <p className="mt-3 text-[11px] text-ink-mute">
                       出典: <a href={specUrl(spec)} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">{specSourceName(spec, model)}</a>
                       {spec.extraSource && <>・<a href={spec.extraSource.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">{spec.extraSource.name}</a></>}
+                    </p>
+                  </Accordion>
+                )}
+                {/* MacBook の基本スペック（Apple 公式で確かめた値だけ。lib/macCatalog.ts の MAC_INFO） */}
+                {macInfo && (
+                  <Accordion title={`${model}の基本スペック`} hint={`${macInfo.year}年発売`}>
+                    <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                      <dt className="text-ink-mute font-bold">発売</dt>
+                      <dd>{macInfo.year}年</dd>
+                      <dt className="text-ink-mute font-bold">チップ</dt>
+                      <dd>{macInfo.chip}</dd>
+                      <dt className="text-ink-mute font-bold">画面サイズ</dt>
+                      <dd>{macInfo.inch}インチ</dd>
+                      <dt className="text-ink-mute font-bold">対応 OS</dt>
+                      <dd>macOS 27 Golden Gate に対応</dd>
+                      <dt className="text-ink-mute font-bold">Apple の識別名</dt>
+                      <dd>{macInfo.appleName}</dd>
+                    </dl>
+                    <p className="mt-3 text-[11px] text-ink-mute leading-relaxed">
+                      出典: Apple{" "}
+                      {macInfo.family === "Neo"
+                        ? <a href="https://www.apple.com/jp/macbook-neo/specs/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">MacBook Neo の技術仕様</a>
+                        : macInfo.family === "Air"
+                          ? <a href="https://support.apple.com/ja-jp/102869" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">サポート（MacBook Air の識別）</a>
+                          : <a href="https://support.apple.com/ja-jp/108052" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">サポート（MacBook Pro の識別）</a>}
+                      ・<a href="https://www.apple.com/jp/os/macos/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">macOS の対応機種</a>
+                      {/^M[12] (Pro|Max)$/.test(macInfo.chip) && "。チップは機種名どおりで、Apple の識別ページの本文には記載がありません"}
                     </p>
                   </Accordion>
                 )}

@@ -2,7 +2,6 @@ import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { AMAZON_RENEWED_SHOP } from "@/lib/amazonRenewed";
 import { ALL_DEVICE_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
-import { MAC_MODELS } from "@/lib/macCatalog";
 import { groupMinPrice, medianPrice, modelWhere } from "@/lib/modelInventory";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 
@@ -23,8 +22,7 @@ export function jstToday(now = new Date()): Date {
  */
 export async function recordPriceSnapshots(date = jstToday()) {
   let written = 0;
-  // MacBook は 2026-10-15〜。ページ（ALL_DEVICE_PAGE_MODELS）はまだないが、価格の履歴は先に貯める。スラッグは modelToSlug のまま（macbook-air-13-m2）
-  for (const model of [...ALL_DEVICE_PAGE_MODELS, ...MAC_MODELS]) {
+  for (const model of ALL_DEVICE_PAGE_MODELS) {
     // Amazon の価格は価格推移に使わない（Creators API の規約: 取得したデータはトラフィックを誘導する目的以外に使わない・24時間を超えて保持しない）。
     // 履歴の集計だけから除く。モデル別ページの最安・中央値などは modelWhere そのまま
     const where: Prisma.DeviceInventoryWhereInput = { AND: [await modelWhere(model), { shopName: { not: AMAZON_RENEWED_SHOP } }] };

@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { SHOPS, findShop, shopsFor, type Shop } from "@/lib/shops";
+import { MAC_SHOPS, SHOPS, findShop, shopsFor, type Shop } from "@/lib/shops";
 
 /**
  * いま在庫が1件以上見える（isSoldOut=false）店だけの一覧。ページに出す「○店」の数はこれで数える。
@@ -37,8 +37,42 @@ export async function activeShops(shops: Shop[] = SHOPS): Promise<Shop[]> {
   return shops.filter((s) => names.has(s.name));
 }
 
-/** 機種の種類（iPad なら iPad を扱う店など）ごとの、いま在庫がある店 */
-export const activeShopsFor = (model: string) => activeShops(shopsFor(model));
+/**
+ * いま MacBook の在庫が1件以上見える店（2026-10-15〜）。イオシスは公式に MacBook がなく楽天市場店（alias）だけなので、
+ * 全種類で見る activeShopNames だと「在庫がある」ことになってしまう。MacBook のページ・一覧では、MacBook の在庫で数える。
+ * DB 側で shopName ごとに集計するだけ（行は取らない）
+ */
+let activeMacPromise: Promise<Set<string>> | null = null;
+
+function activeMacShopNames(): Promise<Set<string>> {
+  activeMacPromise ??= prisma.deviceInventory
+    .groupBy({ by: ["shopName"], where: { isSoldOut: false, modelName: { startsWith: "MacBook" } }, _count: { _all: true } })
+    .then((rows) => {
+      const names = new Set<string>();
+      for (const r of rows) {
+        const shop = findShop(r.shopName);
+        const parent = shop?.alias ? findShop(shop.alias) : shop;
+        if (parent && SHOPS.includes(parent)) names.add(parent.name);
+      }
+      return names;
+    })
+    .catch((e) => {
+      // DB に届かないときは MacBook を扱う全店ある扱い（activeShopNames と同じ。次の呼び出しで再試行する）
+      console.error("activeMacShops: failed, falling back to all Mac shops", e);
+      activeMacPromise = null;
+      return new Set(MAC_SHOPS.map((s) => s.name));
+    });
+  return activeMacPromise;
+}
+
+/** MacBook の在庫がいまある店（MAC_SHOPS のうち） */
+export async function activeMacShops(): Promise<Shop[]> {
+  const names = await activeMacShopNames();
+  return MAC_SHOPS.filter((s) => names.has(s.name));
+}
+
+/** 機種の種類（iPad なら iPad を扱う店など）ごとの、いま在庫がある店。MacBook は MacBook の在庫がある店 */
+export const activeShopsFor = (model: string) => (/^MacBook/.test(model) ? activeMacShops() : activeShops(shopsFor(model)));
 
 export async function isShopActive(name: string): Promise<boolean> {
   return (await activeShopNames()).has(name);

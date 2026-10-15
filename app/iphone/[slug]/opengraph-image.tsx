@@ -4,6 +4,7 @@ import { getModelStats } from "@/lib/modelStats";
 import { fitFontSize, notoSansJp } from "@/lib/ogFont";
 import { storageLabel } from "@/lib/format";
 import { activeShopsFor } from "@/lib/activeShops";
+import { isMac } from "@/lib/macCatalog";
 
 // モデル別ページと同じくビルドのたびに作る（最安値が変わるため）
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -37,13 +38,15 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   // 容量別の最安値は多くても4つまで（見切れ防止）
   const storages = stats.byStorage.slice(0, 4);
 
+  // MacBook は容量＝SSD（2026-10-15〜）
+  const sideLabel = isMac(model) ? "SSD容量別の最安値" : "容量別の最安値";
   const priceText = stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし";
   const summary = stats.count > 0 ? `${stats.shopCount}ショップ・${stats.count.toLocaleString()}件の在庫を比較` : `大手中古ショップ${(await activeShopsFor(model)).length}社の在庫を比較`;
 
   // 画像内で使う文字をすべて集めてフォントのサブセットを取得する
   const allText = [
     displayName, "中古の最安値", "円", "〜", priceText, summary, `${updated} 更新`,
-    "容量別の最安値", "中古スマホ一括検索", "used.gadelog.com",
+    sideLabel, "中古スマホ一括検索", "used.gadelog.com",
     ...storages.flatMap((s) => [storageLabel(s.key), yen(s.minPrice)]),
   ].join("");
   const fonts = await notoSansJp(allText);
@@ -87,7 +90,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
                 justifyContent: "center",
               }}
             >
-              <div style={{ fontSize: 26, fontWeight: 500, color: "#64748b", marginBottom: 16 }}>容量別の最安値</div>
+              <div style={{ fontSize: 26, fontWeight: 500, color: "#64748b", marginBottom: 16 }}>{sideLabel}</div>
               {storages.map((s) => (
                 <div
                   key={s.key}

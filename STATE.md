@@ -50,7 +50,7 @@
 
 ```
 1. X の日々の運用（ideas/x-posts-2026-10-12.md）。サイトは 10/18 まで触らない
-2. MacBook（ideas/10-15）: A 取り込み（db push→push→fetch.php）→ B /mac
+2. MacBook（ideas/10-15）: A 取り込み（db push→push→fetch.php）→ B /mac（作成済・未 push。入口は 10/18 後）
 ```
 
 ## 期限のあるもの

@@ -59,13 +59,13 @@ export function matchesModel(query: string, modelName: string): boolean {
   }
   // MacBook も取り込み時に lib/macCatalog.ts の正式名（「MacBook Air 13インチ M2」）にそろえている（2026-10-15〜）。
   // 汎用の経路だと先頭の語が同じ "macbook" で、Air 13 M2 と Air 15 M5 が一致してしまうので、正式名なら完全一致にする
-  const macQuery = /^s*macbook/i.test(query);
+  const macQuery = /^\s*macbook/i.test(query);
   if (macQuery || /^macbook/i.test(modelName)) {
     if (!macQuery) return false;
     const q = query.trim().toLowerCase();
     const name = modelName.trim().toLowerCase();
     if (MAC_MODELS.some((m) => m.toLowerCase() === q)) return q === name;
-    return /^macbook/.test(name) && q.split(/s+/).every((word) => name.includes(word));
+    return /^macbook/.test(name) && q.split(/\s+/).every((word) => name.includes(word));
   }
   // Pixel・Galaxy も取り込み時にメーカーの表記（lib/pixelCatalog.ts・lib/galaxyCatalog.ts）にそろえている。考え方は iPad と同じ
   // （トークン判定だと「Pixel 9」が「Pixel 9a」「Pixel 9 Pro」に、「Galaxy S24」が「Galaxy S24 Ultra」にも当たる）
@@ -102,6 +102,7 @@ export const SEARCH_DEVICES = [
   { key: "ipad", label: "iPad", prefix: "iPad" },
   { key: "pixel", label: "Pixel", prefix: "Pixel" },
   { key: "galaxy", label: "Galaxy", prefix: "Galaxy" },
+  { key: "mac", label: "MacBook", prefix: "MacBook" },
 ] as const;
 
 export const findSearchDevice = (key: string | null | undefined) => SEARCH_DEVICES.find((d) => d.key === key);

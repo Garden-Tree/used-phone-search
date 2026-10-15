@@ -135,3 +135,53 @@ export const getStorageRankMatrix = cache(async (model: string): Promise<Storage
   );
   return { storages, ranks, cells };
 });
+
+export type MemorySsdRankMatrix = {
+  /** メモリ(GB)・SSD(GB) の組。メモリの昇順、同じメモリは SSD の昇順。メモリが読めない行（null）は 0 として末尾側に寄せず先頭に置く */
+  combos: { memoryGB: number | null; storage: number }[];
+  /** RANK_ORDER の順（在庫のあるランクだけ） */
+  ranks: string[];
+  /** `${memoryGB ?? ""}:${storage}:${rank}` → 最安値と件数 */
+  cells: Map<string, PriceRow>;
+};
+
+export const macCellKey = (memoryGB: number | null, storage: number, rank: string) => `${memoryGB ?? ""}:${storage}:${rank}`;
+
+/**
+ * MacBook の機種ページの表（メモリ × SSD × 状態ランクの最安値。2026-10-15〜）。storage は SSD の容量。
+ * DB で (メモリ, SSD, ランク) ごとに集計するので、返る行は組み合わせの数だけ
+ */
+export const getMemorySsdRankMatrix = cache(async (model: string): Promise<MemorySsdRankMatrix> => {
+  const where = await modelWhere(model);
+  const rows = await prisma.deviceInventory.groupBy({
+    by: ["memoryGB", "storage", "conditionRank"],
+    where,
+    _min: { price: true },
+    _count: { _all: true },
+  });
+  const cells = new Map<string, PriceRow>();
+  for (const r of rows) {
+    const rank = r.conditionRank.toUpperCase();
+    const key = macCellKey(r.memoryGB, r.storage, rank);
+    const cur = cells.get(key);
+    const price = r._min.price ?? 0;
+    if (!cur) cells.set(key, { key: rank, minPrice: price, count: r._count._all });
+    else {
+      cur.count += r._count._all;
+      cur.minPrice = Math.min(cur.minPrice, price);
+    }
+  }
+  const seen = new Set<string>();
+  const combos: MemorySsdRankMatrix["combos"] = [];
+  for (const r of rows) {
+    const k = `${r.memoryGB ?? ""}:${r.storage}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    combos.push({ memoryGB: r.memoryGB, storage: r.storage });
+  }
+  combos.sort((a, b) => (a.memoryGB ?? 0) - (b.memoryGB ?? 0) || a.storage - b.storage);
+  const ranks = [...new Set(rows.map((r) => r.conditionRank.toUpperCase()))].sort(
+    (a, b) => (RANK_ORDER.indexOf(a) + 99) % 99 - (RANK_ORDER.indexOf(b) + 99) % 99,
+  );
+  return { combos, ranks, cells };
+});

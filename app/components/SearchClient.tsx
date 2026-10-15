@@ -53,7 +53,7 @@ const loadFile = (key: string) => {
 };
 
 const deviceKeyOf = (name: string) =>
-  /^\s*ipad/i.test(name) ? 'ipad' : /^\s*pixel/i.test(name) ? 'pixel' : /^\s*galaxy/i.test(name) ? 'galaxy' : 'iphone';
+  /^\s*ipad/i.test(name) ? 'ipad' : /^\s*pixel/i.test(name) ? 'pixel' : /^\s*galaxy/i.test(name) ? 'galaxy' : /^\s*macbook/i.test(name) ? 'mac' : 'iphone';
 
 const toInt = (v: string | null) => {
   if (!v) return undefined;
@@ -94,6 +94,7 @@ function toDevices(key: string, file: InventoryFile): Device[] {
     isSoldOut: false,
     altPrice: r[11] ?? null,
     altUrl: r[12] ?? null,
+    memoryGB: r[13] ?? null,
   }));
 }
 
@@ -144,6 +145,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
     const minPrice = toInt(params.get('minPrice'));
     const maxPrice = toInt(params.get('maxPrice'));
     const storage = toInt(params.get('storage'));
+    const memory = toInt(params.get('memory'));
     const rank = params.get('rank');
     // ランク◯以上（minRank）。不明なランクは「以上」の絞り込みから外す（lib/rankFilter.ts）
     const atLeast = ranksAtLeast(params.get('minRank'));
@@ -155,6 +157,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
       (minPrice === undefined || d.price >= minPrice) &&
       (maxPrice === undefined || d.price <= maxPrice) &&
       (storage === undefined || d.storage === storage) &&
+      (memory === undefined || d.memoryGB === memory) &&
       (!rank || d.conditionRank === rank) &&
       (!atLeast || atLeast.includes(d.conditionRank)) &&
       (!batterySort || d.batteryHealth !== null) &&
@@ -186,6 +189,8 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
   if (hasShop) chips.push({ label: shopQuery!, clear: { shop: null } });
   const storage = toInt(params.get('storage'));
   if (storage !== undefined) chips.push({ label: storage >= 1024 ? `${storage / 1024}TB` : `${storage}GB`, clear: { storage: null } });
+  const memory = toInt(params.get('memory'));
+  if (memory !== undefined) chips.push({ label: `メモリ${memory}GB`, clear: { memory: null } });
   if (params.get('rank')) chips.push({ label: `ランク${params.get('rank')}`, clear: { rank: null } });
   const minRank = params.get('minRank');
   if (minRank && ranksAtLeast(minRank)) chips.push({ label: `ランク${minRank}以上`, clear: { minRank: null } });
@@ -198,7 +203,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
       : lo !== undefined ? `${lo.toLocaleString()}円〜` : `〜${hi!.toLocaleString()}円`;
     chips.push({ label, clear: { minPrice: null, maxPrice: null } });
   }
-  const clearAll = () => updateParams({ shop: null, storage: null, rank: null, minRank: null, minBattery: null, minPrice: null, maxPrice: null });
+  const clearAll = () => updateParams({ shop: null, storage: null, memory: null, rank: null, minRank: null, minBattery: null, minPrice: null, maxPrice: null });
   const minShown = devices.length ? devices.reduce((m, d) => Math.min(m, d.price), Infinity) : null;
 
   // 絞り込みの画面（スマホ）を開いている間は背面をスクロールさせず、Esc で閉じる

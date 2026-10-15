@@ -7,7 +7,7 @@ import { MAC_INFO, MAC_MODELS, canonicalMacModel, isMacOS27, parseMacSpec } from
 import { RAKUTEN_SHOPS } from "@/lib/rakutenShops";
 import { normalizeIosysMac, normalizeJanparaMac, normalizeSofmapMac } from "@/lib/rakutenMac";
 import { matchesModel } from "@/lib/modelMatch";
-import { ALL_DEVICE_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
+import { ALL_DEVICE_PAGE_MODELS, deviceOf, modelPagePath, modelToSlug, siblingModels, slugToModel } from "@/lib/catalog";
 import type { RakutenItem } from "@/lib/rakutenCommon";
 
 type Row = [title: string, model: string | null, memoryGB?: number | null, ssdGB?: number | null];
@@ -180,9 +180,19 @@ mm("MacBook Air 13インチ M2", "MacBook Air 13インチ M2", true);
 const slugs = MAC_MODELS.map(modelToSlug);
 if (new Set(slugs).size !== slugs.length) ng("Mac のスラッグが重複");
 for (const [m, s] of MAC_MODELS.map((m, i) => [m, slugs[i]])) if (!/^macbook-[a-z0-9-]+$/.test(s)) ng(`スラッグが妥当でない: ${m} → ${s}`);
-const existing = new Set(ALL_DEVICE_PAGE_MODELS.map(modelToSlug));
+const existing = new Set(ALL_DEVICE_PAGE_MODELS.filter((m) => !MAC_MODELS.includes(m)).map(modelToSlug));
 for (const s of slugs) if (existing.has(s)) ng(`既存ページとスラッグが重複: ${s}`);
 if (modelToSlug("MacBook Air 13インチ M2") !== "macbook-air-13-m2" || modelToSlug("MacBook Air M1") !== "macbook-air-m1") ng("スラッグの形が想定と違う");
+
+// ページ側（2026-10-15〜）: Mac は ALL_DEVICE_PAGE_MODELS の末尾にあり、種類・パス・スラッグの引き直し・同じシリーズが Mac になる
+for (const m of MAC_MODELS) {
+  if (!ALL_DEVICE_PAGE_MODELS.includes(m)) ng(`ALL_DEVICE_PAGE_MODELS にない: ${m}`);
+  if (deviceOf(m) !== "mac") ng(`deviceOf が mac でない: ${m}`);
+  if (modelPagePath(m) !== `/mac/${modelToSlug(m)}`) ng(`パスが想定と違う: ${m}`);
+  if (slugToModel(modelToSlug(m)) !== m) ng(`slugToModel で戻らない: ${m}`);
+  if (siblingModels(m).some((s) => !MAC_MODELS.includes(s))) ng(`同じシリーズに Mac 以外がある: ${m}`);
+}
+if (deviceOf("iPhone 15") !== "iphone" || deviceOf("iPad Air (M2)") !== "ipad") ng("deviceOf が既存機種で変わった");
 
 console.log(fail === 0 ? `OK（${ROWS.length}件・${MAC_MODELS.length}機種）` : `${fail}件の違い`);
 process.exit(fail === 0 ? 0 : 1);

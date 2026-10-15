@@ -23,6 +23,7 @@ import { mkdirSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { ALL_DEVICE_PAGE_MODELS } from "@/lib/catalog";
+import { isMac } from "@/lib/macCatalog";
 import type { RakutenItem } from "@/lib/rakutenCommon";
 import { AMAZON_RENEWED_SHOP } from "@/lib/amazonRenewed";
 import prisma from "@/lib/prisma";
@@ -199,7 +200,9 @@ async function main() {
     }
   }
   const startedAt = Date.now();
-  const models = dry ? ALL_DEVICE_PAGE_MODELS.slice(0, 3) : ALL_DEVICE_PAGE_MODELS;
+  // MacBook（2026-10-15〜）は Amazon の整備済み品の検索に含めない（スマホ・タブレットだけ）
+  const searchModels = ALL_DEVICE_PAGE_MODELS.filter((m) => !isMac(m));
+  const models = dry ? searchModels.slice(0, 3) : searchModels;
   console.log(`機種 ${models.length} 件 × 最大 ${MAX_PAGES} ページ = 最大 ${models.length * MAX_PAGES} リクエスト（約 ${Math.ceil((models.length * MAX_PAGES * INTERVAL_MS) / 60000)} 分。1日の上限 8,640）`);
 
   const items = new Map<string, RakutenItem>();
