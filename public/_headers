@@ -10,11 +10,15 @@
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable
 
-# OGP 画像は拡張子なしのファイル名で書き出される
+# OGP 画像は拡張子なしのファイル名で書き出される。
+# Google が OGP 画像の URL をページとして拾い「クロール済み - インデックス未登録」に溜めるので noindex（2026-10-15。
+# robots.txt で禁止すると X・Facebook のカード用の取得まで止まるので、ヘッダーで）
 /opengraph-image
   Content-Type: image/png
+  X-Robots-Tag: noindex
 /*/opengraph-image
   Content-Type: image/png
+  X-Robots-Tag: noindex
 
 # pages.dev の URL（本番・プレビュー）は検索に出さない。正式な URL は used.gadelog.com（canonical もそちら）
 https://:project.pages.dev/*

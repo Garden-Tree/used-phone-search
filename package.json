@@ -16,7 +16,8 @@
     "test:android": "tsx scripts/test-xperia-aquos.ts",
     "test:watch": "tsx scripts/test-watch.ts",
     "x:images": "tsx scripts/make-x-images.tsx",
-    "x:market": "tsx scripts/make-x-market-images.tsx"
+    "x:market": "tsx scripts/make-x-market-images.tsx",
+    "report:monthly": "tsx scripts/make-monthly-report.ts"
   },
   "dependencies": {
     "@next/third-parties": "^16.2.4",

@@ -36,6 +36,7 @@ import { smallestBudgetFor } from "@/lib/budgetStats";
 import PriceHistoryChart from "@/app/components/PriceHistoryChart";
 import InspectionTips, { inspectionTips } from "@/app/components/InspectionTips";
 import { getGoodConditionMin, getGoodRankMin } from "@/lib/modelBest";
+import { getBuyNowNotes } from "@/lib/buyNow";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen, storageLabel } from "@/lib/format";
 import { findShop, shopsFor } from "@/lib/shops";
@@ -276,7 +277,7 @@ export default async function ModelPage({ params }: Props) {
   // Xperia・AQUOS・Apple Watch（2026-10-15〜）も予算別ページはまだない
   const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || device === "watch" ? null : device;
   const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
-  const [stats, history, batteryRows, matrix, macMatrix, budget, goodMin] = await Promise.all([
+  const [stats, history, batteryRows, matrix, macMatrix, budget, goodMin, buyNowNotes] = await Promise.all([
     getModelStats(model),
     getPriceHistory(slug),
     getBatteryRows(model),
@@ -284,6 +285,7 @@ export default async function ModelPage({ params }: Props) {
     mac ? getMemorySsdRankMatrix(model) : Promise.resolve(null),
     budgetDevice ? smallestBudgetFor(model, budgetDevice) : Promise.resolve(null),
     mac || watch ? getGoodRankMin(model) : getGoodConditionMin(model),
+    getBuyNowNotes(model),
   ]);
   const spec = specOf(model);
   const macInfo = MAC_INFO[model];
@@ -501,6 +503,16 @@ export default async function ModelPage({ params }: Props) {
             <p className="text-[11px] text-ink-mute leading-relaxed">
               相場＝販売中の在庫を安い順に並べた真ん中の値。最安値は1台だけの特価やジャンク品のことが多いので、買う値段の目安には相場を見てください。
             </p>
+
+            {/* 相場の見方（実データから自動生成。lib/buyNow.ts。在庫がなければ空） */}
+            {buyNowNotes.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <h2 className="text-[13px] font-bold text-ink">相場の見方（今日のデータから）</h2>
+                {buyNowNotes.map((t) => (
+                  <p key={t} className="text-[13px] text-ink-sub leading-[1.7]">{t}</p>
+                ))}
+              </div>
+            )}
 
             {/* この機種が買える予算（予算別ページへの導線。lib/budgetStats.ts の smallestBudgetFor） */}
             {budget && budgetDevice && (
