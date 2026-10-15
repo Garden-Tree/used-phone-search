@@ -56,8 +56,7 @@ export const getPriceDrops = cache(async (days = 7, limit = 10, minCount = 5): P
     if (!past) return [];
 
     const rows = await prisma.priceSnapshot.findMany({
-      // MacBook（2026-10-15〜）はトップの文面（iPhone・iPad・Pixel・Galaxy）と合わないので、トップに Mac の入口を足すまで値下がりに出さない
-      where: { date: { in: [latest.date, past.date] }, storage: { not: ALL_STORAGE }, NOT: { modelSlug: { startsWith: "macbook-" } } },
+      where: { date: { in: [latest.date, past.date] }, storage: { not: ALL_STORAGE } },
       select: { modelSlug: true, date: true, storage: true, medianPrice: true, count: true },
     });
     const key = (slug: string, storage: number) => `${slug}:${storage}`;

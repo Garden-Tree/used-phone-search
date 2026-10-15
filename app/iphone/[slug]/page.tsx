@@ -514,7 +514,10 @@ export default async function ModelPage({ params }: Props) {
                 <div className="flex gap-1.5 overflow-x-auto">
                   {[
                     { label: "すべて", href: searchHref(model), current: true },
-                    { label: "バッテリー85%以上", href: searchHref(model, { minBattery: "85" }) },
+                    // MacBook はバッテリーを書かない店が多い（イオシス・ソフマップ）ので、代わりにランクB以上
+                    mac
+                      ? { label: "ランクB以上", href: searchHref(model, { minRank: "B" }) }
+                      : { label: "バッテリー85%以上", href: searchHref(model, { minBattery: "85" }) },
                     { label: "ランクA以上", href: searchHref(model, { minRank: "A" }) },
                   ].map((c) => (
                     <Link key={c.label} href={c.href}
