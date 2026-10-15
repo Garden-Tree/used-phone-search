@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { jstToday } from "@/lib/priceHistory";
-import { SHOPS } from "@/lib/shops";
+import { ALIAS_SHOPS, SHOPS } from "@/lib/shops";
 
 /**
  * データ更新の監視。ショップごとの最終更新と価格推移の最終記録日を調べる。
@@ -95,7 +95,7 @@ export async function checkHealth(): Promise<HealthReport> {
       DEVICES.filter((d) => {
         if (!shop[d.key]) return false;
         const own = deviceCounts.get(`${shop.name}:${d.key}`) ?? 0;
-        const viaAlias = d.key === "mac" || d.key === "xperia" || d.key === "aquos" || d.key === "watch" ? SHOPS.filter((s) => s.alias === shop.name).reduce((n, s) => n + (deviceCounts.get(`${s.name}:${d.key}`) ?? 0), 0) : 0;
+        const viaAlias = d.key === "mac" || d.key === "xperia" || d.key === "aquos" || d.key === "watch" ? ALIAS_SHOPS.filter((s) => s.alias === shop.name).reduce((n, s) => n + (deviceCounts.get(`${s.name}:${d.key}`) ?? 0), 0) : 0;
         return own + viaAlias === 0;
       }).map((d) => `${shop.label}: ${d.label} が0件`),
     );
