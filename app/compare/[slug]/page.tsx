@@ -14,6 +14,9 @@ import { activeShopsFor } from "@/lib/activeShops";
 import { SPEC_ROWS, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
+import { getGoodRankMin } from "@/lib/modelBest";
+import { isCompareIndexable } from "@/lib/compareStock";
+import { buildCompareFaq, priceReadingSentence, specDiffBrief, specDiffSentence } from "@/lib/compareText";
 
 // モデル別ページと同じくビルドのたびに作る
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -92,7 +95,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     sa.minPrice !== null ? `${a}は${yen(sa.minPrice)}` : null,
     sb.minPrice !== null ? `${b}は${yen(sb.minPrice)}` : null,
   ].filter(Boolean).join("、");
-  const description = `${a}と${b}の中古相場を大手中古ショップ${(await activeShopsFor(a)).length}社の在庫から比較。${prices ? `最安値は${prices}から。` : ""}容量別・状態ランク別の最安値と差額をまとめています。`;
+  const description = `${a}と${b}の中古相場を大手中古ショップ${(await activeShopsFor(a)).length}社の在庫から比較。${prices ? `最安値は${prices}から。` : ""}${specDiffBrief(a, b)}容量別・状態ランク別の最安値と差額をまとめています。`;
   const path = comparePath(a, b);
 
   return {
@@ -100,8 +103,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     alternates: { canonical: path },
     openGraph: { title: `${title} | ${SITE_NAME}`, description, url: path },
-    // どちらかの在庫がゼロだと比較として成り立たないのでインデックスさせない
-    robots: sa.count === 0 || sb.count === 0 ? { index: false, follow: true } : undefined,
+    // どちらかの在庫が少ない（10件未満）と比較として中身が薄いのでインデックスさせない（サイトマップからも外す。lib/compareStock.ts）
+    robots: (await isCompareIndexable(a, b)) ? undefined : { index: false, follow: true },
   };
 }
 
@@ -167,6 +170,7 @@ function SpecTable({ a, b }: { a: string; b: string }) {
   return (
     <section className="bg-white rounded-xl border border-line overflow-hidden mb-10">
       <h2 className="px-5 py-4 text-base font-bold text-ink bg-ground border-b border-line-soft">スペックの違い</h2>
+      <p className="px-5 py-4 text-sm text-ink-sub leading-relaxed border-b border-line-soft">{specDiffSentence(a, b)}</p>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -266,8 +270,11 @@ export default async function ComparePage({ params }: Props) {
   const pair = slugToPair(slug);
   if (!pair) notFound();
   const [a, b] = pair;
-  const [sa, sb] = await Promise.all([getModelStats(a), getModelStats(b)]);
+  const [sa, sb, goodA, goodB] = await Promise.all([getModelStats(a), getModelStats(b), getGoodRankMin(a), getGoodRankMin(b)]);
   const path = comparePath(a, b);
+  const sideA = { ...sa, goodMin: goodA };
+  const sideB = { ...sb, goodMin: goodB };
+  const faqs = buildCompareFaq(a, b, sideA, sideB);
 
   const storageRows = mergeRows(sa.byStorage, sb.byStorage, Number);
   const rankRows = mergeRows(sa.byRank, sb.byRank, (k) => (RANK_ORDER.indexOf(k) + 99) % 99);
@@ -277,14 +284,21 @@ export default async function ComparePage({ params }: Props) {
     new Map([...comparesFor(a), ...comparesFor(b)].map((p) => [compareSlug(...p), p])).values(),
   ).filter(([x, y]) => compareSlug(x, y) !== slug).slice(0, 8);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: `${a} と ${b} の比較`, item: `${SITE_URL}${path}` },
-    ],
-  };
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: `${a} と ${b} の比較`, item: `${SITE_URL}${path}` },
+      ],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+    },
+  ];
 
   const models = [
     { name: a, stats: sa },
@@ -306,7 +320,10 @@ export default async function ComparePage({ params }: Props) {
         <h1 className="text-2xl md:text-3xl font-bold text-ink mb-3">
           {a} と {b}<br className="md:hidden" /> 中古はどっちがお得？
         </h1>
-        <p className="text-ink-sub mb-4 leading-relaxed">{verdict(a, b, sa, sb)}{pixelNote(a, b)}{galaxyNote(a, b)}</p>
+        <p className="text-ink-sub mb-3 leading-relaxed">{verdict(a, b, sa, sb)}{pixelNote(a, b)}{galaxyNote(a, b)}</p>
+        {priceReadingSentence(a, b, sideA, sideB) && (
+          <p className="text-ink-sub mb-4 leading-relaxed">{priceReadingSentence(a, b, sideA, sideB)}</p>
+        )}
         <AdDisclosure compact />
 
         {/* 2モデルのサマリーを横に並べる */}
@@ -357,6 +374,18 @@ export default async function ComparePage({ params }: Props) {
             </DeviceList>
           </section>
         ))}
+
+        <section className="mb-10">
+          <h2 className="text-xl font-bold mb-4">{a} と {b} の比較でよくある質問</h2>
+          <div className="bg-white rounded-xl border border-line divide-y divide-line-soft">
+            {faqs.map((f) => (
+              <div key={f.q} className="px-5 py-4">
+                <h3 className="text-sm font-bold text-ink mb-1.5">{f.q}</h3>
+                <p className="text-sm text-ink-sub leading-relaxed">{f.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {related.length > 0 && (
           <section className="mb-4">

@@ -3,6 +3,7 @@ import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { PICKS, pickPath } from "@/lib/picks";
 import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetPath } from "@/lib/budgets";
+import { isCompareIndexable, COMPARE_MIN_STOCK } from "@/lib/compareStock";
 import { SITE_URL } from "@/lib/site";
 import prisma from "@/lib/prisma";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
@@ -27,6 +28,11 @@ async function lastIngestedAt(): Promise<Date | undefined> {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = await lastIngestedAt();
+
+  // 在庫が少ない比較ページ（どちらかが COMPARE_MIN_STOCK 件未満）は noindex なのでサイトマップからも外す
+  const comparePairs: typeof COMPARE_PAIRS = [];
+  for (const pair of COMPARE_PAIRS) if (await isCompareIndexable(pair[0], pair[1])) comparePairs.push(pair);
+  console.log(`[compare] 比較ページ ${COMPARE_PAIRS.length} 件のうち、在庫が ${COMPARE_MIN_STOCK} 件未満で noindex・サイトマップ除外: ${COMPARE_PAIRS.length - comparePairs.length} 件`);
 
   const modelPages: MetadataRoute.Sitemap = ALL_DEVICE_PAGE_MODELS.map((model) => ({
     url: `${SITE_URL}${modelPagePath(model)}`,
@@ -77,7 +83,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     })),
     ...modelPages,
-    ...COMPARE_PAIRS.map(([a, b]) => ({
+    ...comparePairs.map(([a, b]) => ({
       url: `${SITE_URL}${comparePath(a, b)}`,
       lastModified,
       changeFrequency: "daily" as const,
