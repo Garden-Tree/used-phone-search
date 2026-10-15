@@ -3,6 +3,7 @@
  *   npm run x:market -- <出力先フォルダ>          … iPhone（/iphone と同じ数字）
  *   npm run x:market -- <出力先フォルダ> ipad     … iPad（/ipad と同じ数字）
  *   npm run x:market -- <出力先フォルダ> pixel    … Pixel（アップデート保証が残っている機種）
+ *   npm run x:market -- <出力先フォルダ> galaxy   … Galaxy（S シリーズだけ。A シリーズは安さで上位を占めて比べにくい）
  * 1. 相場が安い TOP8（iPhone は iOS 27 対応。在庫10件以上） 2. 最安値と相場（中央値）の差（iPhone は人気機種、iPad は在庫の多い5機種）。iPad も最新 OS（iPadOS 27）対応機種だけ
  * 文面は ideas/x-posts-*.md。DB は集計と中央値の1行だけ読む（Neon の転送量に配慮）
  */
@@ -14,7 +15,8 @@ import { ALL_CATALOG_MODELS } from "@/lib/catalog";
 import { getModelMarket } from "@/lib/marketStats";
 import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
-import { IPAD_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
+import { GALAXY_SHOPS, IPAD_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
+import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
 import { PIXEL_MODELS, updateYearsLeft } from "@/lib/pixelCatalog";
 import { notoSansJp } from "@/lib/ogFont";
 import { activeShops } from "@/lib/activeShops";
@@ -25,7 +27,9 @@ const IPAD = KIND === "ipad";
 // iPhone 以外（iPad・Pixel）は機種名が長いので列を広げ、差の画像は在庫の多い5機種にする
 const WIDE = KIND !== "iphone";
 const nowYm = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" }).slice(0, 7);
-const K = KIND === "pixel"
+const K = KIND === "galaxy"
+  ? { name: "Galaxy", models: GALAXY_MODELS.filter((m) => /^Galaxy S\d/.test(m)), shops: GALAXY_SHOPS.length, url: "used.gadelog.com/galaxy", cond: "Sシリーズ・在庫10件以上", file: "x-galaxy" }
+  : KIND === "pixel"
   ? { name: "Pixel", models: PIXEL_MODELS.filter((m) => (updateYearsLeft(m, nowYm) ?? 0) > 0), shops: PIXEL_SHOPS.length, url: "used.gadelog.com/pixel", cond: "アップデート保証あり・在庫10件以上", file: "x-pixel" }
   : IPAD
   ? { name: "iPad", models: IPAD_MODELS.filter((m) => IPADOS27_MODELS.has(m)), shops: IPAD_SHOPS.length, url: "used.gadelog.com/ipad", cond: "iPadOS 27 対応・在庫10件以上", file: "x-ipad" }
@@ -44,7 +48,7 @@ async function save(name: string, el: React.ReactElement, text: string) {
 async function main() {
   const market = await getModelMarket(K.models);
   // 店数は表示中の在庫がある店だけ数える（サイトと同じ。lib/activeShops.ts）
-  const shopCount = (await activeShops(IPAD ? IPAD_SHOPS : KIND === "pixel" ? PIXEL_SHOPS : SHOPS)).length;
+  const shopCount = (await activeShops(IPAD ? IPAD_SHOPS : KIND === "pixel" ? PIXEL_SHOPS : KIND === "galaxy" ? GALAXY_SHOPS : SHOPS)).length;
   const footer = `大手中古ショップ${shopCount}店の在庫から・${now}`;
 
   // 1. 相場が安い TOP8（/iphone の「相場が安い中古iPhone」と同じ条件）
