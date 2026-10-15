@@ -20,7 +20,8 @@ model DeviceInventory {
   networkStatus   String?  // 利用制限 例: 〇, △, -
   simUnlocked     Boolean  // SIMロック解除済みか
   carrier         String?  // 元の販売元 例: docomo, au, Apple
-  
+  memoryGB        Int?     // メモリ(GB)。MacBook だけ（storage は SSD の容量）。2026-10-15〜
+
   // 販売情報
   shopName        String   // 例: イオシス, じゃんぱら
   price           Int      // 価格

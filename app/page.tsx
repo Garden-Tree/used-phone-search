@@ -27,7 +27,8 @@ async function shopCounts(): Promise<Map<string, number>> {
   try {
     const rows = await prisma.deviceInventory.groupBy({
       by: ["shopName"],
-      where: { isSoldOut: false },
+      // MacBook（2026-10-15〜取り込み中）はまだページがないので数えない
+      where: { isSoldOut: false, NOT: { modelName: { startsWith: "MacBook" } } },
       _count: { _all: true },
     });
     return new Map(rows.map((r) => [r.shopName, r._count._all]));

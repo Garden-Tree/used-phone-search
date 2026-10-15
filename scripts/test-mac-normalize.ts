@@ -4,6 +4,11 @@
  * model が null の行は「機種を決められない（Intel・アクセサリ・Pro/Max が分からない）」ことを確かめる（メモリ・SSD は見ない）。
  */
 import { MAC_INFO, MAC_MODELS, canonicalMacModel, isMacOS27, parseMacSpec } from "@/lib/macCatalog";
+import { RAKUTEN_SHOPS } from "@/lib/rakutenShops";
+import { normalizeIosysMac, normalizeJanparaMac, normalizeSofmapMac } from "@/lib/rakutenMac";
+import { matchesModel } from "@/lib/modelMatch";
+import { ALL_DEVICE_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
+import type { RakutenItem } from "@/lib/rakutenCommon";
 
 type Row = [title: string, model: string | null, memoryGB?: number | null, ssdGB?: number | null];
 
@@ -120,6 +125,64 @@ for (const [name, info] of Object.entries(MAC_INFO)) {
     if (!sameGroup) ng(`部品番号 ${p} が別の機種で重複: ${prev} / ${name}`);
   }
 }
+
+// --- 行レベル（lib/rakutenMac.ts）とルーティング（lib/rakutenShops.ts） ---
+const item = (name: string, over: Partial<RakutenItem> = {}): RakutenItem => ({ code: "t", name, price: 99800, url: "https://item.rakuten.co.jp/x/y/", rank: null, nw: null, ...over });
+type Expect = { model: string; storage: number; memoryGB: number; rank: string; color: string; battery?: number | null };
+function checkRow(label: string, row: ReturnType<typeof normalizeJanparaMac>, e: Expect | null) {
+  if (e === null) { if (row !== null) ng(`${label}: null のはずが行になった`); return; }
+  if (!row) { ng(`${label}: 行にならなかった`); return; }
+  const got = [row.modelName, row.storage, row.memoryGB, row.conditionRank, row.color, row.batteryHealth ?? null, row.manufacturer, row.simUnlocked, row.carrier, row.networkStatus, row.isSoldOut];
+  const want = [e.model, e.storage, e.memoryGB, e.rank, e.color, e.battery ?? null, "Apple", false, null, null, false];
+  if (JSON.stringify(got) !== JSON.stringify(want)) ng(`${label}: 期待=${JSON.stringify(want)} 結果=${JSON.stringify(got)}`);
+}
+const JAN = "【中古】Apple MacBook Air 13インチ M2(CPU:8C/GPU:8C) 16GB/256GB スペースグレイ MC7U4J/A (M2,2022)【ECセンター】保証期間１ヶ月【ランクA】";
+checkRow("じゃんぱら 中古A", normalizeJanparaMac(item(JAN)), { model: "MacBook Air 13インチ M2", storage: 256, memoryGB: 16, rank: "A", color: "スペースグレイ" });
+checkRow("じゃんぱら 未使用", normalizeJanparaMac(item("【未使用】Apple MacBook Neo 13インチ A18 Pro(CPU:6C/GPU:5C) 8GB/512GB シルバー MHFC4J/A (13インチ,A18 Pro)【新宿2】保証期間3ヶ月")), { model: "MacBook Neo", storage: 512, memoryGB: 8, rank: "S", color: "シルバー" });
+checkRow("じゃんぱら CTO（色は型番の前）", normalizeJanparaMac(item("【中古】Apple MacBook Air 13インチ CTO (M2,2022) スターライト M2(CPU:8C/GPU:10C)/16G/1T/35W AC(USB-Cx2)【大須2】保証期間1ヶ月【ランクA】")), { model: "MacBook Air 13インチ M2", storage: 1024, memoryGB: 16, rank: "A", color: "スターライト" });
+checkRow("じゃんぱら 価格0", normalizeJanparaMac(item(JAN, { price: 0 })), null);
+checkRow("じゃんぱら Intel", normalizeJanparaMac(item("【中古】Apple MacBook Pro 13インチ Corei5:2GHz 256GB スペースグレイ MLL42J/A (Late 2016)【中野】保証期間1週間【ランクC】")), null);
+checkRow("じゃんぱら ケース", normalizeJanparaMac(item("【中古】MacBook Air 13インチ M2 用 ケース 16GB/256GB")), null);
+
+const SOF = "【中古】Apple(アップル) MacBook Air 13.6-inch Mid-2022 MLY23J／A Apple M2 8コアCPU_10コアGPU 8GB SSD512GB スターライト 〔26.3 Tahoe〕 【276-ud】";
+checkRow("ソフマップ ランクB", normalizeSofmapMac(item(SOF, { rank: "B", batt: 91 })), { model: "MacBook Air 13インチ M2", storage: 512, memoryGB: 8, rank: "B", color: "スターライト", battery: 91 });
+checkRow("ソフマップ ランク不明", normalizeSofmapMac(item("【中古】Apple(アップル) MacBook Pro 14.2-inch Late-2021 MKGQ3J／A Apple M1 Pro 10コアCPU_16コアGPU 16GB SSD1TB スペースグレイ 〔26.3 Tahoe〕 【258-ud】")), { model: "MacBook Pro 14インチ M1 Pro", storage: 1024, memoryGB: 16, rank: "不明", color: "スペースグレイ" });
+checkRow("ソフマップ Intel", normalizeSofmapMac(item("【中古】Apple(アップル) MacBook Air 13.3-inch Mid-2017 MQD32J／A Core_i5 1.8GHz 8GB SSD128GB 〔10.15 Catalina〕")), null);
+
+const IOS = "中古パソコン MacBook Air 13インチ MGN93J/A Late 2020 シルバー【Apple M1/16GB/512GB SSD】 Apple 当社3ヶ月間保証 イオシス";
+checkRow("イオシス ランクC", normalizeIosysMac(item(IOS, { rank: "C" })), { model: "MacBook Air M1", storage: 512, memoryGB: 16, rank: "C", color: "シルバー" });
+checkRow("イオシス 色なし（欠品注記）", normalizeIosysMac(item("中古パソコン 【電源アダプタ・ケーブル欠品】MacBook Pro 13インチ MNEQ3J/A Mid 2022 シルバー【Apple M2/16GB/512GB SSD】 Apple 当社3ヶ月間保証 イオシス", { rank: "B" })), { model: "MacBook Pro 13インチ M2", storage: 512, memoryGB: 16, rank: "B", color: "シルバー" });
+checkRow("イオシス Intel 12インチ", normalizeIosysMac(item("中古パソコン MacBook 12インチ MLHA2JA/A Early 2016 シルバー【Core m3(1.1GHz)/8GB/256GB SSD】 Apple 当社3ヶ月間保証 イオシス")), null);
+
+// ルーティング: 商品名に MacBook を含むものは Mac の行、ゲオは取らない、iPhone は従来どおり
+const route = (shop: string, it: RakutenItem) => RAKUTEN_SHOPS[shop].normalize(it);
+checkRow("route janpara", route("janpara", item(JAN)), { model: "MacBook Air 13インチ M2", storage: 256, memoryGB: 16, rank: "A", color: "スペースグレイ" });
+checkRow("route akiba-u-shop", route("akiba-u-shop", item(SOF, { rank: "B" })), { model: "MacBook Air 13インチ M2", storage: 512, memoryGB: 8, rank: "B", color: "スターライト" });
+checkRow("route pc-good", route("pc-good", item(IOS, { rank: "C" })), { model: "MacBook Air M1", storage: 512, memoryGB: 16, rank: "C", color: "シルバー" });
+for (const geo of ["【中古】【安心保証】 MacBookAir 2022年 MLXW3J/A", "【中古】【安心保証】 MacBook Pro 14インチ[512GB] 16GB スペースグレイ"]) {
+  if (route("geo-mobile", item(geo)) !== null) ng(`ゲオの MacBook が行になった: ${geo}`);
+}
+const iphone = route("janpara", item("【中古】Apple 国内版 【SIMフリー】 iPhone 16 Pro Max 256GB デザートチタニウム【ECセンター】保証期間1ヶ月【ランクB】"));
+if (iphone?.modelName !== "iPhone 16 Pro Max" || iphone.memoryGB !== undefined) ng(`iPhone のルーティングが変わった: ${JSON.stringify(iphone)}`);
+const geoPhone = route("geo-mobile", item("【中古】【安心保証】 iPhone15 Pro[512GB] SIMロック解除 docomo ブルーチタニウム"));
+if (geoPhone?.modelName !== "iPhone 15 Pro") ng(`ゲオの iPhone が読めない: ${JSON.stringify(geoPhone)}`);
+
+// 機種照合: Mac は正式名で完全一致。iPhone などと混ざらない
+const mm = (q: string, name: string, want: boolean) => { if (matchesModel(q, name) !== want) ng(`matchesModel("${q}", "${name}") は ${want} のはず`); };
+mm("MacBook Air 13インチ M2", "MacBook Air 13インチ M2", true);
+mm("MacBook Air 13インチ M2", "MacBook Air 15インチ M5", false);
+mm("MacBook Pro 14インチ M3", "MacBook Pro 14インチ M3 Pro", false);
+mm("MacBook Air 13インチ M2", "iPhone 13", false);
+mm("iPhone 13", "MacBook Air 13インチ M2", false);
+mm("MacBook Air 13インチ M2", "MacBook Air 13インチ M2", true);
+
+// スラッグ: Mac の機種どうしで重複せず、既存ページ（iPhone・iPad・Pixel・Galaxy）のスラッグとも重ならない
+const slugs = MAC_MODELS.map(modelToSlug);
+if (new Set(slugs).size !== slugs.length) ng("Mac のスラッグが重複");
+for (const [m, s] of MAC_MODELS.map((m, i) => [m, slugs[i]])) if (!/^macbook-[a-z0-9-]+$/.test(s)) ng(`スラッグが妥当でない: ${m} → ${s}`);
+const existing = new Set(ALL_DEVICE_PAGE_MODELS.map(modelToSlug));
+for (const s of slugs) if (existing.has(s)) ng(`既存ページとスラッグが重複: ${s}`);
+if (modelToSlug("MacBook Air 13インチ M2") !== "macbook-air-13-m2" || modelToSlug("MacBook Air M1") !== "macbook-air-m1") ng("スラッグの形が想定と違う");
 
 console.log(fail === 0 ? `OK（${ROWS.length}件・${MAC_MODELS.length}機種）` : `${fail}件の違い`);
 process.exit(fail === 0 ? 0 : 1);

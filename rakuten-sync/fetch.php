@@ -29,10 +29,13 @@ const SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'kamaya-awards', 'g
 // 1ショップ分として、この検索語の結果をまとめて送る（受け口はショップ単位で洗い替えるため）
 // Pixel・Galaxy は 2026-09-30〜（アクセサリも当たるが、受け口の lib/rakutenPixel.ts・rakutenGalaxy.ts が本体以外を落とす）
 const KEYWORDS = ['iPhone', 'iPad', 'Pixel', 'Galaxy'];
+// MacBook は 2026-10-15〜、Apple シリコンの在庫がある3店だけ（読み取りは lib/rakutenMac.ts）。
+// ほかの店で「MacBook」を引くとモニタ・ケーブルが数万件当たり、要求数の上限（MAX_REQUESTS）を超えて店ごと失敗するため
+const MAC_SHOP_CODES = ['janpara', 'akiba-u-shop', 'pc-good'];
 const HITS = 30;              // 1ページの最大件数
 const MAX_PAGES = 100;        // API の上限（1検索あたり最大 3,000 件）
 const INTERVAL_US = 1100000;  // 登録した QPS=1 を守るため 1.1 秒間隔
-const MAX_REQUESTS = 1000;    // 暴走防止（1ショップあたり）
+const MAX_REQUESTS = 1500;    // 暴走防止（1ショップあたり）。MacBook を足した 2026-10-15 に 1000 → 1500（イオシスの MacBook は約6,000件＝約200回）
 
 $requestCount = 0;
 
@@ -177,7 +180,8 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
         return true;
     }
 
-    foreach (KEYWORDS as $keyword) {
+    $keywords = in_array($shopCode, MAC_SHOP_CODES, true) ? array_merge(KEYWORDS, ['MacBook']) : KEYWORDS;
+    foreach ($keywords as $keyword) {
         collectRange($config, $shopCode, $keyword, 1, 999999, $items);
     }
     $items = array_values($items);

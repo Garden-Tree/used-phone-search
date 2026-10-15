@@ -101,6 +101,7 @@
 ### Pixel の機種名（2026-09-30〜）
 - スクレイパーが取り込むときに Google の表記（`Pixel 8a`・`Pixel 9 Pro Fold`）へそろえる（`scraper/common.py` の `canonical_pixel_model`）。Pixel 5a 以前は入れない
 - 機種の一覧は `scraper/common.py` の `PIXEL_MODELS` と `lib/pixelCatalog.ts` の2か所。`npm run test:normalize` がずれを見つける。新しい Pixel が出たら両方と `PIXEL_INFO`（販売開始・保証年数）に足す
+- MacBook（2026-10-15〜）: じゃんぱら・ソフマップ・イオシスだけ `fetch.php` の MAC_SHOP_CODES で「MacBook」も引く（ほかの店はモニタ等が数万件当たる）。読み取りは `lib/rakutenMac.ts`（機種は `lib/macCatalog.ts` の公式の部品番号表）。メモリは `memoryGB`、SSD は `storage`。ページができるまでトップの件数・値下がりから除き、価格の記録（PriceSnapshot）だけ先に取る
 - 楽天3店: `fetch.php` の KEYWORDS に `Pixel`、読み取りは `lib/rakutenPixel.ts`（`lib/rakutenShops.ts` の byDevice で振り分け）。キャリア版も SIM フリー扱い（Pixel 6 以降は SIM ロック原則禁止の後の発売）
 - エムモバは Pixel の一覧がなく、検索ページでも Pixel 6 以降は1件（9/30）なので取り込まない
 - サーバーパネル・ファイルマネージャは 2026-09 から `https://secure.wpx.ne.jp/`（シンクラウド）。旧 `secure.shin-server.jp` は名前解決できない

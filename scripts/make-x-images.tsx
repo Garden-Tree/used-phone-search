@@ -36,7 +36,7 @@ async function save(name: string, el: React.ReactElement, text: string) {
 }
 
 async function main() {
-const total = (await prisma.deviceInventory.count({ where: { isSoldOut: false } })).toLocaleString();
+const total = (await prisma.deviceInventory.count({ where: { isSoldOut: false, NOT: { modelName: { startsWith: "MacBook" } } } })).toLocaleString();
 const exampleModels = ["iPhone 12", "iPhone 13", "iPhone 15", "iPhone 16e", "iPad (A16)", "iPad mini (A17 Pro)"];
 const examples: [string, number][] = [];
 for (const m of exampleModels) {

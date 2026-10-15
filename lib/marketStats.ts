@@ -1,6 +1,8 @@
 import { cache } from "react";
 import prisma from "@/lib/prisma";
 import { ALL_STORAGE } from "@/lib/priceHistory";
+import { MAC_MODELS } from "@/lib/macCatalog";
+import { modelToSlug } from "@/lib/catalog";
 import { minPriceByModel } from "@/lib/budgetStats";
 import { medianPrice, modelWhere } from "@/lib/modelInventory";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
@@ -10,6 +12,8 @@ import { rethrowDuringBuild } from "@/lib/buildGuard";
  * - 相場一覧はいまの在庫から（機種ページと同じ数字になるように）。機種ごとに集計1回と中央値の1行だけ取り出す
  * - 値下がりは価格推移の記録（PriceSnapshot。GitHub Actions のスクレイピング後に毎日記録）どうしを比べる
  */
+
+const macSlugs = MAC_MODELS.map(modelToSlug);
 
 export type ModelMarket = { medianPrice: number; minPrice: number; count: number };
 
@@ -56,7 +60,8 @@ export const getPriceDrops = cache(async (days = 7, limit = 10, minCount = 5): P
     if (!past) return [];
 
     const rows = await prisma.priceSnapshot.findMany({
-      where: { date: { in: [latest.date, past.date] }, storage: { not: ALL_STORAGE } },
+      // MacBook の記録（2026-10-15〜）はページができるまで値下がりに出さない（リンク切れになる）
+      where: { date: { in: [latest.date, past.date] }, storage: { not: ALL_STORAGE }, modelSlug: { notIn: macSlugs } },
       select: { modelSlug: true, date: true, storage: true, medianPrice: true, count: true },
     });
     const key = (slug: string, storage: number) => `${slug}:${storage}`;

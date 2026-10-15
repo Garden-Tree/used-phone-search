@@ -68,11 +68,12 @@ export function buildWhere(p: SearchParams): Prisma.DeviceInventoryWhereInput {
 
   // 機種もショップも指定がない一覧（/search・予算別ページからのリンク）は iPhone だけにする。
   // ?device= があればその種類だけ（ショップ指定と組み合わせられる）。
-  // ショップだけ指定の一覧はトップの在庫数（全種類の合計）と揃えるため全種類を含める
+  // ショップだけ指定の一覧はトップの在庫数（全種類の合計）と揃えるため全種類を含める（MacBook は 2026-10-15〜 ページができるまで除く。トップの数え方と同じ）
   const device = findSearchDevice(p.device);
   if (p.modelNames) and.push({ modelName: { in: p.modelNames } });
   else if (device) and.push({ modelName: { startsWith: device.prefix } });
   else if (!p.shop || p.shop === "all") and.push({ modelName: { startsWith: "iPhone" } });
+  else and.push({ NOT: { modelName: { startsWith: "MacBook" } } });
 
   if (p.shop && p.shop !== "all") and.push({ shopName: p.shop });
 
