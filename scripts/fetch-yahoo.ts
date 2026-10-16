@@ -201,12 +201,15 @@ async function fetchShop(sellerId: string): Promise<boolean> {
   const items = new Map<string, RakutenItem>();
   try {
     for (const keyword of KEYWORDS) {
-      // 件数の変更で取り直しになったとき（ApiError 400）は 1 回だけやり直す
-      try {
-        await collectRange(sellerId, keyword, 1, 999999, items);
-      } catch (error) {
-        if (!(error instanceof ApiError && error.message === "page size changed while paging")) throw error;
-        await collectRange(sellerId, keyword, 1, 999999, items);
+      // 件数の変更で取り直しになったとき（ApiError 400）は最初からやり直す。件数は小さくなる一方なので、やり直しは PAGE_SIZES の数までで終わる
+      // （10/16 21時: 100→50 で1回やり直した後、50→20 でもう一度起きて失敗した。以前は1回だけだった）
+      for (;;) {
+        try {
+          await collectRange(sellerId, keyword, 1, 999999, items);
+          break;
+        } catch (error) {
+          if (!(error instanceof ApiError && error.message === "page size changed while paging")) throw error;
+        }
       }
     }
   } catch (error) {
