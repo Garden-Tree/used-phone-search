@@ -12,7 +12,7 @@ import { GALAXY_CATALOG, GALAXY_MODELS, GALAXY_RELEASED, isGalaxy } from "@/lib/
 import { jaMonth } from "@/lib/pixelCatalog";
 import { GALAXY_SPECS } from "@/lib/galaxySpecs";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { yen } from "@/lib/format";
+import { medianLabel, yen } from "@/lib/format";
 import { GALAXY_SHOPS, shopLabels, type Shop } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 
@@ -116,7 +116,7 @@ export default async function GalaxyIndexPage() {
                       {GALAXY_RELEASED[model] && <span className="block text-[11px] text-ink-mute">{jaMonth(GALAXY_RELEASED[model])}発売（日本）{GALAXY_SPECS[model] && `・${GALAXY_SPECS[model].chip.replace(" for Galaxy", "")}`}</span>}
                     </span>
                     <span className="text-right">
-                      {s && <><span className="block text-[10px] text-ink-mute">相場</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
+                      {s && <><span className="block text-[10px] text-ink-mute">{medianLabel(s.medianStorage, model)}</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
                     </span>
                     <span className="text-right">
                       {s ? <><span className="block text-[10px] text-ink-mute">最安値</span><span className="font-bold text-price">{yen(s.minPrice)}</span></> : <span className="text-gray-300 font-normal text-sm">在庫なし</span>}

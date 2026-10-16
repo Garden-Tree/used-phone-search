@@ -32,6 +32,22 @@ export async function medianPrice(where: Prisma.DeviceInventoryWhereInput, count
   return row?.price ?? null;
 }
 
+export type PrimaryMedian = { storage: number; price: number; count: number };
+
+/**
+ * 相場: 在庫がいちばん多い容量の中央値（10/16〜）。
+ * 容量をまぜた中央値は在庫の多い容量に引っぱられる（例: 在庫10件の 18 Pro Max で 2TB が多く 44.5万円になった）ので、同じ容量の中で取る。
+ * 件数が同じなら小さい容量。byStorage を渡せば groupBy を省く
+ */
+export async function primaryMedian(where: Prisma.DeviceInventoryWhereInput, byStorage?: PriceGroup[]): Promise<PrimaryMedian | null> {
+  const rows = byStorage ?? (await groupMinPrice(where, "storage"));
+  if (rows.length === 0) return null;
+  const top = rows.reduce((a, b) => (b.count > a.count || (b.count === a.count && Number(b.key) < Number(a.key)) ? b : a));
+  const storage = Number(top.key);
+  const price = await medianPrice({ AND: [where, { storage }] }, top.count);
+  return price === null ? null : { storage, price, count: top.count };
+}
+
 /** 容量・ランク・ショップなど、列ごとの最安値と件数 */
 export async function groupMinPrice(
   where: Prisma.DeviceInventoryWhereInput,

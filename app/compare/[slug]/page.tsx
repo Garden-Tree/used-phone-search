@@ -9,7 +9,7 @@ import { badgesOf, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath, compareSlug, comparesFor, slugToPair } from "@/lib/compare";
 import { getModelStats, type ModelStats, type PriceRow } from "@/lib/modelStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { yen, storageLabel } from "@/lib/format";
+import { medianLabel, yen, storageLabel } from "@/lib/format";
 import { activeShopsFor } from "@/lib/activeShops";
 import { SPEC_ROWS, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
@@ -338,7 +338,7 @@ export default async function ComparePage({ params }: Props) {
                 {stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし"}
               </p>
               <dl className="text-xs md:text-sm text-ink-sub space-y-1">
-                <div className="flex justify-between"><dt>相場（中央値）</dt><dd className="font-bold">{stats.medianPrice !== null ? yen(stats.medianPrice) : "-"}</dd></div>
+                <div className="flex justify-between"><dt>{medianLabel(stats.medianStorage, name)}</dt><dd className="font-bold">{stats.medianPrice !== null ? yen(stats.medianPrice) : "-"}</dd></div>
                 <div className="flex justify-between"><dt>在庫数</dt><dd className="font-bold">{stats.count.toLocaleString()}件</dd></div>
                 <div className="flex justify-between"><dt>取扱ショップ</dt><dd className="font-bold">{stats.shopCount}店</dd></div>
               </dl>

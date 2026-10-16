@@ -1,5 +1,5 @@
 import { findShop, type Shop } from "@/lib/shops";
-import { yen } from "@/lib/format";
+import { medianLabel, storageLabel, yen } from "@/lib/format";
 import type { PriceRow } from "@/lib/modelStats";
 
 /** 別の売り場（イオシス楽天市場店など）を本店にまとめた、店ごとの最安値・件数（最安の売り場の保証を使う） */
@@ -25,7 +25,7 @@ export const topStockLabels = (byShop: PriceRow[], n = 3): string[] =>
   foldShops(byShop).sort((a, b) => b.count - a.count).slice(0, n).map((s) => s.label);
 
 /** 検索結果に出る説明文（約110字以内。重要な数字を先頭に） */
-export function modelDescription(model: string, stats: { minPrice: number | null; medianPrice: number | null; count: number; shopCount: number; byShop: PriceRow[] }): string {
+export function modelDescription(model: string, stats: { minPrice: number | null; medianPrice: number | null; medianStorage?: number | null; count: number; shopCount: number; byShop: PriceRow[] }): string {
   // MacBook（2026-10-15〜）は容量の代わりにメモリ・SSD で比べる
   const mac = /^MacBook/.test(model);
   // Apple Watch（2026-10-15〜）は容量の代わりにケースのサイズ（mm）・通信方式（GPS／GPS+Cellular）で比べる
@@ -33,9 +33,11 @@ export function modelDescription(model: string, stats: { minPrice: number | null
   if (stats.minPrice === null && watch) return `${model}の中古在庫を大手中古ショップから一括比較。ケースのサイズ・通信方式・状態ランク別の最安値をまとめています。`;
   if (stats.minPrice === null) return mac ? `${model}の中古在庫を大手中古ショップから一括比較。メモリ・SSD・状態ランク別の最安値をまとめています。` : `${model}の中古在庫を大手中古ショップから一括比較。容量・状態ランク別の最安値をまとめています。`;
   const top = topStockLabels(stats.byShop).join("・");
-  if (watch) return `${model}の中古は最安${yen(stats.minPrice)}・相場${yen(stats.medianPrice ?? stats.minPrice)}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件をケースのサイズ・通信方式・状態ランクで比較（毎日更新）。`;
-  if (mac) return `${model}の中古は最安${yen(stats.minPrice)}・相場${yen(stats.medianPrice ?? stats.minPrice)}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件をメモリ・SSD・状態ランクで比較（毎日更新）。`;
-  return `${model}の中古は最安${yen(stats.minPrice)}・相場${yen(stats.medianPrice ?? stats.minPrice)}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件を容量・状態ランク・バッテリーで比較（毎日更新）。`;
+  // 相場は在庫がいちばん多い容量の中央値なので容量を添える（容量をまぜた値が高く出るのを防ぐ。10/16〜）
+  const med = `${medianLabel(stats.medianStorage, model)}${yen(stats.medianPrice ?? stats.minPrice)}`;
+  if (watch) return `${model}の中古は最安${yen(stats.minPrice)}・${med}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件をケースのサイズ・通信方式・状態ランクで比較（毎日更新）。`;
+  if (mac) return `${model}の中古は最安${yen(stats.minPrice)}・${med}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件をメモリ・SSD・状態ランクで比較（毎日更新）。`;
+  return `${model}の中古は最安${yen(stats.minPrice)}・${med}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件を容量・状態ランク・バッテリーで比較（毎日更新）。`;
 }
 
 export type Faq = { q: string; a: string };
@@ -49,6 +51,7 @@ export function buildFaq(p: {
   isWatch?: boolean;
   minPrice: number;
   medianPrice: number | null;
+  medianStorage?: number | null;
   /** 最安の個体の説明（「ランクC・バッテリー80%未満」など） */
   cheapestNote: string | null;
   goodMin: number | null;
@@ -62,7 +65,7 @@ export function buildFaq(p: {
   const { model } = p;
   const a1 = [
     `${model}の中古の最安値は${yen(p.minPrice)}${p.cheapestNote ? `（${p.cheapestNote}）` : ""}です。`,
-    p.medianPrice !== null ? `相場（在庫の中央値）は${yen(p.medianPrice)}です。` : "",
+    p.medianPrice !== null ? `相場（在庫がいちばん多い${p.medianStorage ? storageLabel(p.medianStorage, model) : "容量"}の中央値）は${yen(p.medianPrice)}です。` : "",
     p.goodMin !== null ? `${p.isMac || p.isWatch ? "ランクB以上" : "ランクB以上・バッテリー85%以上"}に絞ると${yen(p.goodMin)}〜です。` : "",
     `現在${p.shopCount}店に${p.count.toLocaleString()}件の在庫があります${p.updatedText ? `（${p.updatedText}時点）` : ""}。`,
   ].join("");

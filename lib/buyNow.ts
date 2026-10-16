@@ -4,7 +4,7 @@ import { ALL_DEVICE_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
 import { ALL_STORAGE } from "@/lib/priceHistory";
 import { getModelStats } from "@/lib/modelStats";
 import { getModelMarket } from "@/lib/marketStats";
-import { yen } from "@/lib/format";
+import { medianLabel, storageLabel, yen } from "@/lib/format";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 
 /**
@@ -44,10 +44,10 @@ export function previousGeneration(model: string): string | null {
   return cand && ALL_DEVICE_PAGE_MODELS.includes(cand) ? cand : null;
 }
 
-/** 価格推移（全容量・Amazon を除く）の最新の記録と、30日前（なければ最も古い記録）の記録 */
-const getMedianTrend = cache(async (model: string) => {
+/** 価格推移（Amazon を除く）の最新の記録と、30日前（なければ最も古い記録）の記録。相場と同じ容量（なければ全容量）で比べる */
+const getMedianTrend = cache(async (model: string, storage: number | null) => {
   const slug = modelToSlug(model);
-  const where = { modelSlug: slug, storage: ALL_STORAGE };
+  const where = { modelSlug: slug, storage: storage ?? ALL_STORAGE };
   const latest = await prisma.priceSnapshot.findFirst({ where, orderBy: { date: "desc" }, select: { date: true, medianPrice: true } });
   if (!latest) return null;
   const target = new Date(latest.date);
@@ -64,27 +64,30 @@ const getMedianTrend = cache(async (model: string) => {
 type BuyNowFacts = {
   min: number;
   median: number;
+  /** 相場の容量（在庫がいちばん多い容量） */
+  medianStorage: number | null;
   trend: { now: number; before: number; days: number } | null;
   rankS: { minPrice: number } | null;
   rankA: { minPrice: number } | null;
-  prev: { name: string; median: number } | null;
+  prev: { name: string; median: number; storage: number | null } | null;
 };
 
 const getBuyNowFacts = cache(async (model: string): Promise<BuyNowFacts | null> => {
   const stats = await getModelStats(model);
   if (stats.count === 0 || stats.minPrice === null || stats.medianPrice === null) return null;
-  const trend = await getMedianTrend(model);
+  const trend = await getMedianTrend(model, stats.medianStorage);
   const s = stats.byRank.find((r) => r.key === "S");
   const a = stats.byRank.find((r) => r.key === "A");
   let prev: BuyNowFacts["prev"] = null;
   const prevName = previousGeneration(model);
   if (prevName) {
     const market = (await getModelMarket([prevName])).get(prevName);
-    if (market && market.count >= 3) prev = { name: prevName, median: market.medianPrice };
+    if (market && market.count >= 3) prev = { name: prevName, median: market.medianPrice, storage: market.medianStorage };
   }
   return {
     min: stats.minPrice,
     median: stats.medianPrice,
+    medianStorage: stats.medianStorage,
     trend,
     rankS: s && s.minPrice > 0 ? { minPrice: s.minPrice } : null,
     rankA: a && a.minPrice > 0 ? { minPrice: a.minPrice } : null,
@@ -101,7 +104,7 @@ export const getBuyNowNotes = cache(async (model: string): Promise<string[]> => 
     // 1. 相場と最安値の差
     const gap = f.median - f.min;
     if (gap > 0) {
-      notes.push(`最安値は相場（中央値 ${yen(f.median)}）より${yen(gap)}低く、${yen(f.min)}です。この差は、1台だけの特価やバッテリーの弱い個体が最安値になっているときに大きくなります。`);
+      notes.push(`最安値は相場（${f.medianStorage ? `${storageLabel(f.medianStorage, model)}の` : ""}中央値 ${yen(f.median)}）より${yen(gap)}低く、${yen(f.min)}です。この差は、1台だけの特価やバッテリーの弱い個体が最安値になっているときに大きくなります。`);
     }
 
     // 2. 30日の値動き
@@ -128,7 +131,7 @@ export const getBuyNowNotes = cache(async (model: string): Promise<string[]> => 
     if (f.prev) {
       const d = f.median - f.prev.median;
       const rel = d > 0 ? `${model}より${yen(d)}低く` : d < 0 ? `${model}より${yen(-d)}高く` : `${model}と同じで`;
-      notes.push(`1世代前の${f.prev.name}の相場は${yen(f.prev.median)}で、${rel}${d === 0 ? "す" : "なっています"}。`);
+      notes.push(`1世代前の${f.prev.name}の相場${f.prev.storage ? `（${storageLabel(f.prev.storage, f.prev.name)}）` : ""}は${yen(f.prev.median)}で、${rel}${d === 0 ? "す" : "なっています"}。`);
     }
   } catch (error) {
     rethrowDuringBuild(error);
@@ -156,7 +159,7 @@ export const getBuyNowStats = cache(async (model: string): Promise<StatTile[]> =
     const t = f.trend;
     if (t && t.days >= 7 && t.before > 0) {
       const diff = t.now - t.before;
-      const label = t.days >= 30 ? "30日の相場" : `${t.days}日の相場`;
+      const label = `${t.days >= 30 ? "30日" : `${t.days}日`}の${medianLabel(f.medianStorage, model)}`;
       const sub = `${t.before.toLocaleString()} → ${t.now.toLocaleString()}`;
       if (Math.abs(diff / t.before) <= 0.02) tiles.push({ label, value: "ほぼ横ばい", sub, tone: "flat" });
       else if (diff > 0) tiles.push({ label, value: `↑ ${diff.toLocaleString()}円`, sub, tone: "up" });

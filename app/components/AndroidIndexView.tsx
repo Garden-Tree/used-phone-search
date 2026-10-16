@@ -8,7 +8,7 @@ import { AQUOS_CATALOG, AQUOS_MODELS } from "@/lib/aquosCatalog";
 import { XPERIA_CATALOG, XPERIA_MODELS } from "@/lib/xperiaCatalog";
 import { androidInfoOf } from "@/lib/androidInfo";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { yen } from "@/lib/format";
+import { medianLabel, yen } from "@/lib/format";
 import { shopLabels, type Shop } from "@/lib/shops";
 import { activeAquosShops, activeXperiaShops } from "@/lib/activeShops";
 
@@ -106,7 +106,7 @@ export default async function AndroidIndexView({ kind }: { kind: AndroidKind }) 
                       {released && <span className="block text-[11px] text-ink-mute">{released}</span>}
                     </span>
                     <span className="text-right">
-                      {s && <><span className="block text-[10px] text-ink-mute">相場</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
+                      {s && <><span className="block text-[10px] text-ink-mute">{medianLabel(s.medianStorage, model)}</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
                     </span>
                     <span className="text-right">
                       {s ? <><span className="block text-[10px] text-ink-mute">最安値</span><span className="font-bold text-price">{yen(s.minPrice)}</span></> : <span className="text-gray-300 font-normal text-sm">在庫なし</span>}

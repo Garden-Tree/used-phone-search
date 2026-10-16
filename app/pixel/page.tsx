@@ -9,7 +9,7 @@ import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { PIXEL_CATALOG, PIXEL_INFO, PIXEL_MODELS, isPixel, jaMonth, updateUntil } from "@/lib/pixelCatalog";
 import { PIXEL_SPECS } from "@/lib/pixelSpecs";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { yen } from "@/lib/format";
+import { medianLabel, yen } from "@/lib/format";
 import { PIXEL_SHOPS, shopLabels, type Shop } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import { PIXEL_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
@@ -127,7 +127,7 @@ export default async function PixelIndexPage() {
                       )}
                     </span>
                     <span className="text-right">
-                      {s && <><span className="block text-[10px] text-ink-mute">相場</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
+                      {s && <><span className="block text-[10px] text-ink-mute">{medianLabel(s.medianStorage, model)}</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
                     </span>
                     <span className="text-right">
                       {s ? <><span className="block text-[10px] text-ink-mute">最安値</span><span className="font-bold text-price">{yen(s.minPrice)}</span></> : <span className="text-gray-300 font-normal text-sm">在庫なし</span>}

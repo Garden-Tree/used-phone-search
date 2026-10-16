@@ -2,7 +2,7 @@ import { cache } from "react";
 import prisma from "@/lib/prisma";
 import { ALL_STORAGE } from "@/lib/priceHistory";
 import { minPriceByModel } from "@/lib/budgetStats";
-import { medianPrice, modelWhere } from "@/lib/modelInventory";
+import { modelWhere, primaryMedian } from "@/lib/modelInventory";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 
 /**
@@ -11,15 +11,16 @@ import { rethrowDuringBuild } from "@/lib/buildGuard";
  * - 値下がりは価格推移の記録（PriceSnapshot。GitHub Actions のスクレイピング後に毎日記録）どうしを比べる
  */
 
-export type ModelMarket = { medianPrice: number; minPrice: number; count: number };
+/** medianPrice は在庫がいちばん多い容量（medianStorage）の中央値（機種ページと同じ） */
+export type ModelMarket = { medianPrice: number; medianStorage: number | null; minPrice: number; count: number };
 
-/** いまの在庫の機種ごとの相場（中央値）・最安値・件数。在庫のない機種は入らない */
+/** いまの在庫の機種ごとの相場（いちばん多い容量の中央値）・最安値・件数。在庫のない機種は入らない */
 export const getModelMarket = cache(async (models: string[]): Promise<Map<string, ModelMarket>> => {
   const byModel = await minPriceByModel({ isSoldOut: false }, models);
   const result = new Map<string, ModelMarket>();
   for (const [model, r] of byModel) {
-    const median = await medianPrice(await modelWhere(model), r.count);
-    result.set(model, { ...r, medianPrice: median ?? r.minPrice });
+    const primary = await primaryMedian(await modelWhere(model));
+    result.set(model, { ...r, medianPrice: primary?.price ?? r.minPrice, medianStorage: primary?.storage ?? null });
   }
   return result;
 });

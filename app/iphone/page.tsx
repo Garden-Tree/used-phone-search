@@ -9,7 +9,7 @@ import { getModelMarket, getPriceDrops, type ModelMarket } from "@/lib/marketSta
 import { specOf } from "@/lib/iphoneSpecs";
 import { activeShops } from "@/lib/activeShops";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { yen } from "@/lib/format";
+import { storageLabel, yen } from "@/lib/format";
 
 // 機種ページと同じくビルドのたびに作る（在庫の取り込みは6時間ごと）
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -55,7 +55,7 @@ function MarketTable({ rows }: { rows: Row[] }) {
                 <td className="pl-4 pr-2 py-2.5">
                   <Link href={modelPagePath(model)} className="font-bold text-ink hover:text-brand-800 whitespace-nowrap">{model}</Link>
                 </td>
-                <td className="px-2 py-2.5 text-right font-bold text-ink whitespace-nowrap">{market ? yen(market.medianPrice) : "-"}</td>
+                <td className="px-2 py-2.5 text-right font-bold text-ink whitespace-nowrap">{market ? <>{yen(market.medianPrice)}{market.medianStorage ? <span className="block text-[10px] font-normal text-ink-mute">{storageLabel(market.medianStorage, model)}</span> : null}</> : "-"}</td>
                 <td className="px-2 py-2.5 text-right font-bold text-price whitespace-nowrap">{market ? yen(market.minPrice) : <span className="text-gray-300 font-normal">在庫なし</span>}</td>
                 <td className="px-2 py-2.5 text-right text-ink-mute whitespace-nowrap hidden sm:table-cell">{market ? `${market.count.toLocaleString()}件` : "-"}</td>
                 <td className="px-2 py-2.5 text-ink-mute whitespace-nowrap hidden md:table-cell">{spec?.released ?? "-"}</td>
@@ -112,9 +112,9 @@ export default async function IphoneIndexPage() {
         <details className="my-6 rounded-xl bg-ground p-4 text-sm text-ink-sub">
           <summary className="font-bold text-ink-sub cursor-pointer">「相場」の出し方</summary>
           <p className="mt-2 leading-relaxed">
-            販売中の在庫の価格を安い順に並べた<strong>ちょうど真ん中の値（中央値）</strong>を相場としています。
-            最安値は1台だけの特価やジャンク品のことが多く、実際に買う値段の目安にはなりにくいためです。
-            容量・状態ランクはすべて含むので、容量ごとの相場は各機種のページで確認できます。
+            機種ごとに<strong>在庫がいちばん多い容量</strong>の販売中の在庫を安い順に並べ、<strong>ちょうど真ん中の値（中央値）</strong>を相場としています（相場の下に小さく書いた容量）。
+            容量をまぜると在庫の多い容量の値段に引っぱられ、最安値は1台だけの特価やジャンク品のことが多いためです。
+            状態ランクはすべて含みます。ほかの容量の値段は各機種のページで確認できます。
           </p>
         </details>
 

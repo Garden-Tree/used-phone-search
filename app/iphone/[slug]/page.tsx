@@ -44,7 +44,7 @@ import { getGoodConditionMin, getGoodRankMin } from "@/lib/modelBest";
 import { getBuyNowNotes, getBuyNowStats } from "@/lib/buyNow";
 import { getBreakdown, getRankSMax, getShopBars, type Breakdown, type ShopBarRow } from "@/lib/modelBreakdown";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { yen, storageLabel } from "@/lib/format";
+import { medianLabel, yen, storageLabel } from "@/lib/format";
 import { findShop, shopsFor } from "@/lib/shops";
 import { activeShopsFor } from "@/lib/activeShops";
 import { buildFaq, modelDescription } from "@/lib/modelFaq";
@@ -282,7 +282,7 @@ export default async function ModelPage({ params }: Props) {
           : null;
   const faqs = hasStock && stats.minPrice !== null
     ? buildFaq({
-        model, isIphone, isMac: mac, isWatch: watch, minPrice: stats.minPrice, medianPrice: stats.medianPrice,
+        model, isIphone, isMac: mac, isWatch: watch, minPrice: stats.minPrice, medianPrice: stats.medianPrice, medianStorage: stats.medianStorage,
         cheapestNote: cheapestDevice ? describeDevice(cheapestDevice) : null,
         goodMin, count: stats.count, shopCount: stats.shopCount, updatedText, byShop: stats.byShop, supportAnswer,
       })
@@ -333,7 +333,7 @@ export default async function ModelPage({ params }: Props) {
   // 在庫0件のときの数字（今までの表示）
   const statCells = [
     { label: "最安値", value: stats.minPrice !== null ? yen(stats.minPrice) : "-", accent: true },
-    { label: "相場（中央値）", value: stats.medianPrice !== null ? yen(stats.medianPrice) : "-" },
+    { label: medianLabel(stats.medianStorage, model), value: stats.medianPrice !== null ? yen(stats.medianPrice) : "-" },
     { label: "在庫", value: `${stats.count.toLocaleString()}件`, sub: `${stats.shopCount}店` },
   ];
   const statBlock = (vertical: boolean) => (
@@ -383,14 +383,14 @@ export default async function ModelPage({ params }: Props) {
             <span className="text-4xl font-bold text-price leading-[1.1]">{stats.minPrice!.toLocaleString()}<span className="text-[15px]">円</span></span>
           </div>
           <div className="flex justify-between">
-            <div className="flex flex-col"><span className="text-[11px] text-ink-mute">相場（中央値）</span><span className="text-xl font-bold">{yen(stats.medianPrice!)}</span></div>
+            <div className="flex flex-col"><span className="text-[11px] text-ink-mute">{medianLabel(stats.medianStorage, model)}</span><span className="text-xl font-bold">{yen(stats.medianPrice!)}</span></div>
             <div className="flex flex-col items-end"><span className="text-[11px] text-ink-mute">在庫</span><span className="text-xl font-bold">{stats.count.toLocaleString()}件 <span className="text-[11px] font-normal text-ink-mute">{stats.shopCount}店</span></span></div>
           </div>
         </>
       ) : (
         <div className="flex items-end justify-between gap-2">
           <div className="flex flex-col"><span className="text-[11px] text-ink-mute">最安値</span><span className="text-[32px] font-bold text-price leading-[1.1]">{stats.minPrice!.toLocaleString()}<span className="text-sm">円</span></span></div>
-          <div className="flex flex-col items-end"><span className="text-[11px] text-ink-mute">相場（中央値）</span><span className="text-xl font-bold leading-[1.1]">{stats.medianPrice!.toLocaleString()}<span className="text-xs">円</span></span></div>
+          <div className="flex flex-col items-end"><span className="text-[11px] text-ink-mute">{medianLabel(stats.medianStorage, model)}</span><span className="text-xl font-bold leading-[1.1]">{stats.medianPrice!.toLocaleString()}<span className="text-xs">円</span></span></div>
         </div>
       )}
       {priceBand}
@@ -774,7 +774,7 @@ export default async function ModelPage({ params }: Props) {
                   <Accordion title="価格・在庫データの集め方" hint={`${shopNum}店・1日4回`}>
                     <p className="text-[13px] leading-[1.7] text-gray-700">
                       {shopNum}店の公開在庫を1日4回（6時間ごと）取得し、売り切れを除いた在庫をまとめています。
-                      相場は販売中の在庫を安い順に並べた真ん中の値（中央値）で、最安値にはジャンク品が含まれることがあります。
+                      相場は、在庫がいちばん多い容量の販売中の在庫を安い順に並べた真ん中の値（中央値）です（容量をまぜると在庫の多い容量に引っぱられるため）。最安値にはジャンク品が含まれることがあります。
                       価格・在庫は取得した時点のもので、売り切れや値下げが反映されるまで最大6時間ほどかかります。
                       詳しくは<Link href="/about" className={`${LINK} underline underline-offset-2`}>「このサイトについて」</Link>をご覧ください。
                     </p>

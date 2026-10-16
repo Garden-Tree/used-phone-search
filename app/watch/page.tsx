@@ -7,7 +7,7 @@ import { getModelMarket } from "@/lib/marketStats";
 import { modelPagePath } from "@/lib/catalog";
 import { WATCH_CATALOG, WATCH_INFO, WATCH_MODELS, isWatchOS27 } from "@/lib/watchCatalog";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { yen } from "@/lib/format";
+import { medianLabel, yen } from "@/lib/format";
 import { shopLabels, type Shop } from "@/lib/shops";
 import { activeWatchShops } from "@/lib/activeShops";
 
@@ -97,7 +97,7 @@ export default async function WatchIndexPage() {
                       </span>
                     </span>
                     <span className="text-right">
-                      {s && <><span className="block text-[10px] text-ink-mute">相場</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
+                      {s && <><span className="block text-[10px] text-ink-mute">{medianLabel(s.medianStorage, model)}</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
                     </span>
                     <span className="text-right">
                       {s ? <><span className="block text-[10px] text-ink-mute">最安値</span><span className="font-bold text-price">{yen(s.minPrice)}</span></> : <span className="text-gray-300 font-normal text-sm">在庫なし</span>}

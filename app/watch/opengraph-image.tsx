@@ -30,7 +30,7 @@ export default async function Image() {
   const summary = total > 0 ? `大手中古ショップ${shops.length}社・${total.toLocaleString()}件の在庫から` : `大手中古ショップ${shops.length}社の在庫から`;
 
   const allText = [
-    "中古Apple Watchの", "相場一覧", lead, summary, "相場（中央値）", "円", `${updated} 更新`, "中古スマホ一括検索", "used.gadelog.com",
+    "中古Apple Watchの", "相場一覧", lead, summary, "相場（いちばん多い容量）", "円", `${updated} 更新`, "中古スマホ一括検索", "used.gadelog.com",
     ...rows.map((r) => r.model + r.median.toLocaleString()), "0123456789,",
   ].join("");
   const fonts = await notoSansJp(allText);
@@ -50,7 +50,7 @@ export default async function Image() {
           {/* 右: 在庫の多い機種の相場（機種名が長いので幅を広げて、文字を小さくする） */}
           {rows.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", width: 540, marginLeft: 32, justifyContent: "center" }}>
-              <div style={{ fontSize: 26, fontWeight: 500, color: "#64748b", marginBottom: 14 }}>相場（中央値）</div>
+              <div style={{ fontSize: 26, fontWeight: 500, color: "#64748b", marginBottom: 14 }}>相場（いちばん多い容量の中央値）</div>
               {rows.map((r) => (
                 <div key={r.model} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "12px 20px", marginBottom: 10, borderRadius: 16, background: "#f1f5f9" }}>
                   <div style={{ fontSize: 20, fontWeight: 900 }}>{r.model}</div>

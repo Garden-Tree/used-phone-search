@@ -1,5 +1,5 @@
 import { SPEC_ROWS, specOf } from "@/lib/iphoneSpecs";
-import { yen } from "@/lib/format";
+import { storageLabel, yen } from "@/lib/format";
 import type { Faq } from "@/lib/modelFaq";
 
 /** 比較ページの文章（データから作る。意見は書かない）。React に依存させない */
@@ -7,6 +7,8 @@ import type { Faq } from "@/lib/modelFaq";
 export type SideStats = {
   minPrice: number | null;
   medianPrice: number | null;
+  /** 相場の容量（在庫がいちばん多い容量） */
+  medianStorage?: number | null;
   count: number;
   shopCount: number;
   /** ランクB以上の最安値（lib/modelBest.ts の getGoodRankMin） */
@@ -54,7 +56,8 @@ function priceReadingParts(a: string, b: string, sa: SideStats, sb: SideStats): 
   const parts = { median: "", stock: "", good: "" };
   if (sa.medianPrice !== null && sb.medianPrice !== null) {
     const g = gap(a, b, sa.medianPrice, sb.medianPrice, "yen", ["高い", "安い"]);
-    parts.median = `相場（在庫の中央値）は ${a} が ${yen(sa.medianPrice)}、${b} が ${yen(sb.medianPrice)}で、${g === "同じ" ? "同じです" : `${g}です`}。`;
+    const cap = (s: SideStats, m: string) => (s.medianStorage ? `（${storageLabel(s.medianStorage, m)}）` : "");
+    parts.median = `相場（在庫がいちばん多い容量の中央値）は ${a}${cap(sa, a)} が ${yen(sa.medianPrice)}、${b}${cap(sb, b)} が ${yen(sb.medianPrice)}で、${g === "同じ" ? "同じです" : `${g}です`}。`;
   }
   if (sa.count > 0 || sb.count > 0) {
     const g = gap(a, b, sa.count, sb.count, "n", ["多い", "少ない"]);

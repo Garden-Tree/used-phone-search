@@ -7,7 +7,7 @@ import { getModelMarket } from "@/lib/marketStats";
 import { modelPagePath } from "@/lib/catalog";
 import { MAC_INFO, MAC_MODELS } from "@/lib/macCatalog";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { yen } from "@/lib/format";
+import { medianLabel, yen } from "@/lib/format";
 import { shopLabels, type Shop } from "@/lib/shops";
 import { activeMacShops } from "@/lib/activeShops";
 
@@ -95,7 +95,7 @@ export default async function MacIndexPage() {
                         <span className="block text-[11px] text-ink-mute">{`${info.year}年発売・${info.chip}・${info.inch}インチ`}</span>
                       </span>
                       <span className="text-right">
-                        {s && <><span className="block text-[10px] text-ink-mute">相場</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
+                        {s && <><span className="block text-[10px] text-ink-mute">{medianLabel(s.medianStorage, model)}</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
                       </span>
                       <span className="text-right">
                         {s ? <><span className="block text-[10px] text-ink-mute">最安値</span><span className="font-bold text-price">{yen(s.minPrice)}</span></> : <span className="text-gray-300 font-normal text-sm">在庫なし</span>}

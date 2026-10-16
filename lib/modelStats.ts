@@ -1,7 +1,7 @@
 import { cache } from "react";
 import type { Device } from "@/app/components/DeviceCard";
 import prisma from "@/lib/prisma";
-import { groupMinPrice, medianPrice, modelWhere, type PriceGroup } from "@/lib/modelInventory";
+import { groupMinPrice, modelWhere, primaryMedian, type PriceGroup } from "@/lib/modelInventory";
 import { minBatteryWhere } from "@/lib/deviceSearch";
 import { findShop } from "@/lib/shops";
 
@@ -11,7 +11,9 @@ export type ModelStats = {
   count: number;
   minPrice: number | null;
   maxPrice: number | null;
+  /** 相場: 在庫がいちばん多い容量（medianStorage）の中央値（lib/modelInventory.ts の primaryMedian） */
   medianPrice: number | null;
+  medianStorage: number | null;
   shopCount: number;
   lastUpdated: Date | null;
   byStorage: PriceRow[];
@@ -57,12 +59,14 @@ export const getModelStats = cache(async (model: string): Promise<ModelStats> =>
     prisma.deviceInventory.findMany({ where, orderBy: [{ price: "asc" }, { id: "asc" }], take: 6 }),
   ]);
   const count = agg._count._all;
+  const primary = count > 0 ? await primaryMedian(where, byStorage) : null;
 
   return {
     count,
     minPrice: agg._min.price,
     maxPrice: agg._max.price,
-    medianPrice: await medianPrice(where, count),
+    medianPrice: primary?.price ?? null,
+    medianStorage: primary?.storage ?? null,
     // 「イオシス（楽天市場店）」は「イオシス」と同じ店として数える
     shopCount: new Set(byShop.map((r) => findShop(r.key)?.alias ?? r.key)).size,
     lastUpdated: agg._max.updatedAt,
