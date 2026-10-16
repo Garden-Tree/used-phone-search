@@ -25,7 +25,7 @@ export const topStockLabels = (byShop: PriceRow[], n = 3): string[] =>
   foldShops(byShop).sort((a, b) => b.count - a.count).slice(0, n).map((s) => s.label);
 
 /** 検索結果に出る説明文（約110字以内。重要な数字を先頭に） */
-export function modelDescription(model: string, stats: { minPrice: number | null; medianPrice: number | null; medianStorage?: number | null; count: number; shopCount: number; byShop: PriceRow[] }): string {
+export function modelDescription(model: string, stats: { minPrice: number | null; medianPrice: number | null; medianStorage?: number | null; count: number; shopCount: number; byShop: PriceRow[]; byStorage?: PriceRow[] }): string {
   // MacBook（2026-10-15〜）は容量の代わりにメモリ・SSD で比べる
   const mac = /^MacBook/.test(model);
   // Apple Watch（2026-10-15〜）は容量の代わりにケースのサイズ（mm）・通信方式（GPS／GPS+Cellular）で比べる
@@ -35,9 +35,12 @@ export function modelDescription(model: string, stats: { minPrice: number | null
   const top = topStockLabels(stats.byShop).join("・");
   // 相場は在庫がいちばん多い容量の中央値なので容量を添える（容量をまぜた値が高く出るのを防ぐ。10/16〜）
   const med = `${medianLabel(stats.medianStorage, model)}${yen(stats.medianPrice ?? stats.minPrice)}`;
-  if (watch) return `${model}の中古は最安${yen(stats.minPrice)}・${med}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件をケースのサイズ・通信方式・状態ランクで比較（毎日更新）。`;
+  // 先頭は容量（Watch はサイズ）ごとの最安値（小さい順に3つまで）。「最安」1つだけより自分の容量の値段が分かる（10/18〜。検索のクリック率の改善）
+  const caps = (stats.byStorage ?? []).filter((r) => r.count > 0).sort((a, b) => Number(a.key) - Number(b.key)).slice(0, 3);
+  const head = caps.length >= 2 ? caps.map((r) => `${storageLabel(r.key, model)} ${yen(r.minPrice)}〜`).join("・") : `最安${yen(stats.minPrice)}`;
+  if (watch) return `${model}の中古は${head}・${med}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件をケースのサイズ・通信方式・状態ランクで比較（毎日更新）。`;
   if (mac) return `${model}の中古は最安${yen(stats.minPrice)}・${med}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件をメモリ・SSD・状態ランクで比較（毎日更新）。`;
-  return `${model}の中古は最安${yen(stats.minPrice)}・${med}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件を容量・状態ランク・バッテリーで比較（毎日更新）。`;
+  return `${model}の中古は${head}・${med}。${top}など${stats.shopCount}店の${stats.count.toLocaleString()}件を容量・状態ランク・バッテリーで比較（毎日更新）。`;
 }
 
 export type Faq = { q: string; a: string };
