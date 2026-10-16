@@ -37,3 +37,15 @@ body {
 body {
   font-variant-numeric: tabular-nums;
 }
+
+/* PC は文字が小さく見えるので、ページ全体を拡大する（スマホは等倍）。1024px〜 は約1段階、1600px〜 は約2段階 */
+@media (min-width: 1024px) {
+  html {
+    zoom: 1.15;
+  }
+}
+@media (min-width: 1600px) {
+  html {
+    zoom: 1.3;
+  }
+}
