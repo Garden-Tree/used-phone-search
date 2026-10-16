@@ -14,7 +14,8 @@ import { storageLabel, yen } from "@/lib/format";
 // 機種ページと同じくビルドのたびに作る（在庫の取り込みは6時間ごと）
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
-const TITLE = "中古iPhoneの相場一覧【毎日更新】全機種の中古価格・最安値";
+// 検索は「iphone 中古 相場 一覧」「iphone 中古相場」が多い（10/17 の GSC）ので、その語を先頭に
+const TITLE = "中古iPhone 相場一覧【全機種・毎日更新】中古価格と最安値";
 // 店の数は、いま在庫がある店だけ（lib/activeShops.ts）
 const describe = (shopNum: number) =>
   `中古iPhoneの相場（中央値）と最安値を全機種まとめて比較。大手中古ショップ${shopNum}社の在庫から毎日更新。相場が安い順のランキングも。`;

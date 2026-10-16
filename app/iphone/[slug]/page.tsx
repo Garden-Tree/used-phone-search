@@ -72,7 +72,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!model) return {};
 
   const stats = await getModelStats(model);
-  const title = `${model} 中古の相場・最安値【毎日更新】`;
+  // 検索は「機種名 中古 最安値」がほとんどなので、タイトルに最安値の金額を入れる（10/17〜。在庫がないときは従来の形）
+  const title = stats.minPrice !== null ? `${model} 中古の最安値 ${yen(stats.minPrice)}〜｜相場【毎日更新】` : `${model} 中古の相場・最安値【毎日更新】`;
   const description = modelDescription(model, stats);
   const path = modelPagePath(model);
 
