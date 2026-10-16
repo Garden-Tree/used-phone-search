@@ -74,7 +74,8 @@ export function normalizeSofmapWatch(item: RakutenItem): Row | null {
  */
 export function normalizeIosysWatch(item: RakutenItem): Row | null {
   const name = item.name;
-  const unused = /^【未使用】|\s未使用\s+(?:【[^】]*】\s*)?イオシス/.test(name);
+  // 時計は「[未使用]」「[新品]」と角かっこで書く（[中古] と同じ位置）。これも未使用品（S）
+  const unused = /^【未使用】|\s未使用\s+(?:【[^】]*】\s*)?イオシス|\[(?:未使用|新品)\]/.test(name);
   const rank = rankOf(item.rank, unused);
   const battery = rank === "S" ? 100 : /80%未満|バッテリー劣化/.test(name) ? 79 : batteryOf(item);
   return build(RAKUTEN_IOSYS_SHOP, item, rank, battery);

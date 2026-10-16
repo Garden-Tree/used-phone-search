@@ -49,9 +49,7 @@
 ## 次にやる（順序）
 
 ```
-1. Xperia・AQUOS: push → fetch.php 上書き → 取り込み後に件数・読み取りを確認
-2. Apple Watch: push → fetch.php 上書き → 取り込み後に件数・色・SE の世代不明を確認
-3. X の日々の運用（ideas/x-posts-2026-10-12.md）
+1. X の日々の運用（ideas/x-posts-2026-10-12.md）
 ```
 
 ## 期限のあるもの
