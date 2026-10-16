@@ -2,7 +2,8 @@ import type { MetadataRoute } from "next";
 import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { PICKS, pickPath } from "@/lib/picks";
-import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetPath } from "@/lib/budgets";
+import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, SUMAHO_BUDGETS, budgetPath, sumahoBudgetPath } from "@/lib/budgets";
+import { isSumahoIndexable } from "@/lib/budgetStats";
 import { isCompareIndexable, COMPARE_MIN_STOCK } from "@/lib/compareStock";
 import { SITE_URL } from "@/lib/site";
 import prisma from "@/lib/prisma";
@@ -40,6 +41,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "daily",
     priority: 0.8,
   }));
+
+  // スマホ全体の予算別ページは、更新が続く機種が少ない予算（noindex）をサイトマップから外す
+  const sumahoIndexable: number[] = [];
+  for (const max of SUMAHO_BUDGETS) if (await isSumahoIndexable(max)) sumahoIndexable.push(max);
 
   return [
     { url: SITE_URL, lastModified, changeFrequency: "daily", priority: 1 },
@@ -81,6 +86,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified,
       changeFrequency: "daily" as const,
       priority: 0.7,
+    })),
+    ...sumahoIndexable.map((max) => ({
+      url: `${SITE_URL}${sumahoBudgetPath(max)}`,
+      lastModified,
+      changeFrequency: "daily" as const,
+      priority: 0.8,
     })),
     ...modelPages,
     ...comparePairs.map(([a, b]) => ({

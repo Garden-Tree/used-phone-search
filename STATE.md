@@ -19,8 +19,9 @@
 - **ホスティング**: Cloudflare Pages（10/6〜。Vercel は 10/20 ごろまで残す。`docs/cloudflare-pages.md`）
 - **DB**: Neon（Launch。Vercel を止めた後に Free へ。ideas/10-04）
 - **データ更新**: シンの cron → Actions → 取り込み・書き出し・配置（`docs/operations.md`）
-- **デザイン**: 10/11 に全ページ作り直し、10/16 に機種ページとトップを「決定版 A+B」へ（数字タイル・ヒートマップ・店別の横棒・積み上げ棒・折れ線。文章は折りたたみへ。決まりは `docs/design.md`・ideas/2026-10-16.md）
-- **ページ方針**: 全ページ静的（1日4回のビルド）。検索ページは noindex。検品担当の文面・`/about` はユーザー確認後に変える
+- **デザイン**: 10/16〜「決定版 A+B」（図・グラフ中心、文章は折りたたみ。PC は最大幅1360px・拡大1.15倍。`docs/design.md`）
+- **相場**: 在庫がいちばん多い容量の中央値（容量を添える。10/16〜）
+- **ページ方針**: 全ページ静的（1日4回のビルド）。機種をまたぐ予算ページ /sumaho/budget/under-N（10/17〜・本表3機種未満は noindex）。検索ページは noindex。検品担当の文面・`/about` はユーザー確認後に変える
 - **画面の店数は表示中の在庫がある店だけ数える**（`lib/activeShops.ts`）
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**（保証は各店の公式で確認）
 - **スペック・保証期限・発売年月は公式で確かめた値だけ載せる**（`lib/*Specs.ts`・`*Catalog.ts`）
@@ -29,7 +30,7 @@
 - **Amazon 整備済み品**: 10/11〜資格なし（売上が条件）で停止中。古い価格は自動で隠れ、資格が戻れば再開
 - **Yahoo!ショッピング 7店**: もしも経由（VC 審査後に VC へ）
 - **収益の枠**: スマホの機種ページに「回線も見直すなら（PR）」＝ahamo（A8）・楽天モバイル（楽天アフィ）（`lib/simPlans.ts`・10/15〜）と「今のスマホを売るなら（PR）」＝A8 の買取3社（`lib/buyback.ts`）
-- **掲載機種**: iPhone（iOS 27 対応＋X/XS/XR/8/7）・iPad 32・Pixel 24・Galaxy 29・MacBook 35・Xperia 17・AQUOS 21・Apple Watch 14（Mac 以降 10/15〜。Watch は storage＝mm・carrier＝GPS/Cellular）
+- **掲載機種**: iPhone・iPad 32・Pixel 24・Galaxy 29・MacBook 35・Xperia 17・AQUOS 21・Apple Watch 14（Watch は storage＝mm）
 
 ## 確認台帳（計測・判定）
 

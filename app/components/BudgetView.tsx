@@ -5,7 +5,7 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { modelPagePath } from "@/lib/catalog";
-import { BUDGET_NAMES, budgetLabel, budgetPath, budgetsOf, type BudgetDevice } from "@/lib/budgets";
+import { BUDGET_NAMES, budgetLabel, SUMAHO_BUDGETS, budgetPath, budgetsOf, sumahoBudgetPath, type BudgetDevice } from "@/lib/budgets";
 import { cheapestUnder, getBudgetModels } from "@/lib/budgetStats";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { yen } from "@/lib/format";
@@ -229,6 +229,15 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
               ))}
             </div>
           </section>
+        )}
+
+        {/* Android も含めたスマホ全体のページへ（iPhone・Pixel・Galaxy。同じ予算があるときだけ） */}
+        {device !== "ipad" && SUMAHO_BUDGETS.includes(max) && (
+          <p className="mb-6 text-sm">
+            <Link href={sumahoBudgetPath(max)} className="font-bold text-brand-600 hover:text-brand-800">
+              {device === "iphone" ? "Android も含めて" : "iPhone・ほかの Android も含めて"}{label}以下の中古スマホを見る ›
+            </Link>
+          </p>
         )}
 
         {/* 同じ予算のほかの種類（「中古スマホ 2万円以下」のように種類を決めずに探す人向け）。その種類に同じ予算がなければ、すぐ上の予算 */}

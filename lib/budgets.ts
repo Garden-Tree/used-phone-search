@@ -39,3 +39,12 @@ export function slugToBudget(slug: string, device: BudgetDevice = "iphone"): num
 export function budgetLabel(max: number): string {
   return max % 10000 === 0 ? `${max / 10000}万円` : `${max.toLocaleString()}円`;
 }
+
+// スマホ全体（iPhone・Pixel・Galaxy・Xperia・AQUOS をまとめた「中古スマホ ○万円以下」）。/sumaho/budget/[slug]。iPad・Mac・Watch は含めない
+export const SUMAHO_BUDGETS = [10000, 20000, 30000, 50000];
+export const sumahoBudgetPath = (max: number) => `/sumaho/budget/${budgetSlug(max)}`;
+export function slugToSumahoBudget(slug: string): number | undefined {
+  const m = slug.match(/^under-(\d+)$/);
+  const max = m ? Number(m[1]) : NaN;
+  return SUMAHO_BUDGETS.includes(max) ? max : undefined;
+}
