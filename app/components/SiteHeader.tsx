@@ -6,7 +6,7 @@ export default function SiteHeader({ label }: { label?: string }) {
   void label;
   return (
     <header className="bg-brand-900 sticky top-0 z-20">
-      <div className="max-w-[1120px] mx-auto h-[52px] pl-4 pr-1 flex items-center justify-between">
+      <div className="max-w-[1360px] mx-auto h-[52px] pl-4 pr-1 flex items-center justify-between">
         <Link href="/" className="flex flex-col text-white">
           <span className="text-base font-bold tracking-wide leading-tight">中古スマホ一括検索</span>
           <span className="text-[10px] text-brand-200 tracking-[0.08em] leading-tight">by ガデログ</span>

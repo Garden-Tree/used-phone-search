@@ -3,7 +3,7 @@ import AdDisclosure from "./AdDisclosure";
 
 export default function SiteFooter() {
   return (
-    <footer className="max-w-[1120px] mx-auto px-4 mt-12 pb-12 text-center border-t border-line pt-8">
+    <footer className="max-w-[1360px] mx-auto px-4 mt-12 pb-12 text-center border-t border-line pt-8">
       <AdDisclosure />
       <p className="text-xs text-ink-mute mb-3">
         <Link href="/about" className="text-brand-600 hover:text-brand-800 underline underline-offset-2">このサイトについて（運営者・プライバシーポリシー・お問い合わせ）</Link>

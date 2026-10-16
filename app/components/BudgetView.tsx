@@ -130,7 +130,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
       <SiteHeader label="予算から探す" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
-      <main className="max-w-[1120px] mx-auto px-4 py-6">
+      <main className="max-w-[1360px] mx-auto px-4 py-6">
         <nav aria-label="パンくずリスト" className="text-xs text-ink-mute mb-4">
           <Link href="/" className="hover:text-brand-800">トップ</Link>
           <span className="mx-2">›</span>

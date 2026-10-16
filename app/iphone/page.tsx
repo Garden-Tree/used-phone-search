@@ -32,6 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Row = { model: string; market?: ModelMarket };
 
+// 機種以外の列は PC で幅を固定する（シリーズごとの表で列の位置がそろうように）
 function MarketTable({ rows }: { rows: Row[] }) {
   return (
     <div className="bg-white rounded-xl border border-line overflow-x-auto">
@@ -39,11 +40,11 @@ function MarketTable({ rows }: { rows: Row[] }) {
         <thead className="bg-ground text-xs text-ink-mute">
           <tr>
             <th className="text-left font-semibold pl-4 pr-2 py-2">機種</th>
-            <th className="text-right font-semibold px-2 py-2">相場</th>
-            <th className="text-right font-semibold px-2 py-2">最安値</th>
-            <th className="text-right font-semibold px-2 py-2 hidden sm:table-cell">在庫</th>
-            <th className="text-left font-semibold px-2 py-2 hidden md:table-cell">発売</th>
-            <th className="text-left font-semibold pl-2 pr-4 py-2 hidden md:table-cell">端子</th>
+            <th className="text-right font-semibold px-2 py-2 md:w-32">相場</th>
+            <th className="text-right font-semibold px-2 py-2 md:w-32">最安値</th>
+            <th className="text-right font-semibold px-2 py-2 hidden sm:table-cell md:w-24">在庫</th>
+            <th className="text-left font-semibold px-2 py-2 hidden md:table-cell md:w-24">発売</th>
+            <th className="text-left font-semibold pl-2 pr-4 py-2 hidden md:table-cell md:w-28">端子</th>
           </tr>
         </thead>
         <tbody>
@@ -94,7 +95,7 @@ export default async function IphoneIndexPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader label="相場一覧" />
 
-      <main className="max-w-[1120px] mx-auto px-4 py-6">
+      <main className="max-w-[1360px] mx-auto px-4 py-6">
         <nav aria-label="パンくずリスト" className="text-xs text-ink-mute mb-4">
           <Link href="/" className="hover:text-brand-800">トップ</Link>
           <span className="mx-2">›</span>

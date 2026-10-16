@@ -228,7 +228,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
   return (
     <>
       <section className="bg-white border-b border-line">
-        <div className="max-w-[1120px] mx-auto px-4 pt-3.5 pb-3 flex flex-col gap-2">
+        <div className="max-w-[1360px] mx-auto px-4 pt-3.5 pb-3 flex flex-col gap-2">
           <h1 className="text-xl font-bold">{heading}</h1>
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <p className="text-[13px] text-ink-sub">
@@ -286,7 +286,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
         </div>
       </section>
 
-      <div className="max-w-[1120px] mx-auto px-4 mt-3 md:grid md:grid-cols-[280px_minmax(0,1fr)] md:gap-6 md:items-start">
+      <div className="max-w-[1360px] mx-auto px-4 mt-3 md:grid md:grid-cols-[280px_minmax(0,1fr)] md:gap-6 md:items-start">
         {/* PC: 絞り込みを左に常に表示 */}
         <aside className="hidden md:block bg-white border border-line rounded-xl p-4" aria-label="絞り込み">
           <h2 className="text-base font-bold mb-4">絞り込み</h2>

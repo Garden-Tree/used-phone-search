@@ -484,7 +484,7 @@ export default async function ModelPage({ params }: Props) {
       />
       <SiteHeader label="価格比較" />
 
-      <main className="max-w-[1120px] mx-auto pb-24 md:pb-10 md:px-4 min-[1152px]:px-0 md:pt-5 md:grid md:grid-cols-[minmax(0,1fr)_340px] md:gap-6 md:items-start">
+      <main className="max-w-[1360px] mx-auto pb-24 md:pb-10 md:px-4 min-[1392px]:px-0 md:pt-5 md:grid md:grid-cols-[minmax(0,1fr)_340px] md:gap-6 md:items-start">
         {/* 左の本文。PC は2列のグリッド（md:order で、スマホとは並びを変える） */}
         <div className="min-w-0 px-4 md:px-0 pt-3 md:pt-0 grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-4 content-start">
           <div className="md:col-span-2 flex flex-col gap-1.5">

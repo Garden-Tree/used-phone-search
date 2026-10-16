@@ -161,13 +161,18 @@ export default async function Home() {
 
       {/* 冒頭: h1・数字タイル・検索欄 */}
       <section className="bg-white border-b border-line">
-        <div className="max-w-[1120px] mx-auto px-4 pt-[18px] pb-4 flex flex-col gap-3 md:items-start">
-          <h1 className="text-[22px] md:text-4xl leading-[1.3] font-bold">
-            中古スマホの最安値を
-            <br />
-            {shops.length}店からまとめて
-          </h1>
-          <div className="grid grid-cols-3 gap-2 w-full md:max-w-xl">
+        <div className="max-w-[1360px] mx-auto px-4 pt-[18px] pb-4 flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-x-10 md:items-center md:py-8">
+          <div className="flex flex-col gap-3 md:row-span-2">
+            <h1 className="text-[22px] md:text-4xl leading-[1.3] font-bold">
+              中古スマホの最安値を
+              <br />
+              {shops.length}店からまとめて
+            </h1>
+            <p className="hidden md:block text-[11px] text-ink-mute">
+              更新 {BUILD_TIME} ・ <span className="border border-[#C7CBD4] rounded px-1">PR</span> アフィリエイト広告を利用しています
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 w-full">
             <div className="bg-brand-50 rounded-xl py-2.5 px-2 flex flex-col items-center">
               <span className="text-xl font-bold text-brand-900">{shops.length}</span>
               <span className="text-[10px] text-ink-sub">店</span>
@@ -183,7 +188,7 @@ export default async function Home() {
               <span className="text-[10px] text-ink-sub">毎日更新</span>
             </div>
           </div>
-          <form action="/search" method="GET" className="flex gap-2 w-full md:max-w-xl">
+          <form action="/search" method="GET" className="flex gap-2 w-full">
             <label htmlFor="q" className="sr-only">機種名</label>
             <input
               id="q"
@@ -197,13 +202,13 @@ export default async function Home() {
               検索
             </button>
           </form>
-          <p className="text-[11px] text-ink-mute">
+          <p className="md:hidden text-[11px] text-ink-mute">
             更新 {BUILD_TIME} ・ <span className="border border-[#C7CBD4] rounded px-1">PR</span> アフィリエイト広告を利用しています
           </p>
         </div>
       </section>
 
-      <main className="max-w-[1120px] mx-auto px-4 pb-6">
+      <main className="max-w-[1360px] mx-auto px-4 pb-6">
         {/* シリーズのタイル */}
         <nav aria-label="シリーズから探す" className="pt-4 grid grid-cols-4 md:grid-cols-8 gap-2">
           {hubs.map((h) => (
@@ -256,12 +261,12 @@ export default async function Home() {
           </section>
         )}
 
+        {/* 予算と値下がり（PC は横並び） */}
+        <div className="md:grid md:grid-cols-2 md:gap-x-6">
         {/* 予算から探す */}
         <section className="pt-5 flex flex-col gap-2.5">
           <h2 className={h2}>予算から探す</h2>
-          <div className="md:max-w-xl">
-            <BudgetPicker options={BUDGET_OPTIONS} />
-          </div>
+          <BudgetPicker options={BUDGET_OPTIONS} />
           {/* JS が無いときの予算リンク（クローラーにも見える） */}
           <noscript>
             <div className="flex flex-col gap-1 text-xs">
@@ -277,8 +282,6 @@ export default async function Home() {
           </noscript>
         </section>
 
-        {/* 値下がりと比較（PC は横並び） */}
-        <div className="md:grid md:grid-cols-2 md:gap-x-6">
           {dropRows.length > 0 && (
             <section className="pt-5 flex flex-col gap-2.5">
               <h2 className={h2}>この1週間の値下がり</h2>
@@ -299,6 +302,7 @@ export default async function Home() {
               </div>
             </section>
           )}
+        </div>
 
           {compareCards.length > 0 && (
             <section className="pt-5 flex flex-col gap-2.5">
@@ -314,7 +318,6 @@ export default async function Home() {
               </div>
             </section>
           )}
-        </div>
 
         {/* 末尾: 比較している店・目的から探す・運営者 */}
         <section className="pt-5 flex flex-col gap-2">

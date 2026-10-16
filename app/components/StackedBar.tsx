@@ -3,15 +3,23 @@ import type { Breakdown } from "@/lib/modelBreakdown";
 
 type Seg = { key: string; label: string; short: string; count: number; cls: string };
 
-/** 積み上げ棒1本。幅15%以上は「ラベル 件数」、5%以上は短い表記、5%未満は文字なし（下の凡例・一覧で補う） */
+/** 文字が入るのに要る幅（%）。棒の幅は最も狭い PC の2列表示で約300px、文字は11px（半角0.6・全角1文字分）＋左右の余白 */
+const BAR_PX = 300;
+function fitPct(text: string) {
+  const em = [...text].reduce((w, c) => w + (c.charCodeAt(0) < 0x2000 ? 0.6 : 1), 0);
+  return ((em * 11 + 8) / BAR_PX) * 100;
+}
+
+/** 積み上げ棒1本。入る幅なら「ラベル 件数」、入らなければ短い表記、それも入らなければ文字なし（下の凡例・一覧で補う） */
 function Bar({ segs, total, name }: { segs: Seg[]; total: number; name: string }) {
   return (
     <div className="flex h-[22px] md:h-6 rounded-md overflow-hidden text-[10px] md:text-[11px] font-bold" role="img" aria-label={`${name}の内訳。${segs.map((s) => `${s.label} ${s.count}件`).join("、")}`}>
       {segs.map((s) => {
         const pct = (s.count / total) * 100;
+        const full = `${s.short} ${s.count.toLocaleString()}`;
         return (
           <span key={s.key} className={`${s.cls} flex items-center justify-center overflow-hidden whitespace-nowrap`} style={{ width: `${pct}%` }} title={`${s.label} ${s.count.toLocaleString()}件`}>
-            {pct >= 15 ? `${s.short} ${s.count.toLocaleString()}` : pct >= 5 ? s.short : ""}
+            {pct >= fitPct(full) ? full : pct >= fitPct(s.short) ? s.short : ""}
           </span>
         );
       })}
