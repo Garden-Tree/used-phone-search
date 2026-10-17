@@ -51,7 +51,7 @@
 ## 次にやる（順序）
 
 ```
-1. 10/18 判定後、ブランチ seo-description-capacity（説明文に容量別の最安値）を main へ
+1. YouTube ショート（週1・約40秒）の仕組み: 構成は ideas/youtube-shorts.md。試作→ユーザー確認
 2. X の日々の運用（ideas/x-posts）
 ```
 
