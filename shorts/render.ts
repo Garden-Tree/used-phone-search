@@ -1,10 +1,10 @@
 /** 台本 → コマ（ImageResponse）→ ffmpeg で mp4 */
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
-import { FPS, H, STATIC_TEXT, TIMELINE, W, sceneFrame } from "./scenes";
+import { FPS, H, TIMELINE, W, sceneFrame } from "./scenes";
 import type { Script } from "./types";
 
 function run(args: string[], bin = "ffmpeg") {
@@ -25,7 +25,7 @@ function allText(v: unknown): string {
 const duration = (file: string) => Number(run(["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file], "ffprobe").trim());
 
 export async function renderShort(dir: string, script: Script, keepFrames: boolean) {
-  const fonts = await notoSansJp(allText(script) + STATIC_TEXT);
+  const fonts = await notoSansJp(allText(script) + readFileSync(join(__dirname, "scenes.tsx"), "utf8") + "0123456789,.%");
   const framesDir = join(dir, "frames");
   rmSync(framesDir, { recursive: true, force: true });
   const timeline = TIMELINE(script);
