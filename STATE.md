@@ -51,7 +51,7 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube ショート（週1・約40秒）: 試作はブランチ youtube-shorts の shorts/。確認後 main へ
+1. YouTube ショート（週1・約40秒）: 試作はブランチ youtube-shorts の shorts/。確認後 main
 2. X の日々の運用（ideas/x-posts）
 ```
 
