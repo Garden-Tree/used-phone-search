@@ -69,3 +69,14 @@
 - https://yutura.net/news/archives/81627
 - https://www.opus.pro/blog/ideal-youtube-shorts-length-format-retention
 - https://insideview.ie/2026/07/07/making-videos-programmatically.html
+
+## 試作（10/17・ブランチ youtube-shorts）
+
+- 置き場は `shorts/`（使い方は shorts/README.md）。
+  - `npx tsx shorts/make-short.tsx drops plan` で台本を作る。
+  - `npx tsx shorts/make-short.tsx drops render` で mp4 を作る（約11秒）。
+- 試作の段階で決めたこと:
+  - **対象**: iOS 27 対応の iPhone に限る。初回の1位が XS Max（非対応）だったため。
+  - **推移のグラフ**: 在庫件数がふだんの半分未満の日は除く。9/26 は記録を始めた日で件数が41しかなかった。
+  - **縦軸**: 最高値の20%以上の幅をとる。数%の値動きが崖に見えないようにするため。
+- 未確認: BGM と声を入れた場合の音声の重ね方（ファイルがまだない）。
