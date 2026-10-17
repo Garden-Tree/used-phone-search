@@ -69,3 +69,40 @@
 - https://yutura.net/news/archives/81627
 - https://www.opus.pro/blog/ideal-youtube-shorts-length-format-retention
 - https://insideview.ie/2026/07/07/making-videos-programmatically.html
+
+## 試作（10/17・ブランチ youtube-shorts）
+
+- 置き場は `shorts/`（使い方は shorts/README.md）。
+  - `npx tsx shorts/make-short.tsx drops plan` で台本を作る。
+  - `npx tsx shorts/make-short.tsx drops render` で mp4 を作る（約11秒）。
+- 試作の段階で決めたこと:
+  - **対象**: iOS 27 対応の iPhone に限る。初回の1位が XS Max（非対応）だったため。
+  - **推移のグラフ**: 在庫件数がふだんの半分未満の日は除く。9/26 は記録を始めた日で件数が41しかなかった。
+  - **縦軸**: 最高値の20%以上の幅をとる。数%の値動きが崖に見えないようにするため。
+- 未確認: BGM と声を入れた場合の音声の重ね方（ファイルがまだない）。
+
+## 3パターンの比較（10/17〜）
+
+- 変えたこと（3つ共通）
+  - 2位のあとの静止をなくした。
+  - 順位が出るたびに効果音を入れた。音は ffmpeg で作る。
+  - 最後を「来週の1位は…？」にして、冒頭につながるようにした。
+- パターン
+  - **A 標準**（32秒）: 問いかけ → ランキング → 1位の発表 → グラフ → ひと言
+  - **B 速い**（22秒）: 金額を先に出す → 速いランキング → 1位の発表 → 短いひと言
+  - **C グラフ先**（27秒）: 機種名を隠したグラフ → ランキング → 1位の発表 → ひと言
+- 作り方: `render --variant A|B|C|all`
+- 比べ方
+  - ショートでは Test & Compare が使えない。同じ週に似た動画を並べると「繰り返し」と見なされるおそれがある。
+  - そこで、週ごとに A→B→C を回し、2巡（6週）で比べる。
+  - 見る数字: YouTube Studio の「視聴を選んだ割合」（目安は70%以上）と、平均視聴率（%）。
+- 出典
+  - https://www.creatoressentials.com/glossary/viewed-vs-swiped-away/
+  - https://support.google.com/youtube/answer/13861714
+  - https://virvid.ai/blog/looping-structure-shorts-retention-2026
+
+## チャンネル（10/17 開設）
+
+- ユーザーが作成した: 「中古スマホ一括比較」@used_gadelog（UChEMmzg1RvjZ1LpiTxleGMA）。
+- アイコン・バナー・説明文・リンクは Claude が入れた（ユーザー了承後に公開）。
+  - リンク: サイト（`?utm_source=youtube&utm_medium=channel`）と X。

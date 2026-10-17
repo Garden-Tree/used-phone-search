@@ -69,3 +69,7 @@ rakuten-sync/sample.json
 /yahoo-data/
 /.wrangler/
 /amazon-data/
+
+# YouTube ショートの出力と BGM（shorts/README.md）
+/shorts/out/
+/shorts/assets/*.mp3
