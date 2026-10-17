@@ -21,19 +21,40 @@ const C = {
   gold: "#F59E0B", silver: "#94A3B8", bronze: "#B45309", amber: "#B45309",
 };
 
-export type SceneId = "hook" | "ranking" | "reveal" | "trend" | "comment" | "outro";
-/** ランキングは5位から下の順に出す（1位は最後まで「？？？」） */
-const RANK_START = 0.5;
-const RANK_GAP = 2.0;
-/** dur: 場面の長さ（秒）、anim: 動きのある秒数（以降は最後のコマを止める） */
-export const TIMELINE = (s: Script): { id: SceneId; dur: number; anim: number }[] => [
-  { id: "hook", dur: 3, anim: 3 },
-  { id: "ranking", dur: 11, anim: RANK_START + RANK_GAP * 3 + 0.6 },
-  { id: "reveal", dur: 5, anim: 2.0 },
-  { id: "trend", dur: 8, anim: 2.0 },
-  { id: "comment", dur: 9, anim: 0.4 + (s.scenes.comment.lines.length - 1) * 1.0 + 0.5 },
-  { id: "outro", dur: 4, anim: 0.6 },
-];
+export type SceneId = "hook" | "hookNum" | "hookChart" | "ranking" | "reveal" | "trend" | "comment" | "outro";
+export type Variant = "A" | "B" | "C";
+export const VARIANTS: Variant[] = ["A", "B", "C"];
+/** 効果音: t は場面の開始からの秒数。pop は行が出る小さな音、ta は 1位発表の二音 */
+export type Se = { t: number; kind: "pop" | "ta" };
+/** dur: 場面の長さ（秒）、anim: 動きのある秒数（以降は最後のコマを止める）、o: 場面ごとの動きの設定（開始・間隔・拡大率） */
+export type Scene = { id: SceneId; dur: number; anim: number; se?: Se[]; o?: { start?: number; gap?: number; k?: number } };
+
+/** カウントダウン: 5位から下の順に出し、2位が出てから約1秒で 1位の発表へ（1位は最後まで「？？？」） */
+const countdown = (start: number, gap: number): Scene => ({
+  id: "ranking",
+  dur: start + gap * 3 + 1.0,
+  anim: start + gap * 3 + 0.6,
+  se: [0, 1, 2, 3].map((i) => ({ t: start + gap * i, kind: "pop" as const })),
+  o: { start, gap },
+});
+const reveal = (dur: number): Scene => ({ id: "reveal", dur, anim: 2.0, se: [{ t: 0.6, kind: "ta" }] });
+/** 締め: 「来週の1位は…？」で最初の問いにつなげる。最後の静止は 1秒未満 */
+const outro = (k: number): Scene => ({ id: "outro", dur: 1.2 * k + 0.4 + 0.8, anim: 1.2 * k + 0.4, o: { k } });
+const comment = (dur: number, start: number, gap: number, n: number): Scene => ({ id: "comment", dur, anim: start + (n - 1) * gap + 0.5, o: { start, gap } });
+
+/** A「標準」約33秒 / B「速い」約22秒（数字先出し・グラフなし）/ C「グラフ先」約29秒（最初に推移グラフ） */
+export const TIMELINE = (s: Script, v: Variant): Scene[] => {
+  const n = s.scenes.comment.lines.length;
+  if (v === "B") return [
+    { id: "hookNum", dur: 4, anim: 1.0 }, countdown(0.8, 1.2), reveal(4), comment(5.5, 0.3, 0.7, n), outro(1.2),
+  ];
+  if (v === "C") return [
+    { id: "hookChart", dur: 4.5, anim: 3.4 }, countdown(0.5, 1.6), reveal(5), comment(8.5, 0.4, 1.0, n), outro(1.5),
+  ];
+  return [
+    { id: "hook", dur: 3, anim: 3 }, countdown(0.5, 1.6), reveal(5), { id: "trend", dur: 7, anim: 2.0 }, comment(8, 0.4, 1.0, n), outro(1.5),
+  ];
+};
 
 /** 太字の幅の見積もりが甘いので 1 割弱の余白を見て文字サイズを決める（改行させない） */
 const FIT = (text: string, w: number, max: number, min = 28) => fitFontSize(text, w * 0.92, max, min);
@@ -87,14 +108,14 @@ function Hook({ s, t }: { s: Script; t: number }) {
 
 const BADGE = [C.gold, C.silver, C.bronze, C.navy, C.navy];
 
-function Ranking({ s, t }: { s: Script; t: number }) {
+function Ranking({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   const { items } = s.scenes.ranking;
   return (
     <Frame s={s}>
       <div style={{ ...card, width: CW, padding: "10px 24px" }}>
         {items.map((it, i) => {
           // 5位（下）から順に出す。1位は最後まで出さない
-          const p = i === 0 ? 1 : prog(t, RANK_START + RANK_GAP * (items.length - 1 - i), 0.5);
+          const p = i === 0 ? 1 : prog(t, (o?.start ?? 0.5) + (o?.gap ?? 1.6) * (items.length - 1 - i), 0.5);
           const secret = i === 0;
           return (
             <div key={i} style={{ display: "flex", alignItems: "center", width: "100%", height: 150, borderBottom: i < items.length - 1 ? `2px solid ${C.line}` : "none", opacity: p, transform: `translateX(${Math.round((1 - p) * 80)}px)` }}>
@@ -156,6 +177,42 @@ function partial(pts: [number, number][], p: number): [number, number][] {
   return out;
 }
 
+type Pt = { date: string; median: number };
+
+/** 折れ線のカード。p は線が描かれた割合（0〜1）。labels=true で最高・最低・日付を入れる */
+function ChartCard({ points, p, labels, chartH = 400 }: { points: Pt[]; p: number; labels: boolean; chartH?: number }) {
+  const vals = points.map((q) => q.median);
+  let lo = Math.min(...vals);
+  let hi = Math.max(...vals);
+  // 縦軸は最高値の±20%の幅を最低限とる（数%の値動きが崖のように見えないように）
+  const span = Math.max(hi - lo, hi * 0.2);
+  lo = Math.max(0, (hi + lo) / 2 - span / 2);
+  hi = lo + span;
+  const CWI = CW - 56;
+  const PAD = 24;
+  const xy: [number, number][] = points.map((q, i) => [PAD + (i / (points.length - 1)) * (CWI - PAD * 2), PAD + (1 - (q.median - lo) / (hi - lo)) * (chartH - PAD * 2)]);
+  const drawn = partial(xy, p);
+  const d = drawn.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
+  const [ex, ey] = drawn[drawn.length - 1];
+  const lab = { display: "flex", fontSize: 36, fontWeight: 900, color: C.muted } as const;
+  return (
+    <div style={{ ...card, width: CW, padding: "24px 28px", alignItems: "stretch" }}>
+      {labels && <div style={lab}>{`最高 ${n(Math.max(...vals))}円`}</div>}
+      <svg width={CWI} height={chartH} viewBox={`0 0 ${CWI} ${chartH}`}>
+        <path d={d} fill="none" stroke={C.red} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx={ex} cy={ey} r="16" fill={C.red} />
+      </svg>
+      {labels && <div style={lab}>{`最低 ${n(Math.min(...vals))}円`}</div>}
+      {labels && (
+        <div style={{ ...lab, justifyContent: "space-between", marginTop: 8 }}>
+          <span style={{ display: "flex" }}>{md(points[0].date)}</span>
+          <span style={{ display: "flex" }}>{md(points[points.length - 1].date)}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Trend({ s, t }: { s: Script; t: number }) {
   const { model, storage, days, points } = s.scenes.trend;
   const heading = `${model}（${storage}）の相場 ${days}日`;
@@ -174,37 +231,11 @@ function Trend({ s, t }: { s: Script; t: number }) {
       </Frame>
     );
   }
-  const vals = points.map((p) => p.median);
-  let lo = Math.min(...vals);
-  let hi = Math.max(...vals);
-  // 縦軸は最高値の±20%の幅を最低限とる（数%の値動きが崖のように見えないように）
-  const span = Math.max(hi - lo, hi * 0.2);
-  lo = Math.max(0, (hi + lo) / 2 - span / 2);
-  hi = lo + span;
-  const CWI = CW - 56;
-  const CH = 400;
-  const PAD = 24;
-  const xy: [number, number][] = points.map((p, i) => [PAD + (i / (points.length - 1)) * (CWI - PAD * 2), PAD + (1 - (p.median - lo) / (hi - lo)) * (CH - PAD * 2)]);
-  const drawn = partial(xy, prog(t, 0.3, 1.5));
-  const d = drawn.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
-  const [ex, ey] = drawn[drawn.length - 1];
   const last = points[points.length - 1];
-  const lab = { display: "flex", fontSize: 36, fontWeight: 900, color: C.muted } as const;
   return (
     <Frame s={s}>
       {title}
-      <div style={{ ...card, width: CW, padding: "24px 28px", alignItems: "stretch" }}>
-        <div style={lab}>{`最高 ${n(Math.max(...vals))}円`}</div>
-        <svg width={CWI} height={CH} viewBox={`0 0 ${CWI} ${CH}`}>
-          <path d={d} fill="none" stroke={C.red} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx={ex} cy={ey} r="16" fill={C.red} />
-        </svg>
-        <div style={lab}>{`最低 ${n(Math.min(...vals))}円`}</div>
-        <div style={{ ...lab, justifyContent: "space-between", marginTop: 8 }}>
-          <span style={{ display: "flex" }}>{md(points[0].date)}</span>
-          <span style={{ display: "flex" }}>{md(last.date)}</span>
-        </div>
-      </div>
+      <ChartCard points={points} p={prog(t, 0.3, 1.5)} labels />
       <div style={{ ...row, fontSize: 100, fontWeight: 900, marginTop: 28, opacity: t >= 1.8 ? 1 : 0 }}>
         <span style={{ display: "flex" }}>いま</span>
         <span style={{ display: "flex", color: C.redLight, marginLeft: 24 }}>{`${n(last.median)}円`}</span>
@@ -213,7 +244,41 @@ function Trend({ s, t }: { s: Script; t: number }) {
   );
 }
 
-function Comment({ s, t }: { s: Script; t: number }) {
+/** B のつかみ: 下がった額を先に見せ、機種は伏せる */
+function HookNum({ s, t }: { s: Script; t: number }) {
+  const h = s.scenes.hook;
+  const full = `−${n(h.drop)}円`;
+  const lines = ["1週間でこれだけ下がった", "中古iPhoneは…？"];
+  return (
+    <Frame s={s}>
+      <div style={{ ...card, width: CW, padding: "50px 0" }}>
+        <div style={{ ...row, fontSize: FIT(full, CW - 60, 190), fontWeight: 900, color: C.red }}>{`−${n(Math.round(h.drop * prog(t, 0.1, 0.8)))}円`}</div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 56 }}>
+        {lines.map((l, i) => (
+          <div key={i} style={{ ...row, fontSize: FIT(l, CW, 84), fontWeight: 900, marginBottom: 12 }}>{l}</div>
+        ))}
+      </div>
+    </Frame>
+  );
+}
+
+/** C のつかみ: 1位の30日の推移グラフが描かれ、機種は伏せる。描き終わりに下がった額を出す */
+function HookChart({ s, t }: { s: Script; t: number }) {
+  const { points } = s.scenes.trend;
+  const h = s.scenes.hook;
+  if (points.length < 2) return <Hook s={s} t={t} />;
+  const heading = "この iPhone、30日でこう動いた";
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: FIT(heading, CW, 64), fontWeight: 900, marginBottom: 30 }}>{heading}</div>
+      <ChartCard points={points} p={prog(t, 0.3, 2.5)} labels={false} chartH={520} />
+      <div style={{ ...row, fontSize: 110, fontWeight: 900, color: C.redLight, marginTop: 36, opacity: clamp((t - 2.8) / 0.3) }}>{`1週間で−${n(h.drop)}円`}</div>
+    </Frame>
+  );
+}
+
+function Comment({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   const { speaker, lines } = s.scenes.comment;
   const size = Math.min(...lines.map((l) => FIT(l, CW - 100, 72, 36))); // 行ごとに大きさが違わないよう最小にそろえる
   return (
@@ -222,7 +287,7 @@ function Comment({ s, t }: { s: Script; t: number }) {
         <div style={{ ...row, fontSize: 40, fontWeight: 900, color: C.white, background: C.amber, padding: "8px 32px", borderRadius: 999 }}>{`${speaker}のひと言`}</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 44 }}>
           {lines.map((l, i) => (
-            <div key={i} style={{ ...row, fontSize: size, fontWeight: 900, marginBottom: 26, opacity: prog(t, 0.4 + i * 1.0, 0.4) }}>{l}</div>
+            <div key={i} style={{ ...row, fontSize: size, fontWeight: 900, marginBottom: 26, opacity: prog(t, (o?.start ?? 0.4) + i * (o?.gap ?? 1.0), 0.4) }}>{l}</div>
           ))}
         </div>
       </div>
@@ -230,28 +295,36 @@ function Comment({ s, t }: { s: Script; t: number }) {
   );
 }
 
-function Outro({ s, t }: { s: Script; t: number }) {
-  const o = s.scenes.outro;
+function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
+  const out = s.scenes.outro;
+  const k = o?.k ?? 1.5;
   return (
     <Frame s={s} header={false} footer={false}>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0, 0.5) }}>
-        {o.lines.map((l, i) => (
-          <div key={i} style={{ ...row, fontSize: FIT(l, CW, 88), fontWeight: 900, marginBottom: 14 }}>{l}</div>
-        ))}
-        <div style={{ ...row, fontSize: FIT(o.url, CW, 80), fontWeight: 900, color: C.good, marginTop: 56 }}>{o.url}</div>
-        <div style={{ ...row, fontSize: 34, fontWeight: 500, color: C.sub, marginTop: 56 }}>{o.note}</div>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0, 0.5) }}>
+          {out.lines.map((l, i) => (
+            <div key={i} style={{ ...row, fontSize: FIT(l, CW, 88), fontWeight: 900, marginBottom: 14 }}>{l}</div>
+          ))}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.6 * k, 0.4) }}>
+          <div style={{ ...row, fontSize: FIT(out.url, CW, 80), fontWeight: 900, color: C.good, marginTop: 56 }}>{out.url}</div>
+          <div style={{ ...row, fontSize: 34, fontWeight: 500, color: C.sub, marginTop: 40 }}>{out.note}</div>
+        </div>
+        <div style={{ ...row, fontSize: 52, fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>来週の1位は…？</div>
       </div>
     </Frame>
   );
 }
 
-export function sceneFrame(id: SceneId, s: Script, t: number): ReactElement {
-  switch (id) {
+export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
+  switch (sc.id) {
     case "hook": return <Hook s={s} t={t} />;
-    case "ranking": return <Ranking s={s} t={t} />;
+    case "hookNum": return <HookNum s={s} t={t} />;
+    case "hookChart": return <HookChart s={s} t={t} />;
+    case "ranking": return <Ranking s={s} t={t} o={sc.o} />;
     case "reveal": return <Reveal s={s} t={t} />;
     case "trend": return <Trend s={s} t={t} />;
-    case "comment": return <Comment s={s} t={t} />;
-    case "outro": return <Outro s={s} t={t} />;
+    case "comment": return <Comment s={s} t={t} o={sc.o} />;
+    case "outro": return <Outro s={s} t={t} o={sc.o} />;
   }
 }

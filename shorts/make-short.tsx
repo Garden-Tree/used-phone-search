@@ -1,7 +1,7 @@
 /**
  * YouTube ショート（縦 1080x1920・約40秒）を、サイトの相場と同じ数字で作る
  *   npx tsx shorts/make-short.tsx drops plan [--force]                              … 台本 JSON を作る（shorts/out/<日付>-drops/script.json）
- *   npx tsx shorts/make-short.tsx drops render [--dir <フォルダ>] [--keep-frames]  … 台本から short.mp4 と youtube.txt を作る
+ *   npx tsx shorts/make-short.tsx drops render [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames]  … 台本から short.mp4 と youtube.txt を作る
  * 手順は shorts/README.md。DB は既存の集計だけ読む（Neon の転送量に配慮）
  */
 import "dotenv/config";
@@ -47,13 +47,15 @@ async function render() {
   }
   const script: Script = JSON.parse(readFileSync(join(dir, "script.json"), "utf8"));
   const t0 = Date.now();
-  const out = await renderShort(dir, script, flag("keep-frames"));
-  console.log(`書き出し: ${out}（${Math.round((Date.now() - t0) / 1000)} 秒）`);
+  const v = (opt("variant") ?? "all").toUpperCase();
+  if (!["A", "B", "C", "ALL"].includes(v)) throw new Error("--variant は A・B・C・all のどれか");
+  const outs = await renderShort(dir, script, flag("keep-frames"), v === "ALL" ? "all" : (v as "A" | "B" | "C"));
+  console.log(`書き出し: ${outs.join(", ")}（${Math.round((Date.now() - t0) / 1000)} 秒）`);
 }
 
 async function main() {
   if (theme !== "drops" || (step !== "plan" && step !== "render")) {
-    throw new Error("使い方: npx tsx shorts/make-short.tsx drops <plan|render> [--force] [--dir <フォルダ>] [--keep-frames]");
+    throw new Error("使い方: npx tsx shorts/make-short.tsx drops <plan|render> [--force] [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames]");
   }
   await (step === "plan" ? plan() : render());
 }
