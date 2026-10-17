@@ -100,3 +100,9 @@
   - https://www.creatoressentials.com/glossary/viewed-vs-swiped-away/
   - https://support.google.com/youtube/answer/13861714
   - https://virvid.ai/blog/looping-structure-shorts-retention-2026
+
+## チャンネル（10/17 開設）
+
+- ユーザーが作成した: 「中古スマホ一括比較」@used_gadelog（UChEMmzg1RvjZ1LpiTxleGMA）。
+- アイコン・バナー・説明文・リンクは Claude が入れた（ユーザー了承後に公開）。
+  - リンク: サイト（`?utm_source=youtube&utm_medium=channel`）と X。

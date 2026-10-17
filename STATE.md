@@ -51,7 +51,7 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube ショート（週1・約40秒）: 試作はブランチ youtube-shorts の shorts/。確認後 main
+1. YouTube ショート（週1・@used_gadelog 10/17 開設）: ブランチ youtube-shorts の shorts/
 2. X の日々の運用（ideas/x-posts）
 ```
 
