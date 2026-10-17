@@ -51,7 +51,7 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube ショート（週1・約40秒）の仕組み: 構成は ideas/youtube-shorts.md。試作→ユーザー確認
+1. YouTube ショート（週1・約40秒）の仕組み: ideas/youtube-shorts.md。試作→確認
 2. X の日々の運用（ideas/x-posts）
 ```
 
