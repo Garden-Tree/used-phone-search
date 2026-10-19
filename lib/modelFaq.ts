@@ -63,8 +63,11 @@ export function buildFaq(p: {
   shopCount: number;
   updatedText: string | null;
   byShop: PriceRow[];
-  /** 新品（Apple 公式）と中古の最安の差（容量ごと。公式価格のある機種だけ） */
+  /** 新品（公式）と中古の最安の差（容量ごと。公式価格のある機種だけ） */
   newVsUsed?: NewVsUsedRow[];
+  /** 新品価格の出典名（Apple 公式・Google ストア・Samsung 公式）と確認日 */
+  newSourceName?: string;
+  newCheckedJa?: string;
   /** 「いつまで使えるか」の根拠がある機種だけ。なければ質問ごと出さない */
   supportAnswer: string | null;
   /** バッテリー85%以上の最安値と件数（iPhone のみ。なければ質問ごと出さない） */
@@ -121,7 +124,7 @@ export function buildFaq(p: {
     const tail = main.diff > 0
       ? `中古の最安は${yen(main.usedMin)}で、新品より${yen(main.diff)}（${main.pct}%）安いです。`
       : `中古の最安は${yen(main.usedMin)}で、新品と同じか新品より高い在庫のみです。`;
-    faqs.push({ q: "新品と中古でいくら違いますか？", a: `${model}（${cap}）の新品は Apple 公式で${yen(main.newPrice)}（税込・${appleCheckedJa()}時点）。${tail}` });
+    faqs.push({ q: "新品と中古でいくら違いますか？", a: `${model}（${cap}）の新品は${p.newSourceName ?? "公式"}で${yen(main.newPrice)}（税込・${p.newCheckedJa ?? appleCheckedJa()}時点）。${tail}` });
   }
   if (p.supportAnswer) faqs.push({ q: `${model}の中古はいつまで使えますか？`, a: p.supportAnswer });
   faqs.push({ q: "中古を買うときに気をつけることは？", a: a4 });
@@ -139,6 +142,7 @@ export function buildSummary(p: {
   shopCount: number;
   count: number;
   newVsUsed?: NewVsUsedRow[];
+  newSourceName?: string;
 }): string {
   const { model } = p;
   const nv = p.newVsUsed ?? [];
@@ -148,7 +152,7 @@ export function buildSummary(p: {
   const shops = `。大手中古ショップ${p.shopCount}店の${p.count.toLocaleString()}件を集計`;
   const tail = main
     ? (main.diff > 0
-      ? `。新品（Apple 公式）${yen(main.newPrice)}より${yen(main.diff)}安い（${storageLabel(main.storage, model)}の最安で比較）`
+      ? `。新品（${p.newSourceName ?? "公式"}）${yen(main.newPrice)}より${yen(main.diff)}安い（${storageLabel(main.storage, model)}の最安で比較）`
       : "。中古の最安は新品以上")
     : "";
   return `${p.dateText}時点、${model}の中古は${minPart}${med}${shops}${tail}。`;
