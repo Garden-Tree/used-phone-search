@@ -74,6 +74,8 @@ function buildPairs(): [string, string][] {
     ["Pixel 9 Pro", "Pixel 9 Pro XL"],
     ["Pixel 9 Pro Fold", "Pixel 10 Pro Fold"],
     ["Pixel 7", "Pixel 8"],
+    ["Pixel 9", "Pixel 9 Pro"],
+    ["Pixel 10", "Pixel 10 Pro"],
   );
 
   // Galaxy（2026-09-30〜）。同じグレードの世代違い、同じ世代の無印と Ultra、Z Fold・Z Flip の世代違い、A シリーズ
@@ -86,6 +88,7 @@ function buildPairs(): [string, string][] {
     ["Galaxy S24", "Galaxy S24 Ultra"],
     ["Galaxy S25", "Galaxy S25 Ultra"],
     ["Galaxy S26", "Galaxy S26+"],
+    ["Galaxy S24 FE", "Galaxy S24"],
     ["Galaxy Z Fold6", "Galaxy Z Fold7"],
     ["Galaxy Z Fold7", "Galaxy Z Fold8"],
     ["Galaxy Z Flip5", "Galaxy Z Flip6"],
