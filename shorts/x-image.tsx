@@ -16,7 +16,7 @@ const foot = `大手中古ショップ${s.shopCount}店の在庫の中央値（$
 
 const el = (
   <div style={{ width: 1200, height: 675, display: "flex", flexDirection: "column", background: NAVY, fontFamily: "Noto Sans JP", padding: "36px 56px" }}>
-    <div style={{ display: "flex", justifyContent: "center", padding: "12px 0", borderRadius: 18, background: RED, color: "white", fontSize: 46, fontWeight: 900 }}>{title}</div>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 84, borderRadius: 18, background: RED, color: "white", fontSize: 46, fontWeight: 900, lineHeight: 1 }}>{title}</div>
     <div style={{ display: "flex", flexDirection: "column", marginTop: 24, background: "white", borderRadius: 22, padding: "8px 28px" }}>
       {items.map((it, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center", height: 88, borderTop: i ? "2px solid #E5E7EB" : "none" }}>
