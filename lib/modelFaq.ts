@@ -1,6 +1,7 @@
 import { findShop, type Shop } from "@/lib/shops";
 import { medianLabel, storageLabel, yen } from "@/lib/format";
 import type { PriceRow } from "@/lib/modelStats";
+import { appleCheckedJa, type NewVsUsedRow } from "@/lib/applePrices";
 
 /** 別の売り場（イオシス楽天市場店など）を本店にまとめた、店ごとの最安値・件数（最安の売り場の保証を使う） */
 export type ShopAgg = { label: string; minPrice: number; count: number; shop?: Shop };
@@ -62,6 +63,8 @@ export function buildFaq(p: {
   shopCount: number;
   updatedText: string | null;
   byShop: PriceRow[];
+  /** 新品（Apple 公式）と中古の最安の差（容量ごと。公式価格のある機種だけ） */
+  newVsUsed?: NewVsUsedRow[];
   /** 「いつまで使えるか」の根拠がある機種だけ。なければ質問ごと出さない */
   supportAnswer: string | null;
 }): Faq[] {
@@ -91,6 +94,16 @@ export function buildFaq(p: {
     { q: `${model}の中古はいくらで買えますか？`, a: a1 },
     { q: `${model}の中古はどこで買うのが安いですか？`, a: a2 },
   ];
+  // 新品との差: 在庫がいちばん多い容量（公式価格がなければ、両方ある最小の容量）
+  const nv = p.newVsUsed ?? [];
+  const main = nv.find((r) => r.storage === p.medianStorage) ?? nv[0];
+  if (main) {
+    const cap = storageLabel(main.storage, model);
+    const tail = main.diff > 0
+      ? `中古の最安は${yen(main.usedMin)}で、新品より${yen(main.diff)}（${main.pct}%）安いです。`
+      : `中古の最安は${yen(main.usedMin)}で、新品と同じか新品より高い在庫のみです。`;
+    faqs.push({ q: "新品と中古でいくら違いますか？", a: `${model}（${cap}）の新品は Apple 公式で${yen(main.newPrice)}（税込・${appleCheckedJa()}時点）。${tail}` });
+  }
   if (p.supportAnswer) faqs.push({ q: `${model}の中古はいつまで使えますか？`, a: p.supportAnswer });
   faqs.push({ q: "中古を買うときに気をつけることは？", a: a4 });
   return faqs;
