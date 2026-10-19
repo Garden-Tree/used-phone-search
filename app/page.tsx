@@ -18,6 +18,7 @@ import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
+import PopularModels from "@/app/components/PopularModels";
 import BudgetPicker, { type BudgetOption } from "@/app/components/BudgetPicker";
 import { getModelMarket, getPriceDrops, shortDate, type ModelMarket } from "@/lib/marketStats";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
@@ -260,6 +261,8 @@ export default async function Home() {
             </div>
           </section>
         )}
+
+        <PopularModels />
 
         {/* 予算と値下がり（PC は横並び） */}
         <div className="md:grid md:grid-cols-2 md:gap-x-6">

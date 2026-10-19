@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
+import PopularModels from "@/app/components/PopularModels";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import PriceDrops from "@/app/components/PriceDrops";
 import { ALL_CATALOG_MODELS, ALL_PAGE_MODELS, IPHONE_CATALOG, LEGACY_SERIES, modelPagePath } from "@/lib/catalog";
@@ -128,6 +129,8 @@ export default async function IphoneIndexPage() {
             <MarketTable rows={cheapest} />
           </section>
         )}
+
+        <PopularModels />
 
         {IPHONE_CATALOG.map((series) => (
           <section key={series.series} className="my-8">
