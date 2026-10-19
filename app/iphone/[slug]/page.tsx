@@ -48,7 +48,7 @@ import { medianLabel, yen, storageLabel } from "@/lib/format";
 import { findShop, shopsFor } from "@/lib/shops";
 import { activeShopsFor } from "@/lib/activeShops";
 import { appleCheckedJa, applePriceSource, newVsUsed } from "@/lib/applePrices";
-import { buildFaq, modelDescription } from "@/lib/modelFaq";
+import { buildFaq, buildSummary, modelDescription } from "@/lib/modelFaq";
 import { BUYBACK_PROGRAMS } from "@/lib/buyback";
 import { SIM_PLANS } from "@/lib/simPlans";
 
@@ -290,8 +290,21 @@ export default async function ModelPage({ params }: Props) {
         model, isIphone, isMac: mac, isWatch: watch, minPrice: stats.minPrice, medianPrice: stats.medianPrice, medianStorage: stats.medianStorage,
         cheapestNote: cheapestDevice ? describeDevice(cheapestDevice) : null,
         goodMin, count: stats.count, shopCount: stats.shopCount, updatedText, byShop: stats.byShop, supportAnswer, newVsUsed: newRows,
+        battery85: isIphone ? (() => { const b = batteryRows.find((r) => r.key === "85"); return b ? { minPrice: b.minPrice, count: b.count } : null; })() : null,
+        byRank: isIphone ? stats.byRank : undefined,
+        ios27: isIphone ? ALL_CATALOG_MODELS.includes(model) : undefined,
       })
     : [];
+
+  // ページ冒頭の1文（日付は更新時刻と同じ stats.lastUpdated の日付。なければ今日（JST））
+  const summaryDate = (stats.lastUpdated ?? new Date()).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
+  const minStorageRow = [...stats.byStorage].filter((r) => r.count > 0).sort((a, b) => a.minPrice - b.minPrice)[0];
+  const summary = hasStock && stats.minPrice !== null
+    ? buildSummary({
+        model, dateText: summaryDate, minPrice: stats.minPrice, minStorage: minStorageRow && stats.byStorage.length > 1 ? storageLabel(minStorageRow.key, model) : null,
+        medianPrice: stats.medianPrice, medianStorage: stats.medianStorage, shopCount: stats.shopCount, count: stats.count, newVsUsed: newRows,
+      })
+    : null;
 
   const jsonLd = [
     {
@@ -502,6 +515,8 @@ export default async function ModelPage({ params }: Props) {
             </nav>
 
             <h1 className="text-[22px] md:text-[28px] leading-[1.3] font-bold">{model} 中古の相場・最安値</h1>
+
+            {summary && <p className="text-[13px] md:text-sm text-ink-mute leading-relaxed">{summary}</p>}
 
             <p className="text-[11px] md:text-xs text-ink-mute leading-relaxed">
               {updatedText && <>更新 {updatedText} ・ </>}

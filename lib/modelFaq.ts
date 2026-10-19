@@ -67,6 +67,12 @@ export function buildFaq(p: {
   newVsUsed?: NewVsUsedRow[];
   /** 「いつまで使えるか」の根拠がある機種だけ。なければ質問ごと出さない */
   supportAnswer: string | null;
+  /** バッテリー85%以上の最安値と件数（iPhone のみ。なければ質問ごと出さない） */
+  battery85?: { minPrice: number; count: number } | null;
+  /** ランクごとの最安値（iPhone のみ。A/B/C のうち2つ以上あるときだけ質問を出す） */
+  byRank?: PriceRow[];
+  /** iOS 27 への対応（iPhone のみ。true=対応 / false=非対応 / 未指定=質問を出さない） */
+  ios27?: boolean;
 }): Faq[] {
   const { model } = p;
   const a1 = [
@@ -94,6 +100,19 @@ export function buildFaq(p: {
     { q: `${model}の中古はいくらで買えますか？`, a: a1 },
     { q: `${model}の中古はどこで買うのが安いですか？`, a: a2 },
   ];
+  // 検索されやすい聞き方の質問（2026-10-19〜。答えは上と同じ集計の数字）
+  const medianPart = p.medianPrice !== null ? `、相場（在庫がいちばん多い${p.medianStorage ? storageLabel(p.medianStorage, model) : "容量"}の中央値）は${yen(p.medianPrice)}` : "";
+  faqs.push({ q: `${model}の中古はいくらで買える？`, a: `${model}の中古は最安${yen(p.minPrice)}${medianPart}です。${p.shopCount}店の${p.count.toLocaleString()}件の在庫から集計しています。` });
+  if (p.battery85 && p.battery85.count > 0) {
+    faqs.push({ q: `バッテリー85%以上の中古${model}は何件ある？いくらから？`, a: `バッテリー最大容量が85%以上と分かる${model}の中古は${p.battery85.count.toLocaleString()}件あり、最安は${yen(p.battery85.minPrice)}です。` });
+  }
+  if (p.ios27 !== undefined) {
+    faqs.push({ q: `${model}はiOS 27に対応している？`, a: p.ios27 ? `はい、${model}は iOS 27 に対応しています。` : `いいえ、${model}は iOS 27 には対応していません。サブ機・撮影用向けです。` });
+  }
+  const rk = (p.byRank ?? []).filter((r) => ["A", "B", "C"].includes(r.key) && r.count > 0);
+  if (rk.length >= 2) {
+    faqs.push({ q: "状態ランクで値段はどれくらい違う？", a: `${model}の最安値はランク別に${rk.map((r) => `${r.key}が${yen(r.minPrice)}`).join("、")}です。ランクは外装の傷の目安で、バッテリーの状態とは別です。` });
+  }
   // 新品との差: 在庫がいちばん多い容量（公式価格がなければ、両方ある最小の容量）
   const nv = p.newVsUsed ?? [];
   const main = nv.find((r) => r.storage === p.medianStorage) ?? nv[0];
@@ -107,4 +126,30 @@ export function buildFaq(p: {
   if (p.supportAnswer) faqs.push({ q: `${model}の中古はいつまで使えますか？`, a: p.supportAnswer });
   faqs.push({ q: "中古を買うときに気をつけることは？", a: a4 });
   return faqs;
+}
+
+/** 機種ページの冒頭の1文（AI や検索結果が引用しやすいよう、日付・最安・相場・店数・新品との差を1文にまとめる） */
+export function buildSummary(p: {
+  model: string;
+  dateText: string;
+  minPrice: number;
+  minStorage: string | null;
+  medianPrice: number | null;
+  medianStorage?: number | null;
+  shopCount: number;
+  count: number;
+  newVsUsed?: NewVsUsedRow[];
+}): string {
+  const { model } = p;
+  const nv = p.newVsUsed ?? [];
+  const main = nv.find((r) => r.storage === p.medianStorage) ?? nv[0];
+  const minPart = `最安${yen(p.minPrice)}${p.minStorage ? `（${p.minStorage}）` : ""}`;
+  const med = p.medianPrice !== null ? `、相場（在庫がいちばん多い${p.medianStorage ? storageLabel(p.medianStorage, model) : "容量"}の中央値）は${yen(p.medianPrice)}` : "";
+  const shops = `。大手中古ショップ${p.shopCount}店の${p.count.toLocaleString()}件を集計`;
+  const tail = main
+    ? (main.diff > 0
+      ? `。新品（Apple 公式）${yen(main.newPrice)}より${yen(main.diff)}安い（${storageLabel(main.storage, model)}の最安で比較）`
+      : "。中古の最安は新品以上")
+    : "";
+  return `${p.dateText}時点、${model}の中古は${minPart}${med}${shops}${tail}。`;
 }
