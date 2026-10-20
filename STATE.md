@@ -19,7 +19,7 @@
 - **ホスティング**: Cloudflare Pages（10/6〜。Vercel は 10/20 ごろまで残す。`docs/cloudflare-pages.md`）
 - **DB**: Neon（Launch。Vercel を止めた後に Free へ。ideas/10-04）
 - **データ更新**: シンの cron → Actions → 取り込み・書き出し・配置（`docs/operations.md`）
-- **IndexNow**: 1日1回サイトマップ全件（`scripts/indexnow.ts`）
+- **IndexNow**: 1日1回サイトマップ全件（`scripts/indexnow.ts`）。Bing WMT 登録済み（10/21・BingSiteAuth.xml）
 - **デザイン**: 10/16〜「決定版 A+B」（`docs/design.md`）。OG はトップ・機種とも最安値（赤）と相場（灰）の横棒（10/21〜）
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える。10/16〜）
 - **ページ方針**: 全ページ静的（1日4回）。/sumaho/budget/under-N は本表3機種未満で noindex。検索ページは noindex。検品担当の文面・`/about` はユーザー確認後に変える
@@ -45,7 +45,6 @@
 
 ## 進行中・外部条件待ち
 
-- **Bing WMT**: 追加済み。確認ファイルの公開後に「確認」→サイトマップ
 - **A8**: バックマーケット・楽天モバイル（A8 版）審査中
 - **VC の審査（サイト 3784061）**: 通れば Yahoo!ショッピング（2025875）に提携して sid/pid を Secrets へ
 - **Vercel の後片付け（10/20 ごろ・ユーザー）**: Vercel のプロジェクトを止める → Neon を Free に（ideas/10-03〜06）
