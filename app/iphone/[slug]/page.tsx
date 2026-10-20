@@ -509,9 +509,9 @@ export default async function ModelPage({ params }: Props) {
       <SiteHeader label="価格比較" />
 
       <main className="max-w-[1360px] mx-auto pb-24 md:pb-10 md:px-4 min-[1392px]:px-0 md:pt-5 md:grid md:grid-cols-[minmax(0,1fr)_340px] md:gap-6 md:items-start">
-        {/* 左の本文。PC は2列のグリッド（md:order で、スマホとは並びを変える） */}
-        <div className="min-w-0 px-4 md:px-0 pt-3 md:pt-0 grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-4 content-start">
-          <div className="md:col-span-2 flex flex-col gap-1.5">
+        {/* 左の本文。広い PC（1260px〜）は2列のグリッド。md〜1259px は右の欄があって狭いので1列（md:order で、スマホとは並びを変える） */}
+        <div className="min-w-0 px-4 md:px-0 pt-3 md:pt-0 grid grid-cols-1 min-[1260px]:grid-cols-2 gap-3.5 md:gap-4 content-start">
+          <div className="min-[1260px]:col-span-2 flex flex-col gap-1.5">
             <nav aria-label="パンくずリスト" className="text-[11px] md:text-xs text-ink-mute">
               <Link href="/" className={LINK}>トップ</Link>
               <span className="mx-1.5">›</span>
@@ -551,7 +551,7 @@ export default async function ModelPage({ params }: Props) {
           </div>
 
           {!hasStock ? (
-            <div className={`${CARD} text-center py-14 px-4 md:col-span-2`}>
+            <div className={`${CARD} text-center py-14 px-4 min-[1260px]:col-span-2`}>
               <p className="text-ink-sub text-base">現在、{model}の在庫はありません。</p>
               <p className="text-xs text-ink-mute mt-2">在庫は6時間ごとに更新されます。同じシリーズの他モデルもチェックしてみてください。</p>
             </div>
@@ -559,20 +559,20 @@ export default async function ModelPage({ params }: Props) {
             <>
               {newRows.length > 0 && newSource && <NewVsUsedSection model={model} rows={newRows} source={newSource} checkedJa={newCheckedJa} />}
               {showHeat && (
-                <div className={`md:order-1 ${showShops ? "" : "md:col-span-2"}`}>
+                <div className={`md:order-1 ${showShops ? "" : "min-[1260px]:col-span-2"}`}>
                   <HeatCells title={heatTitle} ranks={heatRanks} rows={heatRows} labelWidth={mac ? 88 : 52} />
                 </div>
               )}
               {showShops && (
-                <div className={`md:order-2 ${showHeat ? "" : "md:col-span-2"}`}>
+                <div className={`md:order-2 ${showHeat ? "" : "min-[1260px]:col-span-2"}`}>
                   <ShopBars rows={shopRows} hrefOf={(shopName) => searchHref(model, { shop: shopName })} />
                 </div>
               )}
-              <div className={`md:order-3 ${showSpark ? "" : "md:col-span-2"}`}>
+              <div className={`md:order-3 ${showSpark ? "" : "min-[1260px]:col-span-2"}`}>
                 <StackedBar breakdown={breakdown} rankMin={rankMin} rankHref={(r) => searchHref(model, { rank: r })} />
               </div>
 
-              <section id="list" className="md:order-5 md:col-span-2 flex flex-col gap-2 scroll-mt-16">
+              <section id="list" className="md:order-5 min-[1260px]:col-span-2 flex flex-col gap-2 scroll-mt-16">
                 <h2 className="text-[17px] font-bold">安い在庫</h2>
                 <div className="flex gap-1.5 overflow-x-auto">
                   {[
@@ -621,7 +621,7 @@ export default async function ModelPage({ params }: Props) {
               </div>
 
               {/* 折りたたみ。スマホは1枚のカード、PC は2列 */}
-              <div className="md:order-6 md:col-span-2 bg-white border border-line rounded-xl overflow-hidden md:bg-transparent md:border-0 md:rounded-none md:overflow-visible md:grid md:grid-cols-2 md:gap-4 md:items-start">
+              <div className="md:order-6 min-[1260px]:col-span-2 bg-white border border-line rounded-xl overflow-hidden md:bg-transparent md:border-0 md:rounded-none md:overflow-visible md:grid min-[1260px]:grid-cols-2 md:gap-4 md:items-start">
                 <div className="md:bg-white md:border md:border-line md:rounded-xl md:overflow-hidden">
                   {/* 運営者（検品担当）の視点。iPhone のみ */}
                   {isIphone && tips.length > 0 && (
@@ -827,7 +827,7 @@ export default async function ModelPage({ params }: Props) {
           )}
 
           {/* 関連モデル・比較・予算別への導線 */}
-          <div className="md:col-span-2 md:order-7 flex flex-col gap-4">
+          <div className="min-[1260px]:col-span-2 md:order-7 flex flex-col gap-4">
             {/* このモデルを含む比較 */}
             {comparesFor(model).length > 0 && (
               <section>

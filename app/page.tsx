@@ -295,7 +295,7 @@ export default async function Home() {
                     <span className="flex h-3 rounded-md overflow-hidden bg-line-soft">
                       <span className="bg-safe" style={{ width: `${(d.rate / maxRate) * 100}%` }} />
                     </span>
-                    <span className="text-xs text-safe font-bold text-right">−{d.rate}%</span>
+                    <span className="text-xs text-safe font-bold text-right">−{d.rate.toFixed(1)}%</span>
                   </Link>
                 ))}
                 <p className="text-[10px] text-ink-mute">
