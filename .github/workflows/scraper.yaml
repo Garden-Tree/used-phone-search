@@ -223,11 +223,25 @@ jobs:
 
       # Cloudflare Pages へ配置（scripts/ci-deploy.sh。ファイル数・大きさを Pages の上限と照らしてから wrangler で出す）
       - name: Cloudflare Pages へ配置
+        id: deploy
         # 一部の店の取得・楽天の取り込みに失敗した回も、取れた分で書き出せていれば配置する（success() だと止まる）
         if: ${{ !cancelled() && steps.build.outcome == 'success' && env.HAS_CLOUDFLARE_TOKEN == 'true' }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: bash scripts/ci-deploy.sh deploy
+
+      # IndexNow（Bing・Yandex など）にサイトマップの全 URL を知らせる（scripts/indexnow.ts。失敗しても警告だけ）。
+      # 1日1回にする: 定期実行（schedule）のうち、この時点の UTC が 0〜5 時の回だけ＝cron '0 */6' の 0:00 UTC（日本時間 9 時）の回。
+      # 遅れて起動しても 6 時間の幅があり、次の 6:00 UTC の回とは重ならない。手動実行・楽天のやり直し（workflow_dispatch）では送らない。
+      # 0 時の回が飛ばされた日は送らない（翌日に送る。価格は毎日変わるので全件をまとめて送れば足りる）
+      - name: IndexNow に更新を知らせる（1日1回）
+        id: indexnow
+        if: ${{ !cancelled() && steps.deploy.outcome == 'success' && github.event_name == 'schedule' }}
+        continue-on-error: true
+        run: |
+          hour=$(date -u +%H)
+          if [ "$hour" -ge 6 ]; then echo "UTC ${hour}時の回なので送らない（0〜5時の回だけ）"; exit 0; fi
+          npx tsx scripts/indexnow.ts
 
       # 切り替え後（main）に Cloudflare の Secrets が消えると、黙って配置しなくなる。そのときはジョブを失敗にして気づく
       - name: 配置先の設定がなければ失敗にする

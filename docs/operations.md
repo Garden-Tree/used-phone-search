@@ -48,6 +48,7 @@
 | --- | --- | --- | --- |
 | 2:40/8:40/14:40/20:40 | サーバー cron | 楽天3店の取得と JSON の保存 → Actions を起動 | `~/rakuten-sync/fetch.log`（`<shopCode> saved:`・`dispatch: HTTP 204`） |
 | 上の直後＋定期実行（9/15/21/3時ごろ） | GitHub Actions `Phone Inventory Scraper` | 取得・取り込み・価格推移・書き出し・配置・自己有効化 | Actions の実行ログ（失敗時は GitHub から通知メール） |
+| 毎日9時ごろ（UTC 0時の定期実行） | GitHub Actions（配置の後） | IndexNow にサイトマップ全件を送る（下記） | Actions の実行ログ（`IndexNow: HTTP 200`） |
 | 毎日10:00 | サーバー cron | `healthcheck.php`（問題時のみメール） | cron の通知メール |
 | 毎日7:56 | サーバー cron（ブログ用・パネルが自動作成。「WordPressキャッシュ自動削除Cronを表示」で出る） | `wp-content/cache/` の3日より古いファイルを削除 | 出力なし（下記） |
 
@@ -108,6 +109,14 @@
 - エムモバは Pixel の一覧がなく、検索ページでも Pixel 6 以降は1件（9/30）なので取り込まない
 - サーバーパネル・ファイルマネージャは 2026-09 から `https://secure.wpx.ne.jp/`（シンクラウド）。旧 `secure.shin-server.jp` は名前解決できない
 - 洗い替えは店ごと（iPhone・iPad・Pixel をまとめて入れ直す）。ある回に Pixel の一覧だけ取れなかったときは、その店の Pixel が次の回まで消える。安全装置（店の合計件数が半分未満なら入れ直さない）は iPhone が多いので効かない
+
+### IndexNow（2026-10-21〜。Bing・Yandex などへの更新通知）
+
+- 何を: 書き出した `out/sitemap.xml` の URL（noindex のページは元々入っていない。`/search` も除外）を `https://api.indexnow.org/indexnow` に POST する（`scripts/indexnow.ts`）。ChatGPT 検索は Bing のインデックスを使うとされる
+- 鍵: `public/619cc190a530a2739b8c46ad71b82fb9.txt`（`https://used.gadelog.com/619cc190a530a2739b8c46ad71b82fb9.txt` で中身が鍵だけ）。**公開が前提で秘密ではない**。消すと 403 になるので消さない。作り直すときはファイル名・中身・スクリプトの `KEY` を一緒に変える
+- いつ: Actions の「IndexNow に更新を知らせる（1日1回）」。配置に成功した**定期実行のうち UTC 0〜5 時に動いた回（日本時間 9 時の回）だけ**。手動実行・楽天のやり直しでは送らない。失敗しても警告だけ
+- 確かめ方: 実行ログの `IndexNow: HTTP 200`（202 は鍵の確認待ちで正常）。`::warning::` が出ていたら本文を見る（403 = 鍵ファイルが取れない・422 = ホスト違い・429 = 送りすぎ）。手元では `npx tsx scripts/indexnow.ts --dry-run [--sitemap https://used.gadelog.com/sitemap.xml]` で件数だけ見られる
+- Bing Webmaster Tools に登録すると、IndexNow で受け取った URL が見られる（任意・ユーザー操作）
 
 ### 新しい iPhone が出た
 1. 中古在庫が出たのを確認（楽天のゲオ店が早い）
