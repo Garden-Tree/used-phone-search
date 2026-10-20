@@ -42,6 +42,36 @@ export function specDiffBrief(a: string, b: string): string {
   return `違いは${diffs.slice(0, 2).map((d) => `${d.label}（${d.va}と${d.vb}）`).join("と")}など。`;
 }
 
+/** 発売の年月（lib/*Specs.ts の released＝公式で確かめた値。"2025年" か "2024年8月"）。無ければ undefined */
+function releaseOf(model: string): { y: number; m?: number; label: string } | undefined {
+  const r = specOf(model)?.released;
+  const hit = r?.match(/^(\d{4})年(?:(\d{1,2})月)?$/);
+  if (!r || !hit) return undefined;
+  return { y: Number(hit[1]), m: hit[2] ? Number(hit[2]) : undefined, label: r };
+}
+
+/**
+ * 最安値が安いほう（cheap）・高いほう（pricey）の選び方のひと言。
+ * 高いほうが新しいとは限らない（旧世代の上位モデル・後から出た廉価版など）ので、発売の新旧は公式の発売年月で決める。
+ * - 高いほうが新しい: 「新しい機種を選ぶなら差額を払って pricey」
+ * - 安いほうが新しい: 安いほうが新しいことを書き、高いほうは違いで判断
+ * - 差が半年未満・同じ年（月まで分からない）・発売が分からない: 新旧・優劣を言わない
+ */
+export function choiceSentence(cheap: string, pricey: string): string {
+  const rc = releaseOf(cheap);
+  const rp = releaseOf(pricey);
+  if (!rc || !rp) return `価格重視なら ${cheap}、${pricey} は差額に見合うかを、カメラ・画面・発売年などの違いで判断することになります。`;
+  const judge = "差額に見合うかを、チップ・画面・カメラなどの違いで判断";
+  // 月まで分かれば月の差、年だけなら年の差。半年未満の差（Pixel 9 Pro と 9 Pro XL など同じ世代の出し分け）は新旧と言わない
+  const months = rc.m !== undefined && rp.m !== undefined ? (rp.y - rc.y) * 12 + (rp.m - rc.m) : (rp.y - rc.y) * 12;
+  const order = Math.abs(months) < 6 ? 0 : months;
+  const when = `${pricey} は${rp.label}、${cheap} は${rc.label}発売`;
+  if (order > 0) return `価格重視なら ${cheap}、より新しい機種を選ぶなら差額を払って ${pricey}（${when}）という選び方になります。`;
+  if (order < 0) return `発売は ${cheap}（${rc.label}）のほうが ${pricey}（${rp.label}）より新しく、価格重視なら ${cheap}、${pricey} は${judge}することになります。`;
+  const same = rc.label === rp.label ? `どちらも${rc.label}発売で` : `${when}で`;
+  return `${same}、価格重視なら ${cheap}、${pricey} は${judge}することになります。`;
+}
+
 /** 2つの数を「X のほうが ○円 高い／低い」にする。同じなら「同じ」 */
 function gap(a: string, b: string, va: number, vb: number, unit: "yen" | "n", word: ["高い", "安い"] | ["多い", "少ない"]): string {
   const d = vb - va;

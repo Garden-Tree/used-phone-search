@@ -16,7 +16,7 @@ import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCa
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 import { getGoodRankMin } from "@/lib/modelBest";
 import { isCompareIndexable } from "@/lib/compareStock";
-import { buildCompareFaq, priceReadingSentence, specDiffBrief, specDiffSentence } from "@/lib/compareText";
+import { buildCompareFaq, choiceSentence, priceReadingSentence, specDiffBrief, specDiffSentence } from "@/lib/compareText";
 
 // モデル別ページと同じくビルドのたびに作る
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -40,8 +40,9 @@ function verdict(a: string, b: string, sa: ModelStats, sb: ModelStats): string {
   if (diff === 0) return `${a} と ${b} の中古最安値はどちらも ${yen(sa.minPrice)} で同じです。`;
   const [cheap, pricey] = diff > 0 ? [a, b] : [b, a];
   const rate = Math.round((Math.abs(diff) / Math.max(sa.minPrice, sb.minPrice!)) * 100);
-  // 2機種それぞれの最安値を文中に書く（AI・検索が1文で引用できるように。10/21〜）
-  return `中古の最安値は ${a} が ${yen(sa.minPrice)}、${b} が ${yen(sb.minPrice!)}で、${cheap} のほうが ${yen(Math.abs(diff))}（約${rate}%）安く、価格重視なら ${cheap}、新しさや性能を優先するなら差額を払って ${pricey} という選び方になります。`;
+  // 2機種それぞれの最安値を文中に書く（AI・検索が1文で引用できるように。10/21〜）。
+  // 選び方は発売の新旧（公式の発売年月）で分ける。高いほうが新しいとは限らない（lib/compareText.ts の choiceSentence）
+  return `中古の最安値は ${a} が ${yen(sa.minPrice)}、${b} が ${yen(sb.minPrice!)}で、${cheap} のほうが ${yen(Math.abs(diff))}（約${rate}%）安くなっています。${choiceSentence(cheap, pricey)}`;
 }
 
 /** Pixel どうしなら、アップデート保証の残りの差をひと言足す（値段の差と合わせて選べるように） */
