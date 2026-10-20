@@ -1,15 +1,19 @@
 import { ImageResponse } from "next/og";
 import { ALL_PAGE_MODELS, modelToSlug, slugToModel } from "@/lib/catalog";
-import { getModelStats } from "@/lib/modelStats";
+import prisma from "@/lib/prisma";
+import { medianPrice, modelWhere } from "@/lib/modelInventory";
 import { fitFontSize, notoSansJp } from "@/lib/ogFont";
 import { storageLabel } from "@/lib/format";
 import { activeShopsFor } from "@/lib/activeShops";
+import { findShop } from "@/lib/shops";
+import { rethrowDuringBuild } from "@/lib/buildGuard";
 import { isMac } from "@/lib/macCatalog";
 
-// モデル別ページと同じくビルドのたびに作る（最安値が変わるため）
+// モデル別ページと同じくビルドのたびに作る（最安値が変わるため）。iPad・Mac・Watch・Android の機種ページもこの画像を使う
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 export const dynamicParams = false;
 
+// alt は静的な文字列でなければならないので数字は入れない
 export const alt = "中古iPhoneの最安値・価格比較";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -18,116 +22,157 @@ export function generateStaticParams() {
   return ALL_PAGE_MODELS.map((model) => ({ slug: modelToSlug(model) }));
 }
 
-const yen = (n: number) => n.toLocaleString();
+const NAVY = "#1E1B4B", RED = "#E11D48", GRAY = "#CBD5E1", INK = "#0F172A", SUB = "#64748B", LINE = "#E2E8F0", TRACK = "#F1F5F9";
+const URL = "used.gadelog.com";
+const MAX_ROWS = 4;
+// 行の数ごとの寸法（1〜2行は行を高く・数字を大きくして、カードが空いて見えないようにする）。
+// 横幅の合計は 容量170 + 横棒 bar + 最安値 minW + 相場186 = 1020（カードの内側 1020px）
+type Layout = { rowH: number; bar: number; barH: number; minW: number; minSize: number; labelSize: number };
+const LAYOUT: Record<number, Layout> = {
+  1: { rowH: 210, bar: 340, barH: 44, minW: 324, minSize: 64, labelSize: 44 },
+  2: { rowH: 150, bar: 340, barH: 38, minW: 324, minSize: 58, labelSize: 40 },
+  3: { rowH: 100, bar: 400, barH: 30, minW: 264, minSize: 44, labelSize: 36 },
+  4: { rowH: 80, bar: 400, barH: 30, minW: 264, minSize: 44, labelSize: 34 },
+};
+
+type Row = { storage: number; min: number; med: number; count: number };
+type Market = { rows: Row[]; count: number; shops: number; updated: Date | null };
+
+/**
+ * 容量ごとの最安値・相場（中央値）・件数（10/21〜。トップの OG と同じ「赤＝最安値・灰＝相場」の横棒）。
+ * DB で集計し、行として取り出すのは容量ごとの中央値の1件ずつだけ（最大4件。Neon の転送量に配慮）。
+ * 相場は機種ページと同じ定義（lib/modelInventory.ts の medianPrice）で、容量ごとに取る
+ */
+async function storageMarket(model: string): Promise<Market> {
+  const where = await modelWhere(model);
+  const [byStorage, byShop] = await Promise.all([
+    prisma.deviceInventory.groupBy({ by: ["storage"], where, _min: { price: true }, _max: { updatedAt: true }, _count: { _all: true } }),
+    prisma.deviceInventory.groupBy({ by: ["shopName"], where, _count: { _all: true } }),
+  ]);
+  const count = byStorage.reduce((s, r) => s + r._count._all, 0);
+  const updated = byStorage.reduce<Date | null>((d, r) => (r._max.updatedAt && (!d || r._max.updatedAt > d) ? r._max.updatedAt : d), null);
+  // 在庫の多い容量から最大4つ → 容量の小さい順に並べる（容量が読めない 0 は除く）
+  const top = byStorage
+    .filter((r) => r.storage > 0 && r._min.price !== null)
+    .sort((a, b) => b._count._all - a._count._all || a.storage - b.storage)
+    .slice(0, MAX_ROWS)
+    .sort((a, b) => a.storage - b.storage);
+  const rows = await Promise.all(
+    top.map(async (r) => {
+      const med = await medianPrice({ AND: [where, { storage: r.storage }] }, r._count._all);
+      return { storage: r.storage, min: r._min.price ?? 0, med: med ?? r._min.price ?? 0, count: r._count._all };
+    }),
+  );
+  // 「イオシス（楽天市場店）」は「イオシス」と同じ店として数える（lib/modelStats.ts と同じ）
+  const shops = new Set(byShop.map((r) => findShop(r.shopName)?.alias ?? r.shopName)).size;
+  return { rows, count, shops, updated };
+}
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const model = slugToModel(slug) ?? "iPhone";
-  const stats = await getModelStats(model);
+  let market: Market = { rows: [], count: 0, shops: 0, updated: null };
+  try {
+    market = await storageMarket(model);
+  } catch (error) {
+    rethrowDuringBuild(error);
+    console.error("og model market failed:", error);
+  }
+  const { rows } = market;
+
   // 画像では括弧を外して1行に収める（"iPhone SE (第3世代)" → "iPhone SE 第3世代"）
   const displayName = model.replace(/\s*\((.+)\)/, " $1");
-  // 左の列（約680px）に1行で収める
-  const nameFontSize = fitFontSize(displayName, 680, 76);
+  // MacBook の容量＝SSD、Apple Watch の storage＝ケースのサイズ（mm）
+  const unit = model.startsWith("Apple Watch") ? "サイズ" : "容量";
+  const sub = isMac(model) ? "SSD容量別の中古価格" : `${unit}別の中古価格`;
+  const updated = (market.updated ?? new Date()).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric" });
+  const shopsFallback = rows.length > 0 ? 0 : (await activeShopsFor(model)).length;
+  const foot =
+    rows.length > 0
+      ? `大手中古ショップ${market.shops}店・${market.count.toLocaleString()}件の在庫から毎日集計（${updated} 更新・相場＝${unit}ごとの中央値）`
+      : `大手中古ショップ${shopsFallback > 0 ? `${shopsFallback}店` : ""}の在庫を毎日集計（${updated} 更新）`;
+  const labels = rows.map((r) => ({ ...r, label: storageLabel(r.storage, model) }));
+  // 横軸: 相場の最大値 × 1.08（全行で共通）
+  const axis = Math.max(1, ...rows.map((r) => r.med)) * 1.08;
+  const L = LAYOUT[rows.length] ?? LAYOUT[MAX_ROWS];
 
-  const updated = (stats.lastUpdated ?? new Date()).toLocaleDateString("ja-JP", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  // 容量別の最安値は多くても4つまで（見切れ防止）
-  const storages = stats.byStorage.slice(0, 4);
+  const fonts = await notoSansJp(
+    [
+      "中古スマホ一括検索", URL, displayName, sub, foot, "最安値相場在庫件円〜なし0123456789,",
+      ...labels.map((r) => r.label),
+    ].join(""),
+  );
 
-  // MacBook は容量＝SSD、Apple Watch は storage＝ケースのサイズ（mm）（2026-10-15〜）
-  const sideLabel = isMac(model) ? "SSD容量別の最安値" : model.startsWith("Apple Watch") ? "サイズ別の最安値" : "容量別の最安値";
-  const priceText = stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし";
-  const summary = stats.count > 0 ? `${stats.shopCount}ショップ・${stats.count.toLocaleString()}件の在庫を比較` : `大手中古ショップ${(await activeShopsFor(model)).length}社の在庫を比較`;
+  const header = (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 92, flexShrink: 0, padding: "0 56px", background: NAVY, color: "white" }}>
+      <div style={{ display: "flex", fontSize: 40, fontWeight: 900 }}>中古スマホ一括検索</div>
+      <div style={{ display: "flex", fontSize: 26, fontWeight: 500, opacity: 0.85 }}>{URL}</div>
+    </div>
+  );
 
-  // 画像内で使う文字をすべて集めてフォントのサブセットを取得する
-  const allText = [
-    displayName, "中古の最安値", "円", "〜", priceText, summary, `${updated} 更新`,
-    sideLabel, "中古スマホ一括検索", "used.gadelog.com",
-    ...storages.flatMap((s) => [storageLabel(s.key, model), yen(s.minPrice)]),
-  ].join("");
-  const fonts = await notoSansJp(allText);
+  // 在庫なし: 横棒を出さず、機種名と「在庫なし」だけ
+  if (rows.length === 0) {
+    return new ImageResponse(
+      (
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: "#F8FAFC", fontFamily: "Noto Sans JP", color: INK }}>
+          {header}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexGrow: 1, padding: "0 56px" }}>
+            <div style={{ display: "flex", fontSize: fitFontSize(displayName, 1000, 76), fontWeight: 900, whiteSpace: "nowrap" }}>{displayName}</div>
+            <div style={{ display: "flex", fontSize: 64, fontWeight: 900, color: SUB, marginTop: 24 }}>在庫なし</div>
+            <div style={{ display: "flex", fontSize: 24, color: SUB, marginTop: 32 }}>{foot}</div>
+          </div>
+        </div>
+      ),
+      { ...size, fonts },
+    );
+  }
 
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          background: "#ffffff",
-          fontFamily: "Noto Sans JP",
-          padding: "56px 64px",
-          color: "#0f172a",
-        }}
-      >
-        <div style={{ display: "flex", flex: 1 }}>
-          {/* 左: モデル名と最安値 */}
-          <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "center" }}>
-            <div style={{ fontSize: 32, fontWeight: 500, color: "#64748b" }}>中古の最安値</div>
-            <div style={{ fontSize: nameFontSize, fontWeight: 900, letterSpacing: -2, lineHeight: 1.1, marginTop: 8, whiteSpace: "nowrap" }}>
-              {displayName}
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: "#F8FAFC", fontFamily: "Noto Sans JP", color: INK }}>
+        {header}
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flexGrow: 1, padding: "0 56px 12px" }}>
+          {/* 機種名（長い名前は縮める）と凡例 */}
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "baseline" }}>
+              <div style={{ display: "flex", fontSize: fitFontSize(displayName, 530, 52, 24), fontWeight: 900, whiteSpace: "nowrap" }}>{displayName}</div>
+              <div style={{ display: "flex", fontSize: 32, fontWeight: 900, color: SUB, marginLeft: 16, whiteSpace: "nowrap" }}>{sub}</div>
             </div>
-            <div style={{ display: "flex", alignItems: "baseline", marginTop: 24, color: "#dc2626" }}>
-              <div style={{ fontSize: 120, fontWeight: 900, letterSpacing: -4, lineHeight: 1 }}>{priceText}</div>
-              {stats.minPrice !== null && <div style={{ fontSize: 48, fontWeight: 900, marginLeft: 8 }}>円〜</div>}
+            <div style={{ display: "flex", alignItems: "center", fontSize: 22, color: SUB, flexShrink: 0 }}>
+              <div style={{ display: "flex", width: 22, height: 14, background: RED, borderRadius: 4, marginRight: 8 }} />
+              最安値
+              <div style={{ display: "flex", width: 22, height: 14, background: GRAY, borderRadius: 4, margin: "0 8px 0 24px" }} />
+              相場
             </div>
-            <div style={{ fontSize: 30, fontWeight: 500, color: "#475569", marginTop: 24 }}>{summary}</div>
           </div>
-
-          {/* 右: 容量別の最安値 */}
-          {storages.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                width: 360,
-                marginLeft: 40,
-                justifyContent: "center",
-              }}
-            >
-              <div style={{ fontSize: 26, fontWeight: 500, color: "#64748b", marginBottom: 16 }}>{sideLabel}</div>
-              {storages.map((s) => (
-                <div
-                  key={s.key}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "baseline",
-                    padding: "14px 20px",
-                    marginBottom: 12,
-                    borderRadius: 16,
-                    background: "#f1f5f9",
-                  }}
-                >
-                  <div style={{ fontSize: 30, fontWeight: 900 }}>{storageLabel(s.key, model)}</div>
-                  <div style={{ fontSize: 34, fontWeight: 900, color: "#dc2626" }}>{`${yen(s.minPrice)}円`}</div>
+          <div style={{ display: "flex", flexDirection: "column", marginTop: 16, background: "white", border: `2px solid ${LINE}`, borderRadius: 24, padding: "10px 32px" }}>
+            {labels.map((r, i) => {
+              // 桁の多い値（6〜7桁）は列の幅に収まるまで小さくする（太字の目安: 数字 0.62em・カンマ 0.3em・「円〜」1.05em）
+              const digits = String(r.min).length;
+              const minSize = Math.min(L.minSize, Math.floor((L.minW - 24) / (0.62 * digits + 0.3 * Math.floor((digits - 1) / 3) + 1.05)));
+              return (
+                <div key={r.storage} style={{ display: "flex", alignItems: "center", height: L.rowH, borderTop: i ? `2px solid ${TRACK}` : "none" }}>
+                  <div style={{ display: "flex", flexDirection: "column", width: 170, flexShrink: 0 }}>
+                    <div style={{ display: "flex", fontSize: L.labelSize, fontWeight: 900, lineHeight: 1.25 }}>{r.label}</div>
+                    <div style={{ display: "flex", fontSize: 20, color: SUB }}>{`在庫 ${r.count.toLocaleString()}件`}</div>
+                  </div>
+                  <div style={{ display: "flex", width: L.bar, flexShrink: 0, height: L.barH, background: TRACK, borderRadius: 6 }}>
+                    <div style={{ display: "flex", width: Math.round((L.bar * r.min) / axis), height: L.barH, background: RED, borderRadius: "6px 0 0 6px" }} />
+                    <div style={{ display: "flex", width: Math.round((L.bar * Math.max(0, r.med - r.min)) / axis), height: L.barH, background: GRAY, borderRadius: "0 6px 6px 0" }} />
+                  </div>
+                  {/* 右の数字は列の幅を固定して右揃え（桁が変わっても縦にそろう） */}
+                  <div style={{ display: "flex", width: L.minW, flexShrink: 0, justifyContent: "flex-end", alignItems: "baseline", color: RED }}>
+                    <div style={{ display: "flex", fontSize: minSize, fontWeight: 900 }}>{r.min.toLocaleString()}</div>
+                    <div style={{ display: "flex", fontSize: Math.round(minSize * 0.5), fontWeight: 900, marginLeft: 2 }}>円〜</div>
+                  </div>
+                  <div style={{ display: "flex", width: 186, flexShrink: 0, justifyContent: "flex-end", fontSize: r.med >= 1_000_000 ? 20 : 23, color: SUB }}>
+                    {`相場 ${r.med.toLocaleString()}円`}
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* フッター: サイト名と更新日 */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderTop: "2px solid #e2e8f0",
-            paddingTop: 24,
-            fontSize: 28,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <div style={{ fontWeight: 900 }}>中古スマホ一括検索</div>
-            <div style={{ fontWeight: 500, color: "#94a3b8", marginLeft: 16 }}>used.gadelog.com</div>
+              );
+            })}
           </div>
-          <div style={{ fontWeight: 500, color: "#64748b" }}>{`${updated} 更新`}</div>
+          <div style={{ display: "flex", justifyContent: "center", fontSize: 21, color: SUB, marginTop: 12 }}>{foot}</div>
         </div>
       </div>
     ),
