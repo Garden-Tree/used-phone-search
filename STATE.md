@@ -20,7 +20,7 @@
 - **DB**: Neon（Launch。Vercel を止めた後に Free へ。ideas/10-04）
 - **データ更新**: シンの cron → Actions → 取り込み・書き出し・配置（`docs/operations.md`）
 - **IndexNow**: 1日1回（UTC 0時台の回）サイトマップ全件を送る（`scripts/indexnow.ts`）
-- **デザイン**: 10/16〜「決定版 A+B」（図・グラフ中心、文章は折りたたみ。PC は最大幅1360px・拡大1.15倍。`docs/design.md`）
+- **デザイン**: 10/16〜「決定版 A+B」（図・グラフ中心。`docs/design.md`）。OG 画像はトップ・機種とも最安値（赤）と相場（灰）の横棒（10/21〜）
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える。10/16〜）
 - **ページ方針**: 全ページ静的（1日4回）。/sumaho/budget/under-N は本表3機種未満で noindex。検索ページは noindex。検品担当の文面・`/about` はユーザー確認後に変える
 - **画面の店数は表示中の在庫がある店だけ数える**（`lib/activeShops.ts`）
@@ -31,7 +31,7 @@
   - 同じ会社の別の売り場は公式のカードにまとめる（イオシス⇔楽天・エムモバ⇔エムコム）
 - **Amazon 整備済み品**: 10/11〜資格なし（売上が条件）で停止中。資格が戻れば自動で再開
 - **Yahoo!ショッピング 7店**: もしも経由（VC 審査後に VC へ）
-- **収益の枠**: スマホの機種ページに「回線も見直すなら（PR）」＝ahamo（A8）・楽天モバイル（楽天アフィ）（`lib/simPlans.ts`・10/15〜）と「今のスマホを売るなら（PR）」＝A8 の買取3社（`lib/buyback.ts`）
+- **収益の枠**: 機種ページの「回線も見直すなら（PR）」（`lib/simPlans.ts`）と「今のスマホを売るなら（PR）」（`lib/buyback.ts`）
 - **掲載機種**: iPhone・iPad 32・Pixel 24・Galaxy 29・MacBook 35・Xperia 17・AQUOS 21・Apple Watch 14（Watch は storage＝mm）
 
 ## 確認台帳（計測・判定）
@@ -45,6 +45,7 @@
 
 ## 進行中・外部条件待ち
 
+- **Bing WMT**: used を追加済み（未確認）。BingSiteAuth.xml 公開後に確認→サイトマップ送信
 - **A8**: バックマーケット・楽天モバイル（A8 版）審査中
 - **VC の審査（サイト 3784061）**: 通れば Yahoo!ショッピング（2025875）に提携して sid/pid を Secrets へ
 - **Vercel の後片付け（10/20 ごろ・ユーザー）**: Vercel のプロジェクトを止める → Neon を Free に（ideas/10-03〜06）
