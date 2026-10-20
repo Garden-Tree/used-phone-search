@@ -162,7 +162,7 @@ export function normalizeIosysItem(item: RakutenItem): Row | null {
   const gen = raw.match(/第(\d)世代/)?.[1];
   const modelName = `iPhone ${normalizeModelPart(/^SE$/i.test(part) && gen ? `SE (第${gen}世代)` : part)}`;
   if (!isKnownIphoneModel(modelName)) return null;
-  const thirteenOrLater = /^iPhone (1[3-9]|Air|SE \(第3世代\))/.test(modelName);
+  const thirteenOrLater = /^iPhone (1[3-9]|Air|Duo|SE \(第3世代\))/.test(modelName);
   return {
     ...common, manufacturer: "Apple", modelName,
     carrier,

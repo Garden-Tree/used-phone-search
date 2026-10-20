@@ -152,7 +152,7 @@ def canonical_galaxy_model(raw_name: str):
 
 def is_iphone_13_or_later(model_name: str) -> bool:
     """iPhone 13 以降（SE 第3世代含む）か。2021年10月以降の発売モデルは原則 SIM ロックなしで売られている"""
-    if re.search(r"iPhone\s?(1[3-9])", model_name, re.IGNORECASE):
+    if re.search(r"iPhone\s?(1[3-9]|Air|Duo)", model_name, re.IGNORECASE):
         return True
     return "SE" in model_name and "第3世代" in model_name
 

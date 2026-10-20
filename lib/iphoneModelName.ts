@@ -12,8 +12,8 @@ export function normalizeModelPart(part: string): string {
   return s;
 }
 
-// 取り込む iPhone 本体のモデル名（商品名の読み違いでおかしなモデル名を入れないための確認）
-const MODEL_RE = /^iPhone (?:\d{1,2}(?: mini| Plus| Pro(?: Max)?|e)?|SE \(第[23]世代\)|Air|X|XS(?: Max)?|XR)$/;
+// 取り込む iPhone 本体のモデル名（商品名の読み違いでおかしなモデル名を入れないための確認）。Duo（折りたたみ・2026/10/23 発売）は在庫の有無を DB で確かめるため先に通す
+const MODEL_RE = /^iPhone (?:\d{1,2}(?: mini| Plus| Pro(?: Max)?|e)?|SE \(第[23]世代\)|Air|Duo|X|XS(?: Max)?|XR)$/;
 
 export function isKnownIphoneModel(modelName: string): boolean {
   return MODEL_RE.test(modelName);

@@ -31,7 +31,7 @@ const CARRIERS: [string, string][] = [
 function isSimLockFreeEra(model: string): boolean {
   const n = model.match(/^iPhone (\d+)/);
   if (n) return Number(n[1]) >= 13;
-  return /Air|SE.*第3世代/.test(model);
+  return /Air|Duo|SE.*第3世代/.test(model);
 }
 
 /**
