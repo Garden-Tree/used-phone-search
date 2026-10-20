@@ -147,7 +147,7 @@ export default function DeviceCard({ device, showModel = true }: { device: Devic
               {bat ? (
                 <span className={`font-bold ${bat.low ? 'text-warn' : 'text-safe'}`}>電池 {bat.text}</span>
               ) : (
-                <span className="text-ink-mute">電池 -</span>
+                <span className="text-ink-mute">電池 記載なし</span>
               )}
               {' ・ '}
               {simLabel(device)}

@@ -22,9 +22,13 @@ export default async function PopularModels() {
           const r = market.get(m);
           return (
             <li key={m}>
-              <Link href={modelPagePath(m)} className="bg-white border border-line rounded-xl px-3.5 py-2.5 flex items-baseline justify-between gap-2 hover:border-brand-600">
-                <span className="text-[13px] font-bold text-brand-600">{m} の中古最安値</span>
-                {r && <span className="text-[13px] font-bold text-price whitespace-nowrap">{yen(r.minPrice)}〜</span>}
+              {/* 機種名と「中古最安値 ○円〜」を2行に分ける（1行だと「…の中／古最安値」と語の途中で折れた） */}
+              <Link href={modelPagePath(m)} className="bg-white border border-line rounded-xl px-3.5 py-2.5 flex flex-col gap-0.5 hover:border-brand-600">
+                <span className="text-[13px] font-bold text-brand-600 truncate">{m}</span>
+                <span className="flex items-baseline justify-between gap-2">
+                  <span className="text-[11px] text-ink-sub">の中古最安値</span>
+                  {r && <span className="text-[13px] font-bold text-price whitespace-nowrap">{yen(r.minPrice)}〜</span>}
+                </span>
               </Link>
             </li>
           );

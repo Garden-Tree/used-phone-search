@@ -10,7 +10,7 @@ export default function NewVsUsedSection({ model, rows, source, checkedJa }: {
 }) {
   if (rows.length === 0) return null;
   return (
-    <section className={`${CARD} p-3.5 flex flex-col gap-2 min-[1260px]:col-span-2`}>
+    <section className={`${CARD} p-3.5 flex flex-col gap-2 min-[1360px]:col-span-2`}>
       <h2 className="text-[15px] font-bold">新品（{source.name}）との差</h2>
       <ul className="flex flex-col divide-y divide-line-soft">
         {rows.map((r) => (
