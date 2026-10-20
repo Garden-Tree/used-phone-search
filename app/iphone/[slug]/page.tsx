@@ -525,7 +525,7 @@ export default async function ModelPage({ params }: Props) {
             {summary && <p className="text-[13px] md:text-sm text-ink-mute leading-relaxed">{summary}</p>}
 
             <p className="text-[11px] md:text-xs text-ink-mute leading-relaxed">
-              {updatedText && <>更新 {updatedText} ・ </>}
+              {updatedText && stats.lastUpdated && <>更新 <time dateTime={stats.lastUpdated.toISOString()}>{updatedText}</time> ・ </>}
               {shopNum}店を比較{hasStock && <> ・ 在庫あり{stats.shopCount}店・{stats.count.toLocaleString()}件</>} ・ 運営: 中古スマホ店の検品担当 ・{" "}
               <span className="inline-block mr-1 px-1 py-px rounded border border-line font-bold">PR</span>
               本ページはアフィリエイト広告を利用しています

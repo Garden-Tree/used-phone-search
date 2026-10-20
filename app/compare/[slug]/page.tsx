@@ -40,7 +40,8 @@ function verdict(a: string, b: string, sa: ModelStats, sb: ModelStats): string {
   if (diff === 0) return `${a} と ${b} の中古最安値はどちらも ${yen(sa.minPrice)} で同じです。`;
   const [cheap, pricey] = diff > 0 ? [a, b] : [b, a];
   const rate = Math.round((Math.abs(diff) / Math.max(sa.minPrice, sb.minPrice!)) * 100);
-  return `中古の最安値は ${cheap} のほうが ${yen(Math.abs(diff))}（約${rate}%）安く、価格重視なら ${cheap}、新しさや性能を優先するなら差額を払って ${pricey} という選び方になります。`;
+  // 2機種それぞれの最安値を文中に書く（AI・検索が1文で引用できるように。10/21〜）
+  return `中古の最安値は ${a} が ${yen(sa.minPrice)}、${b} が ${yen(sb.minPrice!)}で、${cheap} のほうが ${yen(Math.abs(diff))}（約${rate}%）安く、価格重視なら ${cheap}、新しさや性能を優先するなら差額を払って ${pricey} という選び方になります。`;
 }
 
 /** Pixel どうしなら、アップデート保証の残りの差をひと言足す（値段の差と合わせて選べるように） */
@@ -300,6 +301,10 @@ export default async function ComparePage({ params }: Props) {
     },
   ];
 
+  // 冒頭の1文に付ける日付（2機種の在庫のうち新しいほうの更新時刻。機種ページの要約文と同じ書き方）
+  const updated = [sa.lastUpdated, sb.lastUpdated].filter((d): d is Date => d !== null).sort((x, y) => y.getTime() - x.getTime())[0] ?? null;
+  const updatedDate = updated?.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
+
   const models = [
     { name: a, stats: sa },
     { name: b, stats: sb },
@@ -320,7 +325,10 @@ export default async function ComparePage({ params }: Props) {
         <h1 className="text-2xl md:text-3xl font-bold text-ink mb-3">
           {a} と {b}<br className="md:hidden" /> 中古はどっちがお得？
         </h1>
-        <p className="text-ink-sub mb-3 leading-relaxed">{verdict(a, b, sa, sb)}{pixelNote(a, b)}{galaxyNote(a, b)}</p>
+        <p className="text-ink-sub mb-3 leading-relaxed">
+          {updated && <><time dateTime={updated.toISOString()}>{updatedDate}</time>時点、</>}
+          {verdict(a, b, sa, sb)}{pixelNote(a, b)}{galaxyNote(a, b)}
+        </p>
         {priceReadingSentence(a, b, sideA, sideB) && (
           <p className="text-ink-sub mb-4 leading-relaxed">{priceReadingSentence(a, b, sideA, sideB)}</p>
         )}
