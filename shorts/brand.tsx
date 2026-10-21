@@ -35,13 +35,13 @@ async function main() {
   );
 
   // バナー: 中央 1546x423 の中に収める
-  const bannerText = "毎週更新 中古iPhone 値下がりランキング大手中古ショップ16店の相場を毎日集計・検品担当のひと言used.gadelog.com";
+  const bannerText = "毎週更新 中古iPhone 値下がりランキング大手中古ショップ17店の相場を毎日集計・検品担当のひと言used.gadelog.com";
   await save(
     "banner.png",
     <div style={{ width: 2560, height: 1440, display: "flex", alignItems: "center", justifyContent: "center", background: NAVY, fontFamily: "Noto Sans JP" }}>
       <div style={{ width: 1546, height: 423, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
         <div style={{ display: "flex", padding: "10px 36px", borderRadius: 20, background: RED, fontSize: 72, fontWeight: 900, color: "white", whiteSpace: "nowrap" }}>毎週更新 中古iPhone 値下がりランキング</div>
-        <div style={{ display: "flex", marginTop: 28, fontSize: 48, fontWeight: 500, color: "white", opacity: 0.9 }}>大手中古ショップ16店の相場を毎日集計・検品担当のひと言</div>
+        <div style={{ display: "flex", marginTop: 28, fontSize: 48, fontWeight: 500, color: "white", opacity: 0.9 }}>大手中古ショップ17店の相場を毎日集計・検品担当のひと言</div>
         <div style={{ display: "flex", marginTop: 16, fontSize: 56, fontWeight: 900, color: TEAL }}>used.gadelog.com</div>
       </div>
     </div>,
