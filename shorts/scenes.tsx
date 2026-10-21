@@ -1,6 +1,6 @@
 /**
  * 場面ごとの 1 コマ（1080x1920）。t は場面の開始からの秒数。
- * 配置: 上 240px は YouTube の UI で空け、見出しの帯（y240〜570・3行の大きな文字）・内容（y590〜1400）・注記（y1420〜）、下 440px 以上は空ける。
+ * 配置: 上 250px は YouTube の UI で空け、見出しの帯（y250〜570・3行の大きな文字）・内容（y590〜1400）・注記（y1420〜）、下 440px 以上は空ける。
  * 左右の余白は 80px（内容の幅 920）で、文字はすべて中央そろえ。見出しの帯はどの場面にも出して、途中から見た人にも話題が分かるようにする
  */
 import type { ReactElement, ReactNode } from "react";
@@ -13,7 +13,7 @@ export const H = 1920;
 export const FPS = 30;
 const MARGIN = 80;
 const CW = W - MARGIN * 2; // 920
-const HEADER = { top: 240, height: 330 };
+const HEADER = { top: 250, height: 320 };
 const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
 const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
