@@ -1,6 +1,6 @@
 /**
  * 場面ごとの 1 コマ（1080x1920）。t は場面の開始からの秒数。
- * 配置: 上 250px は YouTube の UI で空け、見出しの帯（y250〜470）・内容（y500〜1380）・注記（y1400〜）、下 440px 以上は空ける。
+ * 配置: 上 240px は YouTube の UI で空け、見出しの帯（y240〜570・3行の大きな文字）・内容（y590〜1400）・注記（y1420〜）、下 440px 以上は空ける。
  * 左右の余白は 80px（内容の幅 920）で、文字はすべて中央そろえ。見出しの帯はどの場面にも出して、途中から見た人にも話題が分かるようにする
  */
 import type { ReactElement, ReactNode } from "react";
@@ -13,8 +13,11 @@ export const H = 1920;
 export const FPS = 30;
 const MARGIN = 80;
 const CW = W - MARGIN * 2; // 920
-const HEADER = { top: 250, height: 220 };
-const BODY = { top: 500, height: 880 };
+const HEADER = { top: 240, height: 330 };
+const BODY = { top: 590, height: 810 };
+/** 見出しの帯の文字（上の小さな行・大きな2行） */
+const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
+const HEAD_TITLE = ["今週の中古iPhone", "値下がりランキング"];
 
 /**
  * 色はサイトと同じ（lib/brandColors.ts = app/globals.css の @theme）。白いカードの上は SITE、紺の地の上は ON_DARK
@@ -74,13 +77,13 @@ const comment = (dur: number, start: number, gap: number, n: number): Scene => (
 export const TIMELINE = (s: Script, v: Variant): Scene[] => {
   const n = s.scenes.comment.lines.length;
   if (v === "B") return [
-    { id: "hookNum", dur: 4, anim: 1.0 }, countdown(0.8, 1.2), reveal(4), comment(5.5, 0.3, 0.7, n), outro(1.2),
+    { id: "hookNum", dur: 4, anim: 1.0 }, countdown(0.8, 1.2), reveal(4), comment(5.5, 0, 0.7, n), outro(1.2),
   ];
   if (v === "C") return [
-    { id: "hookChart", dur: 4.5, anim: 3.4 }, countdown(0.5, 1.6), reveal(5), comment(8.5, 0.4, 1.0, n), outro(1.5),
+    { id: "hookChart", dur: 4.5, anim: 3.4 }, countdown(0.5, 1.6), reveal(5), comment(8.5, 0, 1.0, n), outro(1.5),
   ];
   return [
-    { id: "hook", dur: 3, anim: 3 }, countdown(0.5, 1.6), reveal(5), { id: "trend", dur: 4, anim: 1.7 }, comment(8, 0.4, 1.0, n), outro(1.5),
+    { id: "hook", dur: 3, anim: 3 }, countdown(0.5, 1.6), reveal(5), { id: "trend", dur: 4, anim: 1.7 }, comment(8, 0, 1.0, n), outro(1.5),
   ];
 };
 
@@ -102,13 +105,15 @@ function Frame({ s, children, header = true, footer = true }: { s: Script; child
     <div style={{ width: W, height: H, display: "flex", position: "relative", background: C.bg, fontFamily: "Noto Sans JP", color: C.white }}>
       {header && (
         <div style={{ position: "absolute", left: MARGIN, top: HEADER.top, width: CW, height: HEADER.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: C.red, borderRadius: 28 }}>
-          <div style={{ ...row, fontSize: 38, fontWeight: 500, color: "rgba(255,255,255,0.85)" }}>{`毎週更新・大手中古ショップ${s.shopCount}店の相場`}</div>
-          <div style={{ ...row, fontSize: FIT("今週の中古iPhone 値下がりランキング", CW - 40, 64), fontWeight: 900, marginTop: 10 }}>今週の中古iPhone 値下がりランキング</div>
+          <div style={{ ...row, fontSize: FIT(HEAD_SUB(s.shopCount), CW - 60, 52), fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>{HEAD_SUB(s.shopCount)}</div>
+          {HEAD_TITLE.map((l, i) => (
+            <div key={i} style={{ ...row, fontSize: Math.min(...HEAD_TITLE.map((x) => FIT(x, CW - 60, 104))), fontWeight: 900, lineHeight: 1.15, marginTop: i ? 0 : 6 }}>{l}</div>
+          ))}
         </div>
       )}
       <div style={{ position: "absolute", left: MARGIN, top: BODY.top, width: CW, height: BODY.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>{children}</div>
       {footer && (
-        <div style={{ position: "absolute", left: MARGIN, top: 1400, width: CW, display: "flex", justifyContent: "center", fontSize: 30, fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>
+        <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", justifyContent: "center", fontSize: 30, fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>
           {`${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`}
         </div>
       )}
@@ -138,8 +143,8 @@ const BADGE = [C.gold, C.silver, C.bronze, C.navy, C.navy];
 
 function Ranking({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   const items = s.scenes.ranking.items.slice(0, RANK_SHOWN);
-  // 1行 270px・3行。機種名は右の列の幅いっぱい、その下に 容量・率・額
-  const RH = 270;
+  // 1行 260px・3行。機種名は右の列の幅いっぱい、その下に 容量・率・額
+  const RH = 260;
   const RIGHT = 680;
   return (
     <Frame s={s}>
@@ -278,7 +283,7 @@ function Trend({ s, t }: { s: Script; t: number }) {
   return (
     <Frame s={s}>
       {title}
-      <ChartCard points={points} p={prog(t, 0.2, 1.3)} labels={false} mark={mark} />
+      <ChartCard points={points} p={prog(t, 0, 1.3)} labels={false} mark={mark} />
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", width: CW, marginTop: 28, opacity: shown }}>
         <span style={{ ...row, width: 340, justifyContent: "flex-start", fontSize: FIT(startText, 340, 40), fontWeight: 900, color: C.sub }}>{startText}</span>
         <span style={{ ...row, width: 560, justifyContent: "flex-end", fontSize: FIT(endText, 560, 72), fontWeight: 900, color: C.redLight }}>{endText}</span>
@@ -330,7 +335,7 @@ function Comment({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
         <div style={{ ...row, fontSize: 40, fontWeight: 900, color: C.white, background: C.amber, padding: "8px 32px", borderRadius: 999 }}>{`${speaker}のひと言`}</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 44 }}>
           {lines.map((l, i) => (
-            <div key={i} style={{ ...row, fontSize: size, fontWeight: 900, marginBottom: 26, opacity: prog(t, (o?.start ?? 0.4) + i * (o?.gap ?? 1.0), 0.4) }}>{l}</div>
+            <div key={i} style={{ ...row, fontSize: size, fontWeight: 900, marginBottom: 26, opacity: prog(t, (o?.start ?? 0.4) + i * (o?.gap ?? 1.0), 0.25) }}>{l}</div>
           ))}
         </div>
       </div>
@@ -344,7 +349,7 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   return (
     <Frame s={s} header={false} footer={false}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0, 0.5) }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0, 0.25) }}>
           {out.lines.map((l, i) => (
             <div key={i} style={{ ...row, fontSize: FIT(l, CW, 88), fontWeight: 900, marginBottom: 14 }}>{l}</div>
           ))}

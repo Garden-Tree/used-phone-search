@@ -45,7 +45,7 @@ function seFilters(times: { at: number; kind: "pop" | "ta" }[]): { parts: string
   return { parts, labels };
 }
 
-/** 声の後ろに残す間（秒）。場面が「声の始まり＋声＋この間」より短ければ、そこまで場面を延ばす */
+/** 声の後ろに残す間（秒）。声のある場面は「声の始まり＋声＋この間」の長さにする（動きが終わるまでは切らない） */
 const VOICE_PAD = 0.5;
 const MAX_TOTAL = 60;
 
@@ -85,7 +85,8 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
       return out;
     }
     const clip = sc.id === "comment" && voices.manual ? voices.manual : key ? voices.clips[key] : undefined;
-    const out = clip && sc.dur < clip.dur + VOICE_PAD ? { ...sc, dur: Math.ceil((clip.dur + VOICE_PAD) * 10) / 10 } : sc;
+    // 声のある場面は「声＋VOICE_PAD」に合わせて延ばす／縮める（声の後に動かない絵が長く残らないように）。動きの途中では切らない
+    const out = clip ? { ...sc, dur: Math.max(Math.ceil((sc.anim + 0.3) * 10) / 10, Math.ceil((clip.dur + VOICE_PAD) * 10) / 10) } : sc;
     if (clip) segVoices.push({ file: clip.file, at, dur: clip.dur, label: sc.id });
     if (sc.id === "ranking") log.push(`  ${at.toFixed(2)}s ranking（${out.dur.toFixed(1)}秒）行: ${(out.o?.at ?? []).slice(1).map((t, i) => `${i + 2}位 ${(at + t).toFixed(2)}s`).reverse().join("・")}`);
     else log.push(`  ${at.toFixed(2)}s ${sc.id}（${out.dur.toFixed(1)}秒）`);
