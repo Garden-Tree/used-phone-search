@@ -51,7 +51,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 ### ナレーション（VOICEVOX）
 - **標準の声は 春日部つむぎ（ノーマル）**。全テーマ（drops も budget も）この声（10/21 ユーザーの指示。1本目の drops だけ ずんだもん）。
   - 名前で指定する（`voice.ts` の `DEFAULT_SPEAKER`・`make-short.tsx` の `THEME_SPEAKER`）。ID はエンジンの GET /speakers から引く（この PC では 8）。
-  - 説明欄のクレジットは「VOICEVOX:春日部つむぎ」。規約は要確認（docs/youtube-shorts.md）。
+  - 説明欄のクレジットは「VOICEVOX:春日部つむぎ」（公式の規約で商用可・クレジット必須。10/21 確認。docs/youtube-shorts.md）。
   - 説明欄のクレジット「VOICEVOX:<キャラクター名>」は render が自動で入れる。
   - 話者を変えたら `--voice-dump` で読みを、render のタイムラインで長さを見直す（話者で間合いが違う）。キャラクターごとの規約を読んでから使う（docs/youtube-shorts.md）。
 - **速さ 1.25倍**（`voice.speedScale`）。口調は「です・ます」。「のだ」口調は使わない。
