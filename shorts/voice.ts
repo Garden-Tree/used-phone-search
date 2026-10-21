@@ -52,7 +52,7 @@ export function defaultNarration(s: Script): Partial<Record<NarrationKey, string
 
 /**
  * newused の既定: hook 問い / ranking 3位・2位を1文ずつ（「3位は<機種>、<容量>。新品より<額>安いです。」。文頭の「○位は」で行を出す）
- * reveal 1位の新品・中古の相場・差額と率（「新品の<額>」。「新品<額>」だと「シンピンジュウ/ハチマン」と数字に付いて読まれる）/ comment ひと言の本文だけ / outro サイトへの誘導と問い
+ * reveal 1位の差額（約○.○万円）と率（およそ○%）だけ。細かい額は画面に出す（4つの額を読むと13秒かかった・10/21）/ comment ひと言の本文だけ / outro サイトへの誘導と問い
  */
 function newUsedNarration(s: NewUsedScript): Partial<Record<NarrationKey, string>> {
   const items = s.scenes.ranking.items;
@@ -60,7 +60,7 @@ function newUsedNarration(s: NewUsedScript): Partial<Record<NarrationKey, string
   return {
     hook: "新品より、中古でいくら安くなる？",
     ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、${items[i].storage}。新品より${yen(items[i].diff)}安いです。`).join(""),
-    reveal: `1位は${top.model}、${top.storage}。新品の${yen(top.newPrice)}に対して、中古の相場は${yen(top.usedMedian)}。${yen(top.diff)}、${top.pct.toFixed(1)}%安くなります。`,
+    reveal: `1位は${top.model}、${top.storage}。中古の相場は、新品より約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、新品と中古、どちらにしますか？",
   };
