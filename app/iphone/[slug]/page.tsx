@@ -50,6 +50,8 @@ import { activeShopsFor } from "@/lib/activeShops";
 import { appleCheckedJa, applePriceSource, newVsUsed } from "@/lib/applePrices";
 import { newVsUsedOfficial, officialCheckedJa, officialPriceSource } from "@/lib/officialPrices";
 import NewVsUsedSection from "@/app/components/NewVsUsedSection";
+import RepairOrReplace from "@/app/components/RepairOrReplace";
+import IpadGuide from "@/app/components/IpadGuide";
 import { buildFaq, buildSummary, modelDescription } from "@/lib/modelFaq";
 import { BUYBACK_PROGRAMS, REPAIR_PROGRAMS } from "@/lib/buyback";
 import { SIM_PLANS } from "@/lib/simPlans";
@@ -843,6 +845,18 @@ export default async function ModelPage({ params }: Props) {
                   )}
                 </div>
               </div>
+
+              {/* 修理か買い替えか（iPhone・Apple 公式の料金を確かめた機種だけ。広告ではない）／iPad の選ぶときの目安 */}
+              {isIphone && (
+                <div className="md:order-6 min-[1360px]:col-span-2 empty:hidden">
+                  <RepairOrReplace model={model} minPrice={stats.minPrice} medianPrice={stats.medianPrice} medianStorage={stats.medianStorage} />
+                </div>
+              )}
+              {device === "ipad" && (
+                <div className="md:order-6 min-[1360px]:col-span-2">
+                  <IpadGuide model={model} byStorage={stats.byStorage} />
+                </div>
+              )}
 
               {/* スマホ: 回線・買取のタイル。PC は右の固定サマリーの下に出す */}
               {prTiles("md:hidden")}
