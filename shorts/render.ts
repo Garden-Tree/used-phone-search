@@ -128,7 +128,8 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
   writeFileSync(list, segs.map((p) => `file '${p.replace(/\\/g, "/")}'`).join("\n"));
 
   // 音: 無音を土台に、効果音・BGM（低音量）・声（各場面の頭から）を重ねる。
-  // 声の間は効果音と BGM を下げ、声があるときだけ全体を -14 LUFS（YouTube の目安）にそろえる。声がなければ今まで通り
+  // 声の間は効果音と BGM を下げ、声があるときだけ全体を -11 LUFS にそろえる（10/21 ユーザーの指示「音圧を大きく、特に声」）。
+  // 声はコンプレッサーで粒をそろえて持ち上げ、BGM は声の間 3.5% まで下げる。YouTube は再生時に -14 前後へ下げるので、効くのは「声と BGM の差」と声の密度
   const bgm = resolve(__dirname, "assets/bgm.mp3");
   const hasBgm = existsSync(bgm);
   const duck = (normal: number, low: number) =>
@@ -137,20 +138,20 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
   const { parts, labels } = seFilters(se);
   let mix = ["[1:a]", ...labels];
   if (segVoices.length) {
-    parts.push(`${mix.join("")}amix=inputs=${mix.length}:duration=first:normalize=0,volume='${duck(1, 0.35)}':eval=frame[sfx]`);
+    parts.push(`${mix.join("")}amix=inputs=${mix.length}:duration=first:normalize=0,volume='${duck(1, 0.25)}':eval=frame[sfx]`);
     mix = ["[sfx]"];
   }
   let next = 2;
   if (hasBgm) {
     inputs.push("-stream_loop", "-1", "-i", bgm);
-    parts.push(`[${next}:a]atrim=0:${total},asetpts=PTS-STARTPTS,volume='${duck(0.15, 0.05)}':eval=frame,afade=t=out:st=${total - 3}:d=3[bgm]`);
+    parts.push(`[${next}:a]atrim=0:${total},asetpts=PTS-STARTPTS,volume='${duck(0.12, 0.035)}':eval=frame,afade=t=out:st=${total - 3}:d=3[bgm]`);
     mix.push("[bgm]");
     next++;
   }
   segVoices.forEach((v, i) => {
     const ms = Math.round(v.at * 1000);
     inputs.push("-i", v.file);
-    parts.push(`[${next}:a]aresample=44100,aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=${ms}|${ms}[v${i}]`);
+    parts.push(`[${next}:a]aresample=44100,aformat=sample_fmts=fltp:channel_layouts=stereo,acompressor=threshold=0.1:ratio=3:attack=5:release=120:makeup=2,volume=1.3,adelay=${ms}|${ms}[v${i}]`);
     mix.push(`[v${i}]`);
     next++;
   });
@@ -164,7 +165,7 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
     // いったん無圧縮で書き、測ってから2回目で合わせる（ffmpeg の loudnorm の2パス）
     const mixed = join(framesDir, "mixed.mkv");
     run(["-y", ...inputs, "-filter_complex", parts.join(";"), "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "pcm_s16le", "-t", String(total), mixed]);
-    const LN = "loudnorm=I=-14:TP=-1.5:LRA=11";
+    const LN = "loudnorm=I=-11:TP=-1:LRA=7";
     const r = spawnSync("ffmpeg", ["-hide_banner", "-nostats", "-i", mixed, "-af", `${LN}:print_format=json`, "-f", "null", "-"], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
     const m = JSON.parse(r.stderr.slice(r.stderr.lastIndexOf("{"), r.stderr.lastIndexOf("}") + 1)) as Record<string, string>;
     const second = `${LN}:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}:offset=${m.target_offset},aresample=44100`;
