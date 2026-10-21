@@ -45,7 +45,8 @@ export async function buildDropsScript(date: string): Promise<Script> {
   const description = [
     `今週いちばん値下がりした中古iPhoneのランキングです。1位は${topModel}（${topStorage}）で、相場が${man(top.before)}円から${man(top.after)}円へ（−${man(top.drop)}円・−${top.rate.toFixed(1)}%）。`,
     "",
-    ...drops.map((d, i) => `${i + 1}位 ${nameOf(d.modelSlug)}（${storageLabel(d.storage, nameOf(d.modelSlug))}） −${d.rate.toFixed(1)}%（−${man(d.drop)}円）`),
+    // 動画は3位までなので、説明欄も3位まで（10/21 ユーザーの指示）
+    ...drops.slice(0, 3).map((d, i) => `${i + 1}位 ${nameOf(d.modelSlug)}（${storageLabel(d.storage, nameOf(d.modelSlug))}） −${d.rate.toFixed(1)}%（−${man(d.drop)}円）`),
     "",
     `対象: iOS 27 対応の iPhone。データ: 大手中古ショップ${shopCount}店の在庫の中央値（相場＝在庫がいちばん多い容量の中央値）。${md(top.fromDate)}〜${md(top.toDate)}の比較。`,
     "",
