@@ -9,8 +9,8 @@
   - 設定の文面は `shorts/channel.md`、画像は `npx tsx shorts/brand.tsx` で作り直せる。
 - **動画**: 試作は 10/17 のデータで3パターン（`shorts/out/2026-10-17-drops/`。out は Git に入らない）。
   - **まだ1本も投稿していない。**
-- **音**: 効果音だけ（ffmpeg で合成）。BGM（`shorts/assets/bgm.mp3`）と声（`voice.m4a`）はまだない。
-  - BGM・声を入れたときの音の重ね方は未テスト。
+- **音**: 効果音（ffmpeg で合成）＋ VOICEVOX のナレーション（任意・10/21〜。下の「ナレーション」）。BGM（`shorts/assets/bgm.mp3`）はまだない。
+  - VOICEVOX はこの PC にまだ入っていない。声の重ね方はまねのエンジン（無音に近い WAV を返す）で確認済み。実際の声では未確認。
 
 ## 毎週の作り方
 
@@ -24,6 +24,17 @@ npx tsx shorts/make-short.tsx drops render          # short-A/B/C.mp4（--varian
 - 投稿は手動で、YouTube に出したものを X にも出す。Claude が Chrome で投稿するときは、直前にユーザーの確認をとる。
 - 対象は iOS 27 対応の iPhone だけ（`ALL_CATALOG_MODELS`）。
 - 推移は、在庫件数がふだんの半分未満の日を除く。縦軸は最高値の20%以上の幅をとる。
+
+## ナレーション（VOICEVOX）
+
+1. VOICEVOX アプリを入れる（公式 https://voicevox.hiroshiba.jp/ から Windows 版。インストールはユーザー）。
+2. アプリを起動したままにする（エンジンが http://127.0.0.1:50021 で動く）。
+3. `npx tsx shorts/make-short.tsx --voice-test "今週いちばん値下がりした中古iPhoneは？"` で声と読みを確かめる（`shorts/out/voice-test.wav`）。話者を変えるなら `--speaker 2` や `--speaker 四国めたん/ノーマル`、速さは `--speed 1.2`。
+4. 決めた話者を `script.json` の `voice.speaker` に書き、いつも通り `render`。声なしにするときは `--no-voice`。
+- アプリが起動していなければ、声なしで今まで通り書き出す（止まらない）。
+- 読む文・タイミング・音の重ね方は `shorts/README.md`「ナレーション」。
+- **クレジット**: 声を使った動画は、説明文に「VOICEVOX:キャラクター名」（既定は「VOICEVOX:ずんだもん」）を入れる。`youtube.txt` に自動で入る。
+- **規約（要確認）**: VOICEVOX はキャラクター（話者）ごとに利用規約が別にある。ずんだもん・四国めたんはクレジット表記があれば商用利用できるとされるが、細かい条件は各キャラクターの規約で要確認。**話者を変えるときは、そのキャラクターの規約を読んでから使う。**
 
 ## 3パターンの比較
 
@@ -58,4 +69,5 @@ npx tsx shorts/make-short.tsx drops render          # short-A/B/C.mp4（--varian
    - 締めに、サイトの機種ページのスクショ。
 3. テーマを増やす（4週で一巡）: 予算別（○万円で買えるいちばん新しい iPhone）・2機種比較・検品担当の豆知識。`shorts/themes/` に足す。
 4. BGM: ユーザーが YouTube オーディオライブラリから選んで置く。
+   - VOICEVOX を入れたら、実際の声で1本書き出して、声の大きさ・効果音の下がり方・読み間違い（機種名）を聞いて確かめる。
 5. 8週続けて、再生数・登録者・流入で続けるか決める。

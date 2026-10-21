@@ -8,6 +8,8 @@
 npx tsx shorts/make-short.tsx drops plan            # 台本 shorts/out/<日付>-drops/script.json を作る（あれば止まる。上書きは --force）
 npx tsx shorts/make-short.tsx drops render          # 最新の台本から short.mp4 と youtube.txt を作る
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
+npx tsx shorts/make-short.tsx drops render --no-voice  # VOICEVOX の声を入れない
+npx tsx shorts/make-short.tsx --voice-test "今週いちばん値下がりした中古iPhoneは？"   # 声だけ試す（shorts/out/voice-test.wav）。--speaker 3 / --speaker ずんだもん/ノーマル・--speed 1.1
 ```
 
 テーマは今のところ `drops`（今週いちばん値下がりした中古iPhone）だけ。追加するときは `shorts/themes/` に「データ → 台本」を足し、`scenes.tsx` に場面を足す。
@@ -16,9 +18,21 @@ npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --k
 
 1. `plan` で台本を作る（DB の既存の集計だけ読む）
 2. `script.json` の `scenes.comment.lines`（検品担当のひと言）を**自分の判断で書き換える**（3行まで・1行16字以内）。タイトル・説明文も確認
-3. 声を入れる週は `<出力先>/voice.m4a`（mp3・wav も可）を置く。コメント場面（22秒）から再生され、BGM は自動で下がる
+3. 声: VOICEVOX アプリを起動しておけば、`render` がナレーション（ずんだもん）を自動で入れる（下の「ナレーション」）。自分で録った声を使う週は `<出力先>/voice.m4a`（mp3・wav も可）を置くと、コメント場面はそちらが優先
 4. `render` で `short.mp4` と `youtube.txt`（タイトル・説明・ハッシュタグ）を作る。mp4 を再生して確認
 5. YouTube に手動でアップロード（API の自動投稿はしない）。同じ動画を X にも投稿する
+
+## ナレーション（VOICEVOX・任意）
+
+- VOICEVOX アプリ（https://voicevox.hiroshiba.jp/ ）を入れて起動すると、エンジンが http://127.0.0.1:50021 で動く。`render` はそこへ文を送って WAV を作る。別の場所なら環境変数 `VOICEVOX_URL`
+- **起動していなければ「接続できません」と出して、声なしで今まで通り書き出す**（止まらない）
+- 読む文は `script.json` の `narration`（場面ごと: hook・ranking・reveal・trend・comment・outro）。書かない場面は既定の文（`shorts/voice.ts` の `defaultNarration`）、空文字 `""` にするとその場面は声なし
+  - 既定: hook「今週いちばん値下がりした中古iPhoneは…？」・reveal「1位は<機種>、<容量>。1週間で<金額>円の値下がりです。」・comment「検品担当のひと言。」＋ `comment.lines` をつなげた文。`plan` は hook・reveal を書き出す（comment は lines を直せば声も変わる）
+  - B・C の冒頭（hookNum・hookChart）は hook の文を読む。英字の機種名・GB・% は読み上げのときだけカナに直す（`speakable`）
+- 話者は `script.json` の `voice`: `{ "speaker": 3, "speedScale": 1.1, "volume": 1.0 }`。speaker は ID か名前（`"ずんだもん"`・`"ずんだもん/ノーマル"`）。既定は ID 3（ずんだもん ノーマル）
+- 声は場面の頭から流れる。場面が「声＋0.5秒」より短ければ場面を延ばす（60秒を超えたら注意を出す）。声の間は効果音・BGM を下げ、声があるときは全体を -14 LUFS にそろえる
+- 合成した WAV は `shorts/out/voice-cache/`（文・話者・速さ・音量のハッシュ）。同じ文はアプリなしでも使い回す
+- **声を使ったら `youtube.txt` の説明文の最後に「VOICEVOX:ずんだもん」（話者のキャラクター名）が自動で入る**。消さない。キャラクターごとに利用規約が違う（docs/youtube-shorts.md）
 
 ## BGM
 

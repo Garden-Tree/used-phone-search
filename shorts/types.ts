@@ -2,6 +2,9 @@
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
+/** VOICEVOX の話者。speaker は ID（既定 3＝ずんだもん ノーマル）か名前（"ずんだもん"・"ずんだもん/ノーマル"） */
+export type VoiceConfig = { speaker?: number | string; speedScale?: number; volume?: number };
+
 export type Script = {
   theme: string;
   /** 作成日（JST） */
@@ -19,4 +22,8 @@ export type Script = {
     outro: { lines: string[]; url: string; note: string };
   };
   youtube: { title: string; description: string; hashtags: string[] };
+  /** ナレーション（任意）。場面ごとの読み上げ文。書かない場面は既定の文（shorts/voice.ts の defaultNarration）、空文字は声なし */
+  narration?: Partial<Record<"hook" | "ranking" | "reveal" | "trend" | "comment" | "outro", string>>;
+  /** VOICEVOX の設定（任意）。なければ ずんだもん・速さ 1.1 */
+  voice?: VoiceConfig;
 };

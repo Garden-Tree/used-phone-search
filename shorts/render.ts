@@ -6,6 +6,7 @@ import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
 import { FPS, H, TIMELINE, VARIANTS, W, sceneFrame, type Variant } from "./scenes";
 import type { Script } from "./types";
+import { VOICEVOX_URL, cachedCharacter, engineAvailable, narrationKey, narrationOf, resolveSpeaker, synthesize, voiceCredit, type Clip, type NarrationKey } from "./voice";
 
 function run(args: string[], bin = "ffmpeg") {
   const r = spawnSync(bin, args, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
@@ -44,11 +45,28 @@ function seFilters(times: { at: number; kind: "pop" | "ta" }[]): { parts: string
   return { parts, labels };
 }
 
-async function renderOne(dir: string, script: Script, variant: Variant, fonts: Awaited<ReturnType<typeof notoSansJp>>, keepFrames: boolean) {
+/** 声の後ろに残す間（秒）。場面が声より短ければ、声＋この間まで場面を延ばす */
+const VOICE_PAD = 0.5;
+const MAX_TOTAL = 60;
+
+type Voices = { clips: Partial<Record<NarrationKey, Clip>>; manual?: { file: string; dur: number } };
+
+async function renderOne(dir: string, script: Script, variant: Variant, fonts: Awaited<ReturnType<typeof notoSansJp>>, keepFrames: boolean, voices: Voices) {
   const framesDir = join(dir, `frames-${variant}`);
   rmSync(framesDir, { recursive: true, force: true });
-  const timeline = TIMELINE(script, variant);
+  // 声のある場面は、声の長さ＋間より短ければ延ばす（延びた分は最後のコマを止める）。声は場面の頭から
+  const segVoices: { file: string; at: number; dur: number }[] = [];
+  let at = 0;
+  const timeline = TIMELINE(script, variant).map((sc) => {
+    const key = narrationKey(sc.id);
+    const clip = sc.id === "comment" && voices.manual ? voices.manual : key ? voices.clips[key] : undefined;
+    const out = clip && sc.dur < clip.dur + VOICE_PAD ? { ...sc, dur: Math.ceil((clip.dur + VOICE_PAD) * 10) / 10 } : sc;
+    if (clip) segVoices.push({ file: clip.file, at, dur: clip.dur });
+    at += out.dur;
+    return out;
+  });
   const total = timeline.reduce((a, s) => a + s.dur, 0);
+  if (total > MAX_TOTAL) console.warn(`注意: ${variant} が ${total.toFixed(1)} 秒になりました（ショートは ${MAX_TOTAL} 秒以内に）。ナレーションを短くするか voice.speedScale を上げてください`);
   const segs: string[] = [];
   const se: { at: number; kind: "pop" | "ta" }[] = [];
   let offset = 0;
@@ -80,41 +98,85 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
   const list = join(framesDir, "list.txt");
   writeFileSync(list, segs.map((p) => `file '${p.replace(/\\/g, "/")}'`).join("\n"));
 
-  // 音: 無音を土台に、効果音・BGM（低音量）・声（コメント場面の開始から）を重ねる
+  // 音: 無音を土台に、効果音・BGM（低音量）・声（各場面の頭から）を重ねる。
+  // 声の間は効果音と BGM を下げ、声があるときだけ全体を -14 LUFS（YouTube の目安）にそろえる。声がなければ今まで通り
   const bgm = resolve(__dirname, "assets/bgm.mp3");
   const hasBgm = existsSync(bgm);
-  const voice = ["m4a", "mp3", "wav"].map((e) => join(dir, `voice.${e}`)).find(existsSync);
-  const commentStart = timeline.slice(0, timeline.findIndex((s) => s.id === "comment")).reduce((a, s) => a + s.dur, 0);
+  const duck = (normal: number, low: number) =>
+    segVoices.length ? `if(${segVoices.map((v) => `between(t,${v.at.toFixed(3)},${(v.at + v.dur).toFixed(3)})`).join("+")},${low},${normal})` : String(normal);
   const inputs = ["-f", "concat", "-safe", "0", "-i", list, "-f", "lavfi", "-t", String(total), "-i", "anullsrc=r=44100:cl=stereo"];
   const { parts, labels } = seFilters(se);
-  const mix = ["[1:a]", ...labels];
+  let mix = ["[1:a]", ...labels];
+  if (segVoices.length) {
+    parts.push(`${mix.join("")}amix=inputs=${mix.length}:duration=first:normalize=0,volume='${duck(1, 0.35)}':eval=frame[sfx]`);
+    mix = ["[sfx]"];
+  }
   let next = 2;
   if (hasBgm) {
     inputs.push("-stream_loop", "-1", "-i", bgm);
-    const duck = voice ? `if(between(t,${commentStart},${commentStart + duration(voice)}),0.05,0.15)` : "0.15";
-    parts.push(`[${next}:a]atrim=0:${total},asetpts=PTS-STARTPTS,volume='${duck}':eval=frame,afade=t=out:st=${total - 3}:d=3[bgm]`);
+    parts.push(`[${next}:a]atrim=0:${total},asetpts=PTS-STARTPTS,volume='${duck(0.15, 0.05)}':eval=frame,afade=t=out:st=${total - 3}:d=3[bgm]`);
     mix.push("[bgm]");
     next++;
   }
-  if (voice) {
-    inputs.push("-i", voice);
-    parts.push(`[${next}:a]adelay=${Math.round(commentStart * 1000)}|${Math.round(commentStart * 1000)}[voice]`);
-    mix.push("[voice]");
-  }
-  parts.push(`${mix.join("")}amix=inputs=${mix.length}:duration=first:normalize=0[a]`);
+  segVoices.forEach((v, i) => {
+    const ms = Math.round(v.at * 1000);
+    inputs.push("-i", v.file);
+    parts.push(`[${next}:a]aresample=44100,aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=${ms}|${ms}[v${i}]`);
+    mix.push(`[v${i}]`);
+    next++;
+  });
+  const master = segVoices.length ? ",loudnorm=I=-14:TP=-1.5:LRA=11,aresample=44100" : "";
+  parts.push(`${mix.join("")}amix=inputs=${mix.length}:duration=first:normalize=0${master}[a]`);
   const out = join(dir, `short-${variant}.mp4`);
   run(["-y", ...inputs, "-filter_complex", parts.join(";"), "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-t", String(total), "-movflags", "+faststart", out]);
   if (!keepFrames) rmSync(framesDir, { recursive: true, force: true });
-  console.log(`${variant}: ${out}（${duration(out).toFixed(1)} 秒・効果音 ${se.length} 回・BGM ${hasBgm ? "あり" : "なし"}・声 ${voice ?? "なし"}）`);
+  console.log(`${variant}: ${out}（${duration(out).toFixed(1)} 秒・効果音 ${se.length} 回・BGM ${hasBgm ? "あり" : "なし"}・声 ${segVoices.length ? `${segVoices.length} か所` : "なし"}）`);
   return out;
 }
 
-/** variant を省略すると A・B・C の3つを作る */
-export async function renderShort(dir: string, script: Script, keepFrames: boolean, variant: Variant | "all" = "all") {
+/**
+ * 声を用意する。<出力先>/voice.m4a（mp3・wav）があればコメント場面はそれを使う（VOICEVOX より優先）。
+ * VOICEVOX に届かなければ、キャッシュにある文だけ使い、残りは声なし（止めない）
+ */
+async function prepareVoices(dir: string, script: Script, useVoicevox: boolean): Promise<{ voices: Voices; credit: string | null }> {
+  const voices: Voices = { clips: {} };
+  const manual = ["m4a", "mp3", "wav"].map((e) => join(dir, `voice.${e}`)).find(existsSync);
+  if (manual) voices.manual = { file: manual, dur: duration(manual) };
+  if (!useVoicevox) {
+    console.log("声: VOICEVOX を使わない（--no-voice）");
+    return { voices, credit: null };
+  }
+  const online = await engineAvailable();
+  if (!online) console.log(`声: VOICEVOX（${VOICEVOX_URL}）に接続できません。VOICEVOX アプリを起動すると声が入ります。キャッシュにない文は声なしで書き出します`);
+  let credit: string | null = null;
+  try {
+    for (const [key, text] of Object.entries(narrationOf(script)) as [NarrationKey, string | undefined][]) {
+      if (!text?.trim() || (key === "comment" && manual)) continue;
+      const clip = await synthesize(text, script.voice, online);
+      if (!clip) continue;
+      voices.clips[key] = clip;
+      console.log(`声 ${key}: ${clip.dur.toFixed(1)} 秒「${text}」${clip.cached ? "（キャッシュ）" : ""}`);
+      credit ??= voiceCredit(online
+        ? (await resolveSpeaker(script.voice?.speaker, true)).character
+        : (cachedCharacter(clip) ?? (await resolveSpeaker(script.voice?.speaker, false)).character));
+    }
+  } catch (e) {
+    console.warn(`声: VOICEVOX の合成に失敗したので、VOICEVOX の声なしで書き出します\n  ${e instanceof Error ? e.message : e}`);
+    return { voices: { clips: {}, manual: voices.manual }, credit: null };
+  }
+  return { voices, credit };
+}
+
+/** variant を省略すると A・B・C の3つを作る。voice=false で VOICEVOX を使わない（--no-voice） */
+export async function renderShort(dir: string, script: Script, keepFrames: boolean, variant: Variant | "all" = "all", voice = true) {
   const fonts = await notoSansJp(allText(script) + readFileSync(join(__dirname, "scenes.tsx"), "utf8") + "0123456789,.%");
+  const { voices, credit } = await prepareVoices(dir, script, voice);
   const outs: string[] = [];
-  for (const v of variant === "all" ? VARIANTS : [variant]) outs.push(await renderOne(dir, script, v, fonts, keepFrames));
+  for (const v of variant === "all" ? VARIANTS : [variant]) outs.push(await renderOne(dir, script, v, fonts, keepFrames, voices));
   const y = script.youtube;
-  writeFileSync(join(dir, "youtube.txt"), `${y.title}\n\n${y.description}\n\n${y.hashtags.join(" ")}\n`);
+  // VOICEVOX の声を使ったときは、説明文の最後にクレジット（例「VOICEVOX:ずんだもん」）を必ず入れる
+  const description = credit ? `${y.description}\n\n${credit}` : y.description;
+  writeFileSync(join(dir, "youtube.txt"), `${y.title}\n\n${description}\n\n${y.hashtags.join(" ")}\n`);
+  if (credit) console.log(`youtube.txt に「${credit}」を入れました`);
   return outs;
 }
