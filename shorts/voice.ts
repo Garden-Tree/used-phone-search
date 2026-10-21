@@ -59,7 +59,7 @@ export function defaultNarration(s: Script): Partial<Record<NarrationKey, string
   return {
     hook: "今週いちばん値下がりした中古iPhoneは…？",
     ranking,
-    reveal: `1位は${h.model}、${h.storage}。1週間で${yen(h.drop)}、${top.rate.toFixed(1)}%の値下がりです。相場は${yen(h.before)}から、${yen(h.after)}になりました。`,
+    reveal: `1位は${h.model}、${h.storage}。1週間で${yen(h.drop)}、${top.rate.toFixed(1)}%の値下がりです。`,
     trend,
     // 「検品担当のひと言」は画面の札に出ているので読まない
     comment: commentSentence(s.scenes.comment.lines),

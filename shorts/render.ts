@@ -129,7 +129,7 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
 
   // 音: 無音を土台に、効果音・BGM（低音量）・声（各場面の頭から）を重ねる。
   // 声の間は効果音と BGM を下げ、声があるときだけ全体を -11 LUFS にそろえる（10/21 ユーザーの指示「音圧を大きく、特に声」）。
-  // 声はコンプレッサーで粒をそろえて持ち上げ、BGM は声の間 3.5% まで下げる。YouTube は再生時に -14 前後へ下げるので、効くのは「声と BGM の差」と声の密度
+  // 声はコンプレッサーで粒をそろえて持ち上げ、BGM は声の有無で上げ下げせず 4% で一定（声の切れ目で一瞬大きくなるのをやめた。10/21）。YouTube は再生時に -14 前後へ下げるので、効くのは「声と BGM の差」と声の密度
   const bgm = resolve(__dirname, "assets/bgm.mp3");
   const hasBgm = existsSync(bgm);
   const duck = (normal: number, low: number) =>
@@ -144,7 +144,7 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
   let next = 2;
   if (hasBgm) {
     inputs.push("-stream_loop", "-1", "-i", bgm);
-    parts.push(`[${next}:a]atrim=0:${total},asetpts=PTS-STARTPTS,volume='${duck(0.12, 0.035)}':eval=frame,afade=t=out:st=${total - 3}:d=3[bgm]`);
+    parts.push(`[${next}:a]atrim=0:${total},asetpts=PTS-STARTPTS,volume=0.04,afade=t=out:st=${total - 3}:d=3[bgm]`);
     mix.push("[bgm]");
     next++;
   }
