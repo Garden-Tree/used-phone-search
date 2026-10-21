@@ -1,7 +1,7 @@
 /** テーマ「今週いちばん値下がりした中古iPhone」: DB の集計 → 台本 */
 import { getPriceDrops } from "@/lib/marketStats";
 import { ALL_STORAGE, getPriceHistory } from "@/lib/priceHistory";
-import { ALL_CATALOG_MODELS, modelToSlug, slugToModel } from "@/lib/catalog";
+import { ALL_CATALOG_MODELS, modelPagePath, modelToSlug, slugToModel } from "@/lib/catalog";
 import { storageLabel } from "@/lib/format";
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
@@ -9,6 +9,8 @@ import type { Script } from "../types";
 
 const man = (n: number) => n.toLocaleString();
 const md = (iso: string) => `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}`;
+
+const utm = (date: string) => `utm_source=youtube&utm_medium=social&utm_campaign=shorts_${date.replace(/-/g, "")}`;
 
 export async function buildDropsScript(date: string): Promise<Script> {
   // 値下がり（7日前との比較）から iOS 27 対応の iPhone だけ上位5つ（非対応の古い機種はすすめない）
@@ -46,7 +48,10 @@ export async function buildDropsScript(date: string): Promise<Script> {
     ...drops.map((d, i) => `${i + 1}位 ${nameOf(d.modelSlug)}（${storageLabel(d.storage, nameOf(d.modelSlug))}） −${d.rate.toFixed(1)}%（−${man(d.drop)}円）`),
     "",
     `対象: iOS 27 対応の iPhone。データ: 大手中古ショップ${shopCount}店の在庫の中央値（相場＝在庫がいちばん多い容量の中央値）。${md(top.fromDate)}〜${md(top.toDate)}の比較。`,
-    "全機種の相場はプロフィールのリンクから（used.gadelog.com）",
+    "",
+    // 説明欄のリンク。YouTube から来た人を GA で数えるため utm を付ける（canonical は印なしなので検索には影響しない）
+    `${topModel}の店ごとの在庫と最安値: https://used.gadelog.com${modelPagePath(topModel)}?${utm(date)}`,
+    `全機種の中古相場: https://used.gadelog.com/?${utm(date)}`,
   ].join("\n");
 
   return {
