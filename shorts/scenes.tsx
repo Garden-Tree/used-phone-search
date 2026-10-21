@@ -27,29 +27,35 @@ export const VARIANTS: Variant[] = ["A", "B", "C"];
 /** 効果音: t は場面の開始からの秒数。pop は行が出る小さな音、ta は 1位発表の二音 */
 export type Se = { t: number; kind: "pop" | "ta" };
 /** dur: 場面の長さ（秒）、anim: 動きのある秒数（以降は最後のコマを止める）、o: 場面ごとの動きの設定（開始・間隔・拡大率） */
-/** voiceAt: ナレーションを流し始める秒（既定 0） */
-export type Scene = { id: SceneId; dur: number; anim: number; se?: Se[]; o?: { start?: number; gap?: number; k?: number }; voiceAt?: number };
+/** o.at: ランキングの行ごとの出る秒（items の添字。1 = 2位・2 = 3位）。声があるときは声の始まりから決める（render.ts） */
+export type Scene = { id: SceneId; dur: number; anim: number; se?: Se[]; o?: { start?: number; gap?: number; k?: number; at?: number[] } };
+
+/** ランキングに出す数（1位は伏せた枠・2位・3位）。4位・5位は出さない（声が 3位から読むため） */
+export const RANK_SHOWN = 3;
+/** 行が出る動きの秒数 */
+export const ROW_FADE = 0.25;
 
 /**
- * カウントダウン: 5位から下の順に出し、2位が出てから約1秒で 1位の発表へ（1位は最後まで「？？？」）。
- * ナレーション（3位・2位を読む）は 3位が出たところから
+ * カウントダウン: 3位 → 2位の順に出し、2位が出てから約1秒で 1位の発表へ（1位は最後まで「？？？」）。
+ * at を渡すとその時刻に出す（声に合わせる）。なければ start から gap ごと（声なし）
  */
-export const countdown = (start: number, gap: number): Scene => ({
-  id: "ranking",
-  dur: start + gap * 3 + 1.0,
-  anim: start + gap * 3 + 0.6,
-  se: [0, 1, 2, 3].map((i) => ({ t: start + gap * i, kind: "pop" as const })),
-  o: { start, gap },
-  voiceAt: start + gap * 2,
-});
-/** ナレーションがあるときのカウントダウンの間隔（声を待たせないよう速める） */
-export const VOICED_GAP = 0.8;
+export const countdown = (start: number, gap: number, at?: number[], minDur = 0): Scene => {
+  const times = at ?? [0, start + gap, start];
+  const last = Math.max(...times.slice(1));
+  return {
+    id: "ranking",
+    dur: Math.max(minDur, last + 1.0),
+    anim: last + ROW_FADE + 0.1,
+    se: times.slice(1).map((t) => ({ t, kind: "pop" as const })),
+    o: { start, gap, at: times },
+  };
+};
 const reveal = (dur: number): Scene => ({ id: "reveal", dur, anim: 2.0, se: [{ t: 0.6, kind: "ta" }] });
 /** 締め: 「来週の1位は…？」で最初の問いにつなげる。最後の静止は 1秒未満 */
 const outro = (k: number): Scene => ({ id: "outro", dur: 1.2 * k + 0.4 + 0.8, anim: 1.2 * k + 0.4, o: { k } });
 const comment = (dur: number, start: number, gap: number, n: number): Scene => ({ id: "comment", dur, anim: start + (n - 1) * gap + 0.5, o: { start, gap } });
 
-/** A「標準」約33秒 / B「速い」約22秒（数字先出し・グラフなし）/ C「グラフ先」約29秒（最初に推移グラフ） */
+/** 声なしの長さ: A「標準」約29秒 / B「速い」約19秒（数字先出し・グラフなし）/ C「グラフ先」約24秒（最初に推移グラフ）。声があると場面が延びる（render.ts） */
 export const TIMELINE = (s: Script, v: Variant): Scene[] => {
   const n = s.scenes.comment.lines.length;
   if (v === "B") return [
@@ -116,30 +122,34 @@ function Hook({ s, t }: { s: Script; t: number }) {
 const BADGE = [C.gold, C.silver, C.bronze, C.navy, C.navy];
 
 function Ranking({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
-  const { items } = s.scenes.ranking;
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN);
+  // 1行 270px・3行。機種名は右の列の幅いっぱい、その下に 容量・率・額
+  const RH = 270;
+  const RIGHT = 680;
   return (
     <Frame s={s}>
-      <div style={{ ...card, width: CW, padding: "10px 24px" }}>
+      <div style={{ ...card, width: CW, padding: "6px 24px" }}>
         {items.map((it, i) => {
-          // 5位（下）から順に出す。1位は最後まで出さない
-          const p = i === 0 ? 1 : prog(t, (o?.start ?? 0.5) + (o?.gap ?? 1.6) * (items.length - 1 - i), 0.5);
+          // 3位（下）→ 2位の順に出す。1位は最後まで出さない
+          const at = o?.at?.[i] ?? (o?.start ?? 0.5) + (o?.gap ?? 1.6) * (items.length - 1 - i);
+          const p = i === 0 ? 1 : prog(t, at, ROW_FADE);
           const secret = i === 0;
+          const rateText = `−${rate(it.rate)}%`;
+          const dropText = `−${n(it.drop)}円`;
           return (
-            <div key={i} style={{ display: "flex", alignItems: "center", width: "100%", height: 150, borderBottom: i < items.length - 1 ? `2px solid ${C.line}` : "none", opacity: p, transform: `translateX(${Math.round((1 - p) * 80)}px)` }}>
-              <div style={{ display: "flex", justifyContent: "center", width: 120, flexShrink: 0, fontSize: 52, fontWeight: 900, color: C.white, background: BADGE[i] ?? C.navy, borderRadius: 18, padding: "10px 0" }}>{`${i + 1}位`}</div>
+            <div key={i} style={{ display: "flex", alignItems: "center", width: "100%", height: RH, borderBottom: i < items.length - 1 ? `3px solid ${C.line}` : "none", opacity: p, transform: `translateX(${Math.round((1 - p) * 80)}px)` }}>
+              <div style={{ display: "flex", justifyContent: "center", width: 160, flexShrink: 0, fontSize: 68, fontWeight: 900, color: C.white, background: BADGE[i] ?? C.navy, borderRadius: 22, padding: "14px 0" }}>{`${i + 1}位`}</div>
               {secret ? (
-                <div style={{ ...row, width: 710, flexShrink: 0, fontSize: 84, fontWeight: 900 }}>？？？</div>
+                <div style={{ ...row, width: RIGHT, flexShrink: 0, marginLeft: 20, fontSize: 120, fontWeight: 900 }}>？？？</div>
               ) : (
-                <>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 470, flexShrink: 0, margin: "0 12px" }}>
-                    <div style={{ ...row, fontSize: FIT(it.model, 470, 52), fontWeight: 900 }}>{it.model}</div>
-                    <div style={{ ...row, fontSize: 34, fontWeight: 900, color: C.muted }}>{it.storage}</div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: RIGHT, flexShrink: 0, marginLeft: 20 }}>
+                  <div style={{ ...row, fontSize: FIT(it.model, RIGHT, 80), fontWeight: 900 }}>{it.model}</div>
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", width: RIGHT, marginTop: 8 }}>
+                    <div style={{ ...row, width: 170, fontSize: FIT(it.storage, 170, 44), fontWeight: 900, color: C.muted }}>{it.storage}</div>
+                    <div style={{ ...row, width: 250, fontSize: FIT(rateText, 250, 80), fontWeight: 900, color: C.red }}>{rateText}</div>
+                    <div style={{ ...row, width: 260, fontSize: FIT(dropText, 260, 50), fontWeight: 900, color: C.red }}>{dropText}</div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 240, flexShrink: 0 }}>
-                    <div style={{ ...row, fontSize: 58, fontWeight: 900, color: C.red }}>{`−${rate(it.rate)}%`}</div>
-                    <div style={{ ...row, fontSize: 32, fontWeight: 900, color: C.muted }}>{`−${n(it.drop)}円`}</div>
-                  </div>
-                </>
+                </div>
               )}
             </div>
           );

@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { join, resolve } from "node:path";
 import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
-import { FPS, H, TIMELINE, VARIANTS, VOICED_GAP, W, countdown, sceneFrame, type Variant } from "./scenes";
+import { FPS, H, RANK_SHOWN, TIMELINE, VARIANTS, W, countdown, sceneFrame, type Variant } from "./scenes";
 import type { Script } from "./types";
 import { VOICEVOX_URL, cachedCharacter, engineAvailable, narrationKey, narrationOf, resolveSpeaker, synthesize, voiceCredit, type Clip, type NarrationKey } from "./voice";
 
@@ -49,25 +49,50 @@ function seFilters(times: { at: number; kind: "pop" | "ta" }[]): { parts: string
 const VOICE_PAD = 0.5;
 const MAX_TOTAL = 60;
 
-type Voices = { clips: Partial<Record<NarrationKey, Clip>>; manual?: { file: string; dur: number } };
+/** ranking は文ごとの声（「3位は…。」「2位は…。」）。rank は文頭の「○位」（なければ null） */
+type Voices = { clips: Partial<Record<NarrationKey, Clip>>; ranking?: { clip: Clip; rank: number | null }[]; manual?: { file: string; dur: number } };
+/** ランキングの声を流し始める秒・行を声より先に出す秒（行は ROW_FADE で出きる） */
+const RANK_VOICE_AT = 0.3;
+const RANK_LEAD = 0.15;
 
 async function renderOne(dir: string, script: Script, variant: Variant, fonts: Awaited<ReturnType<typeof notoSansJp>>, keepFrames: boolean, voices: Voices) {
   const framesDir = join(dir, `frames-${variant}`);
   rmSync(framesDir, { recursive: true, force: true });
-  // 声のある場面は、声の長さ＋間より短ければ延ばす（延びた分は最後のコマを止める）。声は場面の頭から
-  const segVoices: { file: string; at: number; dur: number }[] = [];
+  // 声のある場面は、声の長さ＋間より短ければ延ばす（延びた分は最後のコマを止める）。声は場面の頭から。
+  // ランキングは文ごとの声を続けて流し、各行は「○位は」の声の始まる RANK_LEAD 秒前に出す
+  const segVoices: { file: string; at: number; dur: number; label: string }[] = [];
+  const log: string[] = [];
   let at = 0;
   const timeline = TIMELINE(script, variant).map((sc) => {
     const key = narrationKey(sc.id);
+    if (sc.id === "ranking" && voices.ranking?.length) {
+      const times = [...(sc.o?.at ?? [0, 2.1, 0.5])];
+      let cur = RANK_VOICE_AT;
+      let found = false;
+      for (const part of voices.ranking) {
+        segVoices.push({ file: part.clip.file, at: at + cur, dur: part.clip.dur, label: `ranking${part.rank ? `-${part.rank}位` : ""}` });
+        if (part.rank && part.rank >= 2 && part.rank <= RANK_SHOWN) {
+          times[part.rank - 1] = Math.max(0, cur - RANK_LEAD);
+          found = true;
+        }
+        cur += part.clip.dur;
+      }
+      // 文頭に「○位」がない（narrationKana で1文にした等）ときは、声の長さを2つに分けて出す
+      if (!found) [times[2], times[1]] = [Math.max(0, RANK_VOICE_AT - RANK_LEAD), RANK_VOICE_AT + (cur - RANK_VOICE_AT) / 2 - RANK_LEAD];
+      const out = countdown(sc.o?.start ?? 0.5, sc.o?.gap ?? 1.6, times, Math.ceil((cur + VOICE_PAD) * 10) / 10);
+      log.push(`  ${at.toFixed(2)}s ranking（${out.dur.toFixed(1)}秒）行: ${times.slice(1).map((t, i) => `${i + 2}位 ${(at + t).toFixed(2)}s`).reverse().join("・")}`);
+      at += out.dur;
+      return out;
+    }
     const clip = sc.id === "comment" && voices.manual ? voices.manual : key ? voices.clips[key] : undefined;
-    // 声のあるカウントダウンは間隔を詰め、3位が出たところから読む
-    const base = clip && sc.id === "ranking" ? countdown(sc.o?.start ?? 0.5, Math.min(sc.o?.gap ?? VOICED_GAP, VOICED_GAP)) : sc;
-    const vAt = clip ? (base.voiceAt ?? 0) : 0;
-    const out = clip && base.dur < vAt + clip.dur + VOICE_PAD ? { ...base, dur: Math.ceil((vAt + clip.dur + VOICE_PAD) * 10) / 10 } : base;
-    if (clip) segVoices.push({ file: clip.file, at: at + vAt, dur: clip.dur });
+    const out = clip && sc.dur < clip.dur + VOICE_PAD ? { ...sc, dur: Math.ceil((clip.dur + VOICE_PAD) * 10) / 10 } : sc;
+    if (clip) segVoices.push({ file: clip.file, at, dur: clip.dur, label: sc.id });
+    if (sc.id === "ranking") log.push(`  ${at.toFixed(2)}s ranking（${out.dur.toFixed(1)}秒）行: ${(out.o?.at ?? []).slice(1).map((t, i) => `${i + 2}位 ${(at + t).toFixed(2)}s`).reverse().join("・")}`);
+    else log.push(`  ${at.toFixed(2)}s ${sc.id}（${out.dur.toFixed(1)}秒）`);
     at += out.dur;
     return out;
   });
+  console.log([`タイムライン ${variant}:`, ...log, ...segVoices.map((v) => `  声 ${v.label}: ${v.at.toFixed(2)}〜${(v.at + v.dur).toFixed(2)}s`)].join("\n"));
   const total = timeline.reduce((a, s) => a + s.dur, 0);
   if (total > MAX_TOTAL) console.warn(`注意: ${variant} が ${total.toFixed(1)} 秒になりました（ショートは ${MAX_TOTAL} 秒以内に）。ナレーションを短くするか voice.speedScale を上げてください`);
   const segs: string[] = [];
@@ -167,7 +192,28 @@ async function prepareVoices(dir: string, script: Script, useVoicevox: boolean):
   try {
     for (const [key, text] of Object.entries(narrationOf(script)) as [NarrationKey, string | undefined][]) {
       if (!text?.trim() || (key === "comment" && manual)) continue;
-      const clip = await synthesize(text, script.voice, online, script.narrationKana?.[key]);
+      const kana = script.narrationKana?.[key];
+      if (key === "ranking" && !kana) {
+        // 文ごとに分けて合成する（行を声に合わせて出すため）
+        const parts: { clip: Clip; rank: number | null }[] = [];
+        for (const sentence of text.split(/(?<=[。！？])/).map((x) => x.trim()).filter(Boolean)) {
+          const c = await synthesize(sentence, script.voice, online);
+          if (!c) {
+            parts.length = 0;
+            break;
+          }
+          parts.push({ clip: c, rank: Number(sentence.match(/^(\d+)位/)?.[1]) || null });
+          console.log(`声 ranking: ${c.dur.toFixed(1)} 秒「${sentence}」${c.cached ? "（キャッシュ）" : ""}${c.kana ? `
+  読み: ${c.kana}` : ""}`);
+        }
+        if (!parts.length) continue;
+        voices.ranking = parts;
+        credit ??= voiceCredit(online
+          ? (await resolveSpeaker(script.voice?.speaker, true)).character
+          : (cachedCharacter(parts[0].clip) ?? (await resolveSpeaker(script.voice?.speaker, false)).character));
+        continue;
+      }
+      const clip = await synthesize(text, script.voice, online, kana);
       if (!clip) continue;
       voices.clips[key] = clip;
       console.log(`声 ${key}: ${clip.dur.toFixed(1)} 秒「${text}」${clip.cached ? "（キャッシュ）" : ""}${clip.kana ? `
