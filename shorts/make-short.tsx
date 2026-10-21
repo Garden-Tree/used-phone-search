@@ -2,8 +2,8 @@
  * YouTube ショート（縦 1080x1920・約40秒）を、サイトの相場と同じ数字で作る
  *   npx tsx shorts/make-short.tsx <drops|budget> plan [--force]                     … 台本 JSON を作る（shorts/out/<日付>-<テーマ>/script.json）
  *   npx tsx shorts/make-short.tsx <drops|budget> render [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice]  … 台本から short-*.mp4 と youtube.txt を作る
- * テーマ: drops＝今週いちばん値下がりした中古iPhone（型 A・B・C）/ budget＝予算で買えるいちばん新しい中古iPhone（型 A だけ）
- *   npx tsx shorts/make-short.tsx --voice-test "テキスト" [--speaker 3|ずんだもん/ノーマル] [--speed 1.25]  … VOICEVOX の声だけ試す（shorts/out/voice-test.wav）
+ * テーマ: drops＝今週いちばん値下がりした中古iPhone（型 A・B・C）/ budget＝予算ぴったりで買える中古iPhone（型 A だけ）
+ *   npx tsx shorts/make-short.tsx --voice-test "テキスト" [--speaker 8|春日部つむぎ/ノーマル] [--speed 1.25]  … VOICEVOX の声だけ試す（shorts/out/voice-test.wav）
  *   npx tsx shorts/make-short.tsx --voice-dump "テキスト"|script [--dir <フォルダ>] [--speaker …]  … 読み（アクセント句）の直す前と後を出す（script は最後に作った台本）
  * 声（VOICEVOX）は任意。アプリが起動していなければ声なしで書き出す（shorts/voice.ts）
  * 手順は shorts/README.md。DB は既存の集計だけ読む（Neon の転送量に配慮）
@@ -29,10 +29,10 @@ const OUT = resolve(__dirname, "out");
 const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
 const THEMES = ["drops", "budget"] as const;
 /**
- * テーマごとの声。drops は ずんだもん（既定）、budget は 春日部つむぎ（10/21 ユーザーの指示。2本目から声を変えた）。
+ * テーマごとの声。いまは全テーマ 春日部つむぎ（ノーマル）＝ DEFAULT_SPEAKER（10/21 ユーザーの指示。1本目の drops は ずんだもんだった）。
  * 名前で指定するので、ID はエンジン（GET /speakers）から引く。クレジットは render がキャラクター名から自動で入れる
  */
-const THEME_SPEAKER: Record<(typeof THEMES)[number], number | string> = { drops: DEFAULT_SPEAKER, budget: "春日部つむぎ/ノーマル" };
+const THEME_SPEAKER: Record<(typeof THEMES)[number], number | string> = { drops: DEFAULT_SPEAKER, budget: DEFAULT_SPEAKER };
 
 async function plan() {
   const dir = join(OUT, `${today}-${theme}`);
@@ -49,7 +49,7 @@ async function plan() {
   if (script.theme === "budget") {
     const p = script.scenes.pick;
     script.scenes.budgets.rows.forEach((r) => console.log(`  ${r.label}: ${r.model}（${r.released}・${r.storage}） 相場 ${r.median.toLocaleString()}円`));
-    console.log(`注目 ${p.label}: ${p.model} 最安 ${p.minPrice.toLocaleString()}円・在庫 ${p.count}台（ジャンク品を除く）/ ${script.shopCount}店`);
+    console.log(`注目 ${p.label}: ${p.model} 相場 ${p.median.toLocaleString()}円・在庫 ${p.count}台 / ${script.shopCount}店`);
   } else {
     const s = script.scenes;
     console.log(`1位 ${s.hook.model}（${s.hook.storage}） −${s.hook.drop.toLocaleString()}円 / 比較 ${script.fromDate}〜${script.toDate} / ${script.shopCount}店 / 推移 ${s.trend.points.length}点`);

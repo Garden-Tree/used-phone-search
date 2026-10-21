@@ -3,7 +3,7 @@ export type RankItem = { model: string; storage: string; before: number; after: 
 export type TrendPoint = { date: string; median: number };
 
 /**
- * VOICEVOX の話者と調声。speaker は ID（既定 3＝ずんだもん ノーマル）か名前（"ずんだもん"・"ずんだもん/ノーマル"・"春日部つむぎ/ノーマル"）。
+ * VOICEVOX の話者と調声。speaker は ID か名前（既定 "春日部つむぎ/ノーマル"。ほかに "ずんだもん/ノーマル"・3 など）。
  * speedScale 既定 1.25。intonationScale（抑揚）・pitchScale（音高）・pauseLengthScale（読点の間の倍率）はエンジンの既定（1・0・1）
  */
 export type VoiceConfig = { speaker?: number | string; speedScale?: number; volume?: number; intonationScale?: number; pitchScale?: number; pauseLengthScale?: number };
@@ -19,7 +19,7 @@ type Common = {
   narration?: Partial<Record<NarrationKey, string>>;
   /** 場面ごとの読みの手直し（任意・AquesTalk 風記法。例 "イチイ'ワ、アイフォ'ン/ジュウナ'ナ"）。書いた場面は文の自動の読みより優先（shorts/voiceTuning.ts） */
   narrationKana?: Partial<Record<NarrationKey, string>>;
-  /** VOICEVOX の設定（任意）。なければ ずんだもん・速さ 1.25 */
+  /** VOICEVOX の設定（任意）。なければ 春日部つむぎ・速さ 1.25 */
   voice?: VoiceConfig;
 };
 /** 検品担当のひと言。人が書き換える（1行16字以内・3行まで） */
@@ -42,17 +42,17 @@ export type DropsScript = Common & {
   };
 };
 
-/** 予算の1行: 相場（在庫がいちばん多い容量の中央値）が予算に収まる、いちばん新しい機種 */
+/** 予算の1行: 相場（在庫がいちばん多い容量の中央値）が予算の帯に入る機種のうち、相場がいちばん高い機種（shorts/themes/budget.ts） */
 export type BudgetRow = { budget: number; label: string; model: string; storage: string; median: number; released: string };
 
-/** テーマ budget「○万円で買える中古iPhone、いちばん新しいのは？」 */
+/** テーマ budget「予算ぴったりで買える中古iPhoneは？」 */
 export type BudgetScript = Common & {
   theme: "budget";
   scenes: {
     /** 場面 ranking: 予算の行（予算の小さい順） */
     budgets: { rows: BudgetRow[] };
-    /** 場面 reveal: 注目の1機種（rows のうち pickBudget の行）。最安と在庫数はジャンク品を除く（予算別ページと同じ条件） */
-    pick: BudgetRow & { minPrice: number; count: number };
+    /** 場面 reveal: 注目の1機種（rows のうち PICK_BUDGET の行）と在庫数（販売中の全在庫。相場と同じ母数）。最安は出さない */
+    pick: BudgetRow & { count: number };
     comment: CommentScene;
     outro: OutroScene;
   };

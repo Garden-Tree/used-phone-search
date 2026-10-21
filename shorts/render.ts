@@ -277,7 +277,7 @@ export async function renderShort(dir: string, script: Script, keepFrames: boole
   const outs: string[] = [];
   for (const v of variant === "all" ? variantsOf(script) : [variant]) outs.push(await renderOne(dir, script, v, fonts, keepFrames, voices));
   const y = script.youtube;
-  // VOICEVOX の声を使ったときは、説明文の最後にクレジット（例「VOICEVOX:ずんだもん」）を必ず入れる。BGM があれば曲のクレジットも
+  // VOICEVOX の声を使ったときは、説明文の最後にクレジット（例「VOICEVOX:春日部つむぎ」）を必ず入れる。BGM があれば曲のクレジットも
   const credits = [credit, bgmCredit()].filter(Boolean) as string[];
   const description = credits.length ? `${y.description}\n\n${credits.join("\n")}` : y.description;
   writeFileSync(join(dir, "youtube.txt"), `${y.title}\n\n${description}\n\n${y.hashtags.join(" ")}\n`);

@@ -14,10 +14,15 @@ import { TUNING_VERSION, dictHash, ensureDictionary, tuneKana } from "./voiceTun
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
 const CACHE = process.env.VOICEVOX_CACHE ? resolve(process.env.VOICEVOX_CACHE) : resolve(__dirname, "out/voice-cache");
-/** 既定の話者: ずんだもん（ノーマル）。標準の VOICEVOX では ID 3 */
-export const DEFAULT_SPEAKER = 3;
+/**
+ * 既定の話者: 春日部つむぎ（ノーマル）。全テーマの標準の声（10/21 ユーザーの指示。それまでは ずんだもん ID 3）。
+ * 名前で指定し、ID はエンジン（GET /speakers）から引く。エンジンに届かないとき（キャッシュだけで書き出すとき）は DEFAULT_SPEAKER_ID
+ */
+export const DEFAULT_SPEAKER = "春日部つむぎ/ノーマル";
+/** 標準の VOICEVOX での春日部つむぎ（ノーマル）の ID */
+export const DEFAULT_SPEAKER_ID = 8;
 /** エンジンに届かないときのクレジット用（標準の VOICEVOX の ID） */
-const KNOWN: Record<number, string> = { 2: "四国めたん", 3: "ずんだもん" };
+const KNOWN: Record<number, string> = { 2: "四国めたん", 3: "ずんだもん", 8: "春日部つむぎ" };
 
 /** ナレーションを付けられる場面。hookNum・hookChart（B・C の冒頭）は hook の文を使う */
 export type { NarrationKey };
@@ -47,14 +52,14 @@ export function defaultNarration(s: Script): Partial<Record<NarrationKey, string
 
 /**
  * budget の既定: hook 問い / ranking 予算ごとに1文（「3万円なら、<機種>、相場<額>です。」。文ごとに合成して行を声に合わせて出す）
- * reveal 注目の機種の在庫数と最安 / comment ひと言の本文だけ / outro サイトへの誘導と問い
+ * reveal 注目の機種の相場と在庫数（最安は読まない） / comment ひと言の本文だけ / outro サイトへの誘導と問い
  */
 function budgetNarration(s: BudgetScript): Partial<Record<NarrationKey, string>> {
   const p = s.scenes.pick;
   return {
-    hook: "予算で買える、いちばん新しい中古iPhoneは…？",
+    hook: "予算ぴったりで買える中古iPhoneは…？",
     ranking: s.scenes.budgets.rows.map((r) => `${r.label}なら、${r.model}、相場${yen(r.median)}です。`).join(""),
-    reveal: `注目は${p.label}の${p.model}。在庫${p.count.toLocaleString()}台、最安${yen(p.minPrice)}です。`,
+    reveal: `注目は${p.label}の${p.model}。相場${yen(p.median)}、在庫は${p.count.toLocaleString()}台です。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの機種にしますか？",
   };
@@ -127,7 +132,7 @@ async function speakers(): Promise<Speaker[]> {
 }
 
 /**
- * 話者の指定（数値の ID・"ずんだもん"・"ずんだもん/ノーマル"）を ID とキャラクター名にする。
+ * 話者の指定（数値の ID・"春日部つむぎ"・"春日部つむぎ/ノーマル"・"ずんだもん/ノーマル"）を ID とキャラクター名にする。
  * 名前の指定はエンジンが要る。ID の指定でエンジンに届かないときは、既知の ID だけ名前が分かる
  */
 export async function resolveSpeaker(spec: VoiceConfig["speaker"], online: boolean): Promise<{ id: number; character: string; style?: string }> {
@@ -145,6 +150,7 @@ export async function resolveSpeaker(spec: VoiceConfig["speaker"], online: boole
     return { id: st.id, character: sp.name, style: st.name };
   }
   if (typeof want === "number") return { id: want, character: KNOWN[want] ?? `話者${want}` };
+  if (spec === undefined || want === DEFAULT_SPEAKER) return { id: DEFAULT_SPEAKER_ID, character: KNOWN[DEFAULT_SPEAKER_ID] };
   throw new Error(`話者を名前（${want}）で指定するときは VOICEVOX を起動してください`);
 }
 

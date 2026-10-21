@@ -17,7 +17,7 @@ const HEADER = { top: 250, height: 320 };
 const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
 const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
-const HEAD_TITLE = (s: Script) => (s.theme === "budget" ? ["予算で買える", "いちばん新しいiPhone"] : ["今週の中古iPhone", "値下がりランキング"]);
+const HEAD_TITLE = (s: Script) => (s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : ["今週の中古iPhone", "値下がりランキング"]);
 
 /**
  * 色はサイトと同じ（lib/brandColors.ts = app/globals.css の @theme）。白いカードの上は SITE、紺の地の上は ON_DARK
@@ -89,9 +89,9 @@ const comment = (dur: number, start: number, gap: number, n: number): Scene => (
 /** 声なしの長さ: A「標準」約29秒 / B「速い」約19秒（数字先出し・グラフなし）/ C「グラフ先」約24秒（最初に推移グラフ）。声があると場面が延びる（render.ts） */
 export const TIMELINE = (s: Script, v: Variant): Scene[] => {
   const n = s.scenes.comment.lines.length;
-  // budget（声なし約26秒）: 問い → 予算の4行（声に合わせて上から出す）→ 注目の機種 → ひと言 → 締め
+  // budget（声なし約26秒）: 問い（声が約2秒と短いので動きも2秒で止め、声＋0.5秒で次へ）→ 予算の4行（声に合わせて上から出す）→ 注目の機種 → ひと言 → 締め
   if (s.theme === "budget") return [
-    { id: "hook", dur: 3, anim: 3 }, budgetRows(), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
+    { id: "hook", dur: 2.5, anim: 2 }, budgetRows(), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
     { id: "hookNum", dur: 4, anim: 1.0 }, countdown(0.8, 1.2), reveal(4), comment(5.5, 0, 0.7, n), outro(1.2),
@@ -383,7 +383,7 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
 
 /** budget のつかみ: 問い（3行）と、動画に出る予算の札 */
 function BudgetHook({ s, t }: { s: BudgetScript; t: number }) {
-  const lines = ["予算で買える", "いちばん新しい", "中古iPhoneは…？"];
+  const lines = ["予算ぴったりで", "買える", "中古iPhoneは…？"];
   const pulse = 1 + 0.035 * Math.sin(t * Math.PI * 2 * 1.2);
   const rows = s.scenes.budgets.rows;
   return (
@@ -429,13 +429,13 @@ function BudgetRows({ s, t, o }: { s: BudgetScript; t: number; o: Scene["o"] }) 
   );
 }
 
-/** budget の注目: 見出し「注目は○万円」→ 機種名・容量と発売年・相場（大）・最安と在庫数（ジャンク品を除く） */
+/** budget の注目: 見出し「注目は○万円」→ 機種名・容量と発売年・相場（大）・在庫数（最安は出さない。3万円の行より安く見えるため） */
 function Pick({ s, t }: { s: BudgetScript; t: number }) {
   const p = s.scenes.pick;
   const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
   const price = `相場 ${n(p.median)}円`;
   const sub = `${p.storage}・${p.released}発売`;
-  const stock = `最安 ${n(p.minPrice)}円・在庫 ${n(p.count)}台`;
+  const stock = `在庫 ${n(p.count)}台`;
   return (
     <Frame s={s}>
       <div style={{ ...row, fontSize: 84, fontWeight: 900, marginBottom: 40, opacity: prog(t, 0, 0.25) }}>{`注目は${p.label}`}</div>

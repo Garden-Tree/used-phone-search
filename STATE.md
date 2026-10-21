@@ -52,7 +52,7 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube ショート（週1・@used_gadelog）: drops 10/21 公開。2本目 budget（つむぎ）は書き出し済み・未投稿
+1. YouTube ショート（週1・声 春日部つむぎ）: drops 10/21 公開。budget 書き出し済み・未投稿
 2. X の日々の運用（ideas/x-posts）
 ```
 
