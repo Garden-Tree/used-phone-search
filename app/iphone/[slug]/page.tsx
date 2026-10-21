@@ -51,7 +51,7 @@ import { appleCheckedJa, applePriceSource, newVsUsed } from "@/lib/applePrices";
 import { newVsUsedOfficial, officialCheckedJa, officialPriceSource } from "@/lib/officialPrices";
 import NewVsUsedSection from "@/app/components/NewVsUsedSection";
 import { buildFaq, buildSummary, modelDescription } from "@/lib/modelFaq";
-import { BUYBACK_PROGRAMS } from "@/lib/buyback";
+import { BUYBACK_PROGRAMS, REPAIR_PROGRAMS } from "@/lib/buyback";
 import { SIM_PLANS } from "@/lib/simPlans";
 
 // スクレイパーの後にビルドするので、在庫はその時点のもの
@@ -427,6 +427,7 @@ export default async function ModelPage({ params }: Props) {
   // ---- 回線・買取（PR）のタイル。リンク・data-shop-click・rel は今までと同じ。1x1 の計測画像は下で1回だけ出す ----
   const showSim = hasStock && (device === "iphone" || device === "pixel" || device === "galaxy" || device === "xperia" || device === "aquos");
   const showBuyback = hasStock && !mac && !watch;
+  const showRepair = hasStock && device === "iphone";
   const PR_BADGE = <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1 py-px leading-none">PR</span>;
   const prTiles = (extra: string) =>
     showSim || showBuyback ? (
@@ -472,6 +473,28 @@ export default async function ModelPage({ params }: Props) {
                 <span className="text-[10px] text-ink-mute leading-snug">{p.text}</span>
               </a>
             ))}
+          </div>
+        )}
+        {showRepair && (
+          <div className={`bg-white border border-line rounded-xl p-3 flex flex-col gap-1 ${showSim && showBuyback ? "col-span-2" : ""}`}>
+            <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">修理で済ませるなら {PR_BADGE}</span>
+            {REPAIR_PROGRAMS.map((p) => (
+              <a
+                key={p.name}
+                href={p.href}
+                target="_blank"
+                rel="sponsored nofollow noopener"
+                data-shop-click=""
+                data-shop={`${p.name}（修理）`}
+                data-model={model}
+                data-link-type="a8"
+                className="flex flex-col py-1 hover:bg-ground rounded"
+              >
+                <span className="text-[13px] font-bold text-ink">{p.name} <span className="text-ink-mute" aria-hidden="true">›</span></span>
+                <span className="text-[10px] text-ink-mute leading-snug">{p.text}</span>
+              </a>
+            ))}
+            <span className="text-[10px] text-ink-mute leading-snug">修理代は、このページの中古の相場と比べて決めるのがおすすめです。</span>
           </div>
         )}
       </div>
@@ -867,7 +890,7 @@ export default async function ModelPage({ params }: Props) {
             </section>
           </div>
 
-          {/* 回線・買取の A8 インプレッション計測用の 1x1 画像（ページに1回だけ） */}
+          {/* 回線・買取・修理の A8 インプレッション計測用の 1x1 画像（ページに1回だけ） */}
           <div className="absolute h-0 w-0 overflow-hidden" aria-hidden="true">
             {showSim && SIM_PLANS.flatMap((p) =>
               p.imgSrc ? [
@@ -876,6 +899,10 @@ export default async function ModelPage({ params }: Props) {
               ] : [],
             )}
             {showBuyback && BUYBACK_PROGRAMS.map((p) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={p.name} src={p.imgSrc} width={1} height={1} alt="" />
+            ))}
+            {showRepair && REPAIR_PROGRAMS.map((p) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img key={p.name} src={p.imgSrc} width={1} height={1} alt="" />
             ))}
