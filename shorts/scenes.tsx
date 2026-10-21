@@ -5,6 +5,7 @@
  */
 import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
+import { ON_DARK, SITE } from "@/lib/brandColors";
 import type { Script } from "./types";
 
 export const W = 1080;
@@ -15,10 +16,24 @@ const CW = W - MARGIN * 2; // 920
 const HEADER = { top: 250, height: 220 };
 const BODY = { top: 500, height: 880 };
 
+/**
+ * 色はサイトと同じ（lib/brandColors.ts = app/globals.css の @theme）。白いカードの上は SITE、紺の地の上は ON_DARK
+ */
 const C = {
-  bg: "#1E1B4B", navy: "#1E1B4B", white: "#FFFFFF", sub: "#C7D2FE", muted: "#475569",
-  red: "#E11D48", redLight: "#FB7185", good: "#5EEAD4", line: "#E2E8F0",
-  gold: "#F59E0B", silver: "#94A3B8", bronze: "#B45309", amber: "#B45309",
+  bg: SITE.brand900, navy: SITE.brand900, white: ON_DARK.white, sub: ON_DARK.sub,
+  /** 白いカードの上の補足（容量・注記） */
+  muted: SITE.inkSub,
+  /** 白いカードの上の値下がり・グラフの線・見出しの帯 */
+  red: SITE.price,
+  /** 紺の地の上の金額 */
+  redLight: ON_DARK.price,
+  /** 紺の地の上の URL */
+  good: ON_DARK.safe,
+  line: SITE.line,
+  /** 順位の札（白い文字を載せる。白とのコントラスト 5.66・4.83・5.02） */
+  gold: SITE.price, silver: SITE.inkMute, bronze: SITE.inspect700,
+  /** 検品担当の札（サイトの検品担当の色） */
+  amber: SITE.inspect700,
 };
 
 export type SceneId = "hook" | "hookNum" | "hookChart" | "ranking" | "reveal" | "trend" | "comment" | "outro";
@@ -65,7 +80,7 @@ export const TIMELINE = (s: Script, v: Variant): Scene[] => {
     { id: "hookChart", dur: 4.5, anim: 3.4 }, countdown(0.5, 1.6), reveal(5), comment(8.5, 0.4, 1.0, n), outro(1.5),
   ];
   return [
-    { id: "hook", dur: 3, anim: 3 }, countdown(0.5, 1.6), reveal(5), { id: "trend", dur: 7, anim: 2.0 }, comment(8, 0.4, 1.0, n), outro(1.5),
+    { id: "hook", dur: 3, anim: 3 }, countdown(0.5, 1.6), reveal(5), { id: "trend", dur: 4, anim: 1.7 }, comment(8, 0.4, 1.0, n), outro(1.5),
   ];
 };
 
@@ -197,7 +212,8 @@ function partial(pts: [number, number][], p: number): [number, number][] {
 type Pt = { date: string; median: number };
 
 /** 折れ線のカード。p は線が描かれた割合（0〜1）。labels=true で最高・最低・日付を入れる */
-function ChartCard({ points, p, labels, chartH = 400 }: { points: Pt[]; p: number; labels: boolean; chartH?: number }) {
+/** mark: 印を付ける点の添字（いちばん下がった日）。線がそこまで描かれたら出す */
+function ChartCard({ points, p, labels, chartH = 400, mark }: { points: Pt[]; p: number; labels: boolean; chartH?: number; mark?: number }) {
   const vals = points.map((q) => q.median);
   let lo = Math.min(...vals);
   let hi = Math.max(...vals);
@@ -217,6 +233,9 @@ function ChartCard({ points, p, labels, chartH = 400 }: { points: Pt[]; p: numbe
       {labels && <div style={lab}>{`最高 ${n(Math.max(...vals))}円`}</div>}
       <svg width={CWI} height={chartH} viewBox={`0 0 ${CWI} ${chartH}`}>
         <path d={d} fill="none" stroke={C.red} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
+        {mark !== undefined && mark > 0 && p * (points.length - 1) >= mark && (
+          <circle cx={xy[mark][0]} cy={xy[mark][1]} r="18" fill={C.white} stroke={C.red} strokeWidth="8" />
+        )}
         <circle cx={ex} cy={ey} r="16" fill={C.red} />
       </svg>
       {labels && <div style={lab}>{`最低 ${n(Math.min(...vals))}円`}</div>}
@@ -231,8 +250,8 @@ function ChartCard({ points, p, labels, chartH = 400 }: { points: Pt[]; p: numbe
 }
 
 function Trend({ s, t }: { s: Script; t: number }) {
-  const { model, storage, days, points } = s.scenes.trend;
-  const heading = `${model}（${storage}）の相場 ${days}日`;
+  const { model, storage, points } = s.scenes.trend;
+  const heading = `${model}（${storage}）の相場`;
   const title = <div style={{ ...row, fontSize: FIT(heading, CW, 56), fontWeight: 900, marginBottom: 26 }}>{heading}</div>;
   if (points.length < 2) {
     const h = s.scenes.hook;
@@ -248,14 +267,21 @@ function Trend({ s, t }: { s: Script; t: number }) {
       </Frame>
     );
   }
+  // 線・最初と最後の値・いちばん下がった日の印だけ（最高・最低・日付の目盛りは出さない）
+  const first = points[0];
   const last = points[points.length - 1];
+  let mark = 0;
+  for (let i = 1, d = 0; i < points.length; i++) if (points[i - 1].median - points[i].median > d) [mark, d] = [i, points[i - 1].median - points[i].median];
+  const shown = t >= 1.6 ? 1 : 0;
+  const startText = `${md(first.date)} ${n(first.median)}円`;
+  const endText = `${md(last.date)} ${n(last.median)}円`;
   return (
     <Frame s={s}>
       {title}
-      <ChartCard points={points} p={prog(t, 0.3, 1.5)} labels />
-      <div style={{ ...row, fontSize: 100, fontWeight: 900, marginTop: 28, opacity: t >= 1.8 ? 1 : 0 }}>
-        <span style={{ display: "flex" }}>いま</span>
-        <span style={{ display: "flex", color: C.redLight, marginLeft: 24 }}>{`${n(last.median)}円`}</span>
+      <ChartCard points={points} p={prog(t, 0.2, 1.3)} labels={false} mark={mark} />
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", width: CW, marginTop: 28, opacity: shown }}>
+        <span style={{ ...row, width: 340, justifyContent: "flex-start", fontSize: FIT(startText, 340, 40), fontWeight: 900, color: C.sub }}>{startText}</span>
+        <span style={{ ...row, width: 560, justifyContent: "flex-end", fontSize: FIT(endText, 560, 72), fontWeight: 900, color: C.redLight }}>{endText}</span>
       </div>
     </Frame>
   );

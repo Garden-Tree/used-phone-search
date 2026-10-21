@@ -3,6 +3,7 @@ import { notoSansJp } from "@/lib/ogFont";
 import { activeShops } from "@/lib/activeShops";
 import { getModelMarket, type ModelMarket } from "@/lib/marketStats";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
+import { SITE } from "@/lib/brandColors";
 
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（1日4回の書き出しで数字が新しくなる）
 
@@ -20,7 +21,8 @@ const MODELS: { model: string; label: string }[] = [
   { model: "iPhone 15", label: "iPhone 15" },
   { model: "iPhone 16", label: "iPhone 16" },
 ];
-const NAVY = "#1E1B4B", RED = "#E11D48", GRAY = "#CBD5E1", INK = "#0F172A", SUB = "#64748B";
+// 色はサイトと同じ（lib/brandColors.ts = app/globals.css）。GRAY は中央値の棒（地の lineSoft と見分けがつく brand-200）
+const NAVY = SITE.brand900, RED = SITE.price, GRAY = SITE.brand200, INK = SITE.ink, SUB = SITE.inkMute, LINE = SITE.line, TRACK = SITE.lineSoft, GROUND = SITE.ground;
 const BAR = 460; // 横棒の幅（px）
 const man = (v: number) => `${(Math.round(v / 1000) / 10).toFixed(1)}万`;
 
@@ -49,7 +51,7 @@ export default async function Image() {
 
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: "#F8FAFC", fontFamily: "Noto Sans JP", color: INK }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: GROUND, fontFamily: "Noto Sans JP", color: INK }}>
         {/* 上の帯: サイト名と URL */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 92, padding: "0 56px", background: NAVY, color: "white" }}>
           <div style={{ display: "flex", fontSize: 40, fontWeight: 900 }}>中古スマホ一括検索</div>
@@ -65,11 +67,11 @@ export default async function Image() {
               相場
             </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", marginTop: 18, background: "white", border: "2px solid #E2E8F0", borderRadius: 24, padding: "14px 32px" }}>
+          <div style={{ display: "flex", flexDirection: "column", marginTop: 18, background: "white", border: `2px solid ${LINE}`, borderRadius: 24, padding: "14px 32px" }}>
             {rows.map((r, i) => (
-              <div key={r.label} style={{ display: "flex", alignItems: "center", height: 66, borderTop: i ? "2px solid #F1F5F9" : "none" }}>
+              <div key={r.label} style={{ display: "flex", alignItems: "center", height: 66, borderTop: i ? `2px solid ${TRACK}` : "none" }}>
                 <div style={{ display: "flex", width: 220, flexShrink: 0, fontSize: 30, fontWeight: 900 }}>{r.label}</div>
-                <div style={{ display: "flex", width: BAR, flexShrink: 0, height: 26, background: "#F1F5F9", borderRadius: 6 }}>
+                <div style={{ display: "flex", width: BAR, flexShrink: 0, height: 26, background: TRACK, borderRadius: 6 }}>
                   <div style={{ display: "flex", width: Math.round((BAR * r.min) / axis), height: 26, background: RED, borderRadius: "6px 0 0 6px" }} />
                   <div style={{ display: "flex", width: Math.round((BAR * Math.max(0, r.med - r.min)) / axis), height: 26, background: GRAY, borderRadius: "0 6px 6px 0" }} />
                 </div>

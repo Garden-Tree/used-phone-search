@@ -8,6 +8,7 @@ import { activeShopsFor } from "@/lib/activeShops";
 import { findShop } from "@/lib/shops";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 import { isMac } from "@/lib/macCatalog";
+import { SITE } from "@/lib/brandColors";
 
 // モデル別ページと同じくビルドのたびに作る（最安値が変わるため）。iPad・Mac・Watch・Android の機種ページもこの画像を使う
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -22,7 +23,8 @@ export function generateStaticParams() {
   return ALL_PAGE_MODELS.map((model) => ({ slug: modelToSlug(model) }));
 }
 
-const NAVY = "#1E1B4B", RED = "#E11D48", GRAY = "#CBD5E1", INK = "#0F172A", SUB = "#64748B", LINE = "#E2E8F0", TRACK = "#F1F5F9";
+// 色はサイトと同じ（lib/brandColors.ts = app/globals.css）。GRAY は中央値の棒（地の lineSoft と見分けがつく brand-200）
+const NAVY = SITE.brand900, RED = SITE.price, GRAY = SITE.brand200, INK = SITE.ink, SUB = SITE.inkMute, LINE = SITE.line, TRACK = SITE.lineSoft, GROUND = SITE.ground;
 const URL = "used.gadelog.com";
 const MAX_ROWS = 4;
 // 行の数ごとの寸法（1〜2行は行を高く・数字を大きくして、カードが空いて見えないようにする）。
@@ -114,7 +116,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   if (rows.length === 0) {
     return new ImageResponse(
       (
-        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: "#F8FAFC", fontFamily: "Noto Sans JP", color: INK }}>
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: GROUND, fontFamily: "Noto Sans JP", color: INK }}>
           {header}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexGrow: 1, padding: "0 56px" }}>
             <div style={{ display: "flex", fontSize: fitFontSize(displayName, 1000, 76), fontWeight: 900, whiteSpace: "nowrap" }}>{displayName}</div>
@@ -129,7 +131,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
 
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: "#F8FAFC", fontFamily: "Noto Sans JP", color: INK }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: GROUND, fontFamily: "Noto Sans JP", color: INK }}>
         {header}
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flexGrow: 1, padding: "0 56px 12px" }}>
           {/* 機種名（長い名前は縮める）と凡例 */}

@@ -38,7 +38,7 @@ export function commentSentence(lines: string[]): string {
 /**
  * 既定のナレーション（台本の数字だけで作る。数字を足したり丸めたりしない）。
  * hook: 冒頭の問い / ranking: 3位・2位（1位は次の場面まで伏せる）/ reveal: 1位の機種・容量・下がった額と率・相場の前後
- * trend: 推移グラフ（いつからか・前の日からいちばん下がった日とその額）/ comment: 検品担当のひと言 / outro: サイトへの誘導と次回の問い
+ * trend: 推移グラフ（前の日からいちばん下がった日を1文で）/ comment: 検品担当のひと言 / outro: サイトへの誘導と次回の問い
  * script.json の narration に書いた場面はそちらが優先。空文字にするとその場面は声なし
  */
 export function defaultNarration(s: Script): Partial<Record<NarrationKey, string>> {
@@ -50,20 +50,19 @@ export function defaultNarration(s: Script): Partial<Record<NarrationKey, string
   let trend = "";
   if (pts.length >= 2) {
     const first = pts[0];
-    const last = pts[pts.length - 1];
     // 前の日からいちばん下がった日（同じ額なら早い日）
     let big = { i: 0, d: 0 };
     for (let i = 1; i < pts.length; i++) if (pts[i - 1].median - pts[i].median > big.d) big = { i, d: pts[i - 1].median - pts[i].median };
-    trend = big.d > 0
-      ? `${jpDate(first.date)}からの推移です。${jpDate(pts[big.i].date)}に、${Date.parse(pts[big.i].date) - Date.parse(pts[big.i - 1].date) === 86_400_000 ? "1日で" : ""}${yen(big.d)}下がりました。`
-      : `${jpDate(first.date)}からの推移です。いまは${yen(last.median)}です。`;
+    // 1文だけ。いちばん下がった日（なければ推移の最初の日）
+    trend = big.d > 0 ? `${jpDate(pts[big.i].date)}に大きく下がりました。` : `${jpDate(first.date)}からの推移です。`;
   }
   return {
     hook: "今週いちばん値下がりした中古iPhoneは…？",
     ranking,
     reveal: `1位は${h.model}、${h.storage}。1週間で${yen(h.drop)}、${top.rate.toFixed(1)}%の値下がりです。相場は${yen(h.before)}から、${yen(h.after)}になりました。`,
     trend,
-    comment: `${s.scenes.comment.speaker}のひと言。${commentSentence(s.scenes.comment.lines)}`,
+    // 「検品担当のひと言」は画面の札に出ているので読まない
+    comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。来週の1位は、どの機種でしょう？",
   };
 }

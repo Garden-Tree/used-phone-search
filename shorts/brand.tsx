@@ -6,11 +6,13 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
+import { ON_DARK, SITE } from "@/lib/brandColors";
 
 const OUT = process.argv[2] ?? "shorts/out/brand";
-const NAVY = "#1E1B4B";
-const RED = "#E11D48";
-const TEAL = "#5EEAD4";
+// 色はサイトと同じ（lib/brandColors.ts）。赤い帯は白い文字を載せるので price（白とのコントラスト 5.66）、紺の地の URL は ON_DARK.safe
+const NAVY = SITE.brand900;
+const RED = SITE.price;
+const TEAL = ON_DARK.safe;
 
 async function save(name: string, el: React.ReactElement, width: number, height: number, text: string) {
   const res = new ImageResponse(el, { width, height, fonts: await notoSansJp(text) });
