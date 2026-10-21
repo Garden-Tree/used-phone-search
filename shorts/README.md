@@ -6,14 +6,25 @@
 
 ```
 npx tsx shorts/make-short.tsx drops plan            # 台本 shorts/out/<日付>-drops/script.json を作る（あれば止まる。上書きは --force）
-npx tsx shorts/make-short.tsx drops render          # 最新の台本から short.mp4 と youtube.txt を作る
+npx tsx shorts/make-short.tsx drops render          # 最新の台本から short-A/B/C.mp4 と youtube.txt を作る
+npx tsx shorts/make-short.tsx budget plan           # 予算のテーマ（shorts/out/<日付>-budget/）
+npx tsx shorts/make-short.tsx budget render         # short-A.mp4 と youtube.txt（budget は型 A だけ）
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
 npx tsx shorts/make-short.tsx drops render --no-voice  # VOICEVOX の声を入れない
 npx tsx shorts/make-short.tsx --voice-test "今週いちばん値下がりした中古iPhoneは？"   # 声だけ試す（shorts/out/voice-test.wav）。--speaker 3 / --speaker ずんだもん/ノーマル・--speed 1.25
-npx tsx shorts/make-short.tsx --voice-dump script     # 台本の全ナレーションの読み（エンジンの読み → 直した読み）を出す。"テキスト" でも可
+npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本の全ナレーションの読み（エンジンの読み → 直した読み）を出す。"テキスト" でも可。--speaker で話者を変えて試せる
 ```
 
-テーマは今のところ `drops`（今週いちばん値下がりした中古iPhone）だけ。追加するときは `shorts/themes/` に「データ → 台本」を足し、`scenes.tsx` に場面を足す。
+テーマ（`shorts/themes/`）:
+
+- `drops`: 今週いちばん値下がりした中古iPhone（型 A・B・C。声 ずんだもん）
+- `budget`: 予算で買えるいちばん新しい中古iPhone（型 A だけ・約39秒。声 春日部つむぎ）
+  - 3万・5万・7万・10万円ごとに、相場（getModelMarket＝在庫がいちばん多い容量の中央値）が予算以下の iOS 27 対応 iPhone のうち発売年がいちばん新しい機種（同じ年なら相場の高い方・在庫5件以上）
+  - 注目は5万円の行（固定）。最安と在庫数はジャンク品を除く（minPriceByModel・予算別ページと同じ条件）
+  - 場面 hook（問い＋予算の札）→ ranking（4行。「○万円なら」の声に合わせて上から）→ reveal（注目）→ comment → outro（「あなたの予算なら…？」）
+
+テーマを足すときは、`types.ts` に台本の型、`themes/` に「データ → 台本」、`voice.ts` に既定のナレーション、`scenes.tsx` に場面、`make-short.tsx` の `THEMES`・`THEME_SPEAKER` を足す。
+同じテーマ・同じデータのショートを同じ日に2本出さない（ほぼ同じ内容は勧められにくい）。
 
 ## 毎週の流れ
 
@@ -31,16 +42,17 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 台本の全ナレーシ
   - 既定（台本の数字だけ。`defaultNarration`）: hook「今週いちばん値下がりした中古iPhoneは…？」・ranking「3位は<機種>、マイナス<額>。2位は…」（1位は伏せる。ランキングの場面は 3位・2位・伏せた1位の3行だけ。文ごとに合成し、各行は「○位は」の声の 0.15 秒前に出る。声なしは決まった間隔。render がタイムライン（場面・行・声の秒）を出す）・reveal「1位は<機種>、<容量>。1週間で<額>、<率>%の値下がりです。相場は<前>から、<後>になりました。」・trend（A だけ・4秒）「<日付>に大きく下がりました。」（前の日からいちばん下がった日。画面は線・最初と最後の値・その日の印だけ）・comment は `comment.lines` だけ（札の「検品担当のひと言」は読まない。「〜でも」の後に読点、「おすすめ」で終われば「です」）・outro「全機種の相場は、プロフィールのリンクから見られます。来週の1位は、どの機種でしょう？」
   - `plan` は comment 以外を書き出す（comment は lines を直せば声も変わる）。「円安」は為替と聞き違えるので「マイナス○円」と読む
   - B・C の冒頭（hookNum・hookChart）は hook の文を読む。英字の機種名・GB・% は読み上げのときだけカナに直す（`speakable`）
-- 話者は `script.json` の `voice`: `{ "speaker": 3, "speedScale": 1.25, "volume": 1.0 }`。ほかに `intonationScale`（抑揚）・`pitchScale`（音高）・`pauseLengthScale`（読点の間）も書ける（書かなければエンジンの既定）。speaker は ID か名前（`"ずんだもん"`・`"ずんだもん/ノーマル"`）。既定は ID 3（ずんだもん ノーマル）
+- 話者は `script.json` の `voice`: `{ "speaker": 3, "speedScale": 1.25, "volume": 1.0 }`。plan がテーマごとに書く（drops は 3＝ずんだもん、budget は "春日部つむぎ/ノーマル"。`make-short.tsx` の `THEME_SPEAKER`）。ほかに `intonationScale`（抑揚）・`pitchScale`（音高）・`pauseLengthScale`（読点の間）も書ける（書かなければエンジンの既定）。speaker は ID か名前（`"ずんだもん"`・`"ずんだもん/ノーマル"`）。既定は ID 3（ずんだもん ノーマル）
 - 声は場面の頭から流れる。場面が「声＋0.5秒」より短ければ場面を延ばす（60秒を超えたら注意を出す）。声の間は効果音・BGM を下げ、声があるときは全体を -11 LUFS にそろえる
 - **調声**（`shorts/voiceTuning.ts`）: ① `shorts/voice-dict.json` をユーザー辞書に登録（同じ語があれば上書き。語を足すときはこの JSON に書く）② エンジンの読み（AquesTalk 風）を規則で直す: 数字の細切れ（ニヒャク/ゴジュウ/ロク）をつなぐ（万の後は切る）・「アイフォン/ジュウナナ/プロマックス」に切る・「値下がり/した」をつなぐ ③ それでも変な文は `script.json` の `narrationKana`（例 `{ "reveal": "イチイ'ワ、アイフォ'ン/ジュウナ'ナ/..." }`）で場面ごとに読みを指定。`--voice-dump script` の after をコピーして直すのが早い
 - 声があるときは、いったん無圧縮で混ぜて loudnorm の2パスで -11 LUFS にそろえる（1パスだと -15.5 ほどで止まる）
 - 合成した WAV は `shorts/out/voice-cache/`（文・読みの手直し・話者・調声の設定・規則の版・辞書のハッシュ）。同じ文はアプリなしでも使い回す
-- **声を使ったら `youtube.txt` の説明文の最後に「VOICEVOX:ずんだもん」（話者のキャラクター名）が自動で入る**。消さない。キャラクターごとに利用規約が違う（docs/youtube-shorts.md）
+- **声を使ったら `youtube.txt` の説明文の最後に「VOICEVOX:ずんだもん」「VOICEVOX:春日部つむぎ」など（話者のキャラクター名）が自動で入る**。消さない。キャラクターごとに利用規約が違う（docs/youtube-shorts.md）
 
 ## BGM
 
 YouTube オーディオライブラリで曲を選んでダウンロードし、`shorts/assets/bgm.mp3` に置く（Git には入らない）。なければ無音の音声トラックが付く。
+曲名は `shorts/assets/bgm.json`（`title`・`artist`・`source`。Git に入る）に書く。bgm.mp3 があれば、render が説明文に「BGM: 曲名 - アーティスト（入手元）」を入れる。曲を替えたら JSON も直す。音量は 4% で一定、最後の3秒で小さくする。
 
 ## セーフエリア
 

@@ -5,7 +5,8 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 
 # YouTube ショートの作り方（@used_gadelog）
 
-週1本。中身は「今週いちばん値下がりした中古iPhone」ランキング（テーマ drops）。
+週1本。テーマを回す: **drops**（今週いちばん値下がりした中古iPhone のランキング）と **budget**（予算で買えるいちばん新しい中古iPhone。10/21〜）。
+チャンネルの説明「値下がりランキングや予算別のおすすめ」に合わせる。
 仕組みの説明は `shorts/README.md` と `docs/youtube-shorts.md`。記録は `ideas/YYYY-MM-DD.md`。報告は日本語。
 このスキルの「決まっていること」は、10/21 にユーザーと何度も作り直して決めたもの。**勝手に元に戻さない**。
 
@@ -14,15 +15,16 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 1. **準備**
    - VOICEVOX アプリが起動しているか確かめる: `curl -s http://127.0.0.1:50021/version`。起動していなければ、ユーザーに起動を頼む。声なしで作らない。
    - BGM `shorts/assets/bgm.mp3` があるか確かめる。git には入らないので、別の PC では置き直す。
-2. **台本**: `npx tsx shorts/make-short.tsx drops plan`
-   - `shorts/out/<日付>-drops/script.json` ができる（すでにあれば止まる。上書きは `--force`）。
-   - 1〜3位、検品担当のひと言（`comment.lines`）、ナレーション、説明文を確かめる。
+2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget> plan`
+   - `shorts/out/<日付>-<テーマ>/script.json` ができる（すでにあれば止まる。上書きは `--force`）。
+   - drops: 1〜3位。budget: 予算（3万・5万・7万・10万円）ごとの機種と相場、注目（5万円の行）の最安・在庫数。
+   - 検品担当のひと言（`comment.lines`）、ナレーション、説明文を確かめる。
    - ひと言は下書き。古めの機種ならバッテリーと状態ランク、のように中身に合わせて直す。
-3. **読みを確かめる**: `npx tsx shorts/make-short.tsx --voice-dump script`
+3. **読みを確かめる**: `npx tsx shorts/make-short.tsx --voice-dump script`（最後に書いた台本・その台本の話者で）
    - アクセント句の直す前と後が出る。機種名・数字が細切れになっていないかを見る。
    - 直らない場面は、script.json の `narrationKana` に読みを書く。
-4. **書き出し**: `npx tsx shorts/make-short.tsx drops render`
-   - A・B・C の3本と `youtube.txt` ができる。
+4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget> render`
+   - drops は A・B・C の3本、budget は A の1本と、`youtube.txt` ができる。
    - 長さ（60秒以内。今は30〜35秒）、音量（-11 LUFS 前後）、タイムライン（場面・行・声の秒）を確かめる。
    - 静止画で、ランキング・1位の発表・グラフ・ひと言を見る: `ffmpeg -ss <秒> -i short-A.mp4 -frames:v 1 x.png` を Read で開く。
 5. **ユーザーに見せる**: A を SendUserFile で送り、OK をもらう。**投稿はユーザーの OK のあと**。
@@ -31,7 +33,11 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 ## 決まっていること（作り直しで決めたもの）
 
 ### 構成（型 A が標準）
-- **hook → ranking → reveal → trend → comment → outro**。B と C は予備。
+- drops: **hook → ranking → reveal → trend → comment → outro**。B と C は予備。
+- budget: **hook → ranking（予算の4行）→ reveal（注目）→ comment → outro**（型 A だけ・約39秒）。
+  - 行の機種: 相場（在庫がいちばん多い容量の中央値）が予算以下の iOS 27 対応 iPhone のうち、発売年がいちばん新しい機種（同じ年なら相場の高い方）。在庫5件以上。
+  - 注目は5万円の行に固定（主観で選ばない）。最安と在庫数はジャンク品を除く（予算別ページと同じ条件）。
+  - 4行は上から、「○万円なら」の声の0.15秒前に1行ずつ出す。見出しの帯は「予算で買える／いちばん新しいiPhone」。
 - **ランキングは3位・2位・1位（伏せ字）の3行だけ。** 4位・5位は出さない。空いた分、行と文字を大きくする（行の高さ 260px、機種名は最大80px で、幅に合わせて縮める）。
 - **ランキングの行は、声に合わせて出す。** 声は文ごとに合成し、各行は「○位は」の0.15秒前に出す。決まった間隔では出さない。
 - **上部の見出しの帯は大きく**（上の行は最大52px、題は2行で最大104px）。
@@ -41,9 +47,13 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - 文字やグラフは、場面の頭から出す（出る動きは0.25秒）。
 - **推移グラフ（trend）はシンプルに。** 線・最初と最後の値・大きく下がった日の印だけにする。場面は約3秒。
 
-### ナレーション（VOICEVOX ずんだもん ノーマル・ID 3）
+### ナレーション（VOICEVOX）
+- **話者はテーマごと**: drops は ずんだもん（ノーマル・ID 3。既定）、budget は **春日部つむぎ（ノーマル）**（10/21 ユーザーの指示）。
+  - 名前で指定する（`make-short.tsx` の `THEME_SPEAKER`）。ID はエンジンの GET /speakers から引く（この PC では 8）。
+  - 説明欄のクレジット「VOICEVOX:<キャラクター名>」は render が自動で入れる。
+  - 話者を変えたら `--voice-dump` で読みを、render のタイムラインで長さを見直す（話者で間合いが違う）。キャラクターごとの規約を読んでから使う（docs/youtube-shorts.md）。
 - **速さ 1.25倍**（`voice.speedScale`）。口調は「です・ます」。「のだ」口調は使わない。
-- 各場面で読む文:
+- 各場面で読む文（drops）:
   - hook: 「今週いちばん値下がりした中古iPhoneは…？」
   - ranking: 「3位は○○、マイナス○円。2位は○○、マイナス○円。」
   - reveal: 「1位は○○、256GB。1週間で○円、○%の値下がりです。」
@@ -51,10 +61,16 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - trend: 1文だけ（例「10月17日に大きく下がりました。」）
   - comment: **ひと言の本文だけ。** 「検品担当のひと言」は画面に出ているので読まない。
   - outro: 「全機種の相場は、プロフィールのリンクから見られます。来週の1位は、どの機種でしょう？」
+- 各場面で読む文（budget）:
+  - hook: 「予算で買える、いちばん新しい中古iPhoneは…？」
+  - ranking: 予算ごとに1文「3万円なら、iPhone 12 mini、相場29,800円です。」
+  - reveal: 「注目は5万円の<機種>。在庫<台数>台、最安<額>です。」
+  - comment: ひと言の本文だけ。outro: 「全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの機種にしますか？」
 - 数字はすべて台本のデータから。作り話や推測の数字は入れない。
 - **調声**: `shorts/voiceTuning.ts`（句の切れ目の直し）と `shorts/voice-dict.json`（ユーザー辞書15語。render の前に自動で登録）。
   - 数字は1つの句につなぐ。機種名は「ブランド／番号／型名」で分ける。「した」「します」は前の句につなぐ。
   - 「−8,000円」は「マイナス8,000円」と読ませる（「円安」と聞き違えないように）。問いかけは「？」で終える。
+  - 「iPhone SE (第3世代)」は括弧を外して読ませる（括弧で間が空くため）。「○」は「マル」。
 
 ### 音
 - **BGM**: YouTube オーディオライブラリの「帰属表示が不要」な曲（今は「Okay For Now - Televisions」）。歌の入った曲は使わない。
@@ -71,10 +87,10 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 
 ## YouTube 投稿（ユーザーの Chrome・YouTube Studio）
 
-- **説明欄**（`youtube.txt`。`shorts/themes/drops.ts` が作る）に入れるもの:
-  - ランキングは**3位まで**（動画と合わせる）。
-  - 1位の機種ページとトップのリンクに **utm を付ける**: `?utm_source=youtube&utm_medium=social&utm_campaign=shorts_YYYYMMDD`
-  - 「VOICEVOX:ずんだもん」と「BGM: <曲名> - <アーティスト>（YouTube オーディオライブラリ）」
+- **説明欄**（`youtube.txt`。`shorts/themes/<テーマ>.ts` が作る）に入れるもの:
+  - drops: ランキングは**3位まで**（動画と合わせる）。budget: 4つの予算の機種と相場・選び方のルール。
+  - 機種ページ（drops は1位・budget は注目）とトップのリンクに **utm を付ける**: `?utm_source=youtube&utm_medium=social&utm_campaign=shorts_YYYYMMDD`（budget は末尾に `_budget`。budget は予算別ページ /budget/under-50000 のリンクも）
+  - 「VOICEVOX:<キャラクター名>」と「BGM: <曲名> - <アーティスト>（YouTube オーディオライブラリ）」。どちらも render が自動で入れる（BGM は `shorts/assets/bgm.json` の title・artist・source。曲を替えたら直す）
   - ハッシュタグ #中古iPhone #iPhone
   - ショートの説明欄のリンクは押せない（2023年8月〜）。押せる入口はチャンネルのページのリンク（`utm_medium=channel`）と、締めのナレーション。
 - **手順**
@@ -85,6 +101,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   5. 次へ ×3 → チェックで問題がないことを確かめる →「公開」→ 公開ボタン。
   6. 共有画面の URL（youtube.com/shorts/<ID>）を控える。
   - 公開済みの動画の説明欄は、Studio の動画の詳細で直せる（`#save`）。
+- **同じテーマ・同じデータのショートを同じ日に2本出さない。** 2本目を作るときはテーマを変える（drops の次は budget など）。
 - **同じ動画を同じ日に2本上げない。** 10/21 に BGM 入りの版を上げ直したら、初動が 1回 対 84回 だった（ほぼ同じ内容は勧められにくい）。直したい点は公開前に直す。公開後なら次の週に回す。
 - 動画の削除はしない（ユーザーがする）。非公開・公開の切り替えは、ユーザーの指示があればする。
 - チャンネル名は「中古スマホ一括検索」（サイト名と同じ）。名前の変更は14日で2回まで。

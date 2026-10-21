@@ -6,7 +6,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
-import type { Script } from "./types";
+import type { BudgetScript, DropsScript, Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -17,7 +17,7 @@ const HEADER = { top: 250, height: 320 };
 const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
 const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
-const HEAD_TITLE = ["今週の中古iPhone", "値下がりランキング"];
+const HEAD_TITLE = (s: Script) => (s.theme === "budget" ? ["予算で買える", "いちばん新しいiPhone"] : ["今週の中古iPhone", "値下がりランキング"]);
 
 /**
  * 色はサイトと同じ（lib/brandColors.ts = app/globals.css の @theme）。白いカードの上は SITE、紺の地の上は ON_DARK
@@ -37,11 +37,15 @@ const C = {
   gold: SITE.price, silver: SITE.inkMute, bronze: SITE.inspect700,
   /** 検品担当の札（サイトの検品担当の色） */
   amber: SITE.inspect700,
+  /** budget の予算の札（サイトの brand-600。白の文字を載せる） */
+  budget: SITE.brand600,
 };
 
 export type SceneId = "hook" | "hookNum" | "hookChart" | "ranking" | "reveal" | "trend" | "comment" | "outro";
 export type Variant = "A" | "B" | "C";
 export const VARIANTS: Variant[] = ["A", "B", "C"];
+/** テーマごとの型。budget は A だけ */
+export const variantsOf = (s: Script): Variant[] => (s.theme === "budget" ? ["A"] : VARIANTS);
 /** 効果音: t は場面の開始からの秒数。pop は行が出る小さな音、ta は 1位発表の二音 */
 export type Se = { t: number; kind: "pop" | "ta" };
 /** dur: 場面の長さ（秒）、anim: 動きのある秒数（以降は最後のコマを止める）、o: 場面ごとの動きの設定（開始・間隔・拡大率） */
@@ -68,6 +72,15 @@ export const countdown = (start: number, gap: number, at?: number[], minDur = 0)
     o: { start, gap, at: times },
   };
 };
+/**
+ * budget の予算の行: 上（小さい予算）から順に出す。at を渡すとその時刻に（声に合わせる。各行は「○万円なら」の声の少し前）、
+ * なければ 0.3 秒から 1.6 秒ごと（声なし）。最後の行が出てから約1秒で次の場面へ
+ */
+export const budgetRows = (at?: number[], minDur = 0): Scene => {
+  const times = at ?? [0.3, 1.9, 3.5, 5.1];
+  const last = Math.max(...times);
+  return { id: "ranking", dur: Math.max(minDur, last + 1.0), anim: last + ROW_FADE + 0.1, se: times.map((t) => ({ t, kind: "pop" as const })), o: { at: times } };
+};
 const reveal = (dur: number): Scene => ({ id: "reveal", dur, anim: 2.0, se: [{ t: 0.6, kind: "ta" }] });
 /** 締め: 「来週の1位は…？」で最初の問いにつなげる。最後の静止は 1秒未満 */
 const outro = (k: number): Scene => ({ id: "outro", dur: 1.2 * k + 0.4 + 0.8, anim: 1.2 * k + 0.4, o: { k } });
@@ -76,6 +89,10 @@ const comment = (dur: number, start: number, gap: number, n: number): Scene => (
 /** 声なしの長さ: A「標準」約29秒 / B「速い」約19秒（数字先出し・グラフなし）/ C「グラフ先」約24秒（最初に推移グラフ）。声があると場面が延びる（render.ts） */
 export const TIMELINE = (s: Script, v: Variant): Scene[] => {
   const n = s.scenes.comment.lines.length;
+  // budget（声なし約26秒）: 問い → 予算の4行（声に合わせて上から出す）→ 注目の機種 → ひと言 → 締め
+  if (s.theme === "budget") return [
+    { id: "hook", dur: 3, anim: 3 }, budgetRows(), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
+  ];
   if (v === "B") return [
     { id: "hookNum", dur: 4, anim: 1.0 }, countdown(0.8, 1.2), reveal(4), comment(5.5, 0, 0.7, n), outro(1.2),
   ];
@@ -106,8 +123,8 @@ function Frame({ s, children, header = true, footer = true }: { s: Script; child
       {header && (
         <div style={{ position: "absolute", left: MARGIN, top: HEADER.top, width: CW, height: HEADER.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: C.red, borderRadius: 28 }}>
           <div style={{ ...row, fontSize: FIT(HEAD_SUB(s.shopCount), CW - 60, 52), fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>{HEAD_SUB(s.shopCount)}</div>
-          {HEAD_TITLE.map((l, i) => (
-            <div key={i} style={{ ...row, fontSize: Math.min(...HEAD_TITLE.map((x) => FIT(x, CW - 60, 104))), fontWeight: 900, lineHeight: 1.15, marginTop: i ? 0 : 6 }}>{l}</div>
+          {HEAD_TITLE(s).map((l, i) => (
+            <div key={i} style={{ ...row, fontSize: Math.min(...HEAD_TITLE(s).map((x) => FIT(x, CW - 60, 104))), fontWeight: 900, lineHeight: 1.15, marginTop: i ? 0 : 6 }}>{l}</div>
           ))}
         </div>
       )}
@@ -123,7 +140,7 @@ function Frame({ s, children, header = true, footer = true }: { s: Script; child
 
 const card = { display: "flex", flexDirection: "column", alignItems: "center", background: C.white, borderRadius: 28, color: C.navy } as const;
 
-function Hook({ s, t }: { s: Script; t: number }) {
+function Hook({ s, t }: { s: DropsScript; t: number }) {
   const lines = ["今週いちばん値下がりした", "中古iPhoneは…？"];
   const pulse = 1 + 0.035 * Math.sin(t * Math.PI * 2 * 1.2);
   return (
@@ -141,7 +158,7 @@ function Hook({ s, t }: { s: Script; t: number }) {
 
 const BADGE = [C.gold, C.silver, C.bronze, C.navy, C.navy];
 
-function Ranking({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
+function Ranking({ s, t, o }: { s: DropsScript; t: number; o: Scene["o"] }) {
   const items = s.scenes.ranking.items.slice(0, RANK_SHOWN);
   // 1行 260px・3行。機種名は右の列の幅いっぱい、その下に 容量・率・額
   const RH = 260;
@@ -179,7 +196,7 @@ function Ranking({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   );
 }
 
-function Reveal({ s, t }: { s: Script; t: number }) {
+function Reveal({ s, t }: { s: DropsScript; t: number }) {
   const h = s.scenes.hook;
   const r = s.scenes.ranking.items[0];
   const shown = Math.round(h.drop * prog(t, 1.0, 0.9));
@@ -254,7 +271,7 @@ function ChartCard({ points, p, labels, chartH = 400, mark }: { points: Pt[]; p:
   );
 }
 
-function Trend({ s, t }: { s: Script; t: number }) {
+function Trend({ s, t }: { s: DropsScript; t: number }) {
   const { model, storage, points } = s.scenes.trend;
   const heading = `${model}（${storage}）の相場`;
   const title = <div style={{ ...row, fontSize: FIT(heading, CW, 56), fontWeight: 900, marginBottom: 26 }}>{heading}</div>;
@@ -293,7 +310,7 @@ function Trend({ s, t }: { s: Script; t: number }) {
 }
 
 /** B のつかみ: 下がった額を先に見せ、機種は伏せる */
-function HookNum({ s, t }: { s: Script; t: number }) {
+function HookNum({ s, t }: { s: DropsScript; t: number }) {
   const h = s.scenes.hook;
   const full = `−${n(h.drop)}円`;
   const lines = ["1週間でこれだけ下がった", "中古iPhoneは…？"];
@@ -312,7 +329,7 @@ function HookNum({ s, t }: { s: Script; t: number }) {
 }
 
 /** C のつかみ: 1位の30日の推移グラフが描かれ、機種は伏せる。描き終わりに下がった額を出す */
-function HookChart({ s, t }: { s: Script; t: number }) {
+function HookChart({ s, t }: { s: DropsScript; t: number }) {
   const { points } = s.scenes.trend;
   const h = s.scenes.hook;
   if (points.length < 2) return <Hook s={s} t={t} />;
@@ -358,13 +375,91 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
           <div style={{ ...row, fontSize: FIT(out.url, CW, 80), fontWeight: 900, color: C.good, marginTop: 56 }}>{out.url}</div>
           <div style={{ ...row, fontSize: 34, fontWeight: 500, color: C.sub, marginTop: 40 }}>{out.note}</div>
         </div>
-        <div style={{ ...row, fontSize: 52, fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>来週の1位は…？</div>
+        <div style={{ ...row, fontSize: 52, fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>{out.question ?? "来週の1位は…？"}</div>
+      </div>
+    </Frame>
+  );
+}
+
+/** budget のつかみ: 問い（3行）と、動画に出る予算の札 */
+function BudgetHook({ s, t }: { s: BudgetScript; t: number }) {
+  const lines = ["予算で買える", "いちばん新しい", "中古iPhoneは…？"];
+  const pulse = 1 + 0.035 * Math.sin(t * Math.PI * 2 * 1.2);
+  const rows = s.scenes.budgets.rows;
+  return (
+    <Frame s={s}>
+      {lines.map((l, i) => (
+        <div key={i} style={{ ...row, fontSize: Math.min(...lines.map((x) => FIT(x, CW, 100))), fontWeight: 900, marginBottom: 10 }}>{l}</div>
+      ))}
+      <div style={{ ...card, flexDirection: "row", justifyContent: "space-around", width: CW, height: 170, marginTop: 50, transform: `scale(${pulse})` }}>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: "flex", fontSize: 54, fontWeight: 900, color: C.white, background: C.budget, borderRadius: 18, padding: "8px 18px" }}>{r.label}</div>
+        ))}
+      </div>
+    </Frame>
+  );
+}
+
+/** budget の予算の行（4行・1行 190px）。左に予算の札、右に機種名と「容量・相場」。上から順に、声に合わせて出す */
+function BudgetRows({ s, t, o }: { s: BudgetScript; t: number; o: Scene["o"] }) {
+  const rows = s.scenes.budgets.rows;
+  const RH = 190;
+  const RIGHT = 660;
+  return (
+    <Frame s={s}>
+      <div style={{ ...card, width: CW, padding: "4px 24px" }}>
+        {rows.map((r, i) => {
+          const p = prog(t, o?.at?.[i] ?? 0.3 + 1.6 * i, ROW_FADE);
+          const price = `相場 ${n(r.median)}円`;
+          return (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: "100%", height: RH, borderBottom: i < rows.length - 1 ? `3px solid ${C.line}` : "none", opacity: p, transform: `translateX(${Math.round((1 - p) * 80)}px)` }}>
+              <div style={{ display: "flex", justifyContent: "center", width: 190, flexShrink: 0, fontSize: FIT(r.label, 170, 60), fontWeight: 900, color: C.white, background: C.budget, borderRadius: 22, padding: "14px 0" }}>{r.label}</div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: RIGHT, flexShrink: 0, marginLeft: 22 }}>
+                <div style={{ ...row, fontSize: FIT(r.model, RIGHT, 66), fontWeight: 900 }}>{r.model}</div>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", width: RIGHT, marginTop: 6 }}>
+                  <div style={{ ...row, fontSize: 36, fontWeight: 900, color: C.muted, marginRight: 24 }}>{r.storage}</div>
+                  <div style={{ ...row, fontSize: FIT(price, 440, 52), fontWeight: 900, color: C.red }}>{price}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Frame>
+  );
+}
+
+/** budget の注目: 見出し「注目は○万円」→ 機種名・容量と発売年・相場（大）・最安と在庫数（ジャンク品を除く） */
+function Pick({ s, t }: { s: BudgetScript; t: number }) {
+  const p = s.scenes.pick;
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const price = `相場 ${n(p.median)}円`;
+  const sub = `${p.storage}・${p.released}発売`;
+  const stock = `最安 ${n(p.minPrice)}円・在庫 ${n(p.count)}台`;
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: 84, fontWeight: 900, marginBottom: 40, opacity: prog(t, 0, 0.25) }}>{`注目は${p.label}`}</div>
+      <div style={{ ...card, width: CW, padding: "44px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(p.model, CW - 60, 120), fontWeight: 900 }}>{p.model}</div>
+        <div style={{ ...row, fontSize: FIT(sub, CW - 60, 48), fontWeight: 900, color: C.muted, marginTop: 10 }}>{sub}</div>
+        <div style={{ ...row, fontSize: FIT(price, CW - 60, 130), fontWeight: 900, color: C.red, marginTop: 20 }}>{price}</div>
+        <div style={{ ...row, fontSize: FIT(stock, CW - 60, 50), fontWeight: 700, color: C.muted, marginTop: 20 }}>{stock}</div>
       </div>
     </Frame>
   );
 }
 
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
+  if (s.theme === "budget") {
+    switch (sc.id) {
+      case "hook": return <BudgetHook s={s} t={t} />;
+      case "ranking": return <BudgetRows s={s} t={t} o={sc.o} />;
+      case "reveal": return <Pick s={s} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`budget に場面 ${sc.id} はありません`);
+    }
+  }
   switch (sc.id) {
     case "hook": return <Hook s={s} t={t} />;
     case "hookNum": return <HookNum s={s} t={t} />;

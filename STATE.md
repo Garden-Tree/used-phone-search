@@ -52,7 +52,7 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube ショート（週1・@used_gadelog・ずんだもん 1.25倍）: 1本目 10/21 公開（型A・utm_source=youtube）。次は 10/28
+1. YouTube ショート（週1・@used_gadelog）: drops 10/21 公開。2本目 budget（つむぎ）は書き出し済み・未投稿
 2. X の日々の運用（ideas/x-posts）
 ```
 

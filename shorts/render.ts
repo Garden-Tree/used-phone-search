@@ -1,10 +1,10 @@
-/** 台本 → コマ（ImageResponse）→ ffmpeg で mp4（A・B・C の3つの構成） */
+/** 台本 → コマ（ImageResponse）→ ffmpeg で mp4（drops は A・B・C の3つの構成、budget は A だけ） */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
-import { FPS, H, RANK_SHOWN, TIMELINE, VARIANTS, W, countdown, sceneFrame, type Variant } from "./scenes";
+import { FPS, H, RANK_SHOWN, TIMELINE, W, budgetRows, countdown, sceneFrame, variantsOf, type Variant } from "./scenes";
 import type { Script } from "./types";
 import { VOICEVOX_URL, cachedCharacter, engineAvailable, narrationKey, narrationOf, resolveSpeaker, synthesize, voiceCredit, type Clip, type NarrationKey } from "./voice";
 
@@ -49,8 +49,11 @@ function seFilters(times: { at: number; kind: "pop" | "ta" }[]): { parts: string
 const VOICE_PAD = 0.5;
 const MAX_TOTAL = 60;
 
-/** ranking は文ごとの声（「3位は…。」「2位は…。」）。rank は文頭の「○位」（なければ null） */
-type Voices = { clips: Partial<Record<NarrationKey, Clip>>; ranking?: { clip: Clip; rank: number | null }[]; manual?: { file: string; dur: number } };
+/**
+ * ranking は文ごとの声。row はその文で出す行（items・rows の添字）。なければ null（前の行の続きの文）
+ * drops: 文頭の「○位」→ 添字 ○−1（2位・3位だけ）/ budget: 文頭の「○万円なら」→ その予算の行
+ */
+type Voices = { clips: Partial<Record<NarrationKey, Clip>>; ranking?: { clip: Clip; row: number | null }[]; manual?: { file: string; dur: number } };
 /** ランキングの声を流し始める秒・行を声より先に出す秒（行は ROW_FADE で出きる） */
 const RANK_VOICE_AT = 0.3;
 const RANK_LEAD = 0.15;
@@ -66,21 +69,31 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
   const timeline = TIMELINE(script, variant).map((sc) => {
     const key = narrationKey(sc.id);
     if (sc.id === "ranking" && voices.ranking?.length) {
+      const budget = script.theme === "budget";
       const times = [...(sc.o?.at ?? [0, 2.1, 0.5])];
       let cur = RANK_VOICE_AT;
-      let found = false;
+      let found = 0;
       for (const part of voices.ranking) {
-        segVoices.push({ file: part.clip.file, at: at + cur, dur: part.clip.dur, label: `ranking${part.rank ? `-${part.rank}位` : ""}` });
-        if (part.rank && part.rank >= 2 && part.rank <= RANK_SHOWN) {
-          times[part.rank - 1] = Math.max(0, cur - RANK_LEAD);
-          found = true;
+        segVoices.push({ file: part.clip.file, at: at + cur, dur: part.clip.dur, label: `ranking${part.row !== null ? `-${budget ? `行${part.row + 1}` : `${part.row + 1}位`}` : ""}` });
+        if (part.row !== null && part.row < times.length) {
+          times[part.row] = Math.max(0, cur - RANK_LEAD);
+          found++;
         }
         cur += part.clip.dur;
       }
-      // 文頭に「○位」がない（narrationKana で1文にした等）ときは、声の長さを2つに分けて出す
-      if (!found) [times[2], times[1]] = [Math.max(0, RANK_VOICE_AT - RANK_LEAD), RANK_VOICE_AT + (cur - RANK_VOICE_AT) / 2 - RANK_LEAD];
-      const out = countdown(sc.o?.start ?? 0.5, sc.o?.gap ?? 1.6, times, Math.ceil((cur + VOICE_PAD) * 10) / 10);
-      log.push(`  ${at.toFixed(2)}s ranking（${out.dur.toFixed(1)}秒）行: ${times.slice(1).map((t, i) => `${i + 2}位 ${(at + t).toFixed(2)}s`).reverse().join("・")}`);
+      // 行の始まりが分からない（narrationKana で1文にした等）ときは、声の長さを行の数で等分して出す
+      const shown = budget ? times.length : 2;
+      if (budget ? found < shown : found === 0) {
+        const step = (cur - RANK_VOICE_AT) / shown;
+        if (budget) times.forEach((_, i) => (times[i] = Math.max(0, RANK_VOICE_AT + step * i - RANK_LEAD)));
+        else [times[2], times[1]] = [Math.max(0, RANK_VOICE_AT - RANK_LEAD), RANK_VOICE_AT + step - RANK_LEAD];
+      }
+      const minDur = Math.ceil((cur + VOICE_PAD) * 10) / 10;
+      const out = budget ? budgetRows(times, minDur) : countdown(sc.o?.start ?? 0.5, sc.o?.gap ?? 1.6, times, minDur);
+      const rowLog = budget
+        ? times.map((t, i) => `行${i + 1} ${(at + t).toFixed(2)}s`).join("・")
+        : times.slice(1).map((t, i) => `${i + 2}位 ${(at + t).toFixed(2)}s`).reverse().join("・");
+      log.push(`  ${at.toFixed(2)}s ranking（${out.dur.toFixed(1)}秒）行: ${rowLog}`);
       at += out.dur;
       return out;
     }
@@ -88,7 +101,7 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
     // 声のある場面は「声＋VOICE_PAD」に合わせて延ばす／縮める（声の後に動かない絵が長く残らないように）。動きの途中では切らない
     const out = clip ? { ...sc, dur: Math.max(Math.ceil((sc.anim + 0.3) * 10) / 10, Math.ceil((clip.dur + VOICE_PAD) * 10) / 10) } : sc;
     if (clip) segVoices.push({ file: clip.file, at, dur: clip.dur, label: sc.id });
-    if (sc.id === "ranking") log.push(`  ${at.toFixed(2)}s ranking（${out.dur.toFixed(1)}秒）行: ${(out.o?.at ?? []).slice(1).map((t, i) => `${i + 2}位 ${(at + t).toFixed(2)}s`).reverse().join("・")}`);
+    if (sc.id === "ranking") log.push(`  ${at.toFixed(2)}s ranking（${out.dur.toFixed(1)}秒）行: ${(out.o?.at ?? []).map((t, i) => `${i} ${(at + t).toFixed(2)}s`).join("・")}`);
     else log.push(`  ${at.toFixed(2)}s ${sc.id}（${out.dur.toFixed(1)}秒）`);
     at += out.dur;
     return out;
@@ -176,6 +189,32 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
   return out;
 }
 
+/** ランキングの文が出す行（Voices の row） */
+function rowOf(script: Script, sentence: string): number | null {
+  if (script.theme === "budget") {
+    const m = sentence.match(/^(\d+)万円なら/);
+    const i = m ? script.scenes.budgets.rows.findIndex((r) => r.budget === Number(m[1]) * 10000) : -1;
+    return i >= 0 ? i : null;
+  }
+  const rank = Number(sentence.match(/^(\d+)位/)?.[1]);
+  return rank >= 2 && rank <= RANK_SHOWN ? rank - 1 : null;
+}
+
+/**
+ * BGM のクレジット。shorts/assets/bgm.json（{ "title": "曲名", "artist": "アーティスト", "source": "YouTube オーディオライブラリ" }）を
+ * bgm.mp3 と一緒に置くと、説明文に「BGM: 曲名 - アーティスト（入手元）」が入る。bgm.mp3 がなければ入れない
+ */
+function bgmCredit(): string | null {
+  if (!existsSync(resolve(__dirname, "assets/bgm.mp3"))) return null;
+  const meta = resolve(__dirname, "assets/bgm.json");
+  if (!existsSync(meta)) {
+    console.warn("注意: shorts/assets/bgm.json がないので、説明文に BGM のクレジットが入りません");
+    return null;
+  }
+  const b = JSON.parse(readFileSync(meta, "utf8")) as { title: string; artist: string; source?: string };
+  return `BGM: ${b.title} - ${b.artist}${b.source ? `（${b.source}）` : ""}`;
+}
+
 /**
  * 声を用意する。<出力先>/voice.m4a（mp3・wav）があればコメント場面はそれを使う（VOICEVOX より優先）。
  * VOICEVOX に届かなければ、キャッシュにある文だけ使い、残りは声なし（止めない）
@@ -197,14 +236,14 @@ async function prepareVoices(dir: string, script: Script, useVoicevox: boolean):
       const kana = script.narrationKana?.[key];
       if (key === "ranking" && !kana) {
         // 文ごとに分けて合成する（行を声に合わせて出すため）
-        const parts: { clip: Clip; rank: number | null }[] = [];
+        const parts: { clip: Clip; row: number | null }[] = [];
         for (const sentence of text.split(/(?<=[。！？])/).map((x) => x.trim()).filter(Boolean)) {
           const c = await synthesize(sentence, script.voice, online);
           if (!c) {
             parts.length = 0;
             break;
           }
-          parts.push({ clip: c, rank: Number(sentence.match(/^(\d+)位/)?.[1]) || null });
+          parts.push({ clip: c, row: rowOf(script, sentence) });
           console.log(`声 ranking: ${c.dur.toFixed(1)} 秒「${sentence}」${c.cached ? "（キャッシュ）" : ""}${c.kana ? `
   読み: ${c.kana}` : ""}`);
         }
@@ -231,16 +270,17 @@ async function prepareVoices(dir: string, script: Script, useVoicevox: boolean):
   return { voices, credit };
 }
 
-/** variant を省略すると A・B・C の3つを作る。voice=false で VOICEVOX を使わない（--no-voice） */
+/** variant を省略するとテーマの全部の型（drops は A・B・C、budget は A）を作る。voice=false で VOICEVOX を使わない（--no-voice） */
 export async function renderShort(dir: string, script: Script, keepFrames: boolean, variant: Variant | "all" = "all", voice = true) {
   const fonts = await notoSansJp(allText(script) + readFileSync(join(__dirname, "scenes.tsx"), "utf8") + "0123456789,.%");
   const { voices, credit } = await prepareVoices(dir, script, voice);
   const outs: string[] = [];
-  for (const v of variant === "all" ? VARIANTS : [variant]) outs.push(await renderOne(dir, script, v, fonts, keepFrames, voices));
+  for (const v of variant === "all" ? variantsOf(script) : [variant]) outs.push(await renderOne(dir, script, v, fonts, keepFrames, voices));
   const y = script.youtube;
-  // VOICEVOX の声を使ったときは、説明文の最後にクレジット（例「VOICEVOX:ずんだもん」）を必ず入れる
-  const description = credit ? `${y.description}\n\n${credit}` : y.description;
+  // VOICEVOX の声を使ったときは、説明文の最後にクレジット（例「VOICEVOX:ずんだもん」）を必ず入れる。BGM があれば曲のクレジットも
+  const credits = [credit, bgmCredit()].filter(Boolean) as string[];
+  const description = credits.length ? `${y.description}\n\n${credits.join("\n")}` : y.description;
   writeFileSync(join(dir, "youtube.txt"), `${y.title}\n\n${description}\n\n${y.hashtags.join(" ")}\n`);
-  if (credit) console.log(`youtube.txt に「${credit}」を入れました`);
+  if (credits.length) console.log(`youtube.txt に「${credits.join("」「")}」を入れました`);
   return outs;
 }

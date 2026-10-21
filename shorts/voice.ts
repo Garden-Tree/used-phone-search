@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import type { Script, VoiceConfig } from "./types";
+import type { BudgetScript, DropsScript, NarrationKey, Script, VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, tuneKana } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -20,7 +20,7 @@ export const DEFAULT_SPEAKER = 3;
 const KNOWN: Record<number, string> = { 2: "四国めたん", 3: "ずんだもん" };
 
 /** ナレーションを付けられる場面。hookNum・hookChart（B・C の冒頭）は hook の文を使う */
-export type NarrationKey = "hook" | "ranking" | "reveal" | "trend" | "comment" | "outro";
+export type { NarrationKey };
 export const narrationKey = (sceneId: string): NarrationKey | null =>
   sceneId === "hookNum" || sceneId === "hookChart" ? "hook"
     : (["hook", "ranking", "reveal", "trend", "comment", "outro"] as const).find((k) => k === sceneId) ?? null;
@@ -42,6 +42,25 @@ export function commentSentence(lines: string[]): string {
  * script.json の narration に書いた場面はそちらが優先。空文字にするとその場面は声なし
  */
 export function defaultNarration(s: Script): Partial<Record<NarrationKey, string>> {
+  return s.theme === "budget" ? budgetNarration(s) : dropsNarration(s);
+}
+
+/**
+ * budget の既定: hook 問い / ranking 予算ごとに1文（「3万円なら、<機種>、相場<額>です。」。文ごとに合成して行を声に合わせて出す）
+ * reveal 注目の機種の在庫数と最安 / comment ひと言の本文だけ / outro サイトへの誘導と問い
+ */
+function budgetNarration(s: BudgetScript): Partial<Record<NarrationKey, string>> {
+  const p = s.scenes.pick;
+  return {
+    hook: "予算で買える、いちばん新しい中古iPhoneは…？",
+    ranking: s.scenes.budgets.rows.map((r) => `${r.label}なら、${r.model}、相場${yen(r.median)}です。`).join(""),
+    reveal: `注目は${p.label}の${p.model}。在庫${p.count.toLocaleString()}台、最安${yen(p.minPrice)}です。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの機種にしますか？",
+  };
+}
+
+function dropsNarration(s: DropsScript): Partial<Record<NarrationKey, string>> {
   const h = s.scenes.hook;
   const items = s.scenes.ranking.items;
   const top = items[0];
@@ -78,7 +97,7 @@ export function speakable(text: string): string {
     [/Pro Max/g, "プロマックス"], [/\bPro\b/g, "プロ"], [/\bMax\b/g, "マックス"], [/\bPlus\b/g, "プラス"], [/\bmini\b/g, "ミニ"],
     [/\bAir\b/g, "エアー"], [/\bSE\b/g, "エスイー"], [/\bDuo\b/g, "デュオ"], [/(\d+)e\b/g, "$1イー"],
     [/(\d+)\s*GB/g, "$1ギガ"], [/(\d+)\s*TB/g, "$1テラ"], [/(\d),(?=\d{3})/g, "$1"], [/%/g, "パーセント"],
-    [/−(\d)/g, "マイナス$1"], [/…/g, ""],
+    [/−(\d)/g, "マイナス$1"], [/…/g, ""], [/○/g, "マル"], [/\s*\(第(\d)世代\)/g, "第$1世代"],
   ];
   return words.reduce((t, [re, to]) => t.replace(re, to), text).replace(/\s+/g, "");
 }

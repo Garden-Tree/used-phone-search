@@ -1,4 +1,4 @@
-# YouTube ショート（引き継ぎ・10/17 時点）
+# YouTube ショート（引き継ぎ・10/17 時点。テーマ・声は 10/21 に更新）
 
 構成と調査の経緯は `ideas/youtube-shorts.md`。使い方の詳細は `shorts/README.md`。
 
@@ -15,12 +15,14 @@
 ## 毎週の作り方
 
 ```
-npx tsx shorts/make-short.tsx drops plan            # 台本 script.json（--force で作り直し）
+npx tsx shorts/make-short.tsx <drops|budget> plan     # 台本 script.json（--force で作り直し）
 # script.json の scenes.comment.lines（検品担当のひと言・3行×16字まで）をユーザーと決めて書き換える
-npx tsx shorts/make-short.tsx drops render          # short-A/B/C.mp4（--variant A|B|C で1つだけ）
+npx tsx shorts/make-short.tsx <drops|budget> render   # drops は short-A/B/C.mp4（--variant A|B|C で1つだけ）、budget は short-A.mp4
 ```
 
-- 出力先は `shorts/out/<日付>-drops/`。`youtube.txt` にタイトル・説明文・ハッシュタグが入っている。
+- テーマ: drops（値下がりランキング・声 ずんだもん）／budget（予算で買えるいちばん新しい中古iPhone・声 春日部つむぎ・10/21〜）。選び方は `shorts/README.md`。
+- 同じテーマ・同じデータのショートを同じ日に2本出さない。
+- 出力先は `shorts/out/<日付>-<テーマ>/`。`youtube.txt` にタイトル・説明文・ハッシュタグが入っている。
 - 投稿は手動で、YouTube に出したものを X にも出す。Claude が Chrome で投稿するときは、直前にユーザーの確認をとる。
 - 対象は iOS 27 対応の iPhone だけ（`ALL_CATALOG_MODELS`）。
 - 推移は、在庫件数がふだんの半分未満の日を除く。縦軸は最高値の20%以上の幅をとる。
@@ -37,6 +39,8 @@ npx tsx shorts/make-short.tsx drops render          # short-A/B/C.mp4（--varian
 - 口調は です・ます（ずんだもんの「〜のだ」口調にはしていない）
 - **クレジット**: 声を使った動画は、説明文に「VOICEVOX:キャラクター名」（既定は「VOICEVOX:ずんだもん」）を入れる。`youtube.txt` に自動で入る。
 - **規約（要確認）**: VOICEVOX はキャラクター（話者）ごとに利用規約が別にある。ずんだもん・四国めたんはクレジット表記があれば商用利用できるとされるが、細かい条件は各キャラクターの規約で要確認。**話者を変えるときは、そのキャラクターの規約を読んでから使う。**
+  - 春日部つむぎ（budget の声・10/21〜）: **規約は要確認**（まだ読んでいない。投稿の前にユーザーが公式の規約を確かめる）。クレジット「VOICEVOX:春日部つむぎ」は自動で入る。
+- 話者はテーマごと（`shorts/make-short.tsx` の `THEME_SPEAKER`）。名前で指定し、ID はエンジンから引く。
 
 ## 3パターンの比較
 
@@ -69,7 +73,7 @@ npx tsx shorts/make-short.tsx drops render          # short-A/B/C.mp4（--varian
 2. ユーザーが決めたら、追加の素材を入れる。
    - 1位の発表に、機種のシルエット（自分で描く）。
    - 締めに、サイトの機種ページのスクショ。
-3. テーマを増やす（4週で一巡）: 予算別（○万円で買えるいちばん新しい iPhone）・2機種比較・検品担当の豆知識。`shorts/themes/` に足す。
+3. テーマを増やす（4週で一巡）: 予算別（budget・10/21 に追加）・2機種比較・検品担当の豆知識。`shorts/themes/` に足す。
 4. BGM: ユーザーが YouTube オーディオライブラリから選んで置く。
    - VOICEVOX を入れたら、実際の声で1本書き出して、声の大きさ・効果音の下がり方・読み間違い（機種名）を聞いて確かめる。
 5. 8週続けて、再生数・登録者・流入で続けるか決める。

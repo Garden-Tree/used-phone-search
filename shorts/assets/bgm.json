@@ -1,0 +1,6 @@
+{
+  "_note": "shorts/assets/bgm.mp3 の曲の情報（render が youtube.txt の説明文に「BGM: title - artist（source）」を入れる）。曲を替えたらここも直す。mp3 は Git に入らないが、この JSON は入る",
+  "title": "Okay For Now",
+  "artist": "Televisions",
+  "source": "YouTube オーディオライブラリ"
+}
