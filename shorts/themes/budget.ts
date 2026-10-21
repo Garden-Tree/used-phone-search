@@ -2,7 +2,8 @@
  * テーマ「予算ぴったりで買える中古iPhoneは？」: DB の集計 → 台本
  *
  * 選び方（台本・説明欄・動画で同じ。主観は入れない。10/21 に「発売年がいちばん新しい」から変えた）:
- * - 対象は iOS 27 対応の iPhone（ALL_CATALOG_MODELS。drops と同じ）で、在庫が MIN_COUNT 件以上の機種
+ * - 対象は iOS 27 対応の iPhone（ALL_CATALOG_MODELS。drops と同じ）のうち iPhone 12 シリーズ以降（isRecentEnough）で、在庫が MIN_COUNT 件以上の機種
+ *   iPhone 11・11 Pro・11 Pro Max（2019年）と iPhone SE (第2世代)（2020年・A13）は古すぎるので出さない（10/21 ユーザーの指示）。SE (第3世代)（2022年）は入れる
  * - 相場＝在庫がいちばん多い容量の中央値（getModelMarket。サイトの相場と同じ数字）
  * - 予算 B ごとに、ひとつ前の予算 P との帯 (P, B]（3万: 0〜3万・5万: 3万超〜5万・7万: 5万超〜7万・10万: 7万超〜10万）に
  *   相場が入る機種のうち、相場がいちばん高い機種（＝その予算でいちばん上の機種）。同じ相場なら発売年（lib/iphoneSpecs.ts）の新しい方
@@ -30,11 +31,15 @@ const MIN_COUNT = 5;
 
 const man = (n: number) => n.toLocaleString();
 const yearOf = (model: string) => Number(specOf(model)?.released.replace("年", "") ?? 0);
+/** iPhone 12 シリーズ（2020年発売）より古い機種と SE (第2世代) を除く */
+const MIN_YEAR = 2020;
+const EXCLUDE = new Set(["iPhone SE (第2世代)"]);
+const isRecentEnough = (model: string) => yearOf(model) >= MIN_YEAR && !EXCLUDE.has(model);
 const utm = (date: string) => `utm_source=youtube&utm_medium=social&utm_campaign=shorts_${date.replace(/-/g, "")}_budget`;
 
 export async function buildBudgetScript(date: string): Promise<BudgetScript> {
   const market = await getModelMarket(ALL_CATALOG_MODELS);
-  const cands = [...market].filter(([m, r]) => r.count >= MIN_COUNT && yearOf(m) > 0);
+  const cands = [...market].filter(([m, r]) => r.count >= MIN_COUNT && isRecentEnough(m));
   const rows: (BudgetRow & { count: number })[] = [];
   SHORT_BUDGETS.forEach((budget, i) => {
     const prev = i > 0 ? SHORT_BUDGETS[i - 1] : 0;
@@ -65,7 +70,7 @@ export async function buildBudgetScript(date: string): Promise<BudgetScript> {
     "",
     ...rows.map((r) => `${r.label}以下 ${r.model}（${r.released}発売・${r.storage}） 相場${man(r.median)}円`),
     "",
-    `選び方: 相場が予算の帯（3万円以下・3万超〜5万・5万超〜7万・7万超〜10万円）に入る iOS 27 対応 iPhone のうち、相場がいちばん高い機種（同じなら発売の新しい方・在庫5件以上。帯に機種がなければ、相場が予算以下で発売年のいちばん新しい機種）。データ: 大手中古ショップ${shopCount}店の在庫（相場＝在庫がいちばん多い容量の中央値・${date.replace(/-/g, "/")}時点）。`,
+    `選び方: 相場が予算の帯（3万円以下・3万超〜5万・5万超〜7万・7万超〜10万円）に入る iPhone 12 シリーズ以降と SE (第3世代) のうち、相場がいちばん高い機種（同じなら発売の新しい方・在庫5件以上。帯に機種がなければ、相場が予算以下で発売年のいちばん新しい機種）。データ: 大手中古ショップ${shopCount}店の在庫（相場＝在庫がいちばん多い容量の中央値・${date.replace(/-/g, "/")}時点）。`,
     "",
     // utm で YouTube から来た人を GA で数える（canonical は印なしなので検索には影響しない）
     `${pick.model}の店ごとの在庫と最安値: https://used.gadelog.com${modelPagePath(pick.model)}?${utm(date)}`,

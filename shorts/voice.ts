@@ -10,7 +10,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { BudgetScript, DropsScript, NarrationKey, Script, VoiceConfig } from "./types";
-import { TUNING_VERSION, dictHash, ensureDictionary, tuneKana } from "./voiceTuning";
+import { TUNING_VERSION, dictHash, ensureDictionary, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
 const CACHE = process.env.VOICEVOX_CACHE ? resolve(process.env.VOICEVOX_CACHE) : resolve(__dirname, "out/voice-cache");
@@ -185,6 +185,9 @@ export async function tunedQuery(text: string, cfg: VoiceConfig | undefined, spe
   if (after !== before) {
     query.accent_phrases = await (await http(`/accent_phrases?text=${encodeURIComponent(after)}&speaker=${speakerId}&is_kana=true`, { method: "POST" })).json();
   }
+  // 長音（ジュウ・パア・ソオ）の母音を延ばす（voiceTuning.ts の lengthenLongVowels）
+  const longVowels = lengthenLongVowels(query.accent_phrases as AccentPhrase[]);
+  const moras = moraLengths(query.accent_phrases as AccentPhrase[]);
   query.speedScale = cfg?.speedScale ?? DEFAULT_SPEED;
   query.volumeScale = cfg?.volume ?? 1.0;
   if (cfg?.intonationScale !== undefined) query.intonationScale = cfg.intonationScale;
@@ -192,7 +195,7 @@ export async function tunedQuery(text: string, cfg: VoiceConfig | undefined, spe
   if (cfg?.pauseLengthScale !== undefined) query.pauseLengthScale = cfg.pauseLengthScale;
   query.prePhonemeLength = 0.05;
   query.postPhonemeLength = 0.1;
-  return { query, spoken, before, after };
+  return { query, spoken, before, after, longVowels, moras };
 }
 
 export const DEFAULT_SPEED = 1.25;

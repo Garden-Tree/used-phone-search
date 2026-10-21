@@ -21,7 +21,7 @@ npx tsx shorts/make-short.tsx <drops|budget> render   # drops は short-A/B/C.mp
 ```
 
 - 声は全テーマ 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）。
-- テーマ: drops（値下がりランキング）／budget（予算ぴったりで買える中古iPhone・帯ごとに相場がいちばん高い機種・10/21〜）。選び方は `shorts/README.md`。
+- テーマ: drops（値下がりランキング）／budget（予算ぴったりで買える中古iPhone・帯ごとに相場がいちばん高い機種・iPhone 12 シリーズ以降と SE 第3世代・10/21〜）。選び方は `shorts/README.md`。
 - 同じテーマ・同じデータのショートを同じ日に2本出さない。
 - 出力先は `shorts/out/<日付>-<テーマ>/`。`youtube.txt` にタイトル・説明文・ハッシュタグが入っている。
 - 投稿は手動で、YouTube に出したものを X にも出す。Claude が Chrome で投稿するときは、直前にユーザーの確認をとる。
@@ -37,6 +37,7 @@ npx tsx shorts/make-short.tsx <drops|budget> render   # drops は short-A/B/C.mp
 - アプリが起動していなければ、声なしで今まで通り書き出す（止まらない）。
 - 読む文・タイミング・音の重ね方は `shorts/README.md`「ナレーション」。
 - **調声**（10/21〜）: `shorts/voiceTuning.ts`。ユーザー辞書（`shorts/voice-dict.json`）を render のたびに登録（あれば上書き・別の PC でも同じ）。数字・機種名のアクセント句を規則でつなぎ直す／切る。うまく読めない文は `script.json` の `narrationKana`（AquesTalk 風の読み）で場面ごとに直す。経緯は ideas/2026-10-21.md
+  - 長音（10/21〜）: 「ジュウ」「パア」「ソオ」の伸ばす母音のモーラを、合成の直前に 0.12 秒以上へ延ばす（`lengthenLongVowels`。短すぎて「じゅよん」「ぱせんと」と聞こえたため）。読みに「ー」を書くとエンジンが 400 を返すので使わない。`--voice-dump` に「長音」と「モーラ」（母音の長さ）が出る
 - 口調は です・ます
 - **クレジット**: 声を使った動画は、説明文に「VOICEVOX:キャラクター名」（既定は「VOICEVOX:春日部つむぎ」）を入れる。`youtube.txt` に自動で入る。
 - **規約（要確認）**: VOICEVOX はキャラクター（話者）ごとに利用規約が別にある。ずんだもん・四国めたんはクレジット表記があれば商用利用できるとされるが、細かい条件は各キャラクターの規約で要確認。**話者を変えるときは、そのキャラクターの規約を読んでから使う。**

@@ -120,11 +120,13 @@ async function voiceDump(arg: string) {
   const sp = await resolveSpeaker(cfg?.speaker, true);
   console.log(`話者: ${sp.character}（${sp.style ?? ""}・ID ${sp.id}）`);
   for (const [k, text, override] of items) {
-    const { spoken, before, after } = await tunedQuery(text, cfg, sp.id, override);
+    const { spoken, before, after, longVowels, moras } = await tunedQuery(text, cfg, sp.id, override);
     console.log(`■ ${k}: ${text}
   文: ${spoken}
   before: ${before}
-  after : ${after}${after === before ? "（同じ）" : ""}`);
+  after : ${after}${after === before ? "（同じ）" : ""}
+  長音  : ${longVowels.length ? longVowels.join("・") : "なし"}
+  モーラ: ${moras}`);
   }
 }
 
