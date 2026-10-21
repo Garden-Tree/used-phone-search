@@ -15,6 +15,8 @@ if sys.platform == 'win32':
 
 # 失敗したスクリプト名（スレッドから追記する）
 FAILED = []
+# 失敗のうち、Python の例外（Traceback）で止まったもの＝コードの誤りの疑い。1店でもジョブを失敗にする
+CODE_ERRORS = []
 
 def run_scraper(script_name, args=""):
     print(f"[*] Starting {script_name} with args: {args}...")
@@ -50,11 +52,14 @@ def run_scraper(script_name, args=""):
         
         # リアルタイムで出力を表示（ショップ名でプレフィックスを付ける）
         shop_label = script_name.replace("_scraper.py", "").upper()
+        saw_traceback = False
         while True:
             line = process.stdout.readline()
             if not line and process.poll() is not None:
                 break
             if line:
+                if line.startswith("Traceback (most recent call last)"):
+                    saw_traceback = True
                 print(f"[{shop_label}] {line.strip()}", flush=True)
             
         process.wait()
@@ -65,10 +70,13 @@ def run_scraper(script_name, args=""):
         else:
             print(f"[!] {script_name} failed with exit code {process.returncode}")
             FAILED.append(script_name)
+            if saw_traceback:
+                CODE_ERRORS.append(script_name)
 
     except Exception as e:
         print(f"[!] Error running {script_name}: {e}")
         FAILED.append(script_name)
+        CODE_ERRORS.append(script_name)
 
 def main():
     # 各ショップの取得数（ページ数など）。環境変数で上書きでき、0 ならそのショップは実行しない。
@@ -101,10 +109,17 @@ def main():
     total_elapsed = time.time() - start_all
     print(f"\n=== All scrapers completed in {total_elapsed:.1f}s ===")
 
-    # 1つでも失敗したら非0で終了し、GitHub Actions を失敗扱いにして通知を飛ばす
+    # 失敗の扱い（docs/operations.md「失敗と警告の分け方」）:
+    # - 1店だけの失敗（403・429・タイムアウト・0件・DB の一時的な切断など。前回の在庫はそのまま残る）は警告だけにする。
+    #   続けば、在庫の古さで「データ更新の監視」（scripts/check-health.ts）がジョブを失敗にする
+    # - 2店以上が同時に失敗した、または Python の例外（Traceback）で止まった（コードの誤りの疑い）ときは、この場でジョブを失敗にする
     if FAILED:
         print(f"[!] Failed scrapers: {', '.join(FAILED)}")
-        sys.exit(1)
+        if len(FAILED) >= 2 or CODE_ERRORS:
+            if CODE_ERRORS:
+                print(f"[!] Traceback で止まった: {', '.join(CODE_ERRORS)}")
+            sys.exit(1)
+        print(f"::warning::スクレイパー {FAILED[0]} が失敗（1店だけなので警告。前回の在庫のまま。続けば監視が失敗にする）")
 
 if __name__ == "__main__":
     # scraper ディレクトリに移動してから実行することを想定

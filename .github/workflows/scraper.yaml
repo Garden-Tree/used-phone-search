@@ -85,6 +85,8 @@ jobs:
           cd scraper
           pip install -r requirements.txt
 
+      # 1店だけの失敗（403・429・タイムアウト・0件）は警告にして続ける。2店以上の同時失敗・Python の例外（Traceback）はここで失敗にする。
+      # 1店の失敗が続いたときは、下の「データ更新の監視」が在庫の古さで失敗にする（docs/operations.md「失敗と警告の分け方」）
       - name: スクレイパーの実行
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -197,7 +199,8 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run snapshot:prices
 
-      # 監視: 取り込みが止まっていないか（問題があっても書き出しは続け、最後にジョブを失敗にして通知する）
+      # 監視: 取り込みが止まっていないか（問題があっても書き出しは続け、最後にジョブを失敗にして通知する）。
+      # 1回きりの取得の失敗は警告（::warning::）だけ。最終更新が13時間超・8時間超が2店以上・「0件」が2回続いた、などで失敗（scripts/check-health.ts）
       - name: データ更新の監視
         id: health
         if: ${{ !cancelled() }}
