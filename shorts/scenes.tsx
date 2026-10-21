@@ -6,7 +6,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
-import type { BudgetScript, DropsScript, Script } from "./types";
+import type { BudgetScript, DropsScript, NewUsedScript, Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -17,7 +17,11 @@ const HEADER = { top: 250, height: 320 };
 const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
 const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
-const HEAD_TITLE = (s: Script) => (s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : ["今週の中古iPhone", "値下がりランキング"]);
+const HEAD_TITLE = (s: Script) =>
+  s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"] : ["今週の中古iPhone", "値下がりランキング"];
+/** 下の注記（newused は新品と中古の数字の出どころ） */
+const FOOT = (s: Script) =>
+  s.theme === "newused" ? `${s.date.replace(/-/g, "/")}・新品はApple公式・中古は同じ容量の中央値` : `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`;
 
 /**
  * 色はサイトと同じ（lib/brandColors.ts = app/globals.css の @theme）。白いカードの上は SITE、紺の地の上は ON_DARK
@@ -37,15 +41,15 @@ const C = {
   gold: SITE.price, silver: SITE.inkMute, bronze: SITE.inspect700,
   /** 検品担当の札（サイトの検品担当の色） */
   amber: SITE.inspect700,
-  /** budget の予算の札（サイトの brand-600。白の文字を載せる） */
+  /** budget の予算の札（サイトの brand-600。白の文字を載せる）。newused の新品の棒も同じ色 */
   budget: SITE.brand600,
 };
 
 export type SceneId = "hook" | "hookNum" | "hookChart" | "ranking" | "reveal" | "trend" | "comment" | "outro";
 export type Variant = "A" | "B" | "C";
 export const VARIANTS: Variant[] = ["A", "B", "C"];
-/** テーマごとの型。budget は A だけ */
-export const variantsOf = (s: Script): Variant[] => (s.theme === "budget" ? ["A"] : VARIANTS);
+/** テーマごとの型。budget・newused は A だけ */
+export const variantsOf = (s: Script): Variant[] => (s.theme === "drops" ? VARIANTS : ["A"]);
 /** 効果音: t は場面の開始からの秒数。pop は行が出る小さな音、ta は 1位発表の二音 */
 export type Se = { t: number; kind: "pop" | "ta" };
 /** dur: 場面の長さ（秒）、anim: 動きのある秒数（以降は最後のコマを止める）、o: 場面ごとの動きの設定（開始・間隔・拡大率） */
@@ -93,6 +97,10 @@ export const TIMELINE = (s: Script, v: Variant): Scene[] => {
   if (s.theme === "budget") return [
     { id: "hook", dur: 2.5, anim: 2 }, budgetRows(), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
+  // newused（声なし約25秒）: 問い → 3位・2位・伏せた1位（声に合わせて出す）→ 1位の新品と中古の相場 → ひと言 → 締め。推移グラフはなし
+  if (s.theme === "newused") return [
+    { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
+  ];
   if (v === "B") return [
     { id: "hookNum", dur: 4, anim: 1.0 }, countdown(0.8, 1.2), reveal(4), comment(5.5, 0, 0.7, n), outro(1.2),
   ];
@@ -130,8 +138,8 @@ function Frame({ s, children, header = true, footer = true }: { s: Script; child
       )}
       <div style={{ position: "absolute", left: MARGIN, top: BODY.top, width: CW, height: BODY.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>{children}</div>
       {footer && (
-        <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", justifyContent: "center", fontSize: 30, fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>
-          {`${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`}
+        <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", justifyContent: "center", fontSize: FIT(FOOT(s), CW, 30, 24), fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>
+          {FOOT(s)}
         </div>
       )}
     </div>
@@ -140,8 +148,8 @@ function Frame({ s, children, header = true, footer = true }: { s: Script; child
 
 const card = { display: "flex", flexDirection: "column", alignItems: "center", background: C.white, borderRadius: 28, color: C.navy } as const;
 
-function Hook({ s, t }: { s: DropsScript; t: number }) {
-  const lines = ["今週いちばん値下がりした", "中古iPhoneは…？"];
+/** つかみ: 問い（2行）と「1位 ？？？」の札。lines を渡せば問いを替える（newused） */
+function Hook({ s, t, lines = ["今週いちばん値下がりした", "中古iPhoneは…？"] }: { s: Script; t: number; lines?: string[] }) {
   const pulse = 1 + 0.035 * Math.sin(t * Math.PI * 2 * 1.2);
   return (
     <Frame s={s}>
@@ -158,9 +166,37 @@ function Hook({ s, t }: { s: DropsScript; t: number }) {
 
 const BADGE = [C.gold, C.silver, C.bronze, C.navy, C.navy];
 
+/** ランキングの行の下段の欄（文字・幅・最大の大きさ・色）。幅の合計は右の列（680）に収める */
+type Cell = { text: string; w: number; max: number; color: string };
+
 function Ranking({ s, t, o }: { s: DropsScript; t: number; o: Scene["o"] }) {
-  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN);
-  // 1行 260px・3行。機種名は右の列の幅いっぱい、その下に 容量・率・額
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
+    model: it.model,
+    cells: [
+      { text: it.storage, w: 170, max: 44, color: C.muted },
+      { text: `−${rate(it.rate)}%`, w: 250, max: 80, color: C.red },
+      { text: `−${n(it.drop)}円`, w: 260, max: 50, color: C.red },
+    ],
+  }));
+  return <RankRows s={s} t={t} o={o} items={items} />;
+}
+
+/** newused のランキング: 下段は 容量・新品との差（額・大）・率 */
+function NewUsedRanking({ s, t, o }: { s: NewUsedScript; t: number; o: Scene["o"] }) {
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
+    model: it.model,
+    cells: [
+      { text: it.storage, w: 170, max: 44, color: C.muted },
+      { text: `−${n(it.diff)}円`, w: 320, max: 76, color: C.red },
+      { text: `−${rate(it.pct)}%`, w: 190, max: 50, color: C.red },
+    ],
+  }));
+  return <RankRows s={s} t={t} o={o} items={items} />;
+}
+
+/** 3位・2位・伏せた1位の行（drops・newused で共通）。items[0] が1位 */
+function RankRows({ s, t, o, items }: { s: Script; t: number; o: Scene["o"]; items: { model: string; cells: Cell[] }[] }) {
+  // 1行 260px・3行。機種名は右の列の幅いっぱい、その下に下段の欄
   const RH = 260;
   const RIGHT = 680;
   return (
@@ -171,8 +207,6 @@ function Ranking({ s, t, o }: { s: DropsScript; t: number; o: Scene["o"] }) {
           const at = o?.at?.[i] ?? (o?.start ?? 0.5) + (o?.gap ?? 1.6) * (items.length - 1 - i);
           const p = i === 0 ? 1 : prog(t, at, ROW_FADE);
           const secret = i === 0;
-          const rateText = `−${rate(it.rate)}%`;
-          const dropText = `−${n(it.drop)}円`;
           return (
             <div key={i} style={{ display: "flex", alignItems: "center", width: "100%", height: RH, borderBottom: i < items.length - 1 ? `3px solid ${C.line}` : "none", opacity: p, transform: `translateX(${Math.round((1 - p) * 80)}px)` }}>
               <div style={{ display: "flex", justifyContent: "center", width: 160, flexShrink: 0, fontSize: 68, fontWeight: 900, color: C.white, background: BADGE[i] ?? C.navy, borderRadius: 22, padding: "14px 0" }}>{`${i + 1}位`}</div>
@@ -182,9 +216,9 @@ function Ranking({ s, t, o }: { s: DropsScript; t: number; o: Scene["o"] }) {
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: RIGHT, flexShrink: 0, marginLeft: 20 }}>
                   <div style={{ ...row, fontSize: FIT(it.model, RIGHT, 80), fontWeight: 900 }}>{it.model}</div>
                   <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", width: RIGHT, marginTop: 8 }}>
-                    <div style={{ ...row, width: 170, fontSize: FIT(it.storage, 170, 44), fontWeight: 900, color: C.muted }}>{it.storage}</div>
-                    <div style={{ ...row, width: 250, fontSize: FIT(rateText, 250, 80), fontWeight: 900, color: C.red }}>{rateText}</div>
-                    <div style={{ ...row, width: 260, fontSize: FIT(dropText, 260, 50), fontWeight: 900, color: C.red }}>{dropText}</div>
+                    {it.cells.map((c, k) => (
+                      <div key={k} style={{ ...row, width: c.w, fontSize: FIT(c.text, c.w, c.max), fontWeight: 900, color: c.color }}>{c.text}</div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -449,7 +483,59 @@ function Pick({ s, t }: { s: BudgetScript; t: number }) {
   );
 }
 
+/**
+ * newused の1位: 機種名・容量と発売年、新品（Apple 公式）と中古の相場の2本の棒（新品を幅いっぱいにした比）、差額（大）と率。
+ * 棒は 0.8 秒から伸び、差額は数え上げる
+ */
+function NewUsedReveal({ s, t }: { s: NewUsedScript; t: number }) {
+  const r = s.scenes.ranking.items[0];
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const grow = prog(t, 0.8, 0.7);
+  const diffText = `−${n(r.diff)}円`;
+  const sub = `${r.storage}・${r.released}発売`;
+  const LABEL = 230;
+  const BAR = CW - 60 - LABEL - 20;
+  const bars = [
+    { label: "新品", price: r.newPrice, color: C.budget, w: BAR },
+    { label: "中古の相場", price: r.usedMedian, color: C.red, w: Math.round((BAR * r.usedMedian) / r.newPrice) },
+  ];
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: 60, fontWeight: 900, marginBottom: 14, opacity: prog(t, 0, 0.25) }}>1位は…</div>
+      <div style={{ ...card, width: CW, padding: "26px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 110), fontWeight: 900 }}>{r.model}</div>
+        <div style={{ ...row, fontSize: FIT(sub, CW - 60, 44), fontWeight: 900, color: C.muted, marginTop: 4 }}>{sub}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 18 }}>
+          {bars.map((b, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 18 : 0 }}>
+              <div style={{ ...row, justifyContent: "flex-end", width: LABEL, fontSize: FIT(b.label, LABEL, 40), fontWeight: 900, color: C.muted }}>{b.label}</div>
+              <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
+                <div style={{ ...row, justifyContent: "flex-start", fontSize: FIT(`${n(b.price)}円`, BAR, 56), fontWeight: 900, color: b.color }}>{`${n(b.price)}円`}</div>
+                <div style={{ display: "flex", width: Math.max(8, Math.round(b.w * grow)), height: 34, background: b.color, borderRadius: 12, marginTop: 4 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 14 }}>
+          <div style={{ ...row, fontSize: FIT(diffText, 600, 130), fontWeight: 900, color: C.red }}>{`−${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
+          <div style={{ ...row, fontSize: 64, fontWeight: 900, color: C.red, marginLeft: 16 }}>{`−${rate(r.pct)}%`}</div>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
+  if (s.theme === "newused") {
+    switch (sc.id) {
+      case "hook": return <Hook s={s} t={t} lines={["新品より、中古で", "いくら安くなる？"]} />;
+      case "ranking": return <NewUsedRanking s={s} t={t} o={sc.o} />;
+      case "reveal": return <NewUsedReveal s={s} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`newused に場面 ${sc.id} はありません`);
+    }
+  }
   if (s.theme === "budget") {
     switch (sc.id) {
       case "hook": return <BudgetHook s={s} t={t} />;

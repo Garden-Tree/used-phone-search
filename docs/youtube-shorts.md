@@ -15,13 +15,13 @@
 ## 毎週の作り方
 
 ```
-npx tsx shorts/make-short.tsx <drops|budget> plan     # 台本 script.json（--force で作り直し）
+npx tsx shorts/make-short.tsx <drops|budget|newused> plan     # 台本 script.json（--force で作り直し）
 # script.json の scenes.comment.lines（検品担当のひと言・3行×16字まで）をユーザーと決めて書き換える
-npx tsx shorts/make-short.tsx <drops|budget> render   # drops は short-A/B/C.mp4（--variant A|B|C で1つだけ）、budget は short-A.mp4
+npx tsx shorts/make-short.tsx <drops|budget|newused> render   # drops は short-A/B/C.mp4（--variant A|B|C で1つだけ）、budget・newused は short-A.mp4
 ```
 
-- 声は全テーマ 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）。
-- テーマ: drops（値下がりランキング）／budget（予算ぴったりで買える中古iPhone・帯ごとに相場がいちばん高い機種・iPhone 12 シリーズ以降と SE 第3世代・10/21〜）。選び方は `shorts/README.md`。
+- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused は 青山龍星（ノーマル・1.25倍・10/21〜）。
+- テーマ: drops（値下がりランキング）／budget（予算ぴったりで買える中古iPhone・帯ごとに相場がいちばん高い機種・iPhone 12 シリーズ以降と SE 第3世代・10/21〜）／newused（新品より中古でいくら安い？・Apple 公式の新品価格と同じ容量の中古の相場の差額ランキング・10/21〜）。選び方は `shorts/README.md`。
 - 同じテーマ・同じデータのショートを同じ日に2本出さない。
 - 出力先は `shorts/out/<日付>-<テーマ>/`。`youtube.txt` にタイトル・説明文・ハッシュタグが入っている。
 - 投稿は手動で、YouTube に出したものを X にも出す。Claude が Chrome で投稿するときは、直前にユーザーの確認をとる。
@@ -42,7 +42,8 @@ npx tsx shorts/make-short.tsx <drops|budget> render   # drops は short-A/B/C.mp
 - **クレジット**: 声を使った動画は、説明文に「VOICEVOX:キャラクター名」（既定は「VOICEVOX:春日部つむぎ」）を入れる。`youtube.txt` に自動で入る。
 - **規約（要確認）**: VOICEVOX はキャラクター（話者）ごとに利用規約が別にある。ずんだもん・四国めたんはクレジット表記があれば商用利用できるとされるが、細かい条件は各キャラクターの規約で要確認。**話者を変えるときは、そのキャラクターの規約を読んでから使う。**
   - 春日部つむぎ（全テーマの標準の声・10/21〜）: 公式の規約（https://tsumugi-official.studio.site/rule ・10/21 確認）で、VOICEVOX の声は商用・非商用ともに利用可。条件はクレジット「VOICEVOX:春日部つむぎ」を動画内か概要欄などに書くこと（自動で入る）。禁止は誹謗中傷・第三者に不快感や権利侵害・特定の思想や団体に関わるもの・二次配布など。規約は予告なく変わるので、毎月1日の見直しで開き直す。
-- 話者はテーマごとに変えられる（`shorts/make-short.tsx` の `THEME_SPEAKER`。いまは全部 春日部つむぎ）。名前で指定し、ID はエンジンから引く。
+  - 青山龍星（newused の声・10/21〜）: 規約（https://www.virvoxproject.com/voicevoxの利用規約 ・10/21 確認）で、個人はクレジット「VOICEVOX:青山龍星」を書けば商用利用できる（自動で入る）。**法人が関わる利用は、事前に ななはぴ への確認が要る**。毎月1日の見直しで開き直す。
+- 話者はテーマごとに変えられる（`shorts/make-short.tsx` の `THEME_SPEAKER`。drops・budget は 春日部つむぎ、newused は 青山龍星）。名前で指定し、ID はエンジンから引く。
 
 ## 3パターンの比較
 

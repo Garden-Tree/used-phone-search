@@ -5,7 +5,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 
 # YouTube ショートの作り方（@used_gadelog）
 
-週1本。テーマを回す: **drops**（今週いちばん値下がりした中古iPhone のランキング）と **budget**（予算ぴったりで買える中古iPhone。10/21〜）。
+週1本。テーマを回す: **drops**（今週いちばん値下がりした中古iPhone のランキング）・**budget**（予算ぴったりで買える中古iPhone。10/21〜）・**newused**（新品より中古でいくら安い？ 10/21〜）。
 チャンネルの説明「値下がりランキングや予算別のおすすめ」に合わせる。
 仕組みの説明は `shorts/README.md` と `docs/youtube-shorts.md`。記録は `ideas/YYYY-MM-DD.md`。報告は日本語。
 このスキルの「決まっていること」は、10/21 にユーザーと何度も作り直して決めたもの。**勝手に元に戻さない**。
@@ -15,16 +15,16 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 1. **準備**
    - VOICEVOX アプリが起動しているか確かめる: `curl -s http://127.0.0.1:50021/version`。起動していなければ、ユーザーに起動を頼む。声なしで作らない。
    - BGM `shorts/assets/bgm.mp3` があるか確かめる。git には入らないので、別の PC では置き直す。
-2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget> plan`
+2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|newused> plan`
    - `shorts/out/<日付>-<テーマ>/script.json` ができる（すでにあれば止まる。上書きは `--force`）。
-   - drops: 1〜3位。budget: 予算（3万・5万・7万・10万円）ごとの機種と相場、注目（5万円の行）の最安・在庫数。
+   - drops: 1〜3位。budget: 予算（3万・5万・7万・10万円）ごとの機種と相場、注目（5万円の行）の最安・在庫数。newused: 新品と中古の相場の差の1〜3位（候補の全機種も出る）。
    - 検品担当のひと言（`comment.lines`）、ナレーション、説明文を確かめる。
    - ひと言は下書き。古めの機種ならバッテリーと状態ランク、のように中身に合わせて直す。
 3. **読みを確かめる**: `npx tsx shorts/make-short.tsx --voice-dump script`（最後に書いた台本・その台本の話者で）
    - アクセント句の直す前と後が出る。機種名・数字が細切れになっていないかを見る。
    - 直らない場面は、script.json の `narrationKana` に読みを書く。
-4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget> render`
-   - drops は A・B・C の3本、budget は A の1本と、`youtube.txt` ができる。
+4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|newused> render`
+   - drops は A・B・C の3本、budget・newused は A の1本と、`youtube.txt` ができる。
    - 長さ（60秒以内。今は30〜35秒）、音量（-11 LUFS 前後）、タイムライン（場面・行・声の秒）を確かめる。
    - 静止画で、ランキング・1位の発表・グラフ・ひと言を見る: `ffmpeg -ss <秒> -i short-A.mp4 -frames:v 1 x.png` を Read で開く。
 5. **ユーザーに見せる**: A を SendUserFile で送り、OK をもらう。**投稿はユーザーの OK のあと**。
@@ -39,6 +39,9 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
     - 「発売年がいちばん新しい」だけで選ぶと、5万円の枠に相場3.3万円の SE 第3世代が入って分かりにくかった（10/21）。
   - 注目は5万円の行に固定（主観で選ばない）。**出すのは相場（容量つき）と在庫数だけ。最安は出さない**（3万円の行より安く見えた）。
   - 4行は上から、「○万円なら」の声の0.15秒前に1行ずつ出す。見出しの帯は「予算ぴったりで買える／中古iPhone」。
+- newused: **hook → ranking（3位・2位・伏せた1位）→ reveal（1位の新品と中古の相場の2本の棒・差額と率）→ comment → outro**（型 A だけ・約39秒）。
+  - 対象: Apple 公式の新品価格がある iPhone（`lib/applePrices.ts`）。容量は公式価格のある容量のうち中古の在庫がいちばん多い容量（在庫5件以上）。中古は**相場（中央値）**で比べ、最安は使わない。差額（新品−相場）の大きい順。相場が新品以上の機種は出さない。
+  - 見出しの帯は「新品より／いくら安い？中古iPhone」。下の注記は「新品はApple公式・中古は同じ容量の中央値」。utm の campaign の末尾は `_newused`。
 - **ランキングは3位・2位・1位（伏せ字）の3行だけ。** 4位・5位は出さない。空いた分、行と文字を大きくする（行の高さ 260px、機種名は最大80px で、幅に合わせて縮める）。
 - **ランキングの行は、声に合わせて出す。** 声は文ごとに合成し、各行は「○位は」の0.15秒前に出す。決まった間隔では出さない。
 - **上部の見出しの帯は大きく**（上の行は最大52px、題は2行で最大104px）。
@@ -49,7 +52,8 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 - **推移グラフ（trend）はシンプルに。** 線・最初と最後の値・大きく下がった日の印だけにする。場面は約3秒。
 
 ### ナレーション（VOICEVOX）
-- **標準の声は 春日部つむぎ（ノーマル）**。全テーマ（drops も budget も）この声（10/21 ユーザーの指示。1本目の drops だけ ずんだもん）。
+- **標準の声は 春日部つむぎ（ノーマル）**。drops と budget はこの声（10/21 ユーザーの指示。1本目の drops だけ ずんだもん）。
+  - **newused だけ 青山龍星（ノーマル）**（10/21 ユーザーの指示。クレジット「VOICEVOX:青山龍星」。法人が関わる利用は事前に ななはぴ へ確認。docs/youtube-shorts.md）。
   - 名前で指定する（`voice.ts` の `DEFAULT_SPEAKER`・`make-short.tsx` の `THEME_SPEAKER`）。ID はエンジンの GET /speakers から引く（この PC では 8）。
   - 説明欄のクレジットは「VOICEVOX:春日部つむぎ」（公式の規約で商用可・クレジット必須。10/21 確認。docs/youtube-shorts.md）。
   - 説明欄のクレジット「VOICEVOX:<キャラクター名>」は render が自動で入れる。
@@ -74,6 +78,12 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - 「−8,000円」は「マイナス8,000円」と読ませる（「円安」と聞き違えないように）。問いかけは「？」で終える。
   - **長音を延ばす**: エンジンは「ジュウ」「パア」「ソオ」の伸ばす音を母音だけのモーラで持ち、その長さが 0.03〜0.07 秒しかない（つむぎで「じゅよん」「ぱせんと」と聞こえた）。合成の直前に、前の母音を伸ばすモーラ（ア段+ア・イ段+イ・ウ段+ウ・オ段+オ／ウ）の母音を 0.12 秒以上にする（`lengthenLongVowels`）。読みの「ー」はエンジンが受け付けない（400）。`--voice-dump` の「長音」「モーラ」の行で確かめる。
   - 「iPhone SE (第3世代)」は括弧を外して読ませる（括弧で間が空くため）。「○」は「マル」。
+
+- 各場面で読む文（newused）:
+  - hook: 「新品より、中古でいくら安くなる？」
+  - ranking: 「3位は<機種>、<容量>。新品より<額>安いです。」を 3位・2位
+  - reveal: 「1位は<機種>、<容量>。新品の<額>に対して、中古の相場は<額>。<額>、<率>%安くなります。」（「新品の」の「の」を消さない。数字に付いて「シンピンジュウ」と読まれる）
+  - comment: ひと言の本文だけ。outro: 「全機種の相場は、プロフィールのリンクから見られます。あなたなら、新品と中古、どちらにしますか？」
 
 ### 音
 - **BGM**: YouTube オーディオライブラリの「帰属表示が不要」な曲（今は「Okay For Now - Televisions」）。歌の入った曲は使わない。

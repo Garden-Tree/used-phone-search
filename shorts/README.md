@@ -9,6 +9,8 @@ npx tsx shorts/make-short.tsx drops plan            # 台本 shorts/out/<日付>
 npx tsx shorts/make-short.tsx drops render          # 最新の台本から short-A/B/C.mp4 と youtube.txt を作る
 npx tsx shorts/make-short.tsx budget plan           # 予算のテーマ（shorts/out/<日付>-budget/）
 npx tsx shorts/make-short.tsx budget render         # short-A.mp4 と youtube.txt（budget は型 A だけ）
+npx tsx shorts/make-short.tsx newused plan          # 新品と中古の差のテーマ（shorts/out/<日付>-newused/。型 A だけ）
+npx tsx shorts/make-short.tsx newused render
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
 npx tsx shorts/make-short.tsx drops render --no-voice  # VOICEVOX の声を入れない
 npx tsx shorts/make-short.tsx --voice-test "今週いちばん値下がりした中古iPhoneは？"   # 声だけ試す（shorts/out/voice-test.wav）。--speaker 3 / --speaker ずんだもん/ノーマル・--speed 1.25
@@ -19,10 +21,14 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 
 - `drops`: 今週いちばん値下がりした中古iPhone（型 A・B・C）
 - `budget`: 予算ぴったりで買える中古iPhone（型 A だけ・約35秒）
-- 声は全テーマ 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）
+- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused は 青山龍星（ノーマル・1.25倍。クレジット「VOICEVOX:青山龍星」）
   - 3万・5万・7万・10万円ごとに、相場（getModelMarket＝在庫がいちばん多い容量の中央値）が帯（0〜3万・3万超〜5万・5万超〜7万・7万超〜10万）に入る iPhone（iPhone 12 シリーズ以降と SE (第3世代)。11 系・SE (第2世代) は古すぎるので出さない・在庫5件以上）のうち、相場がいちばん高い機種。同じ相場なら発売の新しい方。帯が空なら「予算以下で発売年がいちばん新しい機種」
   - 注目は5万円の行（固定）。出すのは相場（容量つき）と在庫数だけ。最安は出さない（3万円の行より安く見えて分かりにくい）
   - 場面 hook（問い＋予算の札）→ ranking（4行。「○万円なら」の声に合わせて上から）→ reveal（注目）→ comment → outro（「あなたの予算なら…？」）
+- `newused`: 新品より中古でいくら安い？（型 A だけ・約39秒。10/21〜）
+  - Apple 公式の新品価格がある iPhone（`lib/applePrices.ts`）で、公式価格のある容量のうち中古の在庫がいちばん多い容量（在庫5件以上）の相場（中央値。最安ではない）と新品を比べ、差額（新品−相場）の大きい順。相場が新品以上の機種（発売直後）は出さない。3機種未満なら止まる
+  - 場面 hook（問い＋「1位 ？？？」）→ ranking（3位・2位・伏せた1位。drops と同じ行の部品で、下段は容量・差額・率）→ reveal（1位の新品と中古の相場の2本の棒・差額と率）→ comment → outro（「新品と中古、どっちにする？」）。推移グラフはなし
+  - ナレーション: ranking「3位は<機種>、<容量>。新品より<額>安いです。」・reveal「1位は<機種>、<容量>。新品の<額>に対して、中古の相場は<額>。<額>、<率>%安くなります。」（「新品<額>」だと数字に付いて「シンピンジュウ」と読まれる）
 
 テーマを足すときは、`types.ts` に台本の型、`themes/` に「データ → 台本」、`voice.ts` に既定のナレーション、`scenes.tsx` に場面、`make-short.tsx` の `THEMES`・`THEME_SPEAKER` を足す。
 同じテーマ・同じデータのショートを同じ日に2本出さない（ほぼ同じ内容は勧められにくい）。
