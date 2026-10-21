@@ -1,7 +1,8 @@
 /**
  * VOICEVOX のナレーション（任意）。VOICEVOX アプリが動いていればエンジン（http://127.0.0.1:50021）に問い合わせて WAV を作る。
  * エンジンに届かなければ、声なしで今まで通りに書き出す（例外にしない）。
- * 合成した WAV は (文・話者・速さ・音量) のハッシュで shorts/out/voice-cache/ に置き、同じ文はエンジンなしでも使い回す。
+ * 読み・アクセント句の直しとユーザー辞書は shorts/voiceTuning.ts。
+ * 合成した WAV は (文・読みの手直し・話者・調声の設定・規則の版・辞書) のハッシュで shorts/out/voice-cache/ に置き、同じ文はエンジンなしでも使い回す。
  * 手順は shorts/README.md・docs/youtube-shorts.md
  */
 import { spawnSync } from "node:child_process";
@@ -9,6 +10,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Script, VoiceConfig } from "./types";
+import { TUNING_VERSION, dictHash, ensureDictionary, tuneKana } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
 const CACHE = process.env.VOICEVOX_CACHE ? resolve(process.env.VOICEVOX_CACHE) : resolve(__dirname, "out/voice-cache");
@@ -23,17 +25,46 @@ export const narrationKey = (sceneId: string): NarrationKey | null =>
   sceneId === "hookNum" || sceneId === "hookChart" ? "hook"
     : (["hook", "ranking", "reveal", "trend", "comment", "outro"] as const).find((k) => k === sceneId) ?? null;
 
+const yen = (n: number) => `${n.toLocaleString()}円`;
+const jpDate = (iso: string) => `${Number(iso.slice(5, 7))}月${Number(iso.slice(8, 10))}日`;
+
+/** 検品担当のひと言を読む文に。「〜でも」「〜は」の後に読点、「おすすめ」で終われば「です」を足す（画面の文字は変えない） */
+export function commentSentence(lines: string[]): string {
+  const body = lines.map((l, i) => (i < lines.length - 1 && /(でも|は|ので|から|けど|なら|たら|ても)$/.test(l) ? `${l}、` : l)).join("");
+  if (/[。！？]$/.test(body)) return body;
+  return /おすすめ$/.test(body) ? `${body}です。` : `${body}。`;
+}
+
 /**
- * 既定のナレーション（台本の数字だけで作る）。冒頭の問い・1位の発表・検品担当のひと言（comment.lines をつなげる）。
+ * 既定のナレーション（台本の数字だけで作る。数字を足したり丸めたりしない）。
+ * hook: 冒頭の問い / ranking: 3位・2位（1位は次の場面まで伏せる）/ reveal: 1位の機種・容量・下がった額と率・相場の前後
+ * trend: 推移グラフ（いつからか・前の日からいちばん下がった日とその額）/ comment: 検品担当のひと言 / outro: サイトへの誘導と次回の問い
  * script.json の narration に書いた場面はそちらが優先。空文字にするとその場面は声なし
  */
 export function defaultNarration(s: Script): Partial<Record<NarrationKey, string>> {
   const h = s.scenes.hook;
-  const lines = s.scenes.comment.lines.join("");
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const ranking = [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、マイナス${yen(items[i].drop)}。`).join("");
+  const pts = s.scenes.trend.points;
+  let trend = "";
+  if (pts.length >= 2) {
+    const first = pts[0];
+    const last = pts[pts.length - 1];
+    // 前の日からいちばん下がった日（同じ額なら早い日）
+    let big = { i: 0, d: 0 };
+    for (let i = 1; i < pts.length; i++) if (pts[i - 1].median - pts[i].median > big.d) big = { i, d: pts[i - 1].median - pts[i].median };
+    trend = big.d > 0
+      ? `${jpDate(first.date)}からの推移です。${jpDate(pts[big.i].date)}に、${Date.parse(pts[big.i].date) - Date.parse(pts[big.i - 1].date) === 86_400_000 ? "1日で" : ""}${yen(big.d)}下がりました。`
+      : `${jpDate(first.date)}からの推移です。いまは${yen(last.median)}です。`;
+  }
   return {
     hook: "今週いちばん値下がりした中古iPhoneは…？",
-    reveal: `1位は${h.model}、${h.storage}。1週間で${h.drop.toLocaleString()}円の値下がりです。`,
-    comment: `${s.scenes.comment.speaker}のひと言。${lines}${/[。！？]$/.test(lines) ? "" : "。"}`,
+    ranking,
+    reveal: `1位は${h.model}、${h.storage}。1週間で${yen(h.drop)}、${top.rate.toFixed(1)}%の値下がりです。相場は${yen(h.before)}から、${yen(h.after)}になりました。`,
+    trend,
+    comment: `${s.scenes.comment.speaker}のひと言。${commentSentence(s.scenes.comment.lines)}`,
+    outro: "全機種の相場は、プロフィールのリンクから見られます。来週の1位は、どの機種でしょう？",
   };
 }
 
@@ -104,34 +135,71 @@ const probe = (file: string) => {
   return Number(r.stdout.trim());
 };
 
-export type Clip = { file: string; dur: number; text: string; cached: boolean };
+export type Clip = { file: string; dur: number; text: string; cached: boolean; kana?: string };
+
+/** エンジンが読んだときの AquesTalk 風の読み */
+async function kanaOf(text: string, speaker: number): Promise<string> {
+  return ((await (await http(`/audio_query?text=${encodeURIComponent(text)}&speaker=${speaker}`, { method: "POST" })).json()) as { kana: string }).kana;
+}
+
+let dictDone = false;
+/** ユーザー辞書（shorts/voice-dict.json）を1回だけ登録する */
+export async function prepareEngine(): Promise<void> {
+  if (dictDone) return;
+  const r = await ensureDictionary(http);
+  dictDone = true;
+  if (r.added || r.updated) console.log(`VOICEVOX のユーザー辞書: 追加 ${r.added}・更新 ${r.updated}・そのまま ${r.same}`);
+}
+
+/** 文 → 合成用のクエリ（辞書・アクセント句の直し・話速などを入れる）。読みの before/after も返す */
+export async function tunedQuery(text: string, cfg: VoiceConfig | undefined, speakerId: number, kanaOverride?: string) {
+  await prepareEngine();
+  const spoken = speakable(text);
+  const query = (await (await http(`/audio_query?text=${encodeURIComponent(spoken)}&speaker=${speakerId}`, { method: "POST" })).json()) as Record<string, unknown> & { kana: string };
+  const before = query.kana;
+  const after = kanaOverride?.trim() || (await tuneKana(before, (t) => kanaOf(t, speakerId)));
+  if (after !== before) {
+    query.accent_phrases = await (await http(`/accent_phrases?text=${encodeURIComponent(after)}&speaker=${speakerId}&is_kana=true`, { method: "POST" })).json();
+  }
+  query.speedScale = cfg?.speedScale ?? DEFAULT_SPEED;
+  query.volumeScale = cfg?.volume ?? 1.0;
+  if (cfg?.intonationScale !== undefined) query.intonationScale = cfg.intonationScale;
+  if (cfg?.pitchScale !== undefined) query.pitchScale = cfg.pitchScale;
+  if (cfg?.pauseLengthScale !== undefined) query.pauseLengthScale = cfg.pauseLengthScale;
+  query.prePhonemeLength = 0.05;
+  query.postPhonemeLength = 0.1;
+  return { query, spoken, before, after };
+}
+
+export const DEFAULT_SPEED = 1.25;
 
 /**
  * 1つの文を WAV にする。キャッシュにあればエンジンを使わない。
- * online=false でキャッシュにもなければ null
+ * online=false でキャッシュにもなければ null。kanaOverride は script.json の narrationKana
  */
-export async function synthesize(text: string, cfg: VoiceConfig | undefined, online: boolean): Promise<Clip | null> {
+export async function synthesize(text: string, cfg: VoiceConfig | undefined, online: boolean, kanaOverride?: string): Promise<Clip | null> {
   const spoken = speakable(text);
   const spec = cfg?.speaker ?? DEFAULT_SPEAKER;
-  const speed = cfg?.speedScale ?? 1.1;
-  const volume = cfg?.volume ?? 1.0;
-  const key = createHash("sha256").update(JSON.stringify([spoken, String(spec), speed, volume])).digest("hex").slice(0, 20);
+  const params = [cfg?.speedScale ?? DEFAULT_SPEED, cfg?.volume ?? 1.0, cfg?.intonationScale ?? null, cfg?.pitchScale ?? null, cfg?.pauseLengthScale ?? null];
+  const key = createHash("sha256").update(JSON.stringify([spoken, kanaOverride ?? "", String(spec), params, TUNING_VERSION, dictHash()])).digest("hex").slice(0, 20);
   const file = join(CACHE, `${key}.wav`);
-  if (existsSync(file)) return { file, dur: probe(file), text, cached: true };
+  if (existsSync(file)) {
+    let kana: string | undefined;
+    try {
+      kana = (JSON.parse(readFileSync(file.replace(/\.wav$/, ".json"), "utf8")) as { kana?: string }).kana;
+    } catch {}
+    return { file, dur: probe(file), text, cached: true, kana };
+  }
   if (!online) return null;
   const sp = await resolveSpeaker(spec, true);
-  const query = (await (await http(`/audio_query?text=${encodeURIComponent(spoken)}&speaker=${sp.id}`, { method: "POST" })).json()) as Record<string, unknown>;
-  query.speedScale = speed;
-  query.volumeScale = volume;
-  query.prePhonemeLength = 0.05;
-  query.postPhonemeLength = 0.1;
+  const { query, after } = await tunedQuery(text, cfg, sp.id, kanaOverride);
   const wav = Buffer.from(await (await http(`/synthesis?speaker=${sp.id}`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(query),
   })).arrayBuffer());
   mkdirSync(CACHE, { recursive: true });
   writeFileSync(file, wav);
-  writeFileSync(file.replace(/\.wav$/, ".json"), JSON.stringify({ text, spoken, speaker: sp, speedScale: speed, volume }, null, 2));
-  return { file, dur: probe(file), text, cached: false };
+  writeFileSync(file.replace(/\.wav$/, ".json"), JSON.stringify({ text, spoken, kana: after, speaker: sp, params }, null, 2));
+  return { file, dur: probe(file), text, cached: false, kana: after };
 }
 
 /** キャッシュの横に置いたメモからキャラクター名を読む（エンジンなしでクレジットを出すため） */

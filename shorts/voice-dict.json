@@ -1,0 +1,20 @@
+{
+  "_note": "VOICEVOX のユーザー辞書（shorts/voiceTuning.ts の ensureDictionary が render・--voice-test の前に登録する。同じ表層形があれば上書き、なければ追加。別の PC でも同じ）。accent_type は音が下がる直前のモーラの番号（0 は平板）。英字は読み上げ前にカナへ置き換える（voice.ts の speakable）ので、英字の行はその取りこぼし用",
+  "words": [
+    { "surface": "iPhone", "pronunciation": "アイフォン", "accent_type": 3, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "iPad", "pronunciation": "アイパッド", "accent_type": 3, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "MacBook", "pronunciation": "マックブック", "accent_type": 4, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "Pro", "pronunciation": "プロ", "accent_type": 1, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "Max", "pronunciation": "マックス", "accent_type": 1, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "Plus", "pronunciation": "プラス", "accent_type": 0, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "mini", "pronunciation": "ミニ", "accent_type": 1, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "Air", "pronunciation": "エアー", "accent_type": 1, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "GB", "pronunciation": "ギガ", "accent_type": 1, "word_type": "SUFFIX", "priority": 8 },
+    { "surface": "TB", "pronunciation": "テラ", "accent_type": 1, "word_type": "SUFFIX", "priority": 8 },
+    { "surface": "中古", "pronunciation": "チュウコ", "accent_type": 0, "word_type": "COMMON_NOUN", "priority": 5 },
+    { "surface": "相場", "pronunciation": "ソウバ", "accent_type": 0, "word_type": "COMMON_NOUN", "priority": 5 },
+    { "surface": "値下がり", "pronunciation": "ネサガリ", "accent_type": 0, "word_type": "COMMON_NOUN", "priority": 5 },
+    { "surface": "検品担当", "pronunciation": "ケンピンタントウ", "accent_type": 5, "word_type": "COMMON_NOUN", "priority": 5 },
+    { "surface": "ランキング", "pronunciation": "ランキング", "accent_type": 0, "word_type": "COMMON_NOUN", "priority": 5 }
+  ]
+}

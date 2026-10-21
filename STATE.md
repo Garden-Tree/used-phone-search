@@ -52,7 +52,7 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube ショート（週1・@used_gadelog・声は VOICEVOX 任意）: 次の一歩は docs/youtube-shorts.md
+1. YouTube ショート（週1・@used_gadelog・声は VOICEVOX ずんだもん 1.25倍・任意）: 次の一歩は docs/youtube-shorts.md
 2. X の日々の運用（ideas/x-posts）
 ```
 

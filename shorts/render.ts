@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { join, resolve } from "node:path";
 import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
-import { FPS, H, TIMELINE, VARIANTS, W, sceneFrame, type Variant } from "./scenes";
+import { FPS, H, TIMELINE, VARIANTS, VOICED_GAP, W, countdown, sceneFrame, type Variant } from "./scenes";
 import type { Script } from "./types";
 import { VOICEVOX_URL, cachedCharacter, engineAvailable, narrationKey, narrationOf, resolveSpeaker, synthesize, voiceCredit, type Clip, type NarrationKey } from "./voice";
 
@@ -45,7 +45,7 @@ function seFilters(times: { at: number; kind: "pop" | "ta" }[]): { parts: string
   return { parts, labels };
 }
 
-/** 声の後ろに残す間（秒）。場面が声より短ければ、声＋この間まで場面を延ばす */
+/** 声の後ろに残す間（秒）。場面が「声の始まり＋声＋この間」より短ければ、そこまで場面を延ばす */
 const VOICE_PAD = 0.5;
 const MAX_TOTAL = 60;
 
@@ -60,8 +60,11 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
   const timeline = TIMELINE(script, variant).map((sc) => {
     const key = narrationKey(sc.id);
     const clip = sc.id === "comment" && voices.manual ? voices.manual : key ? voices.clips[key] : undefined;
-    const out = clip && sc.dur < clip.dur + VOICE_PAD ? { ...sc, dur: Math.ceil((clip.dur + VOICE_PAD) * 10) / 10 } : sc;
-    if (clip) segVoices.push({ file: clip.file, at, dur: clip.dur });
+    // 声のあるカウントダウンは間隔を詰め、3位が出たところから読む
+    const base = clip && sc.id === "ranking" ? countdown(sc.o?.start ?? 0.5, Math.min(sc.o?.gap ?? VOICED_GAP, VOICED_GAP)) : sc;
+    const vAt = clip ? (base.voiceAt ?? 0) : 0;
+    const out = clip && base.dur < vAt + clip.dur + VOICE_PAD ? { ...base, dur: Math.ceil((vAt + clip.dur + VOICE_PAD) * 10) / 10 } : base;
+    if (clip) segVoices.push({ file: clip.file, at: at + vAt, dur: clip.dur });
     at += out.dur;
     return out;
   });
@@ -125,10 +128,22 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
     mix.push(`[v${i}]`);
     next++;
   });
-  const master = segVoices.length ? ",loudnorm=I=-14:TP=-1.5:LRA=11,aresample=44100" : "";
-  parts.push(`${mix.join("")}amix=inputs=${mix.length}:duration=first:normalize=0${master}[a]`);
+  parts.push(`${mix.join("")}amix=inputs=${mix.length}:duration=first:normalize=0[a]`);
   const out = join(dir, `short-${variant}.mp4`);
-  run(["-y", ...inputs, "-filter_complex", parts.join(";"), "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-t", String(total), "-movflags", "+faststart", out]);
+  if (!segVoices.length) {
+    // 声がなければ今まで通り（音量はそろえない）
+    run(["-y", ...inputs, "-filter_complex", parts.join(";"), "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-t", String(total), "-movflags", "+faststart", out]);
+  } else {
+    // 声があるときは -14 LUFS（YouTube の目安）に。1回の loudnorm だと山（真のピーク）に押さえられて -15.5 ほどで止まるので、
+    // いったん無圧縮で書き、測ってから2回目で合わせる（ffmpeg の loudnorm の2パス）
+    const mixed = join(framesDir, "mixed.mkv");
+    run(["-y", ...inputs, "-filter_complex", parts.join(";"), "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "pcm_s16le", "-t", String(total), mixed]);
+    const LN = "loudnorm=I=-14:TP=-1.5:LRA=11";
+    const r = spawnSync("ffmpeg", ["-hide_banner", "-nostats", "-i", mixed, "-af", `${LN}:print_format=json`, "-f", "null", "-"], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+    const m = JSON.parse(r.stderr.slice(r.stderr.lastIndexOf("{"), r.stderr.lastIndexOf("}") + 1)) as Record<string, string>;
+    const second = `${LN}:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}:offset=${m.target_offset},aresample=44100`;
+    run(["-y", "-i", mixed, "-map", "0:v", "-map", "0:a", "-c:v", "copy", "-af", second, "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", out]);
+  }
   if (!keepFrames) rmSync(framesDir, { recursive: true, force: true });
   console.log(`${variant}: ${out}（${duration(out).toFixed(1)} 秒・効果音 ${se.length} 回・BGM ${hasBgm ? "あり" : "なし"}・声 ${segVoices.length ? `${segVoices.length} か所` : "なし"}）`);
   return out;
@@ -152,10 +167,11 @@ async function prepareVoices(dir: string, script: Script, useVoicevox: boolean):
   try {
     for (const [key, text] of Object.entries(narrationOf(script)) as [NarrationKey, string | undefined][]) {
       if (!text?.trim() || (key === "comment" && manual)) continue;
-      const clip = await synthesize(text, script.voice, online);
+      const clip = await synthesize(text, script.voice, online, script.narrationKana?.[key]);
       if (!clip) continue;
       voices.clips[key] = clip;
-      console.log(`声 ${key}: ${clip.dur.toFixed(1)} 秒「${text}」${clip.cached ? "（キャッシュ）" : ""}`);
+      console.log(`声 ${key}: ${clip.dur.toFixed(1)} 秒「${text}」${clip.cached ? "（キャッシュ）" : ""}${clip.kana ? `
+  読み: ${clip.kana}` : ""}`);
       credit ??= voiceCredit(online
         ? (await resolveSpeaker(script.voice?.speaker, true)).character
         : (cachedCharacter(clip) ?? (await resolveSpeaker(script.voice?.speaker, false)).character));

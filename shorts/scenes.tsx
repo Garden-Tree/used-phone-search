@@ -27,16 +27,23 @@ export const VARIANTS: Variant[] = ["A", "B", "C"];
 /** 効果音: t は場面の開始からの秒数。pop は行が出る小さな音、ta は 1位発表の二音 */
 export type Se = { t: number; kind: "pop" | "ta" };
 /** dur: 場面の長さ（秒）、anim: 動きのある秒数（以降は最後のコマを止める）、o: 場面ごとの動きの設定（開始・間隔・拡大率） */
-export type Scene = { id: SceneId; dur: number; anim: number; se?: Se[]; o?: { start?: number; gap?: number; k?: number } };
+/** voiceAt: ナレーションを流し始める秒（既定 0） */
+export type Scene = { id: SceneId; dur: number; anim: number; se?: Se[]; o?: { start?: number; gap?: number; k?: number }; voiceAt?: number };
 
-/** カウントダウン: 5位から下の順に出し、2位が出てから約1秒で 1位の発表へ（1位は最後まで「？？？」） */
-const countdown = (start: number, gap: number): Scene => ({
+/**
+ * カウントダウン: 5位から下の順に出し、2位が出てから約1秒で 1位の発表へ（1位は最後まで「？？？」）。
+ * ナレーション（3位・2位を読む）は 3位が出たところから
+ */
+export const countdown = (start: number, gap: number): Scene => ({
   id: "ranking",
   dur: start + gap * 3 + 1.0,
   anim: start + gap * 3 + 0.6,
   se: [0, 1, 2, 3].map((i) => ({ t: start + gap * i, kind: "pop" as const })),
   o: { start, gap },
+  voiceAt: start + gap * 2,
 });
+/** ナレーションがあるときのカウントダウンの間隔（声を待たせないよう速める） */
+export const VOICED_GAP = 0.8;
 const reveal = (dur: number): Scene => ({ id: "reveal", dur, anim: 2.0, se: [{ t: 0.6, kind: "ta" }] });
 /** 締め: 「来週の1位は…？」で最初の問いにつなげる。最後の静止は 1秒未満 */
 const outro = (k: number): Scene => ({ id: "outro", dur: 1.2 * k + 0.4 + 0.8, anim: 1.2 * k + 0.4, o: { k } });

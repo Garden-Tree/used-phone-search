@@ -2,8 +2,11 @@
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
-/** VOICEVOX の話者。speaker は ID（既定 3＝ずんだもん ノーマル）か名前（"ずんだもん"・"ずんだもん/ノーマル"） */
-export type VoiceConfig = { speaker?: number | string; speedScale?: number; volume?: number };
+/**
+ * VOICEVOX の話者と調声。speaker は ID（既定 3＝ずんだもん ノーマル）か名前（"ずんだもん"・"ずんだもん/ノーマル"）。
+ * speedScale 既定 1.25。intonationScale（抑揚）・pitchScale（音高）・pauseLengthScale（読点の間の倍率）はエンジンの既定（1・0・1）
+ */
+export type VoiceConfig = { speaker?: number | string; speedScale?: number; volume?: number; intonationScale?: number; pitchScale?: number; pauseLengthScale?: number };
 
 export type Script = {
   theme: string;
@@ -24,6 +27,8 @@ export type Script = {
   youtube: { title: string; description: string; hashtags: string[] };
   /** ナレーション（任意）。場面ごとの読み上げ文。書かない場面は既定の文（shorts/voice.ts の defaultNarration）、空文字は声なし */
   narration?: Partial<Record<"hook" | "ranking" | "reveal" | "trend" | "comment" | "outro", string>>;
-  /** VOICEVOX の設定（任意）。なければ ずんだもん・速さ 1.1 */
+  /** 場面ごとの読みの手直し（任意・AquesTalk 風記法。例 "イチイ'ワ、アイフォ'ン/ジュウナ'ナ"）。書いた場面は文の自動の読みより優先（shorts/voiceTuning.ts） */
+  narrationKana?: Partial<Record<"hook" | "ranking" | "reveal" | "trend" | "comment" | "outro", string>>;
+  /** VOICEVOX の設定（任意）。なければ ずんだもん・速さ 1.25 */
   voice?: VoiceConfig;
 };
