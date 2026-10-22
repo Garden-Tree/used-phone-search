@@ -6,7 +6,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
-import type { BudgetScript, DropsScript, NewUsedScript, Script } from "./types";
+import type { BudgetScript, DropsScript, NewUsedScript, ProVsScript, Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -18,10 +18,12 @@ const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
 const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
 const HEAD_TITLE = (s: Script) =>
-  s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"] : ["今週の中古iPhone", "値下がりランキング"];
-/** 下の注記（newused は新品と中古の数字の出どころ） */
+  s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
+    : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : ["今週の中古iPhone", "値下がりランキング"];
+/** 下の注記（newused は新品と中古の数字の出どころ。provs は無印と Pro を同じ容量で比べる） */
 const FOOT = (s: Script) =>
-  s.theme === "newused" ? `${s.date.replace(/-/g, "/")}・新品はApple公式・中古は同じ容量の中央値` : `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`;
+  s.theme === "newused" ? `${s.date.replace(/-/g, "/")}・新品はApple公式・中古は同じ容量の中央値`
+    : s.theme === "provs" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値` : `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`;
 
 /**
  * 色はサイトと同じ（lib/brandColors.ts = app/globals.css の @theme）。白いカードの上は SITE、紺の地の上は ON_DARK
@@ -98,7 +100,8 @@ export const TIMELINE = (s: Script, v: Variant): Scene[] => {
     { id: "hook", dur: 2.5, anim: 2 }, budgetRows(), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   // newused（声なし約25秒）: 問い → 3位・2位・伏せた1位（声に合わせて出す）→ 1位の新品と中古の相場 → ひと言 → 締め。推移グラフはなし
-  if (s.theme === "newused") return [
+  // provs も newused と同じ（問い → 3位・2位・伏せた1位 → 1位の無印と Pro の2本の棒 → ひと言 → 締め）
+  if (s.theme === "newused" || s.theme === "provs") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -194,7 +197,23 @@ function NewUsedRanking({ s, t, o }: { s: NewUsedScript; t: number; o: Scene["o"
   return <RankRows s={s} t={t} o={o} items={items} />;
 }
 
-/** 3位・2位・伏せた1位の行（drops・newused で共通）。items[0] が1位 */
+/** "iPhone 16" と "iPhone 16 Pro" → "iPhone 16／16 Pro"（行と1位の機種名） */
+const pairName = (base: string, pro: string) => `${base}／${pro.replace(/^iPhone\s+/, "")}`;
+
+/** provs のランキング: 機種名は「無印／Pro」、下段は 容量・Pro との差（額・大）・率 */
+function ProVsRanking({ s, t, o }: { s: ProVsScript; t: number; o: Scene["o"] }) {
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
+    model: pairName(it.base, it.pro),
+    cells: [
+      { text: it.storage, w: 170, max: 44, color: C.muted },
+      { text: `+${n(it.diff)}円`, w: 320, max: 76, color: C.red },
+      { text: `+${rate(it.pct)}%`, w: 190, max: 50, color: C.red },
+    ],
+  }));
+  return <RankRows s={s} t={t} o={o} items={items} />;
+}
+
+/** 3位・2位・伏せた1位の行（drops・newused・provs で共通）。items[0] が1位 */
 function RankRows({ s, t, o, items }: { s: Script; t: number; o: Scene["o"]; items: { model: string; cells: Cell[] }[] }) {
   // 1行 260px・3行。機種名は右の列の幅いっぱい、その下に下段の欄
   const RH = 260;
@@ -525,7 +544,63 @@ function NewUsedReveal({ s, t }: { s: NewUsedScript; t: number }) {
   );
 }
 
+/**
+ * provs の1位: 「無印／Pro」・容量、無印と Pro の相場の2本の棒（Pro を幅いっぱいにした比）、差額（大）と率、
+ * あれば無印を1つ上の容量にしたときの差（台本の upgrade。同じ中央値の決め方）。棒は 0.8 秒から伸び、差額は数え上げる
+ */
+function ProVsReveal({ s, t }: { s: ProVsScript; t: number }) {
+  const r = s.scenes.ranking.items[0];
+  const u = s.scenes.upgrade;
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const grow = prog(t, 0.8, 0.7);
+  const name = pairName(r.base, r.pro);
+  const diffText = `+${n(r.diff)}円`;
+  const sub = `${r.storage}・中古の相場`;
+  const note = u ? `無印を${u.to}にするなら +${n(u.diff)}円` : "";
+  const LABEL = 150;
+  const BAR = CW - 60 - LABEL - 20;
+  const bars = [
+    { label: "無印", price: r.baseMedian, color: C.budget, w: Math.round((BAR * r.baseMedian) / r.proMedian) },
+    { label: "Pro", price: r.proMedian, color: C.red, w: BAR },
+  ];
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: 60, fontWeight: 900, marginBottom: 14, opacity: prog(t, 0, 0.25) }}>1位は…</div>
+      <div style={{ ...card, width: CW, padding: "26px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(name, CW - 60, 100), fontWeight: 900 }}>{name}</div>
+        <div style={{ ...row, fontSize: FIT(sub, CW - 60, 44), fontWeight: 900, color: C.muted, marginTop: 4 }}>{sub}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 18 }}>
+          {bars.map((b, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 18 : 0 }}>
+              <div style={{ ...row, justifyContent: "flex-end", width: LABEL, fontSize: FIT(b.label, LABEL, 48), fontWeight: 900, color: b.color }}>{b.label}</div>
+              <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
+                <div style={{ ...row, justifyContent: "flex-start", fontSize: FIT(`${n(b.price)}円`, BAR, 56), fontWeight: 900, color: b.color }}>{`${n(b.price)}円`}</div>
+                <div style={{ display: "flex", width: Math.max(8, Math.round(b.w * grow)), height: 34, background: b.color, borderRadius: 12, marginTop: 4 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 14 }}>
+          <div style={{ ...row, fontSize: FIT(diffText, 600, 130), fontWeight: 900, color: C.red }}>{`+${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
+          <div style={{ ...row, fontSize: 64, fontWeight: 900, color: C.red, marginLeft: 16 }}>{`+${rate(r.pct)}%`}</div>
+        </div>
+        {note && <div style={{ ...row, fontSize: FIT(note, CW - 60, 44), fontWeight: 900, color: C.muted, marginTop: 10, opacity: prog(t, 1.6, 0.3) }}>{note}</div>}
+      </div>
+    </Frame>
+  );
+}
+
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
+  if (s.theme === "provs") {
+    switch (sc.id) {
+      case "hook": return <Hook s={s} t={t} lines={["Proと無印、", "同じ容量だと", "いくら違う？"]} />;
+      case "ranking": return <ProVsRanking s={s} t={t} o={sc.o} />;
+      case "reveal": return <ProVsReveal s={s} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`provs に場面 ${sc.id} はありません`);
+    }
+  }
   if (s.theme === "newused") {
     switch (sc.id) {
       case "hook": return <Hook s={s} t={t} lines={["新品より、中古で", "いくら安くなる？"]} />;

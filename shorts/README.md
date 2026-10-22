@@ -11,6 +11,8 @@ npx tsx shorts/make-short.tsx budget plan           # 予算のテーマ（short
 npx tsx shorts/make-short.tsx budget render         # short-A.mp4 と youtube.txt（budget は型 A だけ）
 npx tsx shorts/make-short.tsx newused plan          # 新品と中古の差のテーマ（shorts/out/<日付>-newused/。型 A だけ）
 npx tsx shorts/make-short.tsx newused render
+npx tsx shorts/make-short.tsx provs plan            # Proと無印の差のテーマ（shorts/out/<日付>-provs/。型 A だけ）
+npx tsx shorts/make-short.tsx provs render
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
 npx tsx shorts/make-short.tsx drops render --no-voice  # VOICEVOX の声を入れない
 npx tsx shorts/make-short.tsx --voice-test "今週いちばん値下がりした中古iPhoneは？"   # 声だけ試す（shorts/out/voice-test.wav）。--speaker 3 / --speaker ずんだもん/ノーマル・--speed 1.25
@@ -21,7 +23,7 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 
 - `drops`: 今週いちばん値下がりした中古iPhone（型 A・B・C）
 - `budget`: 予算ぴったりで買える中古iPhone（型 A だけ・約35秒）
-- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused は 青山龍星（ノーマル・1.25倍。クレジット「VOICEVOX:青山龍星」）
+- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs は 青山龍星（ノーマル・1.25倍。クレジット「VOICEVOX:青山龍星」）
   - 3万・5万・7万・10万円ごとに、相場（getModelMarket＝在庫がいちばん多い容量の中央値）が帯（0〜3万・3万超〜5万・5万超〜7万・7万超〜10万）に入る iPhone（iPhone 12 シリーズ以降と SE (第3世代)。11 系・SE (第2世代) は古すぎるので出さない・在庫5件以上）のうち、相場がいちばん高い機種。同じ相場なら発売の新しい方。帯が空なら「予算以下で発売年がいちばん新しい機種」
   - 注目は5万円の行（固定）。出すのは相場（容量つき）と在庫数だけ。最安は出さない（3万円の行より安く見えて分かりにくい）
   - 場面 hook（問い＋予算の札）→ ranking（4行。「○万円なら」の声に合わせて上から）→ reveal（注目）→ comment → outro（「あなたの予算なら…？」）
@@ -29,6 +31,12 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
   - Apple 公式の新品価格がある iPhone（`lib/applePrices.ts`）で、公式価格のある容量のうち中古の在庫がいちばん多い容量（在庫5件以上）の相場（中央値。最安ではない）と新品を比べ、差額（新品−相場）の大きい順。相場が新品以上の機種（発売直後）は出さない。3機種未満なら止まる
   - 場面 hook（問い＋「1位 ？？？」）→ ranking（3位・2位・伏せた1位。drops と同じ行の部品で、下段は容量・差額・率）→ reveal（1位の新品と中古の相場の2本の棒・差額と率）→ comment → outro（「新品と中古、どっちにする？」）。推移グラフはなし
   - ナレーション: ranking「3位は<機種>、<容量>。新品より<額>安いです。」・reveal「1位は<機種>、<容量>。新品の<額>に対して、中古の相場は<額>。<額>、<率>%安くなります。」（「新品<額>」だと数字に付いて「シンピンジュウ」と読まれる）
+
+- `provs`: Proと無印、同じ容量でいくら違う？（型 A だけ・約31秒。10/22〜）
+  - iPhone 13〜17 の無印と Pro の組（`themes/provs.ts` の PAIRS）で、両方に在庫5件以上ある容量のうちいちばん小さい容量の相場（中央値）どうしを比べ、差額（Pro − 無印）の大きい順。率は無印の相場に対して。3組未満なら止まる
+  - 1位の無印を1つ上の容量（在庫5件以上）にしたときの相場の差を `scenes.upgrade` に入れ、1位の発表と説明欄に出す（在庫が足りなければ出さない）
+  - 場面 hook → ranking（3位・2位・伏せた1位。行は「iPhone 16／16 Pro」・容量・+差額・+率）→ reveal（無印と Pro の2本の棒・差額と率・容量を上げたときの差）→ comment → outro（「あなたはPro派？無印派？」）
+  - ナレーション: ranking「3位は<無印>と<番号 Pro>、<容量>。差は<額>です。」・reveal「1位は<無印>と<番号 Pro>。Proにすると、約<X.X>万円、およそ<Y>%高くなります。」
 
 テーマを足すときは、`types.ts` に台本の型、`themes/` に「データ → 台本」、`voice.ts` に既定のナレーション、`scenes.tsx` に場面、`make-short.tsx` の `THEMES`・`THEME_SPEAKER` を足す。
 同じテーマ・同じデータのショートを同じ日に2本出さない（ほぼ同じ内容は勧められにくい）。

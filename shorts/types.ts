@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・newused）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・newused・provs）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -77,4 +77,27 @@ export type NewUsedScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript;
+/**
+ * provs の1行: 同じ世代の無印と Pro を、同じ容量の中古の相場（中央値）で比べる（shorts/themes/provs.ts）。
+ * diff = Pro の相場 − 無印の相場、pct = diff / 無印の相場（%・小数1桁）
+ */
+export type ProVsRow = {
+  base: string; pro: string; storage: string; storageGb: number;
+  baseMedian: number; proMedian: number; baseCount: number; proCount: number; diff: number; pct: number;
+};
+/** 1位の無印を1つ上の容量にしたときの相場の差（同じ中央値の決め方。在庫が足りなければ台本に入れない） */
+export type ProVsUpgrade = { model: string; from: string; to: string; fromMedian: number; toMedian: number; diff: number };
+
+/** テーマ provs「Proと無印、同じ容量でいくら違う？」 */
+export type ProVsScript = Common & {
+  theme: "provs";
+  scenes: {
+    /** 場面 ranking（3位・2位・伏せた1位）と reveal（1位）。差額の大きい順（items[0] が1位） */
+    ranking: { items: ProVsRow[] };
+    upgrade?: ProVsUpgrade;
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript;

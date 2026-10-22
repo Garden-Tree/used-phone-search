@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import type { BudgetScript, DropsScript, NarrationKey, NewUsedScript, Script, VoiceConfig } from "./types";
+import type { BudgetScript, DropsScript, NarrationKey, NewUsedScript, ProVsScript, Script, VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -47,7 +47,26 @@ export function commentSentence(lines: string[]): string {
  * script.json の narration に書いた場面はそちらが優先。空文字にするとその場面は声なし
  */
 export function defaultNarration(s: Script): Partial<Record<NarrationKey, string>> {
-  return s.theme === "budget" ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : dropsNarration(s);
+  return s.theme === "budget" ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : s.theme === "provs" ? proVsNarration(s) : dropsNarration(s);
+}
+
+/** "iPhone 16 Pro" → "16 Pro"（組の2つ目は世代の番号から読む） */
+const shortName = (model: string) => model.replace(/^iPhone\s+/, "");
+
+/**
+ * provs の既定: hook 問い / ranking 3位・2位を1文ずつ（「3位は<無印>と<Pro>、<容量>。差は<額>です。」。文頭の「○位は」で行を出す）
+ * reveal 1位の差（約○.○万円）と率（およそ○%）だけ。細かい額は画面に出す / comment ひと言の本文だけ / outro サイトへの誘導と問い
+ */
+function proVsNarration(s: ProVsScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  return {
+    hook: "Proと無印、同じ容量だと、いくら違う？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].base}と${shortName(items[i].pro)}、${items[i].storage}。差は${yen(items[i].diff)}です。`).join(""),
+    reveal: `1位は${top.base}と${shortName(top.pro)}。Proにすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%高くなります。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、Pro派？無印派？",
+  };
 }
 
 /**
