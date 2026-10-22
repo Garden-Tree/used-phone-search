@@ -5,7 +5,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 
 # YouTube ショートの作り方（@used_gadelog）
 
-週1本。テーマを回す: **drops**（今週いちばん値下がりした中古iPhone のランキング）・**budget**（予算ぴったりで買える中古iPhone。10/21〜）・**newused**（新品より中古でいくら安い？ 10/21〜）・**provs**（Proと無印、同じ容量でいくら違う？ 10/22〜）・**fold**（折りたたみスマホ、1世代前にするといくら安い？ 10/22〜）・**pixelbudget**（予算ぴったりで買える中古Pixel 10/22〜）・**rank**（状態ランクでいくら違う？中古iPhone 10/22〜）。
+週1本。テーマを回す: **drops**（今週いちばん値下がりした中古iPhone のランキング）・**budget**（予算ぴったりで買える中古iPhone。10/21〜）・**newused**（新品より中古でいくら安い？ 10/21〜）・**provs**（Proと無印、同じ容量でいくら違う？ 10/22〜）・**fold**（折りたたみスマホ、1世代前にするといくら安い？ 10/22〜）・**pixelbudget**（予算ぴったりで買える中古Pixel 10/22〜）・**ipadbudget**（予算ぴったりで買える中古iPad 10/23〜）・**rank**（状態ランクでいくら違う？中古iPhone 10/22〜）。
 チャンネルの説明「値下がりランキングや予算別のおすすめ」に合わせる。
 仕組みの説明は `shorts/README.md` と `docs/youtube-shorts.md`。記録は `ideas/YYYY-MM-DD.md`。報告は日本語。
 このスキルの「決まっていること」は、10/21 にユーザーと何度も作り直して決めたもの。**勝手に元に戻さない**。
@@ -15,7 +15,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 1. **準備**
    - VOICEVOX アプリが起動しているか確かめる: `curl -s http://127.0.0.1:50021/version`。起動していなければ、ユーザーに起動を頼む。声なしで作らない。
    - BGM `shorts/assets/bgm.mp3` があるか確かめる。git には入らないので、別の PC では置き直す。
-2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|newused|provs|fold|rank> plan`
+2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|newused|provs|fold|rank> plan`
    - `shorts/out/<日付>-<テーマ>/script.json` ができる（すでにあれば止まる。上書きは `--force`）。
    - drops: 1〜3位。budget: 予算（3万・5万・7万・10万円）ごとの機種と相場、注目（5万円の行）の最安・在庫数。newused: 新品と中古の相場の差の1〜3位（候補の全機種も出る）。provs: 無印と Pro の相場の差の1〜3位（候補の全組と、1位の無印の容量を上げたときの差も出る）。fold: 折りたたみの新しい方と1世代前の相場の差の1〜3位（候補の全組も出る）。
    - 検品担当のひと言（`comment.lines`）、ナレーション、説明文を確かめる。
@@ -23,7 +23,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 3. **読みを確かめる**: `npx tsx shorts/make-short.tsx --voice-dump script`（最後に書いた台本・その台本の話者で）
    - アクセント句の直す前と後が出る。機種名・数字が細切れになっていないかを見る。
    - 直らない場面は、script.json の `narrationKana` に読みを書く。
-4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|newused|provs|fold|rank> render`
+4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|newused|provs|fold|rank> render`
    - drops は A・B・C の3本、ほかは A の1本と、`youtube.txt` ができる。
    - **`--no-bgm`**: BGM なし（声と効果音だけ・音量の決め方は同じ）の `short-A-nobgm.mp4` と `youtube-nobgm.txt`（BGM のクレジットなし）。ユーザーが YouTube のスマホアプリで投稿し、「音源を追加」で流行りの曲を付けるとき用。BGM 入りの版とは別のファイル。重い処理なので、render は1本ずつ（同時に走らせない。この PC は負荷で落ちる）。
    - 長さ（60秒以内。今は30〜35秒）、音量（-11 LUFS 前後）、タイムライン（場面・行・声の秒）を確かめる。
@@ -55,6 +55,11 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - 対象: `lib/pixelCatalog.ts` の Pixel のうち、Google のアップデート保証が作成月の時点で終わっていない機種（10/22 は Pixel 6・6 Pro を除外）。同じ相場なら販売開始の新しい方。
   - 切り口: 各行と注目に**アップデート保証の終わり**（「アップデート 2031年5月まで」）を出す。注目の声は在庫数でなく保証の終わりを読む。見出しの帯は「予算ぴったりで買える／中古Pixel」。下の注記に「アップデートはGoogle公式」。
   - 説明欄のリンクは注目の機種ページ・/pixel/budget/under-50000・/pixel。utm の末尾は `_pixelbudget`。ハッシュタグ #Pixel #中古スマホ。ひと言の下書き「Pixelは機種ごとに／アップデート期限を／確認しましょう」。
+- ipadbudget: budget と同じ構成・同じ選び方（`pickBudgetModels` を共有。10/23〜）。
+  - 対象: `lib/ipadCatalog.ts` の iPad のうち **iPadOS 27 対応**（`lib/ipadSpecs.ts` の IPADOS27_MODELS・Apple 公式）。同じ相場なら発売年の新しい方。
+  - **予算は 5万・7万・10万・15万円**（相場3万円以下の iPad は 10/23 時点ですべて iPadOS 27 非対応で、3万円の行が作れない）。注目は5万円の行。
+  - 切り口: 各行と注目に**使える Apple Pencil**（`lib/ipadPencil.ts`。「Pencil USB-C／第1世代」）。注目の声は在庫数を読む。見出しの帯は「予算ぴったりで買える／中古iPad」。下の注記に「PencilはApple公式」。
+  - 説明欄のリンクは注目の機種ページ・/ipad/budget/under-50000・/ipad。utm の末尾は `_ipadbudget`。ハッシュタグ #iPad #中古iPad。ひと言の下書き「iPadは機種ごとに／使えるPencilが／違います」。声は 青山龍星。
 - rank: **hook → ranking（3位・2位・伏せた1位）→ reveal（1位のランク A・B・C の3本の棒と件数・A→C の差額と率）→ comment → outro**（型 A だけ・約39秒。10/22〜）。
   - 対象: iPhone 13〜16 の無印と Pro（`shorts/themes/rank.ts` の MODELS）。容量は在庫がいちばん多い容量。ランクは各店の表記（大文字にそろえる）で A・B・C だけ（S＝未使用品・D・ジャンク・不明は除く）。各ランク在庫5件以上。差（A − C）の大きい順、率は A に対して。差0以下は出さない。
   - ランクの基準は店ごとに違い、ランクごとに店の顔ぶれも違う（10/22 は 13 Pro で B の相場が A より高かった）。画面の注記「ランクは各店の表記・同じ容量の中央値」と説明欄で断る。
@@ -71,7 +76,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 ### ナレーション（VOICEVOX）
 - **標準の声は 春日部つむぎ（ノーマル）**。drops と budget はこの声（10/21 ユーザーの指示。1本目の drops だけ ずんだもん）。
   - **rank は ずんだもん（ノーマル）**（10/22。口調は です・ます のまま。クレジット「VOICEVOX:ずんだもん」。規約は docs/youtube-shorts.md）。pixelbudget は 春日部つむぎ。
-  - **newused・provs・fold は 青山龍星（ノーマル）**（10/21・10/22 ユーザーの指示。クレジット「VOICEVOX:青山龍星」。法人が関わる利用は事前に ななはぴ へ確認。docs/youtube-shorts.md）。
+  - **newused・provs・fold・ipadbudget は 青山龍星（ノーマル）**（10/21・10/22 ユーザーの指示。クレジット「VOICEVOX:青山龍星」。法人が関わる利用は事前に ななはぴ へ確認。docs/youtube-shorts.md）。
   - 名前で指定する（`voice.ts` の `DEFAULT_SPEAKER`・`make-short.tsx` の `THEME_SPEAKER`）。ID はエンジンの GET /speakers から引く（この PC では 8）。
   - 説明欄のクレジットは「VOICEVOX:春日部つむぎ」（公式の規約で商用可・クレジット必須。10/21 確認。docs/youtube-shorts.md）。
   - 説明欄のクレジット「VOICEVOX:<キャラクター名>」は render が自動で入れる。
@@ -115,6 +120,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - 読み: Galaxy ギャラクシー・Z ゼット・Fold フォールド・Flip フリップ・Pixel ピクセル・8a ハチエー・XL エックスエル（`voice.ts` の speakable）。ギャラクシー・ピクセルは機種名の頭として切る（`voiceTuning.ts` の BRANDS。切らないと「ピクセルジュウ/イチ…」で11が「10・1」に聞こえる）
 
 - 各場面で読む文（pixelbudget）: budget と同じで、hook「予算ぴったりで買える中古Pixelは…？」・reveal「注目は5万円の<機種>。相場<額>、アップデートは<年>年<月>月までです。」・outro「…あなたの予算なら、どのPixelにしますか？」
+- 各場面で読む文（ipadbudget）: budget と同じで、hook「予算ぴったりで買える中古iPadは…？」・ranking「5万円なら、iPad (第9世代)、相場43,670円です。」（括弧のチップ名は読点に「iPad Pro 11インチ、M4」）・reveal「注目は5万円の<機種>。相場<額>、在庫は<台数>台です。」・outro「…あなたの予算なら、どのiPadにしますか？」
 - 各場面で読む文（rank）:
   - hook: 「状態ランクで、中古iPhoneはいくら違う？」
   - ranking: 「3位は<機種>、<容量>。ランクAより、ランクCが<額>安いです。」を 3位・2位
@@ -144,6 +150,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 | newused | 薄い藍 brand50 | 塗らない・赤い下線 | brand200 の縁 | price | 問い＋「新品 vs 中古」＋最大の差額 |
 | provs | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | 問い＋「無印 vs Pro」＋最大の差額 |
 | fold | 藍 brand800 | 琥珀 inspect700・対角だけ丸い | 琥珀の縁 | inspect700 | 問い＋開いた折りたたみの形（図形）＋最大の差額 |
+| ipadbudget | 藍 brand600 | 塗らない白い太枠（frame） | 右下にずらした紺の影 | price（札は brand900） | 問い＋予算の丸い札 2×2（淡い金・数字を大きく）＋「使えるApple Pencilも」 |
 | rank | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | 問い＋ランク A・B・C の札＋A→C の最大の差額 |
 
 ### 色

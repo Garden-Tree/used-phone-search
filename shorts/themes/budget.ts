@@ -39,11 +39,12 @@ const utm = (date: string) => `utm_source=youtube&utm_medium=social&utm_campaign
 
 /**
  * 予算ごとの機種（budget・pixelbudget で共通の選び方）。cands は対象の機種と相場（在庫 MIN_COUNT 件以上に絞ったもの）、
- * age は発売の新しさ（大きいほど新しい）。帯 (前の予算, 予算] で相場のいちばん高い機種（同じなら新しい方）、帯が空なら予算以下でいちばん新しい機種
+ * age は発売の新しさ（大きいほど新しい）。帯 (前の予算, 予算] で相場のいちばん高い機種（同じなら新しい方）、帯が空なら予算以下でいちばん新しい機種。
+ * budgets は予算の並び（既定 SHORT_BUDGETS。ipadbudget は IPAD_SHORT_BUDGETS）
  */
-export function pickBudgetModels(cands: [string, ModelMarket][], age: (model: string) => number, what: string): { budget: number; model: string; r: ModelMarket }[] {
-  return SHORT_BUDGETS.map((budget, i) => {
-    const prev = i > 0 ? SHORT_BUDGETS[i - 1] : 0;
+export function pickBudgetModels(cands: [string, ModelMarket][], age: (model: string) => number, what: string, budgets: number[] = SHORT_BUDGETS): { budget: number; model: string; r: ModelMarket }[] {
+  return budgets.map((budget, i) => {
+    const prev = i > 0 ? budgets[i - 1] : 0;
     // 帯 (prev, budget] の中で相場のいちばん高い機種。同じ相場なら発売の新しい方
     const band = cands.filter(([, r]) => r.medianPrice > prev && r.medianPrice <= budget)
       .sort(([a, ra], [b, rb]) => rb.medianPrice - ra.medianPrice || age(b) - age(a));

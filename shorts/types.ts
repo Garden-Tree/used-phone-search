@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・newused・provs・fold・rank）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・newused・provs・fold・rank）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -45,12 +45,13 @@ export type DropsScript = Common & {
 /**
  * 予算の1行: 相場（在庫がいちばん多い容量の中央値）が予算の帯に入る機種のうち、相場がいちばん高い機種（shorts/themes/budget.ts）。
  * updateUntil: Pixel のアップデート保証の終わり（"2027-07"。lib/pixelCatalog.ts の updateUntil。pixelbudget だけ）
+ * pencil: その iPad で使える Apple Pencil（新しい順・"USB-C／第1世代"。lib/ipadPencil.ts。ipadbudget だけ）
  */
-export type BudgetRow = { budget: number; label: string; model: string; storage: string; median: number; released: string; updateUntil?: string };
+export type BudgetRow = { budget: number; label: string; model: string; storage: string; median: number; released: string; updateUntil?: string; pencil?: string };
 
-/** テーマ budget「予算ぴったりで買える中古iPhoneは？」と pixelbudget「予算ぴったりで買える中古Pixelは？」（同じ場面・同じ選び方） */
+/** テーマ budget「予算ぴったりで買える中古iPhoneは？」・pixelbudget「…中古Pixelは？」・ipadbudget「…中古iPadは？」（同じ場面・同じ選び方） */
 export type BudgetScript = Common & {
-  theme: "budget" | "pixelbudget";
+  theme: "budget" | "pixelbudget" | "ipadbudget";
   scenes: {
     /** 場面 ranking: 予算の行（予算の小さい順） */
     budgets: { rows: BudgetRow[] };
@@ -143,5 +144,5 @@ export type RankScript = Common & {
 
 export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript;
 
-/** budget と pixelbudget（予算の4行・注目の1機種の場面を共有） */
-export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget";
+/** budget・pixelbudget・ipadbudget（予算の4行・注目の1機種の場面を共有） */
+export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget";

@@ -19,13 +19,14 @@ const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
 const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
 const HEAD_TITLE = (s: Script) =>
-  s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"]
+  s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"]
     : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : ["今週の中古iPhone", "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
   s.theme === "rank" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
     : s.theme === "pixelbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・アップデートはGoogle公式`
+    : s.theme === "ipadbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・PencilはApple公式`
     : s.theme === "newused" ? `${s.date.replace(/-/g, "/")}・新品はApple公式・中古は同じ容量の中央値`
     : s.theme === "provs" || s.theme === "fold" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値` : `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`;
 
@@ -141,14 +142,15 @@ function Band({ s, L }: { s: Script; L: Look }) {
   const tab = b.shape === "tab";
   const full = b.shape === "full";
   // 文字の幅: pill は丸い端の分、tab は左の余白の分だけ狭く
-  const tw = full ? CW : b.shape === "pill" ? CW - 160 : tab ? CW - 110 : CW - 60;
-  const radius = full ? 0 : b.shape === "pill" ? HEADER.height / 2 : b.shape === "tab" ? "0 28px 28px 0" : b.shape === "leaf" ? "110px 0 110px 0" : 28;
+  const frame = b.shape === "frame";
+  const tw = full ? CW : b.shape === "pill" ? CW - 160 : tab ? CW - 110 : frame ? CW - 90 : CW - 60;
+  const radius = full ? 0 : b.shape === "pill" ? HEADER.height / 2 : b.shape === "tab" ? "0 28px 28px 0" : b.shape === "leaf" ? "110px 0 110px 0" : frame ? 44 : 28;
   const title = HEAD_TITLE(s);
   return (
     <div style={{
       position: "absolute", left: full ? 0 : MARGIN, top: HEADER.top, width: full ? W : CW, height: HEADER.height, display: "flex", flexDirection: "column",
       alignItems: tab ? "flex-start" : "center", justifyContent: "center", paddingLeft: tab ? 60 : 0,
-      background: b.fill, borderRadius: radius, color: b.text,
+      background: b.fill, borderRadius: radius, color: b.text, border: frame ? `10px solid ${b.stripe ?? b.text}` : "none",
       boxShadow: tab && b.stripe ? `-18px 0 0 0 ${b.stripe}` : "none",
     }}>
       <div style={{ ...row, fontSize: FIT(HEAD_SUB(s.shopCount), tw, 52), fontWeight: 700, color: b.sub }}>{HEAD_SUB(s.shopCount)}</div>
@@ -248,6 +250,37 @@ function BudgetHook({ s, t }: { s: BudgetScript; t: number }) {
           );
         })}
       </div>
+    </Frame>
+  );
+}
+
+/** ipadbudget: 問い＋予算の丸い札（2×2。数字を大きく「万円」を下に・紺の影）＋「使えるApple Pencilも」 */
+function CoinHook({ s, t }: { s: BudgetScript; t: number }) {
+  const L = lookOf(s);
+  const coin = L.coin ?? { fill: L.chip, text: C.white };
+  const rows = s.scenes.budgets.rows;
+  const D = 210;
+  const label = "使えるApple Pencilも";
+  const coinOf = (r: BudgetScript["scenes"]["budgets"]["rows"][number], i: number) => {
+    const man = r.label.endsWith("万円");
+    const num = man ? r.label.replace(/万円$/, "") : r.label;
+    return (
+      <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: D, height: D, borderRadius: D / 2,
+        marginLeft: i % 2 ? 90 : 0, background: coin.fill, color: coin.text, boxShadow: `10px 10px 0 0 ${SITE.brand900}` }}>
+        <div style={{ ...row, fontSize: FIT(num, D - 50, 116), fontWeight: 900, lineHeight: 1 }}>{num}</div>
+        {man && <div style={{ ...row, fontSize: 42, fontWeight: 900, marginTop: 2 }}>万円</div>}
+      </div>
+    );
+  };
+  return (
+    <Frame s={s}>
+      <Question lines={["予算ぴったりで買える", "中古iPadは…？"]} max={84} />
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 26, transform: `scale(${pulseOf(t)})` }}>
+        {[0, 2].map((k) => (
+          <div key={k} style={{ display: "flex", marginTop: k ? 22 : 0 }}>{rows.slice(k, k + 2).map((r, j) => coinOf(r, k + j))}</div>
+        ))}
+      </div>
+      <div style={{ ...row, fontSize: FIT(label, CW, 56), fontWeight: 900, color: L.accentOnBg, marginTop: 26 }}>{label}</div>
     </Frame>
   );
 }
@@ -616,7 +649,9 @@ function BudgetRows({ s, t, o }: { s: BudgetScript; t: number; o: Scene["o"] }) 
   const rows = s.scenes.budgets.rows;
   const RH = 190;
   const RIGHT = 660;
-  const upd = rows.some((r) => r.updateUntil);
+  // 3段目: pixelbudget はアップデート保証の終わり、ipadbudget は使える Apple Pencil
+  const extraOf = (r: BudgetScript["scenes"]["budgets"]["rows"][number]) => (r.updateUntil ? `アップデート ${jaYm(r.updateUntil)}まで` : r.pencil ? `Pencil ${r.pencil}` : "");
+  const upd = rows.some((r) => extraOf(r));
   return (
     <Frame s={s}>
       <div style={{ ...card(lookOf(s)), width: CW, padding: "4px 24px" }}>
@@ -632,7 +667,7 @@ function BudgetRows({ s, t, o }: { s: BudgetScript; t: number; o: Scene["o"] }) 
                   <div style={{ ...row, fontSize: upd ? 32 : 36, fontWeight: 900, color: C.muted, marginRight: 24 }}>{r.storage}</div>
                   <div style={{ ...row, fontSize: FIT(price, 440, upd ? 46 : 52), fontWeight: 900, color: C.red, lineHeight: upd ? 1.15 : undefined }}>{price}</div>
                 </div>
-                {r.updateUntil && <div style={{ ...row, fontSize: 32, fontWeight: 900, color: C.muted, marginTop: 2 }}>{`アップデート ${jaYm(r.updateUntil)}まで`}</div>}
+                {extraOf(r) && <div style={{ ...row, fontSize: FIT(extraOf(r), RIGHT, 32), fontWeight: 900, color: C.muted, marginTop: 2 }}>{extraOf(r)}</div>}
               </div>
             </div>
           );
@@ -650,7 +685,8 @@ function Pick({ s, t }: { s: BudgetScript; t: number }) {
   const sub = `${p.storage}・${p.released}発売`;
   const stock = `在庫 ${n(p.count)}台`;
   // pixelbudget: アップデート保証の終わり（ナレーションも読む）
-  const upd = p.updateUntil ? `アップデート ${jaYm(p.updateUntil)}まで` : "";
+  // ipadbudget: 使える Apple Pencil（ナレーションは在庫数を読む）
+  const upd = p.updateUntil ? `アップデート ${jaYm(p.updateUntil)}まで` : p.pencil ? `Apple Pencil ${p.pencil}` : "";
   return (
     <Frame s={s}>
       <div style={{ ...row, fontSize: 84, fontWeight: 900, marginBottom: 40, opacity: prog(t, 0, 0.25) }}>{`注目は${p.label}`}</div>
@@ -905,7 +941,7 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
   }
   if (isBudget(s)) {
     switch (sc.id) {
-      case "hook": return <BudgetHook s={s} t={t} />;
+      case "hook": return lookOf(s).hook === "coins" ? <CoinHook s={s} t={t} /> : <BudgetHook s={s} t={t} />;
       case "ranking": return <BudgetRows s={s} t={t} o={sc.o} />;
       case "reveal": return <Pick s={s} t={t} />;
       case "comment": return <Comment s={s} t={t} o={sc.o} />;

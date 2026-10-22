@@ -15,7 +15,7 @@ import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 
 /** 規則を変えたら上げる（声のキャッシュを作り直すため）。2: 長音のモーラを延ばす（10/21）。3: ギャラクシー・ピクセルを機種名の頭に（10/22）。4: 「ランク＋A〜C・S」と続く助詞を1つの句に・機種名の頭と助詞を切らない（10/22） */
-export const TUNING_VERSION = 4;
+export const TUNING_VERSION = 5;
 
 export type DictWord = { surface: string; pronunciation: string; accent_type: number; word_type?: string; priority?: number };
 const DICT_FILE = resolve(__dirname, "voice-dict.json");
@@ -197,6 +197,29 @@ export function lengthenLongVowels(aps: AccentPhrase[]): string[] {
       m.vowel = v;
       if (m.vowel_length < LONG_VOWEL_MIN) m.vowel_length = LONG_VOWEL_MIN;
       changed.push(`${ai}:${prev.text}${m.text} ${before.toFixed(2)}→${m.vowel_length.toFixed(2)}`);
+    });
+  });
+  return changed;
+}
+
+/** 「テ」の子音と母音の長さの下限（秒・話速 1.0）。「〜てね」の「テ」が短く「おしえねね」と聞こえた（10/23） */
+const TE_CONSONANT_MIN = 0.07;
+const TE_VOWEL_MIN = 0.09;
+/**
+ * 「テ」の直後が「ネ」「ナ」「ニ」（てね・てな・てに）のとき、「テ」の子音と母音を少し延ばす。ナ行に引っぱられて「ネ」に聞こえるのを防ぐ
+ * 直したモーラを返す（--voice-dump の表示用）
+ */
+export function clarifyTe(aps: AccentPhrase[]): string[] {
+  const changed: string[] = [];
+  aps.forEach((ap, ai) => {
+    ap.moras.forEach((m, i) => {
+      const next = ap.moras[i + 1];
+      if (m.text !== "テ" || !next || !/^[ネナニ]$/.test(next.text)) return;
+      const c0 = m.consonant_length ?? 0, v0 = m.vowel_length;
+      if (m.consonant_length != null && m.consonant_length < TE_CONSONANT_MIN) m.consonant_length = TE_CONSONANT_MIN;
+      if (m.vowel_length < TE_VOWEL_MIN) m.vowel_length = TE_VOWEL_MIN;
+      m.vowel = m.vowel.toLowerCase();
+      changed.push(`${ai}:テ${next.text} ${c0.toFixed(2)}/${v0.toFixed(2)}→${(m.consonant_length ?? 0).toFixed(2)}/${m.vowel_length.toFixed(2)}`);
     });
   });
   return changed;

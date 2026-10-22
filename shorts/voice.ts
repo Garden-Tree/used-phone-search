@@ -10,7 +10,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type RankScript, type Script, type VoiceConfig } from "./types";
-import { TUNING_VERSION, dictHash, ensureDictionary, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
+import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
 const CACHE = process.env.VOICEVOX_CACHE ? resolve(process.env.VOICEVOX_CACHE) : resolve(__dirname, "out/voice-cache");
@@ -123,6 +123,12 @@ function newUsedNarration(s: NewUsedScript): Partial<Record<NarrationKey, string
 }
 
 /**
+ * 機種名の読み上げ用（画面の文字は変えない）。iPad の「(M2)」「(A16)」のような括弧のチップ名は括弧で間が空くので読点に（「iPad Air 11インチ、M2」）。
+ * 「(第9世代)」は speakable が括弧を外す
+ */
+const spokenModel = (model: string) => model.replace(/\s*\(((?:M|A)\d+(?: Pro)?)\)/, "、$1");
+
+/**
  * budget の既定: hook 問い / ranking 予算ごとに1文（「3万円なら、<機種>、相場<額>です。」。文ごとに合成して行を声に合わせて出す）
  * reveal 注目の機種の相場と在庫数（最安は読まない） / comment ひと言の本文だけ / outro サイトへの誘導と問い
  */
@@ -130,15 +136,17 @@ function budgetNarration(s: BudgetScript): Partial<Record<NarrationKey, string>>
   const p = s.scenes.pick;
   // pixelbudget: 問いと締めは「Pixel」、注目は在庫数の代わりにアップデート保証の終わり（「2031年5月まで」）を読む
   const pixel = s.theme === "pixelbudget";
+  const ipad = s.theme === "ipadbudget";
   const until = p.updateUntil ? `${Number(p.updateUntil.slice(0, 4))}年${Number(p.updateUntil.slice(5, 7))}月` : "";
   return {
-    hook: pixel ? "予算ぴったりで買える中古Pixelは…？" : "予算ぴったりで買える中古iPhoneは…？",
-    ranking: s.scenes.budgets.rows.map((r) => `${r.label}なら、${r.model}、相場${yen(r.median)}です。`).join(""),
+    hook: pixel ? "予算ぴったりで買える中古Pixelは…？" : ipad ? "予算ぴったりで買える中古iPadは…？" : "予算ぴったりで買える中古iPhoneは…？",
+    ranking: s.scenes.budgets.rows.map((r) => `${r.label}なら、${spokenModel(r.model)}、相場${yen(r.median)}です。`).join(""),
     reveal: pixel && until
       ? `注目は${p.label}の${p.model}。相場${yen(p.median)}、アップデートは${until}までです。`
-      : `注目は${p.label}の${p.model}。相場${yen(p.median)}、在庫は${p.count.toLocaleString()}台です。`,
+      : `注目は${p.label}の${spokenModel(p.model)}。相場${yen(p.median)}、在庫は${p.count.toLocaleString()}台です。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: pixel ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのPixelにしますか？"
+      : ipad ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのiPadにしますか？"
       : "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの機種にしますか？",
   };
 }
@@ -277,6 +285,8 @@ export async function tunedQuery(text: string, cfg: VoiceConfig | undefined, spe
   }
   // 長音（ジュウ・パア・ソオ）の母音を延ばす（voiceTuning.ts の lengthenLongVowels）
   const longVowels = lengthenLongVowels(query.accent_phrases as AccentPhrase[]);
+  // 「〜てね」の「テ」を少し延ばす（voiceTuning.ts の clarifyTe）
+  longVowels.push(...clarifyTe(query.accent_phrases as AccentPhrase[]));
   const moras = moraLengths(query.accent_phrases as AccentPhrase[]);
   query.speedScale = cfg?.speedScale ?? DEFAULT_SPEED;
   query.volumeScale = cfg?.volume ?? 1.0;

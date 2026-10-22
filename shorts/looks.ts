@@ -7,14 +7,16 @@
  *   明るい地 ground / brand50 / inspect50: ink 15.9〜17.1・inkSub 6.8〜7.3・price 5.1〜5.5・safe 4.9〜5.3
  *   帯の白い文字: price 5.66・brand600 7.90・safe 5.47・inspect700 5.02・ink 17.74
  *   白いカードの上: price 5.66・safe 5.47・inspect700 5.02・inkSub 7.56
+ *   藍 brand600 の地（ipadbudget）: 白 7.90・brand200 5.30・inspectLine 6.09・ON_DARK.safe 5.22（ON_DARK.inspect 3.66・ON_DARK.price 2.96 は使わない）
+ *   inspectLine の丸い札の上: brand900 12.32
  */
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import type { Script } from "./types";
 
-/** 見出しの帯の形。full＝左右いっぱい・card＝角丸の箱・pill＝丸い端・tab＝左寄せの札と左の線・leaf＝対角だけ丸い・underline＝塗らずに下線 */
-export type BandShape = "full" | "card" | "pill" | "tab" | "leaf" | "underline";
-/** つかみ（1コマ目）の型。number＝1位の額を先に出す・chips＝予算の札・split＝2つを並べて vs・fold＝折りたたみの形・abc＝ランクの札 */
-export type HookKind = "number" | "chips" | "split" | "fold" | "abc";
+/** 見出しの帯の形。full＝左右いっぱい・card＝角丸の箱・pill＝丸い端・tab＝左寄せの札と左の線・leaf＝対角だけ丸い・underline＝塗らずに下線・frame＝塗らずに太い枠 */
+export type BandShape = "full" | "card" | "pill" | "tab" | "leaf" | "underline" | "frame";
+/** つかみ（1コマ目）の型。number＝1位の額を先に出す・chips＝予算の札・coins＝予算の丸い札（数字を大きく）・split＝2つを並べて vs・fold＝折りたたみの形・abc＝ランクの札 */
+export type HookKind = "number" | "chips" | "coins" | "split" | "fold" | "abc";
 
 export type Look = {
   /** 記録用の名前（README・SKILL の表と同じ） */
@@ -34,6 +36,8 @@ export type Look = {
   /** 白いカードの上の強調（差額・率）と、白い文字を載せる札の色 */
   accent: string;
   chip: string;
+  /** coins の丸い札の塗りと文字（なければ chip と白） */
+  coin?: { fill: string; text: string };
   hook: HookKind;
 };
 
@@ -57,6 +61,13 @@ export const LOOKS: Record<Script["theme"], Look> = {
     name: "藍の地・緑の丸い帯", dark: true, bg: SITE.brand800, fg: ON_DARK.white, sub: ON_DARK.sub, accentOnBg: ON_DARK.safe, url: ON_DARK.safe,
     band: { shape: "pill", fill: SITE.safe, text: ON_DARK.white, sub: ON_DARK.white },
     card: { radius: 40, shadow: ring(6, ON_DARK.safe) }, accent: SITE.price, chip: SITE.safe, hook: "chips",
+  },
+  // 予算 iPad: 藍（brand600）の地・塗らない白い太枠の見出し・右下にずらした紺の影のカード。つかみは予算の丸い札（淡い金・数字を大きく）
+  ipadbudget: {
+    name: "藍600の地・白い枠の見出し", dark: true, bg: SITE.brand600, fg: ON_DARK.white, sub: ON_DARK.sub, accentOnBg: SITE.inspectLine, url: ON_DARK.safe,
+    band: { shape: "frame", fill: "transparent", text: ON_DARK.white, sub: ON_DARK.sub, stripe: ON_DARK.white },
+    card: { radius: 20, shadow: `14px 14px 0 0 ${SITE.brand900}` }, accent: SITE.price, chip: SITE.brand900,
+    coin: { fill: SITE.inspectLine, text: SITE.brand900 }, hook: "coins",
   },
   // 新品と中古: 薄い藍（brand50）の地・塗らない見出しに赤い下線・藍の縁のカード。つかみは「新品 vs 中古」
   newused: {
