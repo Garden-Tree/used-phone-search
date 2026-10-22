@@ -42,7 +42,12 @@ const JINGLE_PEAK_DB = -18;
 const SITE_URL = "https://used.gadelog.com";
 
 const ROOT = resolve(__dirname, "..");
-const BGM = join(ROOT, "shorts/assets/bgm.mp3");
+/** BGM: longform/assets/sound/ にある曲（OpenTracks「Cyber Society」by のる・ループ版）。なければショートの BGM */
+const BGM_LONG = join(ROOT, "longform/assets/sound/Cyber_Society_2.mp3");
+const BGM = existsSync(BGM_LONG) ? BGM_LONG : join(ROOT, "shorts/assets/bgm.mp3");
+const BGM_CREDIT = existsSync(BGM_LONG) ? "BGM: Cyber Society by のる（OpenTracks）" : "BGM: Okay For Now - Televisions（YouTube オーディオライブラリ）";
+/** 章のジングル: 効果音ラボ「シーン切り替え1」（クレジット不要・収益化可）。なければ自作の3音 */
+const JINGLE_FILE = join(ROOT, "longform/assets/sound/sceneswitch1.mp3");
 
 // このプロセスと子（ffmpeg）を低い優先度で動かす（Windows では子は親の「通常以下」を受け継ぐ）
 try {
@@ -213,7 +218,10 @@ async function audio(dir: string, tl: Timeline, work: string) {
   const stereo = "aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo";
   const mix = join(work, "mix.wav");
   const jingle = join(work, "jingle.wav");
-  makeJingle(jingle);
+  if (existsSync(JINGLE_FILE)) {
+    // 48kHz ステレオの WAV にして、ピークを JINGLE_PEAK_DB にそろえる
+    await ffmpeg(["-y", "-threads", "2", "-i", JINGLE_FILE, "-af", "aresample=48000,aformat=channel_layouts=stereo,volume=-8dB", "-c:a", "pcm_s16le", jingle], "ジングルを読み込む");
+  } else makeJingle(jingle);
   const at = tl.chapters.slice(1).map((c) => Math.round(chapterShownAt(c) * 1000));
   const jingles = `[2:a]${stereo},asplit=${at.length}${at.map((_, i) => `[j${i}]`).join("")};` + at.map((ms, i) => `[j${i}]adelay=${ms}|${ms}[d${i}];`).join("");
   console.log(`  ジングル ${at.length} か所（${at.map((ms) => fmtClock(ms / 1000)).join("・")}）`);
@@ -253,7 +261,8 @@ function youtubeText(dir: string, tl: Timeline, artFiles: string[]): string {
   const summary = last.type === "table" ? last.rows.map((r) => r.cells.join(" ")).join("\n") : "";
   const utm = `utm_source=youtube&utm_medium=social&utm_campaign=${CAMPAIGN}`;
   const link = (path: string) => `${SITE_URL}${path}?${utm}`;
-  const credits = ["VOICEVOX:春日部つむぎ", "VOICEVOX:ずんだもん", "BGM: Okay For Now - Televisions（YouTube オーディオライブラリ）"];
+  const credits = ["VOICEVOX:春日部つむぎ", "VOICEVOX:ずんだもん", BGM_CREDIT];
+  if (existsSync(JINGLE_FILE)) credits.push("効果音：効果音ラボ");
   // 立ち絵（chara.py で作った絵を使ったとき）。つむぎ＝春日部つくし（KASUKABEproject）・ずんだもん＝坂本アヒル
   if (artFiles.some((f) => /tsumugi/.test(f))) credits.push("立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)");
   if (artFiles.some((f) => /zundamon/.test(f))) credits.push("ずんだもん立ち絵：坂本アヒル様");
