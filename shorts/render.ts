@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
 import { FPS, H, RANK_SHOWN, TIMELINE, W, budgetRows, countdown, sceneFrame, variantsOf, type Variant } from "./scenes";
-import type { Script } from "./types";
+import { isBudget, type Script } from "./types";
 import { VOICEVOX_URL, cachedCharacter, engineAvailable, narrationKey, narrationOf, resolveSpeaker, synthesize, voiceCredit, type Clip, type NarrationKey } from "./voice";
 
 function run(args: string[], bin = "ffmpeg") {
@@ -71,7 +71,7 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
   const timeline = TIMELINE(script, variant).map((sc) => {
     const key = narrationKey(sc.id);
     if (sc.id === "ranking" && voices.ranking?.length) {
-      const budget = script.theme === "budget";
+      const budget = isBudget(script);
       const times = [...(sc.o?.at ?? [0, 2.1, 0.5])];
       let cur = RANK_VOICE_AT;
       let found = 0;
@@ -193,7 +193,7 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
 
 /** ランキングの文が出す行（Voices の row） */
 function rowOf(script: Script, sentence: string): number | null {
-  if (script.theme === "budget") {
+  if (isBudget(script)) {
     const m = sentence.match(/^(\d+)万円なら/);
     const i = m ? script.scenes.budgets.rows.findIndex((r) => r.budget === Number(m[1]) * 10000) : -1;
     return i >= 0 ? i : null;

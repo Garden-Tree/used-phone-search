@@ -11,6 +11,7 @@
     { "surface": "Air", "pronunciation": "エアー", "accent_type": 1, "word_type": "PROPER_NOUN", "priority": 8 },
     { "surface": "GB", "pronunciation": "ギガ", "accent_type": 1, "word_type": "SUFFIX", "priority": 8 },
     { "surface": "TB", "pronunciation": "テラ", "accent_type": 1, "word_type": "SUFFIX", "priority": 8 },
+    { "surface": "XL", "pronunciation": "エックスエル", "accent_type": 4, "word_type": "PROPER_NOUN", "priority": 8 },
     { "surface": "中古", "pronunciation": "チュウコ", "accent_type": 0, "word_type": "COMMON_NOUN", "priority": 5 },
     { "surface": "相場", "pronunciation": "ソウバ", "accent_type": 0, "word_type": "COMMON_NOUN", "priority": 5 },
     { "surface": "値下がり", "pronunciation": "ネサガリ", "accent_type": 0, "word_type": "COMMON_NOUN", "priority": 5 },

@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import type { BudgetScript, DropsScript, FoldScript, NarrationKey, NewUsedScript, ProVsScript, Script, VoiceConfig } from "./types";
+import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type RankScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -47,7 +47,25 @@ export function commentSentence(lines: string[]): string {
  * script.json の narration に書いた場面はそちらが優先。空文字にするとその場面は声なし
  */
 export function defaultNarration(s: Script): Partial<Record<NarrationKey, string>> {
-  return s.theme === "budget" ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : s.theme === "provs" ? proVsNarration(s) : s.theme === "fold" ? foldNarration(s) : dropsNarration(s);
+  return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : s.theme === "provs" ? proVsNarration(s)
+    : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : dropsNarration(s);
+}
+
+/**
+ * rank の既定: hook 問い / ranking 3位・2位を1文ずつ（「3位は<機種>、<容量>。ランクAより、ランクCが<額>安いです。」。文頭の「○位は」で行を出す）
+ * reveal 1位の差（約○.○万円）と率（およそ○%）だけ。容量・ランクごとの額は画面に出す（40秒に収めるため） / comment ひと言の本文だけ / outro サイトへの誘導と問い
+ * 声は ずんだもんだが、口調は「です・ます」（「のだ」は使わない）。「ランクAとC」は1字ずつ切れるので「ランクA」「ランクC」と書く（voiceTuning.ts の 6）
+ */
+function rankNarration(s: RankScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  return {
+    hook: "状態ランクで、中古iPhoneはいくら違う？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、${items[i].storage}。ランクAより、ランクCが${yen(items[i].diff)}安いです。`).join(""),
+    reveal: `1位は${top.model}。ランクCにすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、ランクAとランクC、どちらにしますか？",
+  };
 }
 
 /** "iPhone 16 Pro" → "16 Pro"（組の2つ目は世代の番号から読む） */
@@ -110,12 +128,18 @@ function newUsedNarration(s: NewUsedScript): Partial<Record<NarrationKey, string
  */
 function budgetNarration(s: BudgetScript): Partial<Record<NarrationKey, string>> {
   const p = s.scenes.pick;
+  // pixelbudget: 問いと締めは「Pixel」、注目は在庫数の代わりにアップデート保証の終わり（「2031年5月まで」）を読む
+  const pixel = s.theme === "pixelbudget";
+  const until = p.updateUntil ? `${Number(p.updateUntil.slice(0, 4))}年${Number(p.updateUntil.slice(5, 7))}月` : "";
   return {
-    hook: "予算ぴったりで買える中古iPhoneは…？",
+    hook: pixel ? "予算ぴったりで買える中古Pixelは…？" : "予算ぴったりで買える中古iPhoneは…？",
     ranking: s.scenes.budgets.rows.map((r) => `${r.label}なら、${r.model}、相場${yen(r.median)}です。`).join(""),
-    reveal: `注目は${p.label}の${p.model}。相場${yen(p.median)}、在庫は${p.count.toLocaleString()}台です。`,
+    reveal: pixel && until
+      ? `注目は${p.label}の${p.model}。相場${yen(p.median)}、アップデートは${until}までです。`
+      : `注目は${p.label}の${p.model}。相場${yen(p.median)}、在庫は${p.count.toLocaleString()}台です。`,
     comment: commentSentence(s.scenes.comment.lines),
-    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの機種にしますか？",
+    outro: pixel ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのPixelにしますか？"
+      : "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの機種にしますか？",
   };
 }
 
@@ -155,7 +179,7 @@ export function speakable(text: string): string {
     [/iPhone/g, "アイフォン"], [/iPad/g, "アイパッド"], [/MacBook/g, "マックブック"], [/Apple Watch/g, "アップルウォッチ"],
     [/Galaxy/g, "ギャラクシー"], [/\bZ\s*(?=Fold|Flip)/g, "ゼット"], [/Fold/g, "フォールド"], [/Flip/g, "フリップ"], [/Pixel/g, "ピクセル"],
     [/Pro Max/g, "プロマックス"], [/\bPro\b/g, "プロ"], [/\bMax\b/g, "マックス"], [/\bPlus\b/g, "プラス"], [/\bmini\b/g, "ミニ"],
-    [/\bAir\b/g, "エアー"], [/\bSE\b/g, "エスイー"], [/\bDuo\b/g, "デュオ"], [/(\d+)e\b/g, "$1イー"],
+    [/\bAir\b/g, "エアー"], [/\bSE\b/g, "エスイー"], [/\bDuo\b/g, "デュオ"], [/(\d+)e\b/g, "$1イー"], [/(\d+)a\b/g, "$1エー"], [/\bXL\b/g, "エックスエル"],
     [/(\d+)\s*GB/g, "$1ギガ"], [/(\d+)\s*TB/g, "$1テラ"], [/(\d),(?=\d{3})/g, "$1"], [/%/g, "パーセント"],
     [/−(\d)/g, "マイナス$1"], [/…/g, ""], [/○/g, "マル"], [/\s*\(第(\d)世代\)/g, "第$1世代"],
   ];

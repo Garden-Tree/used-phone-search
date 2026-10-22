@@ -13,7 +13,7 @@
  *   最安は出さない（3万円の行より安く見えて分かりにくいため）
  * DB は機種ごとの集計（groupBy と中央値の1行）だけ。在庫の行を丸ごと取らない
  */
-import { getModelMarket } from "@/lib/marketStats";
+import { getModelMarket, type ModelMarket } from "@/lib/marketStats";
 import { budgetLabel, budgetPath } from "@/lib/budgets";
 import { ALL_CATALOG_MODELS, modelPagePath } from "@/lib/catalog";
 import { storageLabel } from "@/lib/format";
@@ -27,7 +27,7 @@ export const SHORT_BUDGETS = [30000, 50000, 70000, 100000];
 /** 注目にする予算（固定のルール。4つの予算の2番目） */
 export const PICK_BUDGET = 50000;
 /** 相場が数件の在庫で決まらないように */
-const MIN_COUNT = 5;
+export const MIN_COUNT = 5;
 
 const man = (n: number) => n.toLocaleString();
 const yearOf = (model: string) => Number(specOf(model)?.released.replace("年", "") ?? 0);
@@ -37,24 +37,32 @@ const EXCLUDE = new Set(["iPhone SE (第2世代)"]);
 const isRecentEnough = (model: string) => yearOf(model) >= MIN_YEAR && !EXCLUDE.has(model);
 const utm = (date: string) => `utm_source=youtube&utm_medium=social&utm_campaign=shorts_${date.replace(/-/g, "")}_budget`;
 
-export async function buildBudgetScript(date: string): Promise<BudgetScript> {
-  const market = await getModelMarket(ALL_CATALOG_MODELS);
-  const cands = [...market].filter(([m, r]) => r.count >= MIN_COUNT && isRecentEnough(m));
-  const rows: (BudgetRow & { count: number })[] = [];
-  SHORT_BUDGETS.forEach((budget, i) => {
+/**
+ * 予算ごとの機種（budget・pixelbudget で共通の選び方）。cands は対象の機種と相場（在庫 MIN_COUNT 件以上に絞ったもの）、
+ * age は発売の新しさ（大きいほど新しい）。帯 (前の予算, 予算] で相場のいちばん高い機種（同じなら新しい方）、帯が空なら予算以下でいちばん新しい機種
+ */
+export function pickBudgetModels(cands: [string, ModelMarket][], age: (model: string) => number, what: string): { budget: number; model: string; r: ModelMarket }[] {
+  return SHORT_BUDGETS.map((budget, i) => {
     const prev = i > 0 ? SHORT_BUDGETS[i - 1] : 0;
     // 帯 (prev, budget] の中で相場のいちばん高い機種。同じ相場なら発売の新しい方
     const band = cands.filter(([, r]) => r.medianPrice > prev && r.medianPrice <= budget)
-      .sort(([a, ra], [b, rb]) => rb.medianPrice - ra.medianPrice || yearOf(b) - yearOf(a));
+      .sort(([a, ra], [b, rb]) => rb.medianPrice - ra.medianPrice || age(b) - age(a));
     // 帯が空なら前のルール（予算以下で発売年がいちばん新しい・同じ年なら相場の高い方）
     const fallback = cands.filter(([, r]) => r.medianPrice <= budget)
-      .sort(([a, ra], [b, rb]) => yearOf(b) - yearOf(a) || rb.medianPrice - ra.medianPrice);
+      .sort(([a, ra], [b, rb]) => age(b) - age(a) || rb.medianPrice - ra.medianPrice);
     const hit = band[0] ?? fallback[0];
-    if (!hit) throw new Error(`相場が ${budgetLabel(budget)} 以下の iOS 27 対応 iPhone がありません`);
+    if (!hit) throw new Error(`相場が ${budgetLabel(budget)} 以下の${what}がありません`);
     if (!band.length) console.warn(`注意: ${budgetLabel(budget)} の帯に機種がないので、予算以下で発売年のいちばん新しい機種にしました`);
-    const [model, r] = hit;
-    rows.push({ budget, label: budgetLabel(budget), model, storage: r.medianStorage ? storageLabel(r.medianStorage, model) : "", median: r.medianPrice, released: specOf(model)!.released, count: r.count });
+    return { budget, model: hit[0], r: hit[1] };
   });
+}
+
+export async function buildBudgetScript(date: string): Promise<BudgetScript> {
+  const market = await getModelMarket(ALL_CATALOG_MODELS);
+  const cands = [...market].filter(([m, r]) => r.count >= MIN_COUNT && isRecentEnough(m));
+  const rows: (BudgetRow & { count: number })[] = pickBudgetModels(cands, yearOf, " iOS 27 対応 iPhone ").map(({ budget, model, r }) => (
+    { budget, label: budgetLabel(budget), model, storage: r.medianStorage ? storageLabel(r.medianStorage, model) : "", median: r.medianPrice, released: specOf(model)!.released, count: r.count }
+  ));
   const { count, ...pickRow } = rows.find((r) => r.budget === PICK_BUDGET) ?? rows[0];
   const pick = { ...pickRow, count };
 

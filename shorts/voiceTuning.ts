@@ -7,14 +7,15 @@
  *    - 数字が「ニヒャク/ゴジュウ/ロクギガ」のように細かく切れる → 「ニヒャクゴジュウロクギガ」に（万・億の後は切ったまま）
  *    - 「アイフォンジュウ/ナナプロマックス」→「アイフォン/ジュウナナ/プロマックス」（ブランド・番号・Pro などを別の句に）
  *    - 「ネサガリ/シタ」→「ネサガリシタ」（「した」「します」を前の句につなぐ）
+ *    - 「ランク/シイ/ニ/スルト」→「ランクシイニ/スルト」（状態ランクの記号と助詞をつなぐ）
  * 3. 文ごとの手直し: script.json の narrationKana（AquesTalk 風の読み）を書いた場面は、それをそのまま使う
  */
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 
-/** 規則を変えたら上げる（声のキャッシュを作り直すため）。2: 長音のモーラを延ばす（10/21）。3: ギャラクシー・ピクセルを機種名の頭に（10/22） */
-export const TUNING_VERSION = 3;
+/** 規則を変えたら上げる（声のキャッシュを作り直すため）。2: 長音のモーラを延ばす（10/21）。3: ギャラクシー・ピクセルを機種名の頭に（10/22）。4: 「ランク＋A〜C・S」と続く助詞を1つの句に・機種名の頭と助詞を切らない（10/22） */
+export const TUNING_VERSION = 4;
 
 export type DictWord = { surface: string; pronunciation: string; accent_type: number; word_type?: string; priority?: number };
 const DICT_FILE = resolve(__dirname, "voice-dict.json");
@@ -60,6 +61,9 @@ const BRANDS: Record<string, string> = {
 };
 /** 番号の後ろにつく型名（長いものから） */
 const MODEL_SUFFIX = ["プロマックス", "プラス", "プロ", "エアア", "ミニ", "イイ"];
+/** 状態ランクの記号の読み（A・B・C・S）と、その後ろにつなぐ助詞 */
+const RANK_LETTER = new Set(["エイ", "ビイ", "シイ", "エス"]);
+const PARTICLE = new Set(["ト", "ノ", "ニ", "ガ", "ワ", "デ", "ナラ", "ヨリ", "モ", "オ"]);
 /** 前の句につなぐ「する」の形 */
 const SURU = new Set(["シタ", "シマシタ", "シテ", "スル", "シマス", "サレタ", "シテイマス"]);
 
@@ -95,7 +99,8 @@ export async function tuneKana(kana: string, kanaOf: (text: string) => Promise<s
   ps = ps.flatMap((p) => {
     const s = strip(p.raw);
     const brand = Object.keys(BRANDS).find((b) => s.startsWith(b) && s.length > b.length);
-    if (!brand) return [p];
+    // 後ろが助詞だけ（「ピクセルワ」）なら切らない（pixelbudget・10/22。切ると「ピ'_クセル/ワ'」と助詞だけの句になる）
+    if (!brand || PARTICLE.has(s.slice(brand.length))) return [p];
     const [, rest] = cut(p.raw, brand.length);
     return [{ raw: BRANDS[brand], sep: "/" }, { raw: rest, sep: p.sep }];
   });
@@ -130,6 +135,11 @@ export async function tuneKana(kana: string, kanaOf: (text: string) => Promise<s
         out[out.length - 1] = { raw: joinLast(prev.raw, p.raw), sep: p.sep };
         continue;
       }
+      // 「プロエ'ッ_クス/エ'ル」（Pixel の Pro XL・10/22）: XL は1語なので「エル」を前の句につなぐ
+      if (b === "エル" && a.endsWith("エックス")) {
+        out[out.length - 1] = { raw: joinLast(prev.raw, p.raw), sep: p.sep };
+        continue;
+      }
       if (SURU.has(b)) {
         out[out.length - 1] = { raw: joinSuru(prev.raw, p.raw), sep: p.sep };
         continue;
@@ -137,7 +147,24 @@ export async function tuneKana(kana: string, kanaOf: (text: string) => Promise<s
     }
     out.push({ ...p });
   }
-  return build(out);
+  // 6) 状態ランク（rank・10/22）: 「ラ'ン_ク/シ'イ/ニ'/スルト'」と1字ずつ切れるので、ランク＋記号（A・B・C・S）を1つの句に、続く助詞もつなぐ → 「ランクシ'イニ/スルト'」
+  const ranked: Phrase[] = [];
+  for (const p of out) {
+    const prev = ranked[ranked.length - 1];
+    const b = strip(p.raw);
+    if (prev && prev.sep === "/" && strip(prev.raw) === "ランク" && RANK_LETTER.has(b)) {
+      ranked[ranked.length - 1] = { raw: joinLast(prev.raw, p.raw), sep: p.sep };
+      continue;
+    }
+    // 機種名の頭（ピクセル）の後ろの助詞もつなぐ: 「ピ'_クセル/ニ'」→「ピ'_クセルニ」
+    const joinable = (RANK_LETTER.has(strip(prev?.raw ?? "").replace(/^ランク/, "")) && strip(prev?.raw ?? "").startsWith("ランク")) || strip(prev?.raw ?? "") in BRANDS;
+    if (prev && prev.sep === "/" && joinable && PARTICLE.has(b)) {
+      ranked[ranked.length - 1] = { raw: prev.raw + p.raw.replace(/'/g, ""), sep: p.sep };
+      continue;
+    }
+    ranked.push({ ...p });
+  }
+  return build(ranked);
 }
 
 // ---- 長音（10/21）: 「ジュウ」「パア」「ソオ」の伸ばす音が短すぎて「じゅよん」「ぱせんと」と聞こえる ----

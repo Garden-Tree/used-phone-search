@@ -15,6 +15,10 @@ npx tsx shorts/make-short.tsx provs plan            # Proと無印の差のテ�
 npx tsx shorts/make-short.tsx provs render
 npx tsx shorts/make-short.tsx fold plan             # 折りたたみの1世代前の差のテーマ（shorts/out/<日付>-fold/。型 A だけ）
 npx tsx shorts/make-short.tsx fold render
+npx tsx shorts/make-short.tsx pixelbudget plan      # 予算ぴったりで買える中古Pixel（shorts/out/<日付>-pixelbudget/。型 A だけ）
+npx tsx shorts/make-short.tsx pixelbudget render
+npx tsx shorts/make-short.tsx rank plan             # 状態ランク A と C の差のテーマ（shorts/out/<日付>-rank/。型 A だけ）
+npx tsx shorts/make-short.tsx rank render
 npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
 npx tsx shorts/make-short.tsx drops render --no-voice  # VOICEVOX の声を入れない
@@ -26,7 +30,7 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 
 - `drops`: 今週いちばん値下がりした中古iPhone（型 A・B・C）
 - `budget`: 予算ぴったりで買える中古iPhone（型 A だけ・約35秒）
-- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs・fold は 青山龍星（ノーマル・1.25倍。クレジット「VOICEVOX:青山龍星」）
+- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs・fold は 青山龍星（ノーマル・1.25倍。クレジット「VOICEVOX:青山龍星」）、pixelbudget は 春日部つむぎ、rank は ずんだもん（ノーマル・1.25倍・口調は です・ます。クレジット「VOICEVOX:ずんだもん」）
   - 3万・5万・7万・10万円ごとに、相場（getModelMarket＝在庫がいちばん多い容量の中央値）が帯（0〜3万・3万超〜5万・5万超〜7万・7万超〜10万）に入る iPhone（iPhone 12 シリーズ以降と SE (第3世代)。11 系・SE (第2世代) は古すぎるので出さない・在庫5件以上）のうち、相場がいちばん高い機種。同じ相場なら発売の新しい方。帯が空なら「予算以下で発売年がいちばん新しい機種」
   - 注目は5万円の行（固定）。出すのは相場（容量つき）と在庫数だけ。最安は出さない（3万円の行より安く見えて分かりにくい）
   - 場面 hook（問い＋予算の札）→ ranking（4行。「○万円なら」の声に合わせて上から）→ reveal（注目）→ comment → outro（「あなたの予算なら…？」）
@@ -47,6 +51,20 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
   - ナレーション: ranking「3位は<新>から<旧（Galaxy Z・Pixel を外す）>、<容量>。差は<額>です。」・reveal「1位は<新>から<旧>。1世代前にすると、約<X.X>万円、およそ<Y>%安くなります。」
   - 読み: Galaxy→ギャラクシー・Z→ゼット・Fold→フォールド・Flip→フリップ・Pixel→ピクセル（`voice.ts` の speakable）。ギャラクシー・ピクセルは機種名の頭として切る（`voiceTuning.ts` の BRANDS。切らないと「ピクセルジュウ/イチプロ…」で11が「10・1」に聞こえた）
   - 説明欄のリンクは1位の1世代前（安い方）の機種ページ。utm の campaign の末尾は `_fold`。ハッシュタグ #折りたたみスマホ #Galaxy #Pixel
+
+- `pixelbudget`: 予算ぴったりで買える中古Pixel（型 A だけ・約38秒。10/22〜）
+  - budget と同じ選び方・同じ場面（`themes/budget.ts` の `pickBudgetModels` を共有。台本の型も BudgetScript で theme が "pixelbudget"）。対象は `lib/pixelCatalog.ts` の Pixel のうち、Google のアップデート保証が作成月の時点で終わっていない機種（10/22 は Pixel 6・6 Pro を除外）。同じ相場なら販売開始の新しい方
+  - この回の切り口: 各行と注目にアップデート保証の終わり（`updateUntil`。販売開始から5年／7年）を出す。注目のナレーションは在庫数の代わりに「アップデートは<年月>までです。」
+  - 説明欄のリンクは注目の機種ページ・/pixel/budget/under-50000・/pixel。utm の campaign の末尾は `_pixelbudget`。ハッシュタグ #Pixel #中古スマホ
+  - 読み: 「8a」→「ハチエー」（speakable の `(\d+)a`）、「XL」→「エックスエル」（ユーザー辞書＋ voiceTuning で「エル」を前の句につなぐ）、「Pixelは」「Pixelに」は機種名の頭で切らない
+
+- `rank`: 状態ランクでいくら違う？中古iPhone（型 A だけ・約39秒。10/22〜）
+  - iPhone 13〜16 の無印と Pro（`themes/rank.ts` の MODELS）で、在庫がいちばん多い容量のランク A・B・C（各店の表記を大文字にそろえる。S＝未使用品・D・ジャンク・不明は除く）の相場（中央値）を比べ、A − C の差額の大きい順。率は A の相場に対して。A・B・C のどれかが在庫5件未満の機種と、差が0以下の機種は出さない。3機種未満なら止まる
+  - 場面 hook → ranking（3位・2位・伏せた1位。下段は容量・−差額・−率）→ reveal（ランク A・B・C の3本の棒と件数・A→C の差額と率）→ comment → outro（「あなたならランクA？C？」）。下の注記は「ランクは各店の表記・同じ容量の中央値」
+  - ナレーション: ranking「3位は<機種>、<容量>。ランクAより、ランクCが<額>安いです。」・reveal「1位は<機種>。ランクCにすると、約<X.X>万円、およそ<Y>%安くなります。」（容量は画面だけ。読むと40秒を超えた）
+  - 読み: 「ランクAとC」は「ラ'ンク/エ'イ/ト'/シ'イ」と1字ずつ切れるので、「ランクA」「ランクC」と書き、`voiceTuning.ts` の 6 で「ランク＋記号」と続く助詞を1つの句にする
+  - ひと言の下書き「ランクの差は主に／外装の傷なので／電池は別に見ましょう」（サイトの説明「状態ランクは外装の傷の話」と同じ）。ランクの基準は店ごとに違い、ランクごとに店の顔ぶれも違う（説明欄に書く）
+  - 説明欄のリンクは1位の機種ページ（ランク別の最安値の表がある）。utm の campaign の末尾は `_rank`
 
 `--no-bgm`（どのテーマでも）: BGM を入れずに書き出す（声と効果音だけ。声のコンプレッサー・効果音の下げ方・-11 LUFS の2パスは同じ）。出力は `short-<型>-nobgm.mp4` と `youtube-nobgm.txt`（BGM のクレジットなし）で、BGM 入りの版は上書きしない。YouTube のスマホアプリで投稿し、「音源を追加」で流行りの曲を付けるとき用（曲の音量はアプリで下げる）。
 
