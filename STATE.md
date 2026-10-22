@@ -52,7 +52,7 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube: ショート6本（比較は数日後）。横動画は画面の土台まで（longform/README.md）
+1. YouTube: ショート8本（比較は数日後）。横動画は画面の土台まで（longform/README.md）
 2. X の日々の運用（ideas/x-posts）
 ```
 
