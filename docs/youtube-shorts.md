@@ -15,13 +15,14 @@
 ## 毎週の作り方
 
 ```
-npx tsx shorts/make-short.tsx <drops|budget|newused|provs> plan     # 台本 script.json（--force で作り直し）
+npx tsx shorts/make-short.tsx <drops|budget|newused|provs|fold> plan     # 台本 script.json（--force で作り直し）
 # script.json の scenes.comment.lines（検品担当のひと言・3行×16字まで）をユーザーと決めて書き換える
-npx tsx shorts/make-short.tsx <drops|budget|newused|provs> render   # drops は short-A/B/C.mp4（--variant A|B|C で1つだけ）、budget・newused・provs は short-A.mp4
+npx tsx shorts/make-short.tsx <drops|budget|newused|provs|fold> render   # drops は short-A/B/C.mp4（--variant A|B|C で1つだけ）、ほかは short-A.mp4
+npx tsx shorts/make-short.tsx <テーマ> render --no-bgm   # BGM なしの short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）。YouTube アプリの「音源を追加」で流行りの曲を付ける用
 ```
 
-- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs は 青山龍星（ノーマル・1.25倍・10/21〜・provs は 10/22〜）。
-- テーマ: drops（値下がりランキング）／budget（予算ぴったりで買える中古iPhone・帯ごとに相場がいちばん高い機種・iPhone 12 シリーズ以降と SE 第3世代・10/21〜）／newused（新品より中古でいくら安い？・Apple 公式の新品価格と同じ容量の中古の相場の差額ランキング・10/21〜）／provs（Proと無印、同じ容量でいくら違う？・iPhone 13〜17 の無印と Pro の同じ容量の相場の差額ランキング・10/22〜）。選び方は `shorts/README.md`。
+- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs・fold は 青山龍星（ノーマル・1.25倍・10/21〜・provs・fold は 10/22〜）。
+- テーマ: drops（値下がりランキング）／budget（予算ぴったりで買える中古iPhone・帯ごとに相場がいちばん高い機種・iPhone 12 シリーズ以降と SE 第3世代・10/21〜）／newused（新品より中古でいくら安い？・Apple 公式の新品価格と同じ容量の中古の相場の差額ランキング・10/21〜）／provs（Proと無印、同じ容量でいくら違う？・iPhone 13〜17 の無印と Pro の同じ容量の相場の差額ランキング・10/22〜）／fold（折りたたみスマホ、1世代前にするといくら安い？・Galaxy Z Fold／Flip・Pixel Pro Fold の連続する2世代の同じ容量の相場の差額ランキング・10/22〜）。選び方は `shorts/README.md`。
 - 同じテーマ・同じデータのショートを同じ日に2本出さない。
 - 出力先は `shorts/out/<日付>-<テーマ>/`。`youtube.txt` にタイトル・説明文・ハッシュタグが入っている。
 - 投稿は手動で、YouTube に出したものを X にも出す。Claude が Chrome で投稿するときは、直前にユーザーの確認をとる。
@@ -42,8 +43,8 @@ npx tsx shorts/make-short.tsx <drops|budget|newused|provs> render   # drops は 
 - **クレジット**: 声を使った動画は、説明文に「VOICEVOX:キャラクター名」（既定は「VOICEVOX:春日部つむぎ」）を入れる。`youtube.txt` に自動で入る。
 - **規約（要確認）**: VOICEVOX はキャラクター（話者）ごとに利用規約が別にある。ずんだもん・四国めたんはクレジット表記があれば商用利用できるとされるが、細かい条件は各キャラクターの規約で要確認。**話者を変えるときは、そのキャラクターの規約を読んでから使う。**
   - 春日部つむぎ（全テーマの標準の声・10/21〜）: 公式の規約（https://tsumugi-official.studio.site/rule ・10/21 確認）で、VOICEVOX の声は商用・非商用ともに利用可。条件はクレジット「VOICEVOX:春日部つむぎ」を動画内か概要欄などに書くこと（自動で入る）。禁止は誹謗中傷・第三者に不快感や権利侵害・特定の思想や団体に関わるもの・二次配布など。規約は予告なく変わるので、毎月1日の見直しで開き直す。
-  - 青山龍星（newused・provs の声・10/21〜）: 規約（https://www.virvoxproject.com/voicevoxの利用規約 ・10/21 確認）で、個人はクレジット「VOICEVOX:青山龍星」を書けば商用利用できる（自動で入る）。**法人が関わる利用は、事前に ななはぴ への確認が要る**。毎月1日の見直しで開き直す。
-- 話者はテーマごとに変えられる（`shorts/make-short.tsx` の `THEME_SPEAKER`。drops・budget は 春日部つむぎ、newused・provs は 青山龍星）。名前で指定し、ID はエンジンから引く。
+  - 青山龍星（newused・provs・fold の声・10/21〜）: 規約（https://www.virvoxproject.com/voicevoxの利用規約 ・10/21 確認）で、個人はクレジット「VOICEVOX:青山龍星」を書けば商用利用できる（自動で入る）。**法人が関わる利用は、事前に ななはぴ への確認が要る**。毎月1日の見直しで開き直す。
+- 話者はテーマごとに変えられる（`shorts/make-short.tsx` の `THEME_SPEAKER`。drops・budget は 春日部つむぎ、newused・provs・fold は 青山龍星）。名前で指定し、ID はエンジンから引く。
 
 ## 3パターンの比較
 

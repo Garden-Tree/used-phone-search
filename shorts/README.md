@@ -13,6 +13,9 @@ npx tsx shorts/make-short.tsx newused plan          # 新品と中古の差の�
 npx tsx shorts/make-short.tsx newused render
 npx tsx shorts/make-short.tsx provs plan            # Proと無印の差のテーマ（shorts/out/<日付>-provs/。型 A だけ）
 npx tsx shorts/make-short.tsx provs render
+npx tsx shorts/make-short.tsx fold plan             # 折りたたみの1世代前の差のテーマ（shorts/out/<日付>-fold/。型 A だけ）
+npx tsx shorts/make-short.tsx fold render
+npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
 npx tsx shorts/make-short.tsx drops render --no-voice  # VOICEVOX の声を入れない
 npx tsx shorts/make-short.tsx --voice-test "今週いちばん値下がりした中古iPhoneは？"   # 声だけ試す（shorts/out/voice-test.wav）。--speaker 3 / --speaker ずんだもん/ノーマル・--speed 1.25
@@ -23,7 +26,7 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 
 - `drops`: 今週いちばん値下がりした中古iPhone（型 A・B・C）
 - `budget`: 予算ぴったりで買える中古iPhone（型 A だけ・約35秒）
-- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs は 青山龍星（ノーマル・1.25倍。クレジット「VOICEVOX:青山龍星」）
+- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs・fold は 青山龍星（ノーマル・1.25倍。クレジット「VOICEVOX:青山龍星」）
   - 3万・5万・7万・10万円ごとに、相場（getModelMarket＝在庫がいちばん多い容量の中央値）が帯（0〜3万・3万超〜5万・5万超〜7万・7万超〜10万）に入る iPhone（iPhone 12 シリーズ以降と SE (第3世代)。11 系・SE (第2世代) は古すぎるので出さない・在庫5件以上）のうち、相場がいちばん高い機種。同じ相場なら発売の新しい方。帯が空なら「予算以下で発売年がいちばん新しい機種」
   - 注目は5万円の行（固定）。出すのは相場（容量つき）と在庫数だけ。最安は出さない（3万円の行より安く見えて分かりにくい）
   - 場面 hook（問い＋予算の札）→ ranking（4行。「○万円なら」の声に合わせて上から）→ reveal（注目）→ comment → outro（「あなたの予算なら…？」）
@@ -37,6 +40,15 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
   - 1位の無印を1つ上の容量（在庫5件以上）にしたときの相場の差を `scenes.upgrade` に入れ、1位の発表と説明欄に出す（在庫が足りなければ出さない）
   - 場面 hook → ranking（3位・2位・伏せた1位。行は「iPhone 16／16 Pro」・容量・+差額・+率）→ reveal（無印と Pro の2本の棒・差額と率・容量を上げたときの差）→ comment → outro（「あなたはPro派？無印派？」）
   - ナレーション: ranking「3位は<無印>と<番号 Pro>、<容量>。差は<額>です。」・reveal「1位は<無印>と<番号 Pro>。Proにすると、約<X.X>万円、およそ<Y>%高くなります。」
+
+- `fold`: 折りたたみスマホ、1世代前にするといくら安い？（型 A だけ・約36秒。10/22〜）
+  - 連続する2世代の組（`themes/fold.ts` の PAIRS: Galaxy Z Fold8→7・7→6・6→5、Galaxy Z Flip8→7・7→6・6→5、Pixel 11 Pro Fold→10 Pro Fold・10→9 Pro Fold）で、両方に在庫5件以上ある容量のうちいちばん小さい容量の相場（中央値）どうしを比べ、差額（新しい方 − 1世代前）の大きい順。率は新しい方の相場に対して。差が0以下の組は出さない。3組未満なら止まる
+  - 場面 hook → ranking（3位・2位・伏せた1位。行は「Galaxy Z Fold8／Fold7」・容量・−差額・−率）→ reveal（新しい方と1世代前の2本の棒・差額と率）→ comment → outro（「最新と1世代前、どっちにする？」）
+  - ナレーション: ranking「3位は<新>から<旧（Galaxy Z・Pixel を外す）>、<容量>。差は<額>です。」・reveal「1位は<新>から<旧>。1世代前にすると、約<X.X>万円、およそ<Y>%安くなります。」
+  - 読み: Galaxy→ギャラクシー・Z→ゼット・Fold→フォールド・Flip→フリップ・Pixel→ピクセル（`voice.ts` の speakable）。ギャラクシー・ピクセルは機種名の頭として切る（`voiceTuning.ts` の BRANDS。切らないと「ピクセルジュウ/イチプロ…」で11が「10・1」に聞こえた）
+  - 説明欄のリンクは1位の1世代前（安い方）の機種ページ。utm の campaign の末尾は `_fold`。ハッシュタグ #折りたたみスマホ #Galaxy #Pixel
+
+`--no-bgm`（どのテーマでも）: BGM を入れずに書き出す（声と効果音だけ。声のコンプレッサー・効果音の下げ方・-11 LUFS の2パスは同じ）。出力は `short-<型>-nobgm.mp4` と `youtube-nobgm.txt`（BGM のクレジットなし）で、BGM 入りの版は上書きしない。YouTube のスマホアプリで投稿し、「音源を追加」で流行りの曲を付けるとき用（曲の音量はアプリで下げる）。
 
 テーマを足すときは、`types.ts` に台本の型、`themes/` に「データ → 台本」、`voice.ts` に既定のナレーション、`scenes.tsx` に場面、`make-short.tsx` の `THEMES`・`THEME_SPEAKER` を足す。
 同じテーマ・同じデータのショートを同じ日に2本出さない（ほぼ同じ内容は勧められにくい）。

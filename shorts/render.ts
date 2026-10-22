@@ -58,8 +58,10 @@ type Voices = { clips: Partial<Record<NarrationKey, Clip>>; ranking?: { clip: Cl
 const RANK_VOICE_AT = 0.3;
 const RANK_LEAD = 0.15;
 
-async function renderOne(dir: string, script: Script, variant: Variant, fonts: Awaited<ReturnType<typeof notoSansJp>>, keepFrames: boolean, voices: Voices) {
-  const framesDir = join(dir, `frames-${variant}`);
+async function renderOne(dir: string, script: Script, variant: Variant, fonts: Awaited<ReturnType<typeof notoSansJp>>, keepFrames: boolean, voices: Voices, useBgm = true) {
+  // BGM なし（--no-bgm）は別の名前（short-A-nobgm.mp4）。BGM 入りの版を上書きしない
+  const suffix = useBgm ? "" : "-nobgm";
+  const framesDir = join(dir, `frames-${variant}${suffix}`);
   rmSync(framesDir, { recursive: true, force: true });
   // 声のある場面は、声の長さ＋間より短ければ延ばす（延びた分は最後のコマを止める）。声は場面の頭から。
   // ランキングは文ごとの声を続けて流し、各行は「○位は」の声の始まる RANK_LEAD 秒前に出す
@@ -144,7 +146,7 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
   // 声の間は効果音と BGM を下げ、声があるときだけ全体を -11 LUFS にそろえる（10/21 ユーザーの指示「音圧を大きく、特に声」）。
   // 声はコンプレッサーで粒をそろえて持ち上げ、BGM は声の有無で上げ下げせず 4% で一定（声の切れ目で一瞬大きくなるのをやめた。10/21）。YouTube は再生時に -14 前後へ下げるので、効くのは「声と BGM の差」と声の密度
   const bgm = resolve(__dirname, "assets/bgm.mp3");
-  const hasBgm = existsSync(bgm);
+  const hasBgm = useBgm && existsSync(bgm);
   const duck = (normal: number, low: number) =>
     segVoices.length ? `if(${segVoices.map((v) => `between(t,${v.at.toFixed(3)},${(v.at + v.dur).toFixed(3)})`).join("+")},${low},${normal})` : String(normal);
   const inputs = ["-f", "concat", "-safe", "0", "-i", list, "-f", "lavfi", "-t", String(total), "-i", "anullsrc=r=44100:cl=stereo"];
@@ -169,7 +171,7 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
     next++;
   });
   parts.push(`${mix.join("")}amix=inputs=${mix.length}:duration=first:normalize=0[a]`);
-  const out = join(dir, `short-${variant}.mp4`);
+  const out = join(dir, `short-${variant}${suffix}.mp4`);
   if (!segVoices.length) {
     // 声がなければ今まで通り（音量はそろえない）
     run(["-y", ...inputs, "-filter_complex", parts.join(";"), "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-t", String(total), "-movflags", "+faststart", out]);
@@ -270,17 +272,21 @@ async function prepareVoices(dir: string, script: Script, useVoicevox: boolean):
   return { voices, credit };
 }
 
-/** variant を省略するとテーマの全部の型（drops は A・B・C、budget は A）を作る。voice=false で VOICEVOX を使わない（--no-voice） */
-export async function renderShort(dir: string, script: Script, keepFrames: boolean, variant: Variant | "all" = "all", voice = true) {
+/**
+ * variant を省略するとテーマの全部の型（drops は A・B・C、budget は A）を作る。voice=false で VOICEVOX を使わない（--no-voice）。
+ * bgm=false（--no-bgm）は BGM を入れず（声と効果音だけ・音量の決め方は同じ）、short-<型>-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）を書く。
+ * YouTube アプリの「音源を追加」で流行りの曲を付けて投稿する用
+ */
+export async function renderShort(dir: string, script: Script, keepFrames: boolean, variant: Variant | "all" = "all", voice = true, bgm = true) {
   const fonts = await notoSansJp(allText(script) + readFileSync(join(__dirname, "scenes.tsx"), "utf8") + "0123456789,.%");
   const { voices, credit } = await prepareVoices(dir, script, voice);
   const outs: string[] = [];
-  for (const v of variant === "all" ? variantsOf(script) : [variant]) outs.push(await renderOne(dir, script, v, fonts, keepFrames, voices));
+  for (const v of variant === "all" ? variantsOf(script) : [variant]) outs.push(await renderOne(dir, script, v, fonts, keepFrames, voices, bgm));
   const y = script.youtube;
   // VOICEVOX の声を使ったときは、説明文の最後にクレジット（例「VOICEVOX:春日部つむぎ」）を必ず入れる。BGM があれば曲のクレジットも
-  const credits = [credit, bgmCredit()].filter(Boolean) as string[];
+  const credits = [credit, bgm ? bgmCredit() : null].filter(Boolean) as string[];
   const description = credits.length ? `${y.description}\n\n${credits.join("\n")}` : y.description;
-  writeFileSync(join(dir, "youtube.txt"), `${y.title}\n\n${description}\n\n${y.hashtags.join(" ")}\n`);
-  if (credits.length) console.log(`youtube.txt に「${credits.join("」「")}」を入れました`);
+  writeFileSync(join(dir, bgm ? "youtube.txt" : "youtube-nobgm.txt"), `${y.title}\n\n${description}\n\n${y.hashtags.join(" ")}\n`);
+  if (credits.length) console.log(`${bgm ? "youtube.txt" : "youtube-nobgm.txt"} に「${credits.join("」「")}」を入れました`);
   return outs;
 }

@@ -1,8 +1,9 @@
 /**
  * YouTube ショート（縦 1080x1920・約40秒）を、サイトの相場と同じ数字で作る
- *   npx tsx shorts/make-short.tsx <drops|budget|newused|provs> plan [--force]                     … 台本 JSON を作る（shorts/out/<日付>-<テーマ>/script.json）
- *   npx tsx shorts/make-short.tsx <drops|budget|newused|provs> render [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice]  … 台本から short-*.mp4 と youtube.txt を作る
- * テーマ: drops＝今週いちばん値下がりした中古iPhone（型 A・B・C）/ budget＝予算ぴったりで買える中古iPhone / newused＝新品より中古でいくら安い？ / provs＝Proと無印、同じ容量でいくら違う？（drops 以外は型 A だけ）
+ *   npx tsx shorts/make-short.tsx <drops|budget|newused|provs|fold> plan [--force]                     … 台本 JSON を作る（shorts/out/<日付>-<テーマ>/script.json）
+ *   npx tsx shorts/make-short.tsx <drops|budget|newused|provs|fold> render [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm]  … 台本から short-*.mp4 と youtube.txt を作る
+ * テーマ: drops＝今週いちばん値下がりした中古iPhone（型 A・B・C）/ budget＝予算ぴったりで買える中古iPhone / newused＝新品より中古でいくら安い？ / provs＝Proと無印、同じ容量でいくら違う？ / fold＝折りたたみスマホ、1世代前にするといくら安い？（drops 以外は型 A だけ）
+ * --no-bgm: BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）。YouTube アプリの「音源を追加」で流行りの曲を付けて投稿する用
  *   npx tsx shorts/make-short.tsx --voice-test "テキスト" [--speaker 8|春日部つむぎ/ノーマル] [--speed 1.25]  … VOICEVOX の声だけ試す（shorts/out/voice-test.wav）
  *   npx tsx shorts/make-short.tsx --voice-dump "テキスト"|script [--dir <フォルダ>] [--speaker …]  … 読み（アクセント句）の直す前と後を出す（script は最後に作った台本）
  * 声（VOICEVOX）は任意。アプリが起動していなければ声なしで書き出す（shorts/voice.ts）
@@ -16,6 +17,7 @@ import { buildDropsScript } from "./themes/drops";
 import { buildBudgetScript } from "./themes/budget";
 import { buildNewUsedScript } from "./themes/newused";
 import { buildProVsScript } from "./themes/provs";
+import { buildFoldScript } from "./themes/fold";
 import { renderShort } from "./render";
 import type { Script } from "./types";
 import { DEFAULT_SPEAKER, DEFAULT_SPEED, VOICEVOX_URL, defaultNarration, engineAvailable, narrationOf, resolveSpeaker, speakable, synthesize, tunedQuery, voiceCredit } from "./voice";
@@ -29,20 +31,20 @@ const opt = (name: string) => {
 };
 const OUT = resolve(__dirname, "out");
 const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
-const THEMES = ["drops", "budget", "newused", "provs"] as const;
+const THEMES = ["drops", "budget", "newused", "provs", "fold"] as const;
 /**
  * テーマごとの声。drops・budget は 春日部つむぎ（ノーマル）＝ DEFAULT_SPEAKER（10/21 ユーザーの指示。1本目の drops は ずんだもんだった）。
- * newused・provs は 青山龍星（ノーマル）（10/21・10/22 ユーザーの指示。この PC では ID 13）。
+ * newused・provs・fold は 青山龍星（ノーマル）（10/21・10/22 ユーザーの指示。この PC では ID 13）。
  * 名前で指定するので、ID はエンジン（GET /speakers）から引く。クレジットは render がキャラクター名から自動で入れる
  */
-const THEME_SPEAKER: Record<(typeof THEMES)[number], number | string> = { drops: DEFAULT_SPEAKER, budget: DEFAULT_SPEAKER, newused: "青山龍星/ノーマル", provs: "青山龍星/ノーマル" };
+const THEME_SPEAKER: Record<(typeof THEMES)[number], number | string> = { drops: DEFAULT_SPEAKER, budget: DEFAULT_SPEAKER, newused: "青山龍星/ノーマル", provs: "青山龍星/ノーマル", fold: "青山龍星/ノーマル" };
 
 async function plan() {
   const dir = join(OUT, `${today}-${theme}`);
   const file = join(dir, "script.json");
   if (existsSync(file) && !flag("force")) throw new Error(`${file} はすでにあります（上書きするなら --force。コメントを直した後は上書きしないでください）`);
   const built: Script = theme === "budget" ? await buildBudgetScript(today) : theme === "newused" ? await buildNewUsedScript(today)
-    : theme === "provs" ? await buildProVsScript(today) : await buildDropsScript(today);
+    : theme === "provs" ? await buildProVsScript(today) : theme === "fold" ? await buildFoldScript(today) : await buildDropsScript(today);
   // ナレーションの下書き（全場面・台本の数字だけ）と声の設定。comment は narration から消せば comment.lines を読む（直した lines が声にも反映）
   const { comment: _c, ...narration } = defaultNarration(built);
   void _c;
@@ -61,6 +63,8 @@ async function plan() {
     script.scenes.ranking.items.forEach((r, i) => console.log(`  ${i + 1}. ${r.base}／${r.pro}（${r.storage}・在庫${r.baseCount}件／${r.proCount}件） ${r.baseMedian.toLocaleString()}円 → ${r.proMedian.toLocaleString()}円（+${r.diff.toLocaleString()}円・+${r.pct.toFixed(1)}%）`));
     const u = script.scenes.upgrade;
     console.log(u ? `容量を上げると: ${u.model} ${u.from}→${u.to} +${u.diff.toLocaleString()}円` : "容量を上げる差: なし");
+  } else if (script.theme === "fold") {
+    script.scenes.ranking.items.forEach((r, i) => console.log(`  ${i + 1}. ${r.newer}→${r.older}（${r.storage}・在庫${r.newerCount}件／${r.olderCount}件） ${r.newerMedian.toLocaleString()}円 → ${r.olderMedian.toLocaleString()}円（−${r.diff.toLocaleString()}円・−${r.pct.toFixed(1)}%）`));
   } else {
     const s = script.scenes;
     console.log(`1位 ${s.hook.model}（${s.hook.storage}） −${s.hook.drop.toLocaleString()}円 / 比較 ${script.fromDate}〜${script.toDate} / ${script.shopCount}店 / 推移 ${s.trend.points.length}点`);
@@ -85,7 +89,7 @@ async function render() {
   const t0 = Date.now();
   const v = (opt("variant") ?? "all").toUpperCase();
   if (!["A", "B", "C", "ALL"].includes(v)) throw new Error("--variant は A・B・C・all のどれか");
-  const outs = await renderShort(dir, script, flag("keep-frames"), v === "ALL" ? "all" : (v as "A" | "B" | "C"), !flag("no-voice"));
+  const outs = await renderShort(dir, script, flag("keep-frames"), v === "ALL" ? "all" : (v as "A" | "B" | "C"), !flag("no-voice"), !flag("no-bgm"));
   console.log(`書き出し: ${outs.join(", ")}（${Math.round((Date.now() - t0) / 1000)} 秒）`);
 }
 
@@ -147,7 +151,7 @@ async function main() {
   const vt = opt("voice-test");
   if (vt !== undefined) return voiceTest(vt);
   if (!THEMES.includes(theme as (typeof THEMES)[number]) || (step !== "plan" && step !== "render")) {
-    throw new Error("使い方: npx tsx shorts/make-short.tsx <drops|budget|newused|provs> <plan|render> [--force] [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice]\n      npx tsx shorts/make-short.tsx --voice-test \"テキスト\" [--speaker 3] [--speed 1.25]\n      npx tsx shorts/make-short.tsx --voice-dump \"テキスト\"|script [--dir <フォルダ>]");
+    throw new Error("使い方: npx tsx shorts/make-short.tsx <drops|budget|newused|provs|fold> <plan|render> [--force] [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm]\n      npx tsx shorts/make-short.tsx --voice-test \"テキスト\" [--speaker 3] [--speed 1.25]\n      npx tsx shorts/make-short.tsx --voice-dump \"テキスト\"|script [--dir <フォルダ>]");
   }
   await (step === "plan" ? plan() : render());
 }

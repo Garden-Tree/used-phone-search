@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・newused・provs）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・newused・provs・fold）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -100,4 +100,24 @@ export type ProVsScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript;
+/**
+ * fold の1行: 折りたたみスマホの連続する2世代（新しい方 → 1世代前）を、同じ容量の中古の相場（中央値）で比べる（shorts/themes/fold.ts）。
+ * diff = 新しい方の相場 − 1世代前の相場、pct = diff / 新しい方の相場（%・小数1桁）
+ */
+export type FoldRow = {
+  newer: string; older: string; storage: string; storageGb: number;
+  newerMedian: number; olderMedian: number; newerCount: number; olderCount: number; diff: number; pct: number;
+};
+
+/** テーマ fold「折りたたみスマホ、1世代前にするといくら安い？」 */
+export type FoldScript = Common & {
+  theme: "fold";
+  scenes: {
+    /** 場面 ranking（3位・2位・伏せた1位）と reveal（1位）。差額の大きい順（items[0] が1位） */
+    ranking: { items: FoldRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript;

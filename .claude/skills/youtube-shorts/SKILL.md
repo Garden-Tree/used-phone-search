@@ -5,7 +5,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 
 # YouTube ショートの作り方（@used_gadelog）
 
-週1本。テーマを回す: **drops**（今週いちばん値下がりした中古iPhone のランキング）・**budget**（予算ぴったりで買える中古iPhone。10/21〜）・**newused**（新品より中古でいくら安い？ 10/21〜）・**provs**（Proと無印、同じ容量でいくら違う？ 10/22〜）。
+週1本。テーマを回す: **drops**（今週いちばん値下がりした中古iPhone のランキング）・**budget**（予算ぴったりで買える中古iPhone。10/21〜）・**newused**（新品より中古でいくら安い？ 10/21〜）・**provs**（Proと無印、同じ容量でいくら違う？ 10/22〜）・**fold**（折りたたみスマホ、1世代前にするといくら安い？ 10/22〜）。
 チャンネルの説明「値下がりランキングや予算別のおすすめ」に合わせる。
 仕組みの説明は `shorts/README.md` と `docs/youtube-shorts.md`。記録は `ideas/YYYY-MM-DD.md`。報告は日本語。
 このスキルの「決まっていること」は、10/21 にユーザーと何度も作り直して決めたもの。**勝手に元に戻さない**。
@@ -15,16 +15,17 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 1. **準備**
    - VOICEVOX アプリが起動しているか確かめる: `curl -s http://127.0.0.1:50021/version`。起動していなければ、ユーザーに起動を頼む。声なしで作らない。
    - BGM `shorts/assets/bgm.mp3` があるか確かめる。git には入らないので、別の PC では置き直す。
-2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|newused|provs> plan`
+2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|newused|provs|fold> plan`
    - `shorts/out/<日付>-<テーマ>/script.json` ができる（すでにあれば止まる。上書きは `--force`）。
-   - drops: 1〜3位。budget: 予算（3万・5万・7万・10万円）ごとの機種と相場、注目（5万円の行）の最安・在庫数。newused: 新品と中古の相場の差の1〜3位（候補の全機種も出る）。provs: 無印と Pro の相場の差の1〜3位（候補の全組と、1位の無印の容量を上げたときの差も出る）。
+   - drops: 1〜3位。budget: 予算（3万・5万・7万・10万円）ごとの機種と相場、注目（5万円の行）の最安・在庫数。newused: 新品と中古の相場の差の1〜3位（候補の全機種も出る）。provs: 無印と Pro の相場の差の1〜3位（候補の全組と、1位の無印の容量を上げたときの差も出る）。fold: 折りたたみの新しい方と1世代前の相場の差の1〜3位（候補の全組も出る）。
    - 検品担当のひと言（`comment.lines`）、ナレーション、説明文を確かめる。
    - ひと言は下書き。古めの機種ならバッテリーと状態ランク、のように中身に合わせて直す。
 3. **読みを確かめる**: `npx tsx shorts/make-short.tsx --voice-dump script`（最後に書いた台本・その台本の話者で）
    - アクセント句の直す前と後が出る。機種名・数字が細切れになっていないかを見る。
    - 直らない場面は、script.json の `narrationKana` に読みを書く。
-4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|newused|provs> render`
-   - drops は A・B・C の3本、budget・newused・provs は A の1本と、`youtube.txt` ができる。
+4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|newused|provs|fold> render`
+   - drops は A・B・C の3本、ほかは A の1本と、`youtube.txt` ができる。
+   - **`--no-bgm`**: BGM なし（声と効果音だけ・音量の決め方は同じ）の `short-A-nobgm.mp4` と `youtube-nobgm.txt`（BGM のクレジットなし）。ユーザーが YouTube のスマホアプリで投稿し、「音源を追加」で流行りの曲を付けるとき用。BGM 入りの版とは別のファイル。重い処理なので、render は1本ずつ（同時に走らせない。この PC は負荷で落ちる）。
    - 長さ（60秒以内。今は30〜35秒）、音量（-11 LUFS 前後）、タイムライン（場面・行・声の秒）を確かめる。
    - 静止画で、ランキング・1位の発表・グラフ・ひと言を見る: `ffmpeg -ss <秒> -i short-A.mp4 -frames:v 1 x.png` を Read で開く。
 5. **ユーザーに見せる**: A を SendUserFile で送り、OK をもらう。**投稿はユーザーの OK のあと**。
@@ -46,6 +47,10 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - 組: iPhone 13〜17 の無印と Pro（`shorts/themes/provs.ts` の PAIRS）。容量は両方に在庫5件以上ある容量のうちいちばん小さい容量（13〜16 は 128GB、17 は 256GB）。相場（中央値）どうしの差（Pro − 無印）の大きい順。率は無印の相場に対して。
   - 行の機種名は「iPhone 16／16 Pro」。下段は 容量・+差額・+率。見出しの帯は「Proと無印／同じ容量でいくら違う？」。下の注記は「中古は同じ容量の中央値」。utm の campaign の末尾は `_provs`。
   - 容量を上げたときの差（`scenes.upgrade`）は同じ中央値の決め方で、在庫5件以上のときだけ。ひと言「Proの差額で／容量を上げるのも／アリです」は、その差が Pro との差より小さいときだけ（なければ「差額と使う機能で／選びましょう」）。
+- fold: **hook → ranking（3位・2位・伏せた1位）→ reveal（1位の新しい方と1世代前の相場の2本の棒・差額と率）→ comment → outro**（型 A だけ・約36秒。10/22〜）。
+  - 組: 連続する2世代（新しい方→1世代前）。Galaxy Z Fold8→7・7→6・6→5、Galaxy Z Flip8→7・7→6・6→5、Pixel 11 Pro Fold→10 Pro Fold・10→9 Pro Fold（`shorts/themes/fold.ts` の PAIRS。機種名は lib/galaxyCatalog.ts・lib/pixelCatalog.ts の表記）。容量は両方に在庫5件以上ある容量のうちいちばん小さい容量（10/22 はすべて 256GB）。相場（中央値）どうしの差（新しい方 − 1世代前）の大きい順。率は新しい方の相場に対して。差が0以下の組は出さない。
+  - 行の機種名は「Galaxy Z Fold8／Fold7」「Pixel 11 Pro Fold／10 Pro Fold」（長い名前は幅に合わせて縮む）。下段は 容量・−差額・−率。見出しの帯は「折りたたみスマホ／1世代前でいくら安い？」。下の注記は「中古は同じ容量の中央値」。
+  - 説明欄のリンクは1位の**1世代前（安い方）**の機種ページ。utm の campaign の末尾は `_fold`。ハッシュタグ #折りたたみスマホ #Galaxy #Pixel。ひと言の下書きは「折りたたみの中古は／画面の折り目を／確認しましょう」。
 - **ランキングは3位・2位・1位（伏せ字）の3行だけ。** 4位・5位は出さない。空いた分、行と文字を大きくする（行の高さ 260px、機種名は最大80px で、幅に合わせて縮める）。
 - **ランキングの行は、声に合わせて出す。** 声は文ごとに合成し、各行は「○位は」の0.15秒前に出す。決まった間隔では出さない。
 - **上部の見出しの帯は大きく**（上の行は最大52px、題は2行で最大104px）。
@@ -57,7 +62,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 
 ### ナレーション（VOICEVOX）
 - **標準の声は 春日部つむぎ（ノーマル）**。drops と budget はこの声（10/21 ユーザーの指示。1本目の drops だけ ずんだもん）。
-  - **newused・provs は 青山龍星（ノーマル）**（10/21・10/22 ユーザーの指示。クレジット「VOICEVOX:青山龍星」。法人が関わる利用は事前に ななはぴ へ確認。docs/youtube-shorts.md）。
+  - **newused・provs・fold は 青山龍星（ノーマル）**（10/21・10/22 ユーザーの指示。クレジット「VOICEVOX:青山龍星」。法人が関わる利用は事前に ななはぴ へ確認。docs/youtube-shorts.md）。
   - 名前で指定する（`voice.ts` の `DEFAULT_SPEAKER`・`make-short.tsx` の `THEME_SPEAKER`）。ID はエンジンの GET /speakers から引く（この PC では 8）。
   - 説明欄のクレジットは「VOICEVOX:春日部つむぎ」（公式の規約で商用可・クレジット必須。10/21 確認。docs/youtube-shorts.md）。
   - 説明欄のクレジット「VOICEVOX:<キャラクター名>」は render が自動で入れる。
@@ -93,6 +98,12 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - ranking: 「3位は<無印>と<番号 Pro>、<容量>。差は<額>です。」を 3位・2位（例「3位はiPhone 15と15 Pro、128GB。差は24,680円です。」）
   - reveal: 「1位は<無印>と<番号 Pro>。Proにすると、約<X.X>万円、およそ<Y>%高くなります。」（細かい額は画面に。タイトルの「約○.○万円」も同じ四捨五入）
   - comment: ひと言の本文だけ。outro: 「全機種の相場は、プロフィールのリンクから見られます。あなたは、Pro派？無印派？」
+- 各場面で読む文（fold）:
+  - hook: 「折りたたみスマホ、1世代前にすると、いくら安い？」
+  - ranking: 「3位は<新>から<旧>、<容量>。差は<額>です。」を 3位・2位（旧は Galaxy Z・Pixel を外す。例「3位はGalaxy Z Fold8からFold7、256GB。差は66,000円です。」）
+  - reveal: 「1位は<新>から<旧>。1世代前にすると、約<X.X>万円、およそ<Y>%安くなります。」
+  - comment: ひと言の本文だけ。outro: 「全機種の相場は、プロフィールのリンクから見られます。あなたなら、最新と1世代前、どっちにしますか？」
+  - 読み: Galaxy ギャラクシー・Z ゼット・Fold フォールド・Flip フリップ・Pixel ピクセル（`voice.ts` の speakable）。ギャラクシー・ピクセルは機種名の頭として切る（`voiceTuning.ts` の BRANDS。切らないと「ピクセルジュウ/イチ…」で11が「10・1」に聞こえる）
 
 ### 音
 - **BGM**: YouTube オーディオライブラリの「帰属表示が不要」な曲（今は「Okay For Now - Televisions」）。歌の入った曲は使わない。

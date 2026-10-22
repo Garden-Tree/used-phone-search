@@ -13,8 +13,8 @@ import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 
-/** 規則を変えたら上げる（声のキャッシュを作り直すため）。2: 長音のモーラを延ばす（10/21） */
-export const TUNING_VERSION = 2;
+/** 規則を変えたら上げる（声のキャッシュを作り直すため）。2: 長音のモーラを延ばす（10/21）。3: ギャラクシー・ピクセルを機種名の頭に（10/22） */
+export const TUNING_VERSION = 3;
 
 export type DictWord = { surface: string; pronunciation: string; accent_type: number; word_type?: string; priority?: number };
 const DICT_FILE = resolve(__dirname, "voice-dict.json");
@@ -53,7 +53,11 @@ const NUM_WORD = "(?:イチ|イッ|ニ|サン|ヨン|ゴ|ロク|ロッ|ナナ|�
 const ALL_NUM = new RegExp(`^${NUM_WORD}+$`);
 const STARTS_NUM = new RegExp(`^${NUM_WORD}`);
 /** 機種名の頭（アクセントは voice-dict.json と同じ） */
-const BRANDS: Record<string, string> = { アイフォン: "アイフォ'ン", アイパッド: "アイパ'ッド", マックブック: "マックブ'ック" };
+const BRANDS: Record<string, string> = {
+  アイフォン: "アイフォ'ン", アイパッド: "アイパ'ッド", マックブック: "マックブ'ック",
+  // fold（10/22）: 「ピ'クセルジュウ/イチプロ…」と切られて「11」が「10・1」に聞こえたので、頭で切ってから数字をつなぎ直す
+  ギャラクシイ: "ギャラ'_クシイ", ピクセル: "ピ'_クセル",
+};
 /** 番号の後ろにつく型名（長いものから） */
 const MODEL_SUFFIX = ["プロマックス", "プラス", "プロ", "エアア", "ミニ", "イイ"];
 /** 前の句につなぐ「する」の形 */

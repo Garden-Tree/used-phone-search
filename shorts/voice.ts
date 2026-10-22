@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import type { BudgetScript, DropsScript, NarrationKey, NewUsedScript, ProVsScript, Script, VoiceConfig } from "./types";
+import type { BudgetScript, DropsScript, FoldScript, NarrationKey, NewUsedScript, ProVsScript, Script, VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -47,11 +47,30 @@ export function commentSentence(lines: string[]): string {
  * script.json の narration に書いた場面はそちらが優先。空文字にするとその場面は声なし
  */
 export function defaultNarration(s: Script): Partial<Record<NarrationKey, string>> {
-  return s.theme === "budget" ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : s.theme === "provs" ? proVsNarration(s) : dropsNarration(s);
+  return s.theme === "budget" ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : s.theme === "provs" ? proVsNarration(s) : s.theme === "fold" ? foldNarration(s) : dropsNarration(s);
 }
 
 /** "iPhone 16 Pro" → "16 Pro"（組の2つ目は世代の番号から読む） */
 const shortName = (model: string) => model.replace(/^iPhone\s+/, "");
+
+/** "Galaxy Z Fold7" → "Fold7"、"Pixel 10 Pro Fold" → "10 Pro Fold"（fold の組の2つ目） */
+const foldShort = (model: string) => model.replace(/^Galaxy Z\s+|^Pixel\s+/, "");
+
+/**
+ * fold の既定: hook 問い / ranking 3位・2位を1文ずつ（「3位は<新>から<旧>、<容量>。差は<額>です。」。文頭の「○位は」で行を出す）
+ * reveal 1位の差（約○.○万円）と率（およそ○%）だけ。細かい額は画面に出す / comment ひと言の本文だけ / outro サイトへの誘導と問い
+ */
+function foldNarration(s: FoldScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  return {
+    hook: "折りたたみスマホ、1世代前にすると、いくら安い？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].newer}から${foldShort(items[i].older)}、${items[i].storage}。差は${yen(items[i].diff)}です。`).join(""),
+    reveal: `1位は${top.newer}から${foldShort(top.older)}。1世代前にすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、最新と1世代前、どっちにしますか？",
+  };
+}
 
 /**
  * provs の既定: hook 問い / ranking 3位・2位を1文ずつ（「3位は<無印>と<Pro>、<容量>。差は<額>です。」。文頭の「○位は」で行を出す）
@@ -134,6 +153,7 @@ export function narrationOf(s: Script): Partial<Record<NarrationKey, string>> {
 export function speakable(text: string): string {
   const words: [RegExp, string][] = [
     [/iPhone/g, "アイフォン"], [/iPad/g, "アイパッド"], [/MacBook/g, "マックブック"], [/Apple Watch/g, "アップルウォッチ"],
+    [/Galaxy/g, "ギャラクシー"], [/\bZ\s*(?=Fold|Flip)/g, "ゼット"], [/Fold/g, "フォールド"], [/Flip/g, "フリップ"], [/Pixel/g, "ピクセル"],
     [/Pro Max/g, "プロマックス"], [/\bPro\b/g, "プロ"], [/\bMax\b/g, "マックス"], [/\bPlus\b/g, "プラス"], [/\bmini\b/g, "ミニ"],
     [/\bAir\b/g, "エアー"], [/\bSE\b/g, "エスイー"], [/\bDuo\b/g, "デュオ"], [/(\d+)e\b/g, "$1イー"],
     [/(\d+)\s*GB/g, "$1ギガ"], [/(\d+)\s*TB/g, "$1テラ"], [/(\d),(?=\d{3})/g, "$1"], [/%/g, "パーセント"],
