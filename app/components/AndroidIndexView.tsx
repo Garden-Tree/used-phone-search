@@ -71,7 +71,7 @@ export default async function AndroidIndexView({ kind }: { kind: AndroidKind }) 
 
   return (
     <div className="min-h-screen text-ink">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader label={hub.label} />
 
       <main className="max-w-[1360px] mx-auto px-4 py-6">

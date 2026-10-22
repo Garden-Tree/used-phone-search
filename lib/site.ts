@@ -9,3 +9,8 @@ export const siteDescription = (shops: Shop[]) =>
 
 // 本番URLは環境変数で指定（sitemap / canonical / OGP の絶対URLに使用）
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+
+// 公式アカウント（フッター・/about・トップの JSON-LD の sameAs で使う）
+export const OFFICIAL_X_URL = "https://x.com/used_gadelog";
+export const OFFICIAL_YOUTUBE_URL = "https://www.youtube.com/@used_gadelog";
+export const OFFICIAL_ACCOUNTS = [OFFICIAL_X_URL, OFFICIAL_YOUTUBE_URL];

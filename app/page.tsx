@@ -23,6 +23,7 @@ import BudgetPicker, { type BudgetOption } from "@/app/components/BudgetPicker";
 import { getModelMarket, getPriceDrops, shortDate, type ModelMarket } from "@/lib/marketStats";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 import { BUILD_TIME } from "@/lib/buildTime";
+import { OFFICIAL_ACCOUNTS, SITE_NAME, SITE_URL } from "@/lib/site";
 
 // ショップごとの在庫数を出す。ビルドのたびに作る
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -156,8 +157,31 @@ export default async function Home() {
   const mainShops = MAIN_SHOP_LABELS.filter((l) => shops.some((s) => s.label === l));
   const restShops = shops.length - mainShops.length;
 
+  // サイトと運営の公式アカウント（sameAs）。Organization はトップだけに置く
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
+        name: SITE_NAME,
+        url: `${SITE_URL}/`,
+        sameAs: OFFICIAL_ACCOUNTS,
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        name: SITE_NAME,
+        url: `${SITE_URL}/`,
+        inLanguage: "ja",
+        publisher: { "@id": `${SITE_URL}/#organization` },
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen text-ink">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader />
 
       {/* 冒頭: h1・数字タイル・検索欄 */}

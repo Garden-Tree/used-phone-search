@@ -4,7 +4,7 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import { SHOPS, shopLabels } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
-import { SITE_NAME } from "@/lib/site";
+import { OFFICIAL_X_URL, OFFICIAL_YOUTUBE_URL, SITE_NAME } from "@/lib/site";
 
 // 運営者の一次情報を含むので、文面を変えるときは運営者の確認を取る
 export const metadata: Metadata = {
@@ -60,6 +60,10 @@ export default async function AboutPage() {
           </p>
           <p>
             X: <a href={X_URL} target="_blank" rel="noopener" className={ext}>@Garden__Tree</a>
+          </p>
+          <p>
+            {SITE_NAME}の公式アカウント: X <a href={OFFICIAL_X_URL} target="_blank" rel="noopener" className={ext}>@used_gadelog</a>
+            {" ・ "}YouTube <a href={OFFICIAL_YOUTUBE_URL} target="_blank" rel="noopener" className={ext}>@used_gadelog</a>
           </p>
         </Section>
 

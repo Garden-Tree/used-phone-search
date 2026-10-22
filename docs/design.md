@@ -34,6 +34,7 @@
   - 下に「楽天市場でも販売（ポイント付き） 45,800円 ›」の帯（あるときだけ）。Amazon は「価格は M/D HH:mm 時点」
 - **保証の短いタグ**は `lib/shops.ts` の `warrantyShort`・`redRomShort`（長文の `warranty`・`redRom` は詳細表示用に残す）
 - 主ボタン: 藍 `#4338CA`・白文字・高さ 48px
+- **フッター（全ページ共通・`SiteFooter.tsx`）**: 広告の表示 → このサイトについて → 「公式: X ・ YouTube」（10/22〜。小さい文字リンク・新しいタブ）→ ©。公式アカウントの URL は `lib/site.ts` の `OFFICIAL_*` だけに書き、トップの JSON-LD（Organization の `sameAs`）と `/about` もそこから読む
 
 ## ページの並び
 
