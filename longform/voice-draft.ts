@@ -12,19 +12,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { engineAvailable, synthesize } from "../shorts/voice";
-
-const SPEAKERS: Record<string, string> = { つむぎ: "春日部つむぎ/ノーマル", ずんだもん: "ずんだもん/ノーマル" };
-const LINE_GAP = 0.25;
-const CHAPTER_GAP = 0.8;
-
-/** shorts の speakable が知らない語・記号を、台本のうちに読みへ直す */
-function forVoice(text: string): string {
-  const words: [RegExp, string][] = [
-    [/USB-C/g, "ユーエスビーシー"], [/MagSafe/g, "マグセーフ"], [/(\d+)Hz/g, "$1ヘルツ"], [/\bOS\b/g, "オーエス"],
-    [/\bMac\b/g, "マック"], [/\bApple\b/g, "アップル"], [/\bOK\b/g, "オーケー"], [/〜/g, "ー"], [/あーし/g, "アーシ"], [/△/g, "サンカク"], [/×/g, "バツ"],
-  ];
-  return words.reduce((t, [re, to]) => t.replace(re, to), text);
-}
+import { CHAPTER_GAP, DEFAULT_LONG_SPEED, LINE_GAP, SPEAKERS, forVoice, scriptItems } from "./script";
 
 const arg = (name: string) => {
   const i = process.argv.indexOf(name);
@@ -35,20 +23,10 @@ const arg = (name: string) => {
   const dir = process.argv[2];
   if (!dir) throw new Error("使い方: npx tsx longform/voice-draft.ts <台本のフォルダ> [--speed 1.15]");
   if (!(await engineAvailable())) throw new Error("VOICEVOX が起動していません（127.0.0.1:50021）");
-  const speed = Number(arg("--speed") ?? 1.15);
+  const speed = Number(arg("--speed") ?? DEFAULT_LONG_SPEED);
   const rest = Number(arg("--rest") ?? 0.4);
   const md = readFileSync(join(dir, "script.md"), "utf8");
-  // 台本の本文（最初の --- から次の --- まで）だけを読む
-  const body = md.split(/^---$/m)[1] ?? md;
-
-  type Item = { chapter?: string; who?: string; text?: string };
-  const items: Item[] = [];
-  for (const line of body.split(/\r?\n/)) {
-    const ch = line.match(/^## (\d+:\d+) (.+)$/);
-    if (ch) items.push({ chapter: ch[2] });
-    const m = line.match(/^(つむぎ|ずんだもん): (.+)$/);
-    if (m) items.push({ who: m[1], text: m[2] });
-  }
+  const items = scriptItems(md);
 
   const work = join(dir, "voice-draft");
   mkdirSync(work, { recursive: true });

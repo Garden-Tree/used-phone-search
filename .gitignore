@@ -78,3 +78,7 @@ rakuten-sync/sample.json
 /longform/*/voice-draft/
 /longform/*/voice-draft.m4a
 /longform/*/voice-draft.log
+# 横動画の時間割・コマ（longform/README.md）。見本の静止画 stills/ は小さいので残す
+/longform/*/timeline.json
+/longform/*/frames/
+/longform/*/stills/at-*.png

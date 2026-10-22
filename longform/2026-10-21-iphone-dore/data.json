@@ -1,0 +1,177 @@
+{
+  "date": "2026-10-21",
+  "shops": 17,
+  "source": "script.md の数字そのまま（2026/10/21 の集計。相場＝在庫がいちばん多い容量の中央値、新品＝Apple公式・税込・10/19 確認）",
+  "chapters": [
+    {
+      "title": "結論から",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "中古iPhone 予算別の正解",
+        "items": [
+          { "label": "5万円なら", "value": "iPhone 13", "cue": "先に結論ね" },
+          { "label": "9万円なら", "value": "iPhone 15", "cue": "先に結論ね" }
+        ],
+        "note": "参考: iPhone 17 の新品は 159,800円（Apple公式）"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "どうやって調べた？",
+        "items": [
+          { "label": "大手中古ショップ", "value": "17", "unit": "店", "cue": "調べたのは" },
+          { "label": "在庫（iPad なども含む）", "value": "約7万", "unit": "件", "cue": "調べたのは" },
+          { "label": "まとめる回数", "value": "1日4回", "cue": "調べたのは" }
+        ],
+        "note": "相場＝在庫がいちばん多い容量の、真ん中の値段（中央値）。最安値も一緒に出す"
+      }
+    },
+    {
+      "title": "3万円台",
+      "scene": {
+        "type": "bars",
+        "heading": "3万円台の中古iPhone（相場）",
+        "unit": "万円",
+        "rows": [
+          { "label": "SE 第3世代", "sub": "64GB", "median": 3.3, "min": 1.9, "minLabel": "1.9万円台", "cue": "3万円台はこの3台", "minCue": "SE 第3世代は1.9万円台" },
+          { "label": "12 mini", "sub": "64GB", "median": 3.0, "min": 2.0, "minLabel": "2.0万円台", "cue": "3万円台はこの3台", "minCue": "SE 第3世代は1.9万円台" },
+          { "label": "12", "sub": "64GB", "median": 3.4, "cue": "3万円台はこの3台" }
+        ],
+        "note": "棒＝相場（在庫がいちばん多い容量の中央値）・赤い点＝最安"
+      }
+    },
+    {
+      "title": "5万円前後",
+      "scene": {
+        "type": "bars",
+        "heading": "5万円前後の中古iPhone（相場）",
+        "unit": "万円",
+        "rows": [
+          { "label": "13", "sub": "128GB", "median": 5.1, "stock": "在庫 1,816件", "pick": true, "cue": "本命の5万円ゾーン" },
+          { "label": "13 mini", "sub": "128GB", "median": 4.6, "cue": "13 miniは4.6万円" },
+          { "label": "12 Pro", "sub": "256GB", "median": 5.1, "cue": "13 miniは4.6万円" }
+        ],
+        "note": "棒＝相場（在庫がいちばん多い容量の中央値）"
+      }
+    },
+    {
+      "title": "7万円前後",
+      "scene": {
+        "type": "bars",
+        "heading": "7万円前後の中古iPhone（相場）",
+        "unit": "万円",
+        "rows": [
+          { "label": "14", "sub": "128GB", "median": 6.6, "stock": "在庫 2,538件", "cue": "どっちも相場6.6万円" },
+          { "label": "13 Pro", "sub": "128GB", "median": 6.6, "cue": "どっちも相場6.6万円" }
+        ],
+        "note": "棒＝相場（在庫がいちばん多い容量の中央値）"
+      }
+    },
+    {
+      "title": "10万円前後",
+      "scene": {
+        "type": "bars",
+        "heading": "10万円前後の中古iPhone（相場）",
+        "unit": "万円",
+        "rows": [
+          { "label": "15", "sub": "128GB", "median": 9.1, "stock": "在庫 3,541件", "pick": true, "cue": "iPhone 15が相場9.1万円" },
+          { "label": "14 Pro", "sub": "256GB", "median": 9.5, "cue": "14 Proも近い値段" },
+          { "label": "16e", "sub": "128GB", "median": 10.7, "cue": "16eは新しいのに" }
+        ],
+        "note": "棒＝相場（在庫がいちばん多い容量の中央値）"
+      }
+    },
+    {
+      "title": "Proと無印、同じ容量だといくら違う？",
+      "scene": {
+        "type": "pairs",
+        "heading": "Proと無印（どちらも128GB）",
+        "unit": "万円",
+        "legend": ["無印", "Pro"],
+        "colors": ["inkMute", "brand600"],
+        "rows": [
+          { "label": "13", "a": 5.1, "b": 6.6, "diffLabel": "+1.5万円", "cue": "13と13 Proの差" },
+          { "label": "14", "a": 6.6, "b": 8.8, "diffLabel": "+2.2万円", "cue": "13と13 Proの差" },
+          { "label": "15", "a": 9.1, "b": 11.5, "diffLabel": "+2.5万円", "cue": "13と13 Proの差" },
+          { "label": "16", "a": 12.1, "b": 15.2, "diffLabel": "+3.1万円", "cue": "13と13 Proの差" }
+        ],
+        "note": "容量アップ（128→256GB）: 13 +0.7万円／15 +0.8万円／16 +0.8万円"
+      }
+    },
+    {
+      "title": "新品と比べると？",
+      "scene": {
+        "type": "pairs",
+        "heading": "新品と中古の相場",
+        "unit": "円",
+        "legend": ["新品（Apple公式）", "中古の相場"],
+        "colors": ["brand900", "price"],
+        "rows": [
+          { "label": "Air", "a": 189800, "b": 142681, "cue": "iPhone Airは" },
+          { "label": "16", "a": 139800, "b": 121200, "cue": "iPhone 16も" },
+          { "label": "17", "a": 159800, "b": 150980, "cue": "17は、新品" }
+        ],
+        "note": "新品＝Apple公式（税込・10/19 確認）・中古＝同じ容量の中央値"
+      }
+    },
+    {
+      "title": "今週の値下がり",
+      "scene": {
+        "type": "table",
+        "heading": "今週の値下がり（10/14→10/21）",
+        "columns": ["機種", "値下がり", "率"],
+        "emphasis": [1, 2],
+        "rows": [
+          { "cells": ["iPhone 17 Pro Max", "−8,000円", "−3.7%"], "cue": "この1週間だと" },
+          { "cells": ["iPhone 16 Pro", "−6,000円", "−3.5%"], "cue": "この1週間だと" },
+          { "cells": ["iPhone 17", "−5,250円", "−3.4%"], "cue": "この1週間だと" }
+        ],
+        "note": "同じ容量の相場どうしで比べた値下がり"
+      }
+    },
+    {
+      "title": "どの店で買う？ 電池の書き方は3種類",
+      "scene": {
+        "type": "table",
+        "heading": "バッテリーの書き方は3種類",
+        "columns": ["何%と書く", "80%以上とだけ書く", "書かない"],
+        "rows": [
+          { "cells": ["じゃんぱら", "イオシス", "ゲオモバイル"], "cue": "1つ目は" },
+          { "cells": ["ソフマップ", "カメラのキタムラ", ""], "cue": "1つ目は" },
+          { "cells": ["など", "など", "など"], "cue": "1つ目は" }
+        ],
+        "note": "保証: 初期不良 14日〜100日・赤ロムは永久保証の店も（各店の公式の案内）"
+      }
+    },
+    {
+      "title": "買う前に見る3つのこと",
+      "scene": {
+        "type": "checklist",
+        "heading": "買う前に見る3つのこと",
+        "items": [
+          { "text": "バッテリー", "sub": "設定の「最大容量」85%以上なら安心。交換は iPhone 15 で 17,200円（Apple公式）", "cue": "1つ目、バッテリー" },
+          { "text": "ネットワーク利用制限が「○」", "sub": "「△」「×」はあとで通信が止まることも。赤ロム保証のある店を", "cue": "ネットワーク利用制限" },
+          { "text": "保証", "sub": "お店の保証は何か月か・Appleの保証が残っているか", "cue": "保証。お店の保証" }
+        ]
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "table",
+        "heading": "まとめ: 予算別の中古iPhone",
+        "columns": ["予算", "機種"],
+        "emphasis": [1],
+        "rows": [
+          { "cells": ["3万円", "SE 第3世代 / 12 mini"] },
+          { "cells": ["5万円", "iPhone 13"] },
+          { "cells": ["7万円", "iPhone 14"] },
+          { "cells": ["10万円", "iPhone 15"] }
+        ],
+        "note": "Pro は差額と機能で・容量アップは+8千円前後・最新機種は新品も比べる"
+      }
+    }
+  ]
+}
