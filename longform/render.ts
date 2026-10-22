@@ -5,13 +5,13 @@
  *   npx tsx longform/render.ts longform/2026-10-21-iphone-dore frame 95.5   # その秒の1枚（stills/at-95.5.png）
  *
  * - 先に timeline.ts で timeline.json を作る（なければここで作る）
- * - 動画全体（約10分・約1.8万コマ）はまだ書き出さない。PC が重い処理で落ちるので、1枚ずつ順に作り、ffmpeg は一覧の1回だけ・1スレッド
+ * - 動画全体は video.tsx（絵が変わるところだけ PNG にする）。ここは見本だけ。ffmpeg は一覧の1回だけ・1スレッド
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { notoSansJp } from "@/lib/ogFont";
+import { longFonts } from "./fonts";
 import { H, W, frameAt } from "./scenes";
 import { buildTimeline } from "./timeline";
 import type { Timeline } from "./types";
@@ -25,16 +25,11 @@ async function loadTimeline(dir: string): Promise<Timeline> {
   return timeline;
 }
 
-/** フォントのサブセット用に、コマに出る文字を全部集める */
-function allText(tl: Timeline): string {
-  return JSON.stringify(tl) + readFileSync(join(__dirname, "scenes.tsx"), "utf8") + "0123456789,.%+−/：・春日部つむぎずんだもん";
-}
-
 (async () => {
   const [dir, mode = "stills", at] = process.argv.slice(2);
   if (!dir) throw new Error("使い方: npx tsx longform/render.ts <台本のフォルダ> [stills | frame <秒>]");
   const tl = await loadTimeline(dir);
-  const fonts = await notoSansJp(allText(tl));
+  const fonts = await longFonts(tl);
   const out = join(dir, "stills");
   mkdirSync(out, { recursive: true });
   const save = async (t: number, file: string) => {

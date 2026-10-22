@@ -4,7 +4,7 @@
  * 配置（いつも同じ）:
  *   上   y24〜96     左上に章の帯（番号＋章の名前）・右上に URL
  *   中央 x290〜1630  白いカード（グラフ・表。data.json の scene を描く）
- *   左右 x40〜266 / x1654〜1880  話し手の枠（立ち絵の規約を確かめるまでは名前の札だけ。左＝ずんだもん・右＝つむぎ）
+ *   左右 x40〜266 / x1654〜1880  話し手の枠（左＝ずんだもん・右＝つむぎ。longform/assets/chara/ に立ち絵があれば立ち絵、なければ名前の札だけ）
  *   下   y812〜1012  字幕（話し手の名前と色・2行まで）
  *   最下 y1024〜     データの日付と「大手中古ショップ17店の在庫から」
  * 色は lib/brandColors.ts だけ（白いカードの上は SITE、紺の地の上は ON_DARK）
@@ -346,21 +346,49 @@ function ChapterBar({ ch, count }: { ch: TimelineChapter; count: number }) {
   );
 }
 
-/** 話し手の枠。立ち絵の代わりに名前の札（話している人は塗り、もう1人は線だけ） */
-function SpeakerSlot({ who, x, active }: { who: Who; x: number; active: boolean }) {
+/** 立ち絵（longform/assets/chara/。video.tsx の loadCharaArt が読む）。src は data URI、w・h は元の画像の大きさ */
+export type ArtImage = { src: string; w: number; h: number };
+export type CharaArt = Partial<Record<Who, { closed: ArtImage; talk?: ArtImage }>>;
+
+/** 話し手の名前の札（話している人は塗り、もう1人は線だけ） */
+function NamePlate({ who, active }: { who: Who; active: boolean }) {
   const color = SPEAKER_COLOR[who];
   return (
-    <div style={{ ...col, position: "absolute", left: x, top: SLOT.y, width: SLOT.w, height: SLOT.h, justifyContent: "flex-end", alignItems: "center", border: `3px dashed ${active ? color : C.bar}`, borderRadius: 20 }}>
-      <div style={{ display: "flex", marginBottom: "auto", marginTop: 24, fontSize: 22, fontWeight: 500, color: C.onDarkSub }}>立ち絵（規約確認後）</div>
-      <div
-        style={{
-          display: "flex", width: SLOT.w - 28, marginBottom: 14, padding: "14px 0", justifyContent: "center", borderRadius: 14,
-          background: active ? color : "transparent", border: `3px solid ${active ? color : C.onDarkSub}`,
-          color: active ? C.white : C.onDarkSub, fontSize: fitFontSize(SPEAKER_NAME[who], SLOT.w - 60, 34), fontWeight: 900,
-        }}
-      >
-        {SPEAKER_NAME[who]}
+    <div
+      style={{
+        display: "flex", width: SLOT.w - 28, marginBottom: 14, padding: "14px 0", justifyContent: "center", borderRadius: 14,
+        background: active ? color : C.bg, border: `3px solid ${active ? color : C.onDarkSub}`,
+        color: active ? C.white : C.onDarkSub, fontSize: fitFontSize(SPEAKER_NAME[who], SLOT.w - 60, 34), fontWeight: 900,
+      }}
+    >
+      {SPEAKER_NAME[who]}
+    </div>
+  );
+}
+
+/**
+ * 話し手の枠。立ち絵があれば枠に収めて下ぞろえ（話している人は濃く・少し大きく、もう1人は暗く）。
+ * 口の開いた絵（*-talk.png）があり mouthOpen なら、話している人はそちらを使う。立ち絵がなければ名前の札だけ
+ */
+function SpeakerSlot({ who, x, active, art, mouthOpen }: { who: Who; x: number; active: boolean; art?: CharaArt[Who]; mouthOpen?: boolean }) {
+  const color = SPEAKER_COLOR[who];
+  if (art) {
+    const img = active && mouthOpen && art.talk ? art.talk : art.closed;
+    // 名前の札（約80px）の上に収める。話していない人は 0.9 倍
+    const boxH = SLOT.h - 70;
+    const k = Math.min(SLOT.w / img.w, boxH / img.h) * (active ? 1 : 0.9);
+    const w = Math.round(img.w * k), h = Math.round(img.h * k);
+    return (
+      <div style={{ ...col, position: "absolute", left: x, top: SLOT.y, width: SLOT.w, height: SLOT.h, justifyContent: "flex-end", alignItems: "center" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+        <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((SLOT.w - w) / 2), top: boxH - h, width: w, height: h, opacity: active ? 1 : 0.45 }} />
+        <NamePlate who={who} active={active} />
       </div>
+    );
+  }
+  return (
+    <div style={{ ...col, position: "absolute", left: x, top: SLOT.y, width: SLOT.w, height: SLOT.h, justifyContent: "flex-end", alignItems: "center", border: `3px dashed ${active ? color : C.bar}`, borderRadius: 20 }}>
+      <NamePlate who={who} active={active} />
     </div>
   );
 }
@@ -382,23 +410,43 @@ function Subtitle({ who, text }: { who: Who | null; text: string }) {
   );
 }
 
-/** t 秒（動画の頭から）のコマ */
-export function frameAt(tl: Timeline, t: number): ReactElement {
+/** t 秒（動画の頭から）に映すもの: 章・台詞（行の間は直前の台詞を残す）・字幕のページ */
+export function stateAt(tl: Timeline, t: number) {
   const ch = [...tl.chapters].reverse().find((c) => c.start <= t) ?? tl.chapters[0];
+  const li = ch.lines.findLastIndex((l) => l.start <= t);
+  const line = li >= 0 ? ch.lines[li] : null;
+  const pi = line ? Math.max(0, line.pages.findLastIndex((p) => p.start <= t)) : -1;
+  return { ch, li, line, pi, page: line ? line.pages[pi] : null, talking: !!line && t < line.end };
+}
+
+export type FrameOpts = {
+  /** 項目を 0.4 秒かけて出さず、出る秒で一度に出す（video.tsx。絵が変わるところだけ PNG にするため） */
+  instant?: boolean;
+  art?: CharaArt;
+  /** 話している人の口を開いた絵にする（立ち絵に *-talk.png があるとき） */
+  mouthOpen?: boolean;
+};
+
+/** 項目が出たか（instant のとき）。reveal は四捨五入してあるので 2ms の余裕を見る */
+export const revealedAt = (reveal: Record<string, number>, local: number) => Object.keys(reveal).filter((k) => local >= reveal[k] - 0.002);
+
+/** t 秒（動画の頭から）のコマ */
+export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactElement {
+  const { ch, line, page } = stateAt(tl, t);
   const local = t - ch.start;
-  // 話している台詞（行の間は直前の台詞を残す）
-  const line = [...ch.lines].reverse().find((l) => l.start <= t) ?? null;
-  const page = line ? ([...line.pages].reverse().find((p) => p.start <= t) ?? line.pages[0]) : null;
   const who = line?.who ?? null;
   const date = tl.date.replace(/-/g, "/");
+  // instant: 出た項目はずっと前に、まだの項目はずっと後に出ることにする（shown が 1 か 0 になる）
+  const shownSet = opts.instant ? new Set(revealedAt(ch.scene.reveal, local)) : null;
+  const scene = shownSet ? { ...ch, scene: { ...ch.scene, reveal: Object.fromEntries(Object.keys(ch.scene.reveal).map((k) => [k, shownSet.has(k) ? -1000 : 1000])) } } : ch;
   return (
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
       <ChapterBar ch={ch} count={tl.chapters.length} />
       <div style={{ display: "flex", position: "absolute", right: 48, top: HEADER.y + 18, fontSize: 30, fontWeight: 900, color: C.url }}>used.gadelog.com</div>
-      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} />
-      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} />
+      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} />
+      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} />
       <div style={{ ...col, position: "absolute", left: CARD.x, top: CARD.y, width: CARD.w, height: CARD.h, padding: CARD.pad, background: C.white, borderRadius: 24 }}>
-        <SceneBody ch={ch} t={local} />
+        <SceneBody ch={scene} t={local} />
       </div>
       <Subtitle who={who} text={page?.text ?? ""} />
       <div style={{ display: "flex", position: "absolute", left: SUB.x + 8, top: FOOT_Y, fontSize: 26, fontWeight: 500, color: C.onDarkSub }}>{`${date} 時点・大手中古ショップ${tl.shops}店の在庫から`}</div>

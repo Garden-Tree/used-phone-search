@@ -82,3 +82,8 @@ rakuten-sync/sample.json
 /longform/*/timeline.json
 /longform/*/frames/
 /longform/*/stills/at-*.png
+/longform/*/stills/check-*.png
+# 書き出した横動画（longform/video.tsx）。大きいので入れない（chapters.txt・youtube.txt・thumbnail.png は残す）
+/longform/*/video.mp4
+# 立ち絵など第三者の絵（規約上、再配布しない）
+/longform/assets/
