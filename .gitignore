@@ -87,3 +87,6 @@ rakuten-sync/sample.json
 /longform/*/video.mp4
 # 立ち絵など第三者の絵（規約上、再配布しない）
 /longform/assets/
+# 立ち絵（第三者素材）が入る画像は公開リポジトリに入れない（二次配布の禁止）
+/longform/*/stills/
+/longform/*/thumbnail.png

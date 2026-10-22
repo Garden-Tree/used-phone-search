@@ -5,6 +5,7 @@
  *   上   y24〜96     左上に章の帯（番号＋章の名前）・右上に URL
  *   中央 x290〜1630  白いカード（グラフ・表。data.json の scene を描く）
  *   左右 x40〜266 / x1654〜1880  話し手の枠（左＝ずんだもん・右＝つむぎ。longform/assets/chara/ に立ち絵があれば立ち絵、なければ名前の札だけ）
+ *                立ち絵は画面の端まで使う（x0〜280 / x1640〜1920・y116〜792）
  *   下   y812〜1012  字幕（話し手の名前と色・2行まで）
  *   最下 y1024〜     データの日付と「大手中古ショップ17店の在庫から」
  * 色は lib/brandColors.ts だけ（白いカードの上は SITE、紺の地の上は ON_DARK）
@@ -12,7 +13,7 @@
 import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
-import type { Who } from "./script";
+import { CHAPTER_LEAD, type Who } from "./script";
 import type { BarsScene, BigNumberScene, ChecklistScene, PairsScene, TableScene, Timeline, TimelineChapter } from "./types";
 
 export const W = 1920;
@@ -22,6 +23,8 @@ export const FPS = 30;
 const HEADER = { x: 40, y: 24, h: 72 };
 const CARD = { x: 290, y: 116, w: 1340, h: 676, pad: 52 };
 const SLOT = { y: 116, w: 226, h: 676, left: 40, right: W - 40 - 226 };
+/** 立ち絵の枠: 画面の端からカードの手前まで（左 x0〜280・右 x1640〜1920。カードとは 10px あける）。絵の高さ 560px・はみ出た左右は切る */
+const ART = { w: 280, h: SLOT.h, imgH: 560, left: 0, right: W - 280 };
 const SUB = { x: 40, y: 812, w: W - 80, h: 200, tag: 210, padX: 36, gap: 30, font: 50, lineHeight: 1.4 };
 const FOOT_Y = 1024;
 
@@ -367,21 +370,21 @@ function NamePlate({ who, active }: { who: Who; active: boolean }) {
 }
 
 /**
- * 話し手の枠。立ち絵があれば枠に収めて下ぞろえ（話している人は濃く・少し大きく、もう1人は暗く）。
- * 口の開いた絵（*-talk.png）があり mouthOpen なら、話している人はそちらを使う。立ち絵がなければ名前の札だけ
+ * 話し手の枠。立ち絵があれば胸から上を高さ ART.imgH で下ぞろえ（枠からはみ出た左右は切る）、名前の札は絵の下に重ねる。
+ * 話している人は濃く、もう1人は 0.92 倍・暗く。口の開いた絵（*-talk.png）があり mouthOpen なら、話している人はそちらを使う。
+ * 立ち絵がなければ名前の札だけ
  */
 function SpeakerSlot({ who, x, active, art, mouthOpen }: { who: Who; x: number; active: boolean; art?: CharaArt[Who]; mouthOpen?: boolean }) {
   const color = SPEAKER_COLOR[who];
   if (art) {
     const img = active && mouthOpen && art.talk ? art.talk : art.closed;
-    // 名前の札（約80px）の上に収める。話していない人は 0.9 倍
-    const boxH = SLOT.h - 70;
-    const k = Math.min(SLOT.w / img.w, boxH / img.h) * (active ? 1 : 0.9);
-    const w = Math.round(img.w * k), h = Math.round(img.h * k);
+    const h = Math.round(ART.imgH * (active ? 1 : 0.92));
+    const w = Math.round((img.w * h) / img.h);
+    const left = x === SLOT.left ? ART.left : ART.right;
     return (
-      <div style={{ ...col, position: "absolute", left: x, top: SLOT.y, width: SLOT.w, height: SLOT.h, justifyContent: "flex-end", alignItems: "center" }}>
+      <div style={{ ...col, position: "absolute", left, top: SLOT.y, width: ART.w, height: ART.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden" }}>
         {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-        <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((SLOT.w - w) / 2), top: boxH - h, width: w, height: h, opacity: active ? 1 : 0.45 }} />
+        <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((ART.w - w) / 2), top: ART.h - h, width: w, height: h, opacity: active ? 1 : 0.5 }} />
         <NamePlate who={who} active={active} />
       </div>
     );
@@ -410,9 +413,14 @@ function Subtitle({ who, text }: { who: Who | null; text: string }) {
   );
 }
 
+/** 章の絵が出る秒（2章目からは声の CHAPTER_LEAD 秒前。章のジングルと同時。その間は字幕なし） */
+export const chapterShownAt = (c: TimelineChapter) => (c.index > 1 ? c.start - CHAPTER_LEAD : c.start);
+/** 章の頭（声の始まり）からの秒。章の絵が先に出ている間は 0（cue の秒 0 の項目は章の絵と一緒に出る） */
+export const localAt = (c: TimelineChapter, t: number) => Math.max(0, t - c.start);
+
 /** t 秒（動画の頭から）に映すもの: 章・台詞（行の間は直前の台詞を残す）・字幕のページ */
 export function stateAt(tl: Timeline, t: number) {
-  const ch = [...tl.chapters].reverse().find((c) => c.start <= t) ?? tl.chapters[0];
+  const ch = [...tl.chapters].reverse().find((c) => chapterShownAt(c) <= t) ?? tl.chapters[0];
   const li = ch.lines.findLastIndex((l) => l.start <= t);
   const line = li >= 0 ? ch.lines[li] : null;
   const pi = line ? Math.max(0, line.pages.findLastIndex((p) => p.start <= t)) : -1;
@@ -433,7 +441,7 @@ export const revealedAt = (reveal: Record<string, number>, local: number) => Obj
 /** t 秒（動画の頭から）のコマ */
 export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactElement {
   const { ch, line, page } = stateAt(tl, t);
-  const local = t - ch.start;
+  const local = localAt(ch, t);
   const who = line?.who ?? null;
   const date = tl.date.replace(/-/g, "/");
   // instant: 出た項目はずっと前に、まだの項目はずっと後に出ることにする（shown が 1 か 0 になる）

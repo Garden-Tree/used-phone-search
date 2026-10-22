@@ -92,7 +92,7 @@
         "legend": ["無印", "Pro"],
         "colors": ["inkMute", "brand600"],
         "rows": [
-          { "label": "13", "a": 5.1, "b": 6.6, "diffLabel": "+1.5万円", "cue": "13と13 Proの差" },
+          { "label": "13", "a": 5.1, "b": 6.6, "diffLabel": "+1.5万円", "cue": "Proと無印で迷って" },
           { "label": "14", "a": 6.6, "b": 8.8, "diffLabel": "+2.2万円", "cue": "13と13 Proの差" },
           { "label": "15", "a": 9.1, "b": 11.5, "diffLabel": "+2.5万円", "cue": "13と13 Proの差" },
           { "label": "16", "a": 12.1, "b": 15.2, "diffLabel": "+3.1万円", "cue": "13と13 Proの差" }

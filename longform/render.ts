@@ -4,6 +4,7 @@
  *   npx tsx longform/render.ts longform/2026-10-21-iphone-dore stills       # 章ごとに1枚（stills/ch01.png〜）と一覧（stills/contact.png）
  *   npx tsx longform/render.ts longform/2026-10-21-iphone-dore frame 95.5   # その秒の1枚（stills/at-95.5.png）
  *
+ * - 立ち絵（longform/assets/chara/）があれば描く。frame は「--open」で話している人の口を開けた絵
  * - 先に timeline.ts で timeline.json を作る（なければここで作る）
  * - 動画全体は video.tsx（絵が変わるところだけ PNG にする）。ここは見本だけ。ffmpeg は一覧の1回だけ・1スレッド
  */
@@ -11,6 +12,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
+import { loadCharaArt } from "./art";
 import { longFonts } from "./fonts";
 import { H, W, frameAt } from "./scenes";
 import { buildTimeline } from "./timeline";
@@ -30,10 +32,12 @@ async function loadTimeline(dir: string): Promise<Timeline> {
   if (!dir) throw new Error("使い方: npx tsx longform/render.ts <台本のフォルダ> [stills | frame <秒>]");
   const tl = await loadTimeline(dir);
   const fonts = await longFonts(tl);
+  const { art } = loadCharaArt(join(dir, "frames"));
+  const mouthOpen = process.argv.includes("--open");
   const out = join(dir, "stills");
   mkdirSync(out, { recursive: true });
   const save = async (t: number, file: string) => {
-    const res = new ImageResponse(frameAt(tl, t), { width: W, height: H, fonts });
+    const res = new ImageResponse(frameAt(tl, t, { art, mouthOpen }), { width: W, height: H, fonts });
     writeFileSync(file, Buffer.from(await res.arrayBuffer()));
     console.log("saved", file);
   };

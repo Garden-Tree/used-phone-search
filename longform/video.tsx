@@ -13,6 +13,7 @@
  * - 立ち絵: longform/assets/chara/tsumugi.png・zundamon.png（口の開いた絵 tsumugi-talk.png・zundamon-talk.png は任意）。
  *   口の絵があれば、話している間は 0.2 秒ごとに開閉（PNG は2枚だけで、ffmpeg の一覧で交互に並べる）
  * - 音: 声（voice-draft/joined.wav）を -16 LUFS にそろえ、BGM（shorts/assets/bgm.mp3）をくり返して 0.07 倍・頭2秒で上げ・最後4秒で下げる。
+ *   2章目からは章の絵が出る秒（声の 0.9 秒前・章の間）に短いジングル（その場で合成した 3音・約0.75秒。外の音源は使わない）。
  *   全体を loudnorm の2パスで -14 LUFS・真のピーク -1 dB
  * - 出力（<フォルダ>/）: video.mp4・chapters.txt・youtube.txt・thumbnail.png（1280x720）。途中のファイルは frames/
  */
@@ -24,7 +25,8 @@ import { ImageResponse } from "next/og";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
-import { FPS, H, W, frameAt, revealedAt, stateAt, type ArtImage, type CharaArt } from "./scenes";
+import { loadCharaArt } from "./art";
+import { FPS, H, W, chapterShownAt, frameAt, localAt, revealedAt, stateAt, type CharaArt } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, Timeline } from "./types";
 
@@ -35,11 +37,11 @@ const VOICE_LUFS = -16;
 /** 口の開閉（秒） */
 const MOUTH = 0.2;
 const CAMPAIGN = "long_20261021";
+/** ジングルのピーク（dBFS。声を -16 LUFS にそろえた段で混ぜる。声より控えめ） */
+const JINGLE_PEAK_DB = -18;
 const SITE_URL = "https://used.gadelog.com";
 
 const ROOT = resolve(__dirname, "..");
-const CHARA_DIR = join(__dirname, "assets/chara");
-const CHARA_FILE: Record<Who, string> = { つむぎ: "tsumugi", ずんだもん: "zundamon" };
 const BGM = join(ROOT, "shorts/assets/bgm.mp3");
 
 // このプロセスと子（ffmpeg）を低い優先度で動かす（Windows では子は親の「通常以下」を受け継ぐ）
@@ -79,35 +81,6 @@ async function measure(file: string, extra = ""): Promise<Record<string, string>
   return JSON.parse(err.slice(err.lastIndexOf("{"), err.lastIndexOf("}") + 1)) as Record<string, string>;
 }
 
-// ───────── 立ち絵 ─────────
-
-const pngSize = (buf: Buffer) => ({ w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) });
-
-/** 立ち絵を読む。大きい絵は枠の2倍の高さ（約1200px）に縮めて frames/ に置く（コマごとの縮小を軽くする） */
-function loadCharaArt(work: string): { art: CharaArt; files: string[] } {
-  const art: CharaArt = {};
-  const files: string[] = [];
-  const load = (name: string): ArtImage | undefined => {
-    const src = join(CHARA_DIR, `${name}.png`);
-    if (!existsSync(src)) return undefined;
-    let buf = readFileSync(src);
-    if (pngSize(buf).h > 1300) {
-      const small = join(work, `chara-${name}.png`);
-      const r = spawnSync("ffmpeg", ["-loglevel", "error", "-threads", "1", "-y", "-i", src, "-vf", "scale=-1:1200:flags=lanczos", small]);
-      if (r.status !== 0) throw new Error(`立ち絵を縮められませんでした: ${src}`);
-      buf = readFileSync(small);
-    }
-    files.push(src);
-    return { src: `data:image/png;base64,${buf.toString("base64")}`, ...pngSize(buf) };
-  };
-  for (const who of Object.keys(CHARA_FILE) as Who[]) {
-    const closed = load(CHARA_FILE[who]);
-    if (!closed) continue;
-    art[who] = { closed, talk: load(`${CHARA_FILE[who]}-talk`) };
-  }
-  return { art, files };
-}
-
 // ───────── 区切り ─────────
 
 type Segment = { frame: number; t: number; key: string; flap: boolean };
@@ -120,6 +93,7 @@ function segments(tl: Timeline, art: CharaArt): { segs: Segment[]; totalFrames: 
   const total = tl.total + TAIL;
   const points = new Set<number>([0]);
   for (const ch of tl.chapters) {
+    points.add(chapterShownAt(ch));
     points.add(ch.start);
     for (const r of Object.values(ch.scene.reveal)) if (r > 0) points.add(ch.start + r);
     for (const l of ch.lines) {
@@ -135,7 +109,7 @@ function segments(tl: Timeline, art: CharaArt): { segs: Segment[]; totalFrames: 
     const flap = !!(who && art[who]?.talk && st.talking);
     // 立ち絵がなければ「話している最中か」で絵は変わらない
     const talkKey = who && art[who] ? st.talking : false;
-    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, t - st.ch.start).sort(), talkKey]);
+    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), talkKey]);
     const frame = Math.round(t * FPS);
     const last = segs[segs.length - 1];
     if (last && last.frame === frame) segs.pop();
@@ -192,6 +166,40 @@ async function encode(work: string, preset: string) {
   );
 }
 
+/**
+ * 章のジングル（WAV・48kHz ステレオ）をその場で作る。E5→G#5→B5（ホ長調の和音を下から）を 0.11 秒おきに、
+ * 正弦波＋弱い2倍音（鈴っぽく）・立ち上がり 4ms・指数で減衰。全体 0.75 秒・最後の 40ms で消す。外の音源は使わない
+ */
+function makeJingle(file: string) {
+  const rate = 48000, len = 0.75;
+  const notes = [{ f: 659.25, at: 0, tau: 0.14 }, { f: 830.61, at: 0.11, tau: 0.14 }, { f: 987.77, at: 0.22, tau: 0.22 }];
+  const n = Math.round(rate * len);
+  const x = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const t = i / rate;
+    for (const nt of notes) {
+      const u = t - nt.at;
+      if (u < 0) continue;
+      const env = Math.min(1, u / 0.004) * Math.exp(-u / nt.tau);
+      x[i] += env * (Math.sin(2 * Math.PI * nt.f * u) + 0.25 * Math.exp(-u / 0.05) * Math.sin(4 * Math.PI * nt.f * u));
+    }
+    x[i] *= Math.min(1, (len - t) / 0.04);
+  }
+  const peak = x.reduce((a, v) => Math.max(a, Math.abs(v)), 0);
+  const k = 10 ** (JINGLE_PEAK_DB / 20) / peak;
+  const buf = Buffer.alloc(44 + n * 4);
+  buf.write("RIFF", 0); buf.writeUInt32LE(36 + n * 4, 4); buf.write("WAVE", 8);
+  buf.write("fmt ", 12); buf.writeUInt32LE(16, 16); buf.writeUInt16LE(1, 20); buf.writeUInt16LE(2, 22);
+  buf.writeUInt32LE(rate, 24); buf.writeUInt32LE(rate * 4, 28); buf.writeUInt16LE(4, 32); buf.writeUInt16LE(16, 34);
+  buf.write("data", 36); buf.writeUInt32LE(n * 4, 40);
+  for (let i = 0; i < n; i++) {
+    const v = Math.round(x[i] * k * 32767);
+    buf.writeInt16LE(v, 44 + i * 4);
+    buf.writeInt16LE(v, 46 + i * 4);
+  }
+  writeFileSync(file, buf);
+}
+
 async function audio(dir: string, tl: Timeline, work: string) {
   const voice = join(dir, "voice-draft/joined.wav");
   if (!existsSync(voice)) throw new Error(`声がありません: ${voice}（先に voice-draft.ts）`);
@@ -204,11 +212,17 @@ async function audio(dir: string, tl: Timeline, work: string) {
   console.log(`  声 ${Number(vm.input_i).toFixed(1)} LUFS → ${gain >= 0 ? "+" : ""}${gain.toFixed(1)} dB で ${VOICE_LUFS} LUFS に`);
   const stereo = "aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo";
   const mix = join(work, "mix.wav");
+  const jingle = join(work, "jingle.wav");
+  makeJingle(jingle);
+  const at = tl.chapters.slice(1).map((c) => Math.round(chapterShownAt(c) * 1000));
+  const jingles = `[2:a]${stereo},asplit=${at.length}${at.map((_, i) => `[j${i}]`).join("")};` + at.map((ms, i) => `[j${i}]adelay=${ms}|${ms}[d${i}];`).join("");
+  console.log(`  ジングル ${at.length} か所（${at.map((ms) => fmtClock(ms / 1000)).join("・")}）`);
   await ffmpeg(
-    ["-y", "-threads", "2", "-i", voice, "-stream_loop", "-1", "-i", BGM, "-filter_complex",
+    ["-y", "-threads", "2", "-i", voice, "-stream_loop", "-1", "-i", BGM, "-i", jingle, "-filter_complex",
       `[0:a]${stereo},volume=${gain.toFixed(2)}dB,apad=whole_dur=${total}[v];` +
       `[1:a]${stereo},atrim=0:${total},asetpts=PTS-STARTPTS,volume=${BGM_VOLUME},afade=t=in:st=0:d=2,afade=t=out:st=${(total - 4).toFixed(3)}:d=4[b];` +
-      `[v][b]amix=inputs=2:duration=first:normalize=0[a]`,
+      jingles +
+      `[v][b]${at.map((_, i) => `[d${i}]`).join("")}amix=inputs=${at.length + 2}:duration=first:normalize=0[a]`,
       "-map", "[a]", "-t", String(total), "-c:a", "pcm_s16le", mix],
     "声と BGM を混ぜる",
   );
@@ -240,7 +254,9 @@ function youtubeText(dir: string, tl: Timeline, artFiles: string[]): string {
   const utm = `utm_source=youtube&utm_medium=social&utm_campaign=${CAMPAIGN}`;
   const link = (path: string) => `${SITE_URL}${path}?${utm}`;
   const credits = ["VOICEVOX:春日部つむぎ", "VOICEVOX:ずんだもん", "BGM: Okay For Now - Televisions（YouTube オーディオライブラリ）"];
-  if (artFiles.length) credits.push("立ち絵: （ここに立ち絵の作者・配布元のクレジット。各規約の表記どおりに）");
+  // 立ち絵（chara.py で作った絵を使ったとき）。つむぎ＝春日部つくし（KASUKABEproject）・ずんだもん＝坂本アヒル
+  if (artFiles.some((f) => /tsumugi/.test(f))) credits.push("立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)");
+  if (artFiles.some((f) => /zundamon/.test(f))) credits.push("ずんだもん立ち絵：坂本アヒル様");
   return [
     title,
     "",

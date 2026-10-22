@@ -173,9 +173,20 @@ export function narrationOf(s: Script): Partial<Record<NarrationKey, string>> {
   return { ...defaultNarration(s), ...(s.narration ?? {}) };
 }
 
-/** 読み上げ用に直す（画面の文字は変えない）。英字の機種名・容量・記号をカナに */
+/**
+ * エンジンが読み違える語（かなに開いて読ませる）。ショートと横動画（longform/script.ts の forVoice の後）で共有。10/22 に春日部つむぎ（ID 8）で確認:
+ * 高すぎ→コオスギ・新すぎ→シンスギ・古すぎ→イニシエスギ・古め→イニシエメ・大きすぎ→タイキスギ・新しめ→シンシメ・7万件→ナナマンゲン。
+ * 怖すぎ・安すぎ・重すぎ・多すぎ・高め・安めは正しく読むので入れない
+ */
+export const READING_FIXES: [RegExp, string][] = [
+  [/高すぎ/g, "たかすぎ"], [/新すぎ/g, "あたらしすぎ"], [/古すぎ/g, "ふるすぎ"], [/古め/g, "ふるめ"], [/大きすぎ/g, "おおきすぎ"],
+  [/新しめ/g, "あたらしめ"], [/万件/g, "万けん"],
+];
+
+/** 読み上げ用に直す（画面の文字は変えない）。読み違える語（READING_FIXES）・英字の機種名・容量・記号をカナに */
 export function speakable(text: string): string {
   const words: [RegExp, string][] = [
+    ...READING_FIXES,
     [/iPhone/g, "アイフォン"], [/iPad/g, "アイパッド"], [/MacBook/g, "マックブック"], [/Apple Watch/g, "アップルウォッチ"],
     [/Galaxy/g, "ギャラクシー"], [/\bZ\s*(?=Fold|Flip)/g, "ゼット"], [/Fold/g, "フォールド"], [/Flip/g, "フリップ"], [/Pixel/g, "ピクセル"],
     [/Pro Max/g, "プロマックス"], [/\bPro\b/g, "プロ"], [/\bMax\b/g, "マックス"], [/\bPlus\b/g, "プラス"], [/\bmini\b/g, "ミニ"],

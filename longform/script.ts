@@ -7,17 +7,24 @@
 
 export type Who = "つむぎ" | "ずんだもん";
 export const SPEAKERS: Record<Who, string> = { つむぎ: "春日部つむぎ/ノーマル", ずんだもん: "ずんだもん/ノーマル" };
-/** 行の間・章の間（秒）。voice-draft.m4a と同じ */
+/** 行の間・章の間（秒）。voice-draft.m4a と同じ。章の間は章のジングル（video.tsx・約0.7秒）が入るよう 1.1 秒 */
 export const LINE_GAP = 0.25;
-export const CHAPTER_GAP = 0.8;
+export const CHAPTER_GAP = 1.1;
+/** 2章目からは、章の絵（とジングル）を声の始まりの この秒数 前に出す（章の間の 0.2 秒目。前の台詞の余韻を残す） */
+export const CHAPTER_LEAD = 0.9;
 /** voice-draft の既定の速さ（キャッシュの鍵に入るので、同じ値でないと声のキャッシュに当たらない） */
 export const DEFAULT_LONG_SPEED = 1.15;
 
-/** shorts の speakable が知らない語・記号を、台本のうちに読みへ直す */
+/**
+ * shorts の speakable が知らない語・記号を、台本のうちに読みへ直す。
+ * 「7万件」「新しめ」などショートでも出る読み違いは shorts/voice.ts の READING_FIXES（speakable が合成の前に通す）
+ */
 export function forVoice(text: string): string {
   const words: [RegExp, string][] = [
     [/USB-C/g, "ユーエスビーシー"], [/MagSafe/g, "マグセーフ"], [/(\d+)Hz/g, "$1ヘルツ"], [/\bOS\b/g, "オーエス"],
     [/\bMac\b/g, "マック"], [/\bApple\b/g, "アップル"], [/\bOK\b/g, "オーケー"], [/〜/g, "ー"], [/あーし/g, "アーシ"], [/△/g, "サンカク"], [/×/g, "バツ"],
+    // 「へたってる」の「へ」を助詞（エ）と読む・「3.0万円」は「サンテンゼロ」・「数字はね」は「ハネ」・「あと13は」は「アトジュウ／サンワ」（10/22）
+    [/へた(?=っ)/g, "ヘタ"], [/(\d)\.0万/g, "$1万"], [/数字はね/g, "数字わね"], [/あと(\d)/g, "あと、$1"],
   ];
   return words.reduce((t, [re, to]) => t.replace(re, to), text);
 }
