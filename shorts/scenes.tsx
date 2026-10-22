@@ -6,6 +6,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
+import { lookOf, type Look } from "./looks";
 import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type Script } from "./types";
 
 export const W = 1080;
@@ -134,20 +135,41 @@ const rate = (r: number) => r.toFixed(1);
 
 const row = { display: "flex", justifyContent: "center", alignItems: "center", whiteSpace: "nowrap" } as const;
 
-function Frame({ s, children, header = true, footer = true }: { s: Script; children: ReactNode; header?: boolean; footer?: boolean }) {
+/** 見出しの帯（形と色はテーマの look。上端 y250・高さ 320 はどの形でも同じ） */
+function Band({ s, L }: { s: Script; L: Look }) {
+  const b = L.band;
+  const tab = b.shape === "tab";
+  const full = b.shape === "full";
+  // 文字の幅: pill は丸い端の分、tab は左の余白の分だけ狭く
+  const tw = full ? CW : b.shape === "pill" ? CW - 160 : tab ? CW - 110 : CW - 60;
+  const radius = full ? 0 : b.shape === "pill" ? HEADER.height / 2 : b.shape === "tab" ? "0 28px 28px 0" : b.shape === "leaf" ? "110px 0 110px 0" : 28;
+  const title = HEAD_TITLE(s);
   return (
-    <div style={{ width: W, height: H, display: "flex", position: "relative", background: C.bg, fontFamily: "Noto Sans JP", color: C.white }}>
-      {header && (
-        <div style={{ position: "absolute", left: MARGIN, top: HEADER.top, width: CW, height: HEADER.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: C.red, borderRadius: 28 }}>
-          <div style={{ ...row, fontSize: FIT(HEAD_SUB(s.shopCount), CW - 60, 52), fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>{HEAD_SUB(s.shopCount)}</div>
-          {HEAD_TITLE(s).map((l, i) => (
-            <div key={i} style={{ ...row, fontSize: Math.min(...HEAD_TITLE(s).map((x) => FIT(x, CW - 60, 104))), fontWeight: 900, lineHeight: 1.15, marginTop: i ? 0 : 6 }}>{l}</div>
-          ))}
-        </div>
+    <div style={{
+      position: "absolute", left: full ? 0 : MARGIN, top: HEADER.top, width: full ? W : CW, height: HEADER.height, display: "flex", flexDirection: "column",
+      alignItems: tab ? "flex-start" : "center", justifyContent: "center", paddingLeft: tab ? 60 : 0,
+      background: b.fill, borderRadius: radius, color: b.text,
+      boxShadow: tab && b.stripe ? `-18px 0 0 0 ${b.stripe}` : "none",
+    }}>
+      <div style={{ ...row, fontSize: FIT(HEAD_SUB(s.shopCount), tw, 52), fontWeight: 700, color: b.sub }}>{HEAD_SUB(s.shopCount)}</div>
+      {title.map((l, i) => (
+        <div key={i} style={{ ...row, fontSize: Math.min(...title.map((x) => FIT(x, tw, 104))), fontWeight: 900, lineHeight: 1.15, marginTop: i ? 0 : 6 }}>{l}</div>
+      ))}
+      {b.shape === "underline" && b.stripe && (
+        <div style={{ position: "absolute", left: 0, bottom: 0, width: CW, height: 16, borderRadius: 8, background: b.stripe }} />
       )}
+    </div>
+  );
+}
+
+function Frame({ s, children, header = true, footer = true }: { s: Script; children: ReactNode; header?: boolean; footer?: boolean }) {
+  const L = lookOf(s);
+  return (
+    <div style={{ width: W, height: H, display: "flex", position: "relative", background: L.bg, fontFamily: "Noto Sans JP", color: L.fg }}>
+      {header && <Band s={s} L={L} />}
       <div style={{ position: "absolute", left: MARGIN, top: BODY.top, width: CW, height: BODY.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>{children}</div>
       {footer && (
-        <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", justifyContent: "center", fontSize: FIT(FOOT(s), CW, 30, 24), fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>
+        <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", justifyContent: "center", fontSize: FIT(FOOT(s), CW, 30, 24), fontWeight: 500, color: L.sub, whiteSpace: "nowrap" }}>
           {FOOT(s)}
         </div>
       )}
@@ -155,20 +177,149 @@ function Frame({ s, children, header = true, footer = true }: { s: Script; child
   );
 }
 
-const card = { display: "flex", flexDirection: "column", alignItems: "center", background: C.white, borderRadius: 28, color: C.navy } as const;
+/** 白いカード（角と縁はテーマの look） */
+const card = (L: Look) => ({ display: "flex", flexDirection: "column", alignItems: "center", background: C.white, borderRadius: L.card.radius, boxShadow: L.card.shadow, color: C.navy }) as const;
 
-/** つかみ: 問い（2行）と「1位 ？？？」の札。lines を渡せば問いを替える（newused） */
-function Hook({ s, t, lines = ["今週いちばん値下がりした", "中古iPhoneは…？"] }: { s: Script; t: number; lines?: string[] }) {
-  const pulse = 1 + 0.035 * Math.sin(t * Math.PI * 2 * 1.2);
+/**
+ * つかみ（1コマ目）。t=0 で絵がそろっている（出る動きはなし。札だけ小さく脈打つ）。型はテーマの look.hook（shorts/looks.ts）。
+ * 数字は台本の1位の値（items[0]＝差額がいちばん大きい）。画像・ロゴ・製品写真は使わず、文字と図形だけ
+ */
+const pulseOf = (t: number) => 1 + 0.035 * Math.sin(t * Math.PI * 2 * 1.2);
+
+/** 問いの行（大きさは行どうしでそろえる） */
+function Question({ lines, max = 96 }: { lines: string[]; max?: number }) {
+  const size = Math.min(...lines.map((x) => FIT(x, CW, max)));
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      {lines.map((l, i) => (
+        <div key={i} style={{ ...row, fontSize: size, fontWeight: 900, lineHeight: 1.2 }}>{l}</div>
+      ))}
+    </div>
+  );
+}
+
+/** 「最大 −12,345円」（地の上の強調色） */
+function Teaser({ s, label, value, mt = 34 }: { s: Script; label: string; value: string; mt?: number }) {
+  const L = lookOf(s);
+  return (
+    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: mt }}>
+      <div style={{ ...row, fontSize: 52, fontWeight: 900, color: L.fg, marginRight: 16 }}>{label}</div>
+      <div style={{ ...row, fontSize: FIT(value, CW - 260, 110), fontWeight: 900, color: L.accentOnBg }}>{value}</div>
+    </div>
+  );
+}
+
+/** drops: 問い＋1位の下がった額（機種は伏せる） */
+function Hook({ s, t }: { s: DropsScript; t: number }) {
+  const h = s.scenes.hook;
+  const full = `−${n(h.drop)}円`;
   return (
     <Frame s={s}>
-      {lines.map((l, i) => (
-        <div key={i} style={{ ...row, fontSize: FIT(l, CW, 96), fontWeight: 900, marginBottom: 14 }}>{l}</div>
-      ))}
-      <div style={{ ...card, flexDirection: "row", justifyContent: "center", width: CW, height: 170, marginTop: 60, transform: `scale(${pulse})` }}>
-        <div style={{ display: "flex", fontSize: 56, fontWeight: 900, color: C.white, background: C.gold, borderRadius: 18, padding: "8px 28px" }}>1位</div>
-        <div style={{ display: "flex", fontSize: 80, fontWeight: 900, marginLeft: 36 }}>？？？</div>
+      <Question lines={["今週いちばん値下がりした", "中古iPhoneは…？"]} />
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "30px 30px 40px", marginTop: 44, transform: `scale(${pulseOf(t)})` }}>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <div style={{ display: "flex", fontSize: 52, fontWeight: 900, color: C.white, background: C.gold, borderRadius: 18, padding: "6px 26px" }}>1位</div>
+          <div style={{ display: "flex", fontSize: 64, fontWeight: 900, marginLeft: 26 }}>？？？</div>
+          <div style={{ display: "flex", fontSize: 44, fontWeight: 900, color: C.muted, marginLeft: 26 }}>1週間で</div>
+        </div>
+        <div style={{ ...row, fontSize: FIT(full, CW - 60, 200), fontWeight: 900, color: C.red, marginTop: 6 }}>{full}</div>
       </div>
+    </Frame>
+  );
+}
+
+/** budget・pixelbudget: 問い＋予算の札（2×2）。pixelbudget は札にアップデート保証の終わり、budget は「なら？」 */
+function BudgetHook({ s, t }: { s: BudgetScript; t: number }) {
+  const L = lookOf(s);
+  const rows = s.scenes.budgets.rows;
+  const lines = ["予算ぴったりで買える", s.theme === "pixelbudget" ? "中古Pixelは…？" : "中古iPhoneは…？"];
+  const TW = (CW - 30) / 2;
+  return (
+    <Frame s={s}>
+      <Question lines={lines} max={92} />
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", width: CW, marginTop: 40, transform: `scale(${pulseOf(t)})` }}>
+        {rows.map((r, i) => {
+          const sub = r.updateUntil ? `更新 ${jaYm(r.updateUntil)}まで` : "なら？";
+          return (
+            <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: TW, height: 190, marginTop: i >= 2 ? 30 : 0, background: L.chip, borderRadius: Math.min(L.card.radius, 32), boxShadow: L.card.shadow, color: C.white }}>
+              <div style={{ ...row, fontSize: FIT(r.label, TW - 40, 92), fontWeight: 900, lineHeight: 1.1 }}>{r.label}</div>
+              <div style={{ ...row, fontSize: FIT(sub, TW - 40, 40), fontWeight: 700, marginTop: 6 }}>{sub}</div>
+            </div>
+          );
+        })}
+      </div>
+    </Frame>
+  );
+}
+
+type Tile = { label: string; sub: string; fill: string };
+
+/** newused・provs: 問い＋2つを並べた札（真ん中に vs）＋1位の差額 */
+function SplitHook({ s, t, lines, left, right, teaser }: { s: Script; t: number; lines: string[]; left: Tile; right: Tile; teaser: string }) {
+  const L = lookOf(s);
+  const TW = 400;
+  const TH = 250;
+  const VS = 130;
+  const tile = (x: Tile) => (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: TW, height: TH, background: x.fill, borderRadius: Math.min(L.card.radius, 28), boxShadow: L.card.shadow, color: C.white }}>
+      <div style={{ ...row, fontSize: FIT(x.label, TW - 60, 120), fontWeight: 900, lineHeight: 1.1 }}>{x.label}</div>
+      <div style={{ ...row, fontSize: FIT(x.sub, TW - 60, 40), fontWeight: 700, marginTop: 8 }}>{x.sub}</div>
+    </div>
+  );
+  return (
+    <Frame s={s}>
+      <Question lines={lines} max={88} />
+      <div style={{ display: "flex", position: "relative", justifyContent: "space-between", width: CW, height: TH, marginTop: 40, transform: `scale(${pulseOf(t)})` }}>
+        {tile(left)}
+        {tile(right)}
+        <div style={{ position: "absolute", left: (CW - VS) / 2, top: (TH - VS) / 2, width: VS, height: VS, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: VS / 2, background: L.bg, boxShadow: `0 0 0 6px ${L.fg}`, fontSize: 60, fontWeight: 900, color: L.fg }}>vs</div>
+      </div>
+      <Teaser s={s} label="最大" value={teaser} />
+    </Frame>
+  );
+}
+
+/** fold: 問い＋開いた折りたたみの形（図形だけ。左が新しい方、右が1世代前、間に蝶番）＋1位の差額 */
+function FoldHook({ s, t }: { s: FoldScript; t: number }) {
+  const L = lookOf(s);
+  const r = s.scenes.ranking.items[0];
+  const PW = 230;
+  const PH = 260;
+  return (
+    <Frame s={s}>
+      <Question lines={["折りたたみスマホ、", "1世代前にすると", "いくら安い？"]} max={80} />
+      <div style={{ display: "flex", alignItems: "center", marginTop: 36, transform: `scale(${pulseOf(t)})` }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: PW, height: PH, background: C.white, borderRadius: "40px 6px 6px 40px", boxShadow: `0 0 0 8px ${SITE.ink}`, color: C.navy }}>
+          <div style={{ ...row, fontSize: 64, fontWeight: 900 }}>最新</div>
+        </div>
+        <div style={{ display: "flex", width: 18, height: PH + 16, background: L.accentOnBg, borderRadius: 9 }} />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: PW, height: PH, background: SITE.brand200, borderRadius: "6px 40px 40px 6px", boxShadow: `0 0 0 8px ${SITE.ink}`, color: C.navy }}>
+          <div style={{ ...row, fontSize: 52, fontWeight: 900 }}>1世代前</div>
+        </div>
+      </div>
+      <Teaser s={s} label="最大" value={`−${n(r.diff)}円`} mt={36} />
+    </Frame>
+  );
+}
+
+/** rank: 問い＋ランク A・B・C の札（色は1位の発表の棒と同じ）＋1位の A→C の差額 */
+function AbcHook({ s, t }: { s: RankScript; t: number }) {
+  const r = s.scenes.ranking.items[0];
+  const L = lookOf(s);
+  const SZ = 250;
+  const chips = [{ k: "A", c: C.budget }, { k: "B", c: C.silver }, { k: "C", c: C.red }];
+  return (
+    <Frame s={s}>
+      <Question lines={["状態ランクで、", "中古iPhoneは", "いくら違う？"]} max={88} />
+      <div style={{ display: "flex", justifyContent: "space-between", width: CW - 60, marginTop: 36, transform: `scale(${pulseOf(t)})` }}>
+        {chips.map((x) => (
+          <div key={x.k} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: SZ, height: SZ, background: x.c, borderRadius: L.card.radius, boxShadow: L.card.shadow, color: C.white }}>
+            <div style={{ ...row, fontSize: 40, fontWeight: 700 }}>ランク</div>
+            <div style={{ ...row, fontSize: 150, fontWeight: 900, lineHeight: 1 }}>{x.k}</div>
+          </div>
+        ))}
+      </div>
+      <Teaser s={s} label="A→C 最大" value={`−${n(r.diff)}円`} />
     </Frame>
   );
 }
@@ -212,8 +363,8 @@ function ProVsRanking({ s, t, o }: { s: ProVsScript; t: number; o: Scene["o"] })
     model: pairName(it.base, it.pro),
     cells: [
       { text: it.storage, w: 170, max: 44, color: C.muted },
-      { text: `+${n(it.diff)}円`, w: 320, max: 76, color: C.red },
-      { text: `+${rate(it.pct)}%`, w: 190, max: 50, color: C.red },
+      { text: `+${n(it.diff)}円`, w: 320, max: 76, color: lookOf(s).accent },
+      { text: `+${rate(it.pct)}%`, w: 190, max: 50, color: lookOf(s).accent },
     ],
   }));
   return <RankRows s={s} t={t} o={o} items={items} />;
@@ -229,8 +380,8 @@ function FoldRanking({ s, t, o }: { s: FoldScript; t: number; o: Scene["o"] }) {
     model: foldName(it.newer, it.older),
     cells: [
       { text: it.storage, w: 170, max: 44, color: C.muted },
-      { text: `−${n(it.diff)}円`, w: 320, max: 76, color: C.red },
-      { text: `−${rate(it.pct)}%`, w: 190, max: 50, color: C.red },
+      { text: `−${n(it.diff)}円`, w: 320, max: 76, color: lookOf(s).accent },
+      { text: `−${rate(it.pct)}%`, w: 190, max: 50, color: lookOf(s).accent },
     ],
   }));
   return <RankRows s={s} t={t} o={o} items={items} />;
@@ -243,7 +394,7 @@ function RankRows({ s, t, o, items }: { s: Script; t: number; o: Scene["o"]; ite
   const RIGHT = 680;
   return (
     <Frame s={s}>
-      <div style={{ ...card, width: CW, padding: "6px 24px" }}>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "6px 24px" }}>
         {items.map((it, i) => {
           // 3位（下）→ 2位の順に出す。1位は最後まで出さない
           const at = o?.at?.[i] ?? (o?.start ?? 0.5) + (o?.gap ?? 1.6) * (items.length - 1 - i);
@@ -282,7 +433,7 @@ function Reveal({ s, t }: { s: DropsScript; t: number }) {
   return (
     <Frame s={s}>
       <div style={{ ...row, fontSize: 84, fontWeight: 900, marginBottom: 40, opacity: prog(t, 0, 0.4) }}>1位は…</div>
-      <div style={{ ...card, width: CW, padding: "44px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "44px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
         <div style={{ ...row, fontSize: FIT(h.model, CW - 60, 120), fontWeight: 900 }}>{h.model}</div>
         <div style={{ ...row, fontSize: FIT(dropText, CW - 60, 170), fontWeight: 900, color: C.red, marginTop: 20 }}>{`−${n(shown)}円`}</div>
         <div style={{ ...row, fontSize: 84, fontWeight: 900, color: C.red }}>{`−${rate(r.rate)}%`}</div>
@@ -311,7 +462,7 @@ type Pt = { date: string; median: number };
 
 /** 折れ線のカード。p は線が描かれた割合（0〜1）。labels=true で最高・最低・日付を入れる */
 /** mark: 印を付ける点の添字（いちばん下がった日）。線がそこまで描かれたら出す */
-function ChartCard({ points, p, labels, chartH = 400, mark }: { points: Pt[]; p: number; labels: boolean; chartH?: number; mark?: number }) {
+function ChartCard({ s, points, p, labels, chartH = 400, mark }: { s: Script; points: Pt[]; p: number; labels: boolean; chartH?: number; mark?: number }) {
   const vals = points.map((q) => q.median);
   let lo = Math.min(...vals);
   let hi = Math.max(...vals);
@@ -327,7 +478,7 @@ function ChartCard({ points, p, labels, chartH = 400, mark }: { points: Pt[]; p:
   const [ex, ey] = drawn[drawn.length - 1];
   const lab = { display: "flex", fontSize: 36, fontWeight: 900, color: C.muted } as const;
   return (
-    <div style={{ ...card, width: CW, padding: "24px 28px", alignItems: "stretch" }}>
+    <div style={{ ...card(lookOf(s)), width: CW, padding: "24px 28px", alignItems: "stretch" }}>
       {labels && <div style={lab}>{`最高 ${n(Math.max(...vals))}円`}</div>}
       <svg width={CWI} height={chartH} viewBox={`0 0 ${CWI} ${chartH}`}>
         <path d={d} fill="none" stroke={C.red} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
@@ -356,7 +507,7 @@ function Trend({ s, t }: { s: DropsScript; t: number }) {
     return (
       <Frame s={s}>
         {title}
-        <div style={{ ...card, width: CW, padding: "40px 0" }}>
+        <div style={{ ...card(lookOf(s)), width: CW, padding: "40px 0" }}>
           <div style={{ ...row, fontSize: 44, fontWeight: 900, color: C.muted }}>1週間前</div>
           <div style={{ ...row, fontSize: 90, fontWeight: 900 }}>{`${n(h.before)}円`}</div>
           <div style={{ ...row, fontSize: 44, fontWeight: 900, color: C.muted, marginTop: 24 }}>いま</div>
@@ -376,10 +527,10 @@ function Trend({ s, t }: { s: DropsScript; t: number }) {
   return (
     <Frame s={s}>
       {title}
-      <ChartCard points={points} p={prog(t, 0, 1.3)} labels={false} mark={mark} />
+      <ChartCard s={s} points={points} p={prog(t, 0, 1.3)} labels={false} mark={mark} />
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", width: CW, marginTop: 28, opacity: shown }}>
-        <span style={{ ...row, width: 340, justifyContent: "flex-start", fontSize: FIT(startText, 340, 40), fontWeight: 900, color: C.sub }}>{startText}</span>
-        <span style={{ ...row, width: 560, justifyContent: "flex-end", fontSize: FIT(endText, 560, 72), fontWeight: 900, color: C.redLight }}>{endText}</span>
+        <span style={{ ...row, width: 340, justifyContent: "flex-start", fontSize: FIT(startText, 340, 40), fontWeight: 900, color: lookOf(s).sub }}>{startText}</span>
+        <span style={{ ...row, width: 560, justifyContent: "flex-end", fontSize: FIT(endText, 560, 72), fontWeight: 900, color: lookOf(s).accentOnBg }}>{endText}</span>
       </div>
     </Frame>
   );
@@ -392,7 +543,7 @@ function HookNum({ s, t }: { s: DropsScript; t: number }) {
   const lines = ["1週間でこれだけ下がった", "中古iPhoneは…？"];
   return (
     <Frame s={s}>
-      <div style={{ ...card, width: CW, padding: "50px 0" }}>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "50px 0" }}>
         <div style={{ ...row, fontSize: FIT(full, CW - 60, 190), fontWeight: 900, color: C.red }}>{`−${n(Math.round(h.drop * prog(t, 0.1, 0.8)))}円`}</div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 56 }}>
@@ -413,8 +564,8 @@ function HookChart({ s, t }: { s: DropsScript; t: number }) {
   return (
     <Frame s={s}>
       <div style={{ ...row, fontSize: FIT(heading, CW, 64), fontWeight: 900, marginBottom: 30 }}>{heading}</div>
-      <ChartCard points={points} p={prog(t, 0.3, 2.5)} labels={false} chartH={520} />
-      <div style={{ ...row, fontSize: 110, fontWeight: 900, color: C.redLight, marginTop: 36, opacity: clamp((t - 2.8) / 0.3) }}>{`1週間で−${n(h.drop)}円`}</div>
+      <ChartCard s={s} points={points} p={prog(t, 0.3, 2.5)} labels={false} chartH={520} />
+      <div style={{ ...row, fontSize: 110, fontWeight: 900, color: lookOf(s).accentOnBg, marginTop: 36, opacity: clamp((t - 2.8) / 0.3) }}>{`1週間で−${n(h.drop)}円`}</div>
     </Frame>
   );
 }
@@ -424,7 +575,7 @@ function Comment({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   const size = Math.min(...lines.map((l) => FIT(l, CW - 100, 72, 36))); // 行ごとに大きさが違わないよう最小にそろえる
   return (
     <Frame s={s}>
-      <div style={{ ...card, width: CW, padding: "56px 40px" }}>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "56px 40px" }}>
         <div style={{ ...row, fontSize: 40, fontWeight: 900, color: C.white, background: C.amber, padding: "8px 32px", borderRadius: 999 }}>{`${speaker}のひと言`}</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 44 }}>
           {lines.map((l, i) => (
@@ -448,29 +599,10 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
           ))}
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.6 * k, 0.4) }}>
-          <div style={{ ...row, fontSize: FIT(out.url, CW, 80), fontWeight: 900, color: C.good, marginTop: 56 }}>{out.url}</div>
-          <div style={{ ...row, fontSize: 34, fontWeight: 500, color: C.sub, marginTop: 40 }}>{out.note}</div>
+          <div style={{ ...row, fontSize: FIT(out.url, CW, 80), fontWeight: 900, color: lookOf(s).url, marginTop: 56 }}>{out.url}</div>
+          <div style={{ ...row, fontSize: 34, fontWeight: 500, color: lookOf(s).sub, marginTop: 40 }}>{out.note}</div>
         </div>
         <div style={{ ...row, fontSize: 52, fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>{out.question ?? "来週の1位は…？"}</div>
-      </div>
-    </Frame>
-  );
-}
-
-/** budget のつかみ: 問い（3行）と、動画に出る予算の札 */
-function BudgetHook({ s, t }: { s: BudgetScript; t: number }) {
-  const lines = ["予算ぴったりで", "買える", s.theme === "pixelbudget" ? "中古Pixelは…？" : "中古iPhoneは…？"];
-  const pulse = 1 + 0.035 * Math.sin(t * Math.PI * 2 * 1.2);
-  const rows = s.scenes.budgets.rows;
-  return (
-    <Frame s={s}>
-      {lines.map((l, i) => (
-        <div key={i} style={{ ...row, fontSize: Math.min(...lines.map((x) => FIT(x, CW, 100))), fontWeight: 900, marginBottom: 10 }}>{l}</div>
-      ))}
-      <div style={{ ...card, flexDirection: "row", justifyContent: "space-around", width: CW, height: 170, marginTop: 50, transform: `scale(${pulse})` }}>
-        {rows.map((r, i) => (
-          <div key={i} style={{ display: "flex", fontSize: 54, fontWeight: 900, color: C.white, background: C.budget, borderRadius: 18, padding: "8px 18px" }}>{r.label}</div>
-        ))}
       </div>
     </Frame>
   );
@@ -487,13 +619,13 @@ function BudgetRows({ s, t, o }: { s: BudgetScript; t: number; o: Scene["o"] }) 
   const upd = rows.some((r) => r.updateUntil);
   return (
     <Frame s={s}>
-      <div style={{ ...card, width: CW, padding: "4px 24px" }}>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "4px 24px" }}>
         {rows.map((r, i) => {
           const p = prog(t, o?.at?.[i] ?? 0.3 + 1.6 * i, ROW_FADE);
           const price = `相場 ${n(r.median)}円`;
           return (
             <div key={i} style={{ display: "flex", alignItems: "center", width: "100%", height: RH, borderBottom: i < rows.length - 1 ? `3px solid ${C.line}` : "none", opacity: p, transform: `translateX(${Math.round((1 - p) * 80)}px)` }}>
-              <div style={{ display: "flex", justifyContent: "center", width: 190, flexShrink: 0, fontSize: FIT(r.label, 170, 60), fontWeight: 900, color: C.white, background: C.budget, borderRadius: 22, padding: "14px 0" }}>{r.label}</div>
+              <div style={{ display: "flex", justifyContent: "center", width: 190, flexShrink: 0, fontSize: FIT(r.label, 170, 60), fontWeight: 900, color: C.white, background: lookOf(s).chip, borderRadius: 22, padding: "14px 0" }}>{r.label}</div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: RIGHT, flexShrink: 0, marginLeft: 22 }}>
                 <div style={{ ...row, fontSize: FIT(r.model, RIGHT, upd ? 58 : 66), fontWeight: 900, lineHeight: upd ? 1.15 : undefined }}>{r.model}</div>
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", width: RIGHT, marginTop: upd ? 2 : 6 }}>
@@ -522,7 +654,7 @@ function Pick({ s, t }: { s: BudgetScript; t: number }) {
   return (
     <Frame s={s}>
       <div style={{ ...row, fontSize: 84, fontWeight: 900, marginBottom: 40, opacity: prog(t, 0, 0.25) }}>{`注目は${p.label}`}</div>
-      <div style={{ ...card, width: CW, padding: "44px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "44px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
         <div style={{ ...row, fontSize: FIT(p.model, CW - 60, 120), fontWeight: 900 }}>{p.model}</div>
         <div style={{ ...row, fontSize: FIT(sub, CW - 60, 48), fontWeight: 900, color: C.muted, marginTop: 10 }}>{sub}</div>
         <div style={{ ...row, fontSize: FIT(price, CW - 60, 130), fontWeight: 900, color: C.red, marginTop: 20 }}>{price}</div>
@@ -552,7 +684,7 @@ function NewUsedReveal({ s, t }: { s: NewUsedScript; t: number }) {
   return (
     <Frame s={s}>
       <div style={{ ...row, fontSize: 60, fontWeight: 900, marginBottom: 14, opacity: prog(t, 0, 0.25) }}>1位は…</div>
-      <div style={{ ...card, width: CW, padding: "26px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "26px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
         <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 110), fontWeight: 900 }}>{r.model}</div>
         <div style={{ ...row, fontSize: FIT(sub, CW - 60, 44), fontWeight: 900, color: C.muted, marginTop: 4 }}>{sub}</div>
         <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 18 }}>
@@ -592,12 +724,12 @@ function ProVsReveal({ s, t }: { s: ProVsScript; t: number }) {
   const BAR = CW - 60 - LABEL - 20;
   const bars = [
     { label: "無印", price: r.baseMedian, color: C.budget, w: Math.round((BAR * r.baseMedian) / r.proMedian) },
-    { label: "Pro", price: r.proMedian, color: C.red, w: BAR },
+    { label: "Pro", price: r.proMedian, color: lookOf(s).accent, w: BAR },
   ];
   return (
     <Frame s={s}>
       <div style={{ ...row, fontSize: 60, fontWeight: 900, marginBottom: 14, opacity: prog(t, 0, 0.25) }}>1位は…</div>
-      <div style={{ ...card, width: CW, padding: "26px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "26px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
         <div style={{ ...row, fontSize: FIT(name, CW - 60, 100), fontWeight: 900 }}>{name}</div>
         <div style={{ ...row, fontSize: FIT(sub, CW - 60, 44), fontWeight: 900, color: C.muted, marginTop: 4 }}>{sub}</div>
         <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 18 }}>
@@ -612,8 +744,8 @@ function ProVsReveal({ s, t }: { s: ProVsScript; t: number }) {
           ))}
         </div>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 14 }}>
-          <div style={{ ...row, fontSize: FIT(diffText, 600, 130), fontWeight: 900, color: C.red }}>{`+${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
-          <div style={{ ...row, fontSize: 64, fontWeight: 900, color: C.red, marginLeft: 16 }}>{`+${rate(r.pct)}%`}</div>
+          <div style={{ ...row, fontSize: FIT(diffText, 600, 130), fontWeight: 900, color: lookOf(s).accent }}>{`+${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
+          <div style={{ ...row, fontSize: 64, fontWeight: 900, color: lookOf(s).accent, marginLeft: 16 }}>{`+${rate(r.pct)}%`}</div>
         </div>
         {note && <div style={{ ...row, fontSize: FIT(note, CW - 60, 44), fontWeight: 900, color: C.muted, marginTop: 10, opacity: prog(t, 1.6, 0.3) }}>{note}</div>}
       </div>
@@ -636,13 +768,13 @@ function FoldReveal({ s, t }: { s: FoldScript; t: number }) {
   const BAR = CW - 60 - LABEL - 20;
   const bars = [
     { label: foldShort(r.newer), price: r.newerMedian, color: C.budget, w: BAR },
-    { label: foldShort(r.older), price: r.olderMedian, color: C.red, w: Math.round((BAR * r.olderMedian) / r.newerMedian) },
+    { label: foldShort(r.older), price: r.olderMedian, color: lookOf(s).accent, w: Math.round((BAR * r.olderMedian) / r.newerMedian) },
   ];
   const labelSize = Math.min(...bars.map((b) => FIT(b.label, LABEL, 48)));
   return (
     <Frame s={s}>
       <div style={{ ...row, fontSize: 60, fontWeight: 900, marginBottom: 14, opacity: prog(t, 0, 0.25) }}>1位は…</div>
-      <div style={{ ...card, width: CW, padding: "26px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "26px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
         <div style={{ ...row, fontSize: FIT(name, CW - 60, 100), fontWeight: 900 }}>{name}</div>
         <div style={{ ...row, fontSize: FIT(sub, CW - 60, 44), fontWeight: 900, color: C.muted, marginTop: 4 }}>{sub}</div>
         <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 18 }}>
@@ -657,8 +789,8 @@ function FoldReveal({ s, t }: { s: FoldScript; t: number }) {
           ))}
         </div>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 14 }}>
-          <div style={{ ...row, fontSize: FIT(diffText, 600, 130), fontWeight: 900, color: C.red }}>{`−${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
-          <div style={{ ...row, fontSize: 64, fontWeight: 900, color: C.red, marginLeft: 16 }}>{`−${rate(r.pct)}%`}</div>
+          <div style={{ ...row, fontSize: FIT(diffText, 600, 130), fontWeight: 900, color: lookOf(s).accent }}>{`−${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
+          <div style={{ ...row, fontSize: 64, fontWeight: 900, color: lookOf(s).accent, marginLeft: 16 }}>{`−${rate(r.pct)}%`}</div>
         </div>
       </div>
     </Frame>
@@ -695,7 +827,7 @@ function RankReveal({ s, t }: { s: RankScript; t: number }) {
   return (
     <Frame s={s}>
       <div style={{ ...row, fontSize: 60, fontWeight: 900, marginBottom: 14, opacity: prog(t, 0, 0.25) }}>1位は…</div>
-      <div style={{ ...card, width: CW, padding: "24px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "24px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
         <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 100), fontWeight: 900 }}>{r.model}</div>
         <div style={{ ...row, fontSize: FIT(sub, CW - 60, 40), fontWeight: 900, color: C.muted, marginTop: 2 }}>{sub}</div>
         <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 12 }}>
@@ -725,7 +857,7 @@ function RankReveal({ s, t }: { s: RankScript; t: number }) {
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
   if (s.theme === "rank") {
     switch (sc.id) {
-      case "hook": return <Hook s={s} t={t} lines={["状態ランクで、", "中古iPhoneは", "いくら違う？"]} />;
+      case "hook": return <AbcHook s={s} t={t} />;
       case "ranking": return <RankRanking s={s} t={t} o={sc.o} />;
       case "reveal": return <RankReveal s={s} t={t} />;
       case "comment": return <Comment s={s} t={t} o={sc.o} />;
@@ -735,7 +867,7 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
   }
   if (s.theme === "fold") {
     switch (sc.id) {
-      case "hook": return <Hook s={s} t={t} lines={["折りたたみスマホ、", "1世代前にすると", "いくら安い？"]} />;
+      case "hook": return <FoldHook s={s} t={t} />;
       case "ranking": return <FoldRanking s={s} t={t} o={sc.o} />;
       case "reveal": return <FoldReveal s={s} t={t} />;
       case "comment": return <Comment s={s} t={t} o={sc.o} />;
@@ -745,7 +877,11 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
   }
   if (s.theme === "provs") {
     switch (sc.id) {
-      case "hook": return <Hook s={s} t={t} lines={["Proと無印、", "同じ容量だと", "いくら違う？"]} />;
+      case "hook": {
+        const r = s.scenes.ranking.items[0];
+        return <SplitHook s={s} t={t} lines={["Proと無印、", "同じ容量だと", "いくら違う？"]} teaser={`+${n(r.diff)}円`}
+          left={{ label: "無印", sub: r.storage, fill: C.budget }} right={{ label: "Pro", sub: r.storage, fill: lookOf(s).chip }} />;
+      }
       case "ranking": return <ProVsRanking s={s} t={t} o={sc.o} />;
       case "reveal": return <ProVsReveal s={s} t={t} />;
       case "comment": return <Comment s={s} t={t} o={sc.o} />;
@@ -755,7 +891,11 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
   }
   if (s.theme === "newused") {
     switch (sc.id) {
-      case "hook": return <Hook s={s} t={t} lines={["新品より、中古で", "いくら安くなる？"]} />;
+      case "hook": {
+        const r = s.scenes.ranking.items[0];
+        return <SplitHook s={s} t={t} lines={["新品より、中古で", "いくら安くなる？"]} teaser={`−${n(r.diff)}円`}
+          left={{ label: "新品", sub: "Apple公式", fill: C.budget }} right={{ label: "中古", sub: "相場", fill: lookOf(s).chip }} />;
+      }
       case "ranking": return <NewUsedRanking s={s} t={t} o={sc.o} />;
       case "reveal": return <NewUsedReveal s={s} t={t} />;
       case "comment": return <Comment s={s} t={t} o={sc.o} />;

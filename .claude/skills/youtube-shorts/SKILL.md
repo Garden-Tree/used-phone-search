@@ -130,9 +130,26 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - 全体: loudnorm の2パスで -11 LUFS（LRA 7・TP -1）。効果音は声の間 25%。
   - YouTube は再生時に -14 前後へ下げるので、効くのは「声と BGM の差」。
 
+### テーマごとに見た目を変える（10/22〜・`shorts/looks.ts`）
+- 2026/10 の方針（テンプレートの一括加工は独自とみなさない）と、1コマ目が毎回同じだとスワイプされやすいことから、**テーマごとに地・帯・カード・強調色・つかみを変える**。テーマを選べば自動で決まる（手で選ばない）。
+- **つかみ（hook）は t=0 で絵がそろっている**（出る動きなし）。数字は台本の1位の値（「最大」）。画像・ロゴ・製品写真は使わず、文字と図形だけ。
+- 変えないもの: 帯の位置（y250〜570）・文字の大きさ・行と声の同期・場面の長さ・声・音・順位の札の色（1位 price・2位 inkMute・3位 inspect700）・ランク A・B・C の色・検品担当の札（inspect700）。
+- 確かめ方: `npx tsx shorts/stills.tsx [テーマ…]` で各テーマの最新の台本から つかみ・ランキング・1位の発表 の3枚だけ作り、`shorts/out/looks-contact.png` に並べる（mp4 は作らない）。
+
+| テーマ | 地 | 見出しの帯 | カード | 強調 | つかみ（t=0） |
+| --- | --- | --- | --- | --- | --- |
+| drops | 紺 brand900 | 赤 price・左右いっぱい | 角丸28・縁なし | price | 問い＋「1位 ？？？ 1週間で −8,000円」 |
+| budget | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | 問い＋予算の札 2×2（「なら？」） |
+| pixelbudget | 藍 brand800 | 緑 safe・丸い端 | 緑の縁 | price（札は safe） | 問い＋予算の札 2×2（アップデートの終わり） |
+| newused | 薄い藍 brand50 | 塗らない・赤い下線 | brand200 の縁 | price | 問い＋「新品 vs 中古」＋最大の差額 |
+| provs | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | 問い＋「無印 vs Pro」＋最大の差額 |
+| fold | 藍 brand800 | 琥珀 inspect700・対角だけ丸い | 琥珀の縁 | inspect700 | 問い＋開いた折りたたみの形（図形）＋最大の差額 |
+| rank | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | 問い＋ランク A・B・C の札＋A→C の最大の差額 |
+
 ### 色
 - **サイトの色にそろえる。** すべて `lib/brandColors.ts` から取る（`app/globals.css` と同じ値）。
 - 紺の背景には `ON_DARK`（同じ色の系統で明るくした版）を使う。文字はコントラスト比4.5以上。
+  - brand800 の地では ON_DARK.price（4.27）を文字に使わない（safe 7.54・inspect 5.30 は可）。明るい地（ground・brand50・inspect50）の文字は ink・inkSub・price・safe（4.9 以上）。比は `shorts/looks.ts` の頭に書いた。
 - 順位の札は、1位が price（赤）、2位が ink-mute（灰）、3位が inspect-700（琥珀）。
 
 ## YouTube 投稿（ユーザーの Chrome・YouTube Studio）

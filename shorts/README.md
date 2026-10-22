@@ -23,6 +23,7 @@ npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果�
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
 npx tsx shorts/make-short.tsx drops render --no-voice  # VOICEVOX の声を入れない
 npx tsx shorts/make-short.tsx --voice-test "今週いちばん値下がりした中古iPhoneは？"   # 声だけ試す（shorts/out/voice-test.wav）。--speaker 3 / --speaker ずんだもん/ノーマル・--speed 1.25
+npx tsx shorts/stills.tsx [drops budget …]            # 動画を作らず、各テーマの最新の台本から つかみ・ランキング・1位の発表 の静止画（shorts/out/looks/）と一覧 shorts/out/looks-contact.png を作る
 npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本の全ナレーションの読み（エンジンの読み → 直した読み）を出す。"テキスト" でも可。--speaker で話者を変えて試せる
 ```
 
@@ -100,11 +101,25 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 YouTube オーディオライブラリで曲を選んでダウンロードし、`shorts/assets/bgm.mp3` に置く（Git には入らない）。なければ無音の音声トラックが付く。
 曲名は `shorts/assets/bgm.json`（`title`・`artist`・`source`。Git に入る）に書く。bgm.mp3 があれば、render が説明文に「BGM: 曲名 - アーティスト（入手元）」を入れる。曲を替えたら JSON も直す。音量は 4% で一定、最後の3秒で小さくする。
 
+## テーマごとの見た目（`looks.ts`）
+
+テーマごとに地・見出しの帯・カード・強調色・つかみ（1コマ目）を変える（10/22〜。テンプレートの一括加工と見られないように・1コマ目でスワイプされないように）。色は `lib/brandColors.ts` だけ、文字のコントラストは 4.5 以上（比は looks.ts の頭）。場面の長さ・声・音・順位の札の色は全テーマ同じ。
+
+| テーマ | 地 | 見出しの帯 | カード | 強調 | つかみ（t=0） |
+| --- | --- | --- | --- | --- | --- |
+| drops | 紺 brand900 | 赤 price・左右いっぱい | 角丸28・縁なし | price | 問い＋「1位 ？？？ 1週間で −8,000円」 |
+| budget | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | 問い＋予算の札 2×2（「なら？」） |
+| pixelbudget | 藍 brand800 | 緑 safe・丸い端 | 緑の縁 | price（札は safe） | 問い＋予算の札 2×2（アップデートの終わり） |
+| newused | 薄い藍 brand50 | 塗らない・赤い下線 | brand200 の縁 | price | 問い＋「新品 vs 中古」＋最大の差額 |
+| provs | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | 問い＋「無印 vs Pro」＋最大の差額 |
+| fold | 藍 brand800 | 琥珀 inspect700・対角だけ丸い | 琥珀の縁 | inspect700 | 問い＋開いた折りたたみの形（図形）＋最大の差額 |
+| rank | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | 問い＋ランク A・B・C の札＋A→C の最大の差額 |
+
 ## セーフエリア
 
 YouTube の画面表示に隠れる上 220px・下 420px・右 140px には文字を置かない（`scenes.tsx` の `SAFE`）。
 
 ## 運用の決まり
 
-- 型（見た目・長さ）は統一し、**テーマは毎週ローテーション**（値下がり → 予算 → 2機種比較 → 豆知識）。
+- 長さと配置は統一し、見た目はテーマごとに変える（`looks.ts`）。**テーマは毎週ローテーション**（値下がり → 予算 → 2機種比較 → 豆知識）。
 - **毎回、検品担当のひと言を人が書く**。テンプレートだけの繰り返し動画は収益化の対象外になりうる（ideas/youtube-shorts.md）。

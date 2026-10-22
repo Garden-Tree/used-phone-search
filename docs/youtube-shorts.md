@@ -66,7 +66,8 @@ npx tsx shorts/make-short.tsx <テーマ> render --no-bgm   # BGM なしの shor
 - 画面の配置
   - 上 250px・下 440px は YouTube の表示で隠れる。ここには何も置かない。
   - 左右の余白は 80px。文字は中央そろえ。
-  - 赤い見出しの帯と白いカードを使う。
+  - 見出しの帯と白いカードを使う。地・帯の色と形・カードの縁・強調色・つかみはテーマごとに変える（10/22〜・`shorts/looks.ts`。表は shorts/README.md）。
+  - 確かめるときは `npx tsx shorts/stills.tsx` の静止画の一覧（`shorts/out/looks-contact.png`）で見る。mp4 の書き出しは重いので、確かめのためには作らない。
 - 太字は weight 900。フォントは画面の全文字（scenes.tsx の文字を含む）でサブセット化する。抜けると別のフォントで表示される。
 - 素材
   - 楽天などの商品画像・Apple 公式画像は使わない（規約・著作権）。
