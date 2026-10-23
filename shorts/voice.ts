@@ -371,13 +371,15 @@ export async function tunedQuery(text: string, cfg: VoiceConfig | undefined, spe
   query.volumeScale = cfg?.volume ?? 1.0;
   if (cfg?.intonationScale !== undefined) query.intonationScale = cfg.intonationScale;
   if (cfg?.pitchScale !== undefined) query.pitchScale = cfg.pitchScale;
-  if (cfg?.pauseLengthScale !== undefined) query.pauseLengthScale = cfg.pauseLengthScale;
+  query.pauseLengthScale = cfg?.pauseLengthScale ?? DEFAULT_PAUSE;
   query.prePhonemeLength = 0.05;
   query.postPhonemeLength = 0.1;
   return { query, spoken, before, after, longVowels, moras };
 }
 
 export const DEFAULT_SPEED = 1.25;
+/** 読点・句点の間の倍率。エンジンの既定（1）だと「、」ごとに約0.4秒あいて間延びした（10/24 ユーザーの指示で半分に）。場面の切り替わりの間（render.ts の VOICE_PAD）は別 */
+export const DEFAULT_PAUSE = 0.5;
 
 /**
  * 1つの文を WAV にする。キャッシュにあればエンジンを使わない。
@@ -386,7 +388,7 @@ export const DEFAULT_SPEED = 1.25;
 export async function synthesize(text: string, cfg: VoiceConfig | undefined, online: boolean, kanaOverride?: string): Promise<Clip | null> {
   const spoken = speakable(text);
   const spec = cfg?.speaker ?? DEFAULT_SPEAKER;
-  const params = [cfg?.speedScale ?? DEFAULT_SPEED, cfg?.volume ?? 1.0, cfg?.intonationScale ?? null, cfg?.pitchScale ?? null, cfg?.pauseLengthScale ?? null];
+  const params = [cfg?.speedScale ?? DEFAULT_SPEED, cfg?.volume ?? 1.0, cfg?.intonationScale ?? null, cfg?.pitchScale ?? null, cfg?.pauseLengthScale ?? DEFAULT_PAUSE];
   const key = createHash("sha256").update(JSON.stringify([spoken, kanaOverride ?? "", String(spec), params, TUNING_VERSION, dictHash()])).digest("hex").slice(0, 20);
   const file = join(CACHE, `${key}.wav`);
   if (existsSync(file)) {

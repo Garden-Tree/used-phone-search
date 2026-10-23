@@ -101,7 +101,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - 説明欄のクレジットは「VOICEVOX:春日部つむぎ」（公式の規約で商用可・クレジット必須。10/21 確認。docs/youtube-shorts.md）。
   - 説明欄のクレジット「VOICEVOX:<キャラクター名>」は render が自動で入れる。
   - 話者を変えたら `--voice-dump` で読みを、render のタイムラインで長さを見直す（話者で間合いが違う）。キャラクターごとの規約を読んでから使う（docs/youtube-shorts.md）。
-- **速さ 1.25倍**（`voice.speedScale`）。口調は「です・ます」。「のだ」口調は使わない。
+- **速さ 1.25倍**（`voice.speedScale`）。**読点・句点の間は半分（pauseLengthScale 0.5・`voice.ts` の DEFAULT_PAUSE）**。エンジンの既定だと「、」ごとに約0.4秒あいて間延びした（10/24 ユーザー「ポーズが長い、半分くらいで」）。場面の切り替わりの間（声のあと0.5秒）は今のまま。口調は「です・ます」。「のだ」口調は使わない。
 - 各場面で読む文（drops）:
   - hook: 「今週いちばん値下がりした中古iPhoneは…？」
   - ranking: 「3位は○○、マイナス○円。2位は○○、マイナス○円。」
