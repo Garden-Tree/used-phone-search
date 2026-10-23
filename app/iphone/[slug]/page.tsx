@@ -77,8 +77,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!model) return {};
 
   const stats = await getModelStats(model);
-  // 検索は「機種名 中古 最安値」がほとんどなので、タイトルに最安値の金額を入れる（10/17〜。在庫がないときは従来の形）
-  const title = stats.minPrice !== null ? `${model} 中古の最安値 ${yen(stats.minPrice)}〜｜相場【毎日更新】` : `${model} 中古の相場・最安値【毎日更新】`;
+  // 検索は「機種名 中古 最安値」がほとんどなので、タイトルに最安値の金額を入れる（10/17〜。在庫がないときは従来の形）。
+  // 公式で新品を売っている機種は「相場」の代わりに新品との差（いちばん小さい容量の最安と公式価格）を入れる（10/23〜。
+  // 18 Pro Max などの新しい機種は表示が多いのに 10位前後でクリックが少なく、新品との差を知りたい検索が多いと見た）
+  const nv = stats.count === 0 ? [] : deviceOf(model) === "iphone" ? newVsUsed(model, stats.byStorage) : newVsUsedOfficial(model, stats.byStorage);
+  const nvMin = nv[0];
+  const tail = nvMin ? (nvMin.diff > 0 ? `新品より${yen(nvMin.diff)}安い` : `新品${yen(nvMin.newPrice)}と比較`) : "相場";
+  const title = stats.minPrice !== null ? `${model} 中古の最安値 ${yen(stats.minPrice)}〜｜${tail}【毎日更新】` : `${model} 中古の相場・最安値【毎日更新】`;
   const description = modelDescription(model, stats);
   const path = modelPagePath(model);
 
@@ -341,6 +346,17 @@ export default async function ModelPage({ params }: Props) {
           },
         }]
       : []),
+    // ページの更新日と要約（AI の検索が引用するときに日付と数字をそのまま取れるように。10/23〜）
+    ...(summary
+      ? [{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: `${model} 中古の相場・最安値`,
+          url: `${SITE_URL}${path}`,
+          description: summary,
+          ...(stats.lastUpdated ? { dateModified: stats.lastUpdated.toISOString() } : {}),
+        }]
+      : []),
     ...(faqs.length > 0
       ? [{
           "@context": "https://schema.org",
@@ -547,7 +563,12 @@ export default async function ModelPage({ params }: Props) {
 
             <h1 className="text-[22px] md:text-[28px] leading-[1.3] font-bold">{model} 中古の相場・最安値</h1>
 
-            {summary && <p className="text-[13px] md:text-sm text-ink-mute leading-relaxed">{summary}</p>}
+            {summary && (
+              <p className="text-[13px] md:text-sm text-ink-mute leading-relaxed">
+                {summary}
+                <Link href="/about#data" className={`${LINK} ml-1 whitespace-nowrap`}>集計の方法</Link>
+              </p>
+            )}
 
             <p className="text-[11px] md:text-xs text-ink-mute leading-relaxed">
               {updatedText && stats.lastUpdated && <>更新 <time dateTime={stats.lastUpdated.toISOString()}>{updatedText}</time> ・ </>}
