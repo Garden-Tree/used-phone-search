@@ -70,8 +70,8 @@ export default function ModelGuide(p: {
     <div className="flex flex-col gap-4">
       {/* 今買うのはあり？ */}
       <section className={`${CARD} p-3.5 flex flex-col gap-1.5`}>
-        <h2 className={H2}>{p.model}は今買うのはあり？</h2>
-        {p.verdict[0] && <p className="text-[15px] font-bold leading-[1.6]">{p.verdict[0]}</p>}
+        <h2 className={H2}><span className="text-brand-600 mr-1">Q.</span>{p.model}は今買うのはあり？</h2>
+        {p.verdict[0] && <p className="text-[15px] font-bold leading-[1.6]"><span className="text-price mr-1">A.</span>{p.verdict[0]}</p>}
         {p.verdict.length > 1 && <p className="text-[13px] text-ink-sub leading-[1.6]">{p.verdict.slice(1).join("")}</p>}
         {p.notes.length > 0 && (
           <details className="group">

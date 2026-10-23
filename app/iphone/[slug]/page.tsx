@@ -871,8 +871,8 @@ export default async function ModelPage({ params }: Props) {
                       <div className="flex flex-col gap-3">
                         {faqs.map((f) => (
                           <div key={f.q} className="flex flex-col gap-1">
-                            <h3 className="text-[13px] font-bold">{f.q}</h3>
-                            <p className="text-[13px] leading-[1.7] text-gray-700">{f.a}</p>
+                            <h3 className="text-[13px] font-bold"><span className="text-brand-600 mr-1">Q.</span>{f.q}</h3>
+                            <p className="text-[13px] leading-[1.7] text-gray-700"><span className="font-bold text-price mr-1">A.</span>{f.a}</p>
                           </div>
                         ))}
                       </div>

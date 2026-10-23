@@ -104,8 +104,8 @@ export default async function PriceFactorsPage() {
 
         {f.gen.length > 0 && (
           <section className="flex flex-col gap-2">
-            <h2 className="text-lg md:text-xl font-bold">1世代前にすると、いくら安い？</h2>
-            <p className="text-sm text-ink-sub">差がいちばん大きい。予算が足りないときは<strong className="text-ink">まず1世代下げる</strong>。</p>
+            <h2 className="text-lg md:text-xl font-bold"><span className="text-brand-600 mr-1">Q.</span>1世代前にすると、いくら安い？</h2>
+            <p className="text-sm text-ink-sub"><strong className="text-price mr-1">A.</strong>差がいちばん大きい。予算が足りないときは<strong className="text-ink">まず1世代下げる</strong>。</p>
             <div className={CARD}>
               <table className="w-full text-sm">
                 <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">比べた組</th><th className={TH}>容量</th><th className={TH}>新しい方</th><th className={TH}>1世代前</th><th className={`${TH} pr-4`}>差</th></tr></thead>
@@ -127,8 +127,8 @@ export default async function PriceFactorsPage() {
 
         {f.rank.length > 0 && (
           <section className="flex flex-col gap-2">
-            <h2 className="text-lg md:text-xl font-bold">状態ランクAとCで、いくら違う？</h2>
-            <p className="text-sm text-ink-sub">差は主に<strong className="text-ink">外装の傷</strong>。ケースを使うならCでも十分です（基準は店ごとに違います）。</p>
+            <h2 className="text-lg md:text-xl font-bold"><span className="text-brand-600 mr-1">Q.</span>状態ランクAとCで、いくら違う？</h2>
+            <p className="text-sm text-ink-sub"><strong className="text-price mr-1">A.</strong>差は主に<strong className="text-ink">外装の傷</strong>。ケースを使うならCでも十分です（基準は店ごとに違います）。</p>
             <div className={CARD}>
               <table className="w-full text-sm">
                 <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">機種</th><th className={TH}>容量</th><th className={TH}>ランクA</th><th className={TH}>B</th><th className={TH}>C</th><th className={`${TH} pr-4`}>A→C</th></tr></thead>
@@ -151,8 +151,8 @@ export default async function PriceFactorsPage() {
 
         {f.storage.length > 0 && (
           <section className="flex flex-col gap-2">
-            <h2 className="text-lg md:text-xl font-bold">容量を1つ上げると、いくら高い？</h2>
-            <p className="text-sm text-ink-sub">容量は<strong className="text-ink">あとから増やせません</strong>。写真やゲームが多いなら上げておくと安心です。</p>
+            <h2 className="text-lg md:text-xl font-bold"><span className="text-brand-600 mr-1">Q.</span>容量を1つ上げると、いくら高い？</h2>
+            <p className="text-sm text-ink-sub"><strong className="text-price mr-1">A.</strong>容量は<strong className="text-ink">あとから増やせません</strong>。写真やゲームが多いなら上げておくと安心です。</p>
             <div className={CARD}>
               <table className="w-full text-sm">
                 <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">機種</th><th className={TH}>小さい容量</th><th className={TH}>1つ上</th><th className={`${TH} pr-4`}>差</th></tr></thead>
@@ -173,8 +173,9 @@ export default async function PriceFactorsPage() {
 
         {f.battery.length > 0 && (
           <section className="flex flex-col gap-2">
-            <h2 className="text-lg md:text-xl font-bold">電池90%台と80%台で、いくら違う？</h2>
+            <h2 className="text-lg md:text-xl font-bold"><span className="text-brand-600 mr-1">Q.</span>電池90%台と80%台で、いくら違う？</h2>
             <p className="text-sm text-ink-sub">
+              <strong className="text-price mr-1">A.</strong>
               {batteryCheaper.length > 0
                 ? <>{batteryCheaper.length}機種で、差が電池交換より小さい。<strong className="text-ink">最初から90%台を選ぶほうが安く済みます</strong>。</>
                 : "電池の差と、Apple の電池交換の料金を比べて選ぶのがおすすめです。"}
