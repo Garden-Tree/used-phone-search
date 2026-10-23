@@ -2,6 +2,25 @@
   "date": "2026-10-23",
   "shops": 16,
   "source": "script.md の数字そのまま（2026/10/23 の集計。相場＝在庫がいちばん多い容量の中央値。Pencil は Apple 公式 support.apple.com/ja-jp/108937・apple.com/jp/apple-pencil、iPadOS 27 の対応は lib/ipadSpecs.ts）",
+  "thumbnail": {
+    "lines": [
+      "中古iPad",
+      "使い方で選ぶ正解"
+    ],
+    "badge": [
+      {
+        "text": "7万円",
+        "red": true
+      },
+      {
+        "text": "→"
+      },
+      {
+        "text": "Air 第5世代"
+      }
+    ],
+    "footer": "16店の相場から ｜ used.gadelog.com"
+  },
   "chapters": [
     {
       "title": "結論",
