@@ -59,8 +59,12 @@ export type LongData = {
   date: string;
   shops: number;
   source?: string;
+  /** サムネの文字（なければ 1本目の「予算別の正解 5万円→iPhone 13」）。badge は白い札の中の文字（red で赤い大きな数字） */
+  thumbnail?: ThumbnailData;
   chapters: { title: string; scene: SceneData }[];
 };
+
+export type ThumbnailData = { lines: string[]; badge: { text: string; red?: boolean }[]; footer: string };
 
 /** 時間割の字幕の1ページ（2行まで） */
 export type SubPage = { text: string; start: number; end: number };

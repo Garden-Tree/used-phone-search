@@ -194,8 +194,8 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0, borderTop: i ? `2px solid ${C.line}` : "none" }}>
             <div style={{ ...col, width: LABEL }}>
               <div style={{ ...row }}>
-                <div style={{ display: "flex", fontSize: fitFontSize(r.label, r.pick ? LABEL - 120 : LABEL - 10, 52), fontWeight: 900, color: C.ink }}>{r.label}</div>
-                {r.pick ? <div style={{ display: "flex", marginLeft: 12, padding: "2px 12px", borderRadius: 8, background: C.red, color: C.white, fontSize: 24, fontWeight: 900 }}>おすすめ</div> : null}
+                <div style={{ display: "flex", fontSize: fitFontSize(r.label, r.pick ? LABEL - 150 : LABEL - 10, 52), fontWeight: 900, color: C.ink }}>{r.label}</div>
+                {r.pick ? <div style={{ display: "flex", flexShrink: 0, marginLeft: 12, padding: "2px 12px", borderRadius: 8, background: C.red, color: C.white, fontSize: 24, fontWeight: 900 }}>おすすめ</div> : null}
               </div>
               {r.sub ? <div style={{ display: "flex", fontSize: 28, fontWeight: 500, color: C.sub }}>{r.sub}</div> : null}
             </div>
@@ -340,7 +340,7 @@ function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
 // ───────── いつも出ている枠 ─────────
 
 function ChapterBar({ ch, count }: { ch: TimelineChapter; count: number }) {
-  const num = String(ch.index).padStart(2, "0");
+  const num = String(ch.index); // ゼロ埋めしない（「9/9」。10/23 ユーザー指示）
   return (
     <div style={{ ...row, position: "absolute", left: HEADER.x, top: HEADER.y, height: HEADER.h, background: C.bar, borderRadius: 14, paddingRight: 32 }}>
       <div style={{ ...row, height: HEADER.h, padding: "0 22px", background: C.red, borderRadius: "14px 0 0 14px", color: C.white, fontSize: 36, fontWeight: 900 }}>{`${num}/${count}`}</div>

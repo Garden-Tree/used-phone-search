@@ -28,7 +28,7 @@ import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
 import { FPS, H, W, chapterShownAt, frameAt, localAt, revealedAt, stateAt, type CharaArt } from "./scenes";
 import type { Who } from "./script";
-import type { LongData, Timeline } from "./types";
+import type { LongData, ThumbnailData, Timeline } from "./types";
 
 /** 最後の台詞のあとに残す秒（BGM が下がりきる） */
 const TAIL = 1.5;
@@ -36,7 +36,10 @@ const BGM_VOLUME = 0.07;
 const VOICE_LUFS = -16;
 /** 口の開閉（秒） */
 const MOUTH = 0.2;
-const CAMPAIGN = "long_20261021";
+/** utm_campaign は フォルダ名の日付から（2026-10-21-iphone-dore → long_20261021） */
+const campaignOf = (dir: string) => `long_${(dir.replace(/[\\/]+$/, "").split(/[\\/]/).pop() ?? "").slice(0, 10).replace(/-/g, "")}`;
+/** script.md の「## 概要欄（下書き）」でこの行を置いた所に、実測のチャプターを入れる */
+const CHAPTERS_PLACEHOLDER = "（チャプターは書き出し後の実測）";
 /** ジングルのピーク（dBFS。声を -16 LUFS にそろえた段で混ぜる。声より控えめ） */
 const JINGLE_PEAK_DB = -18;
 const SITE_URL = "https://used.gadelog.com";
@@ -259,13 +262,22 @@ function youtubeText(dir: string, tl: Timeline, artFiles: string[]): string {
   const last = data.chapters[data.chapters.length - 1].scene;
   const conclusion = first.type === "bigNumber" ? first.items.map((it) => `${it.label ?? ""}${it.value}`).join("、") : "";
   const summary = last.type === "table" ? last.rows.map((r) => r.cells.join(" ")).join("\n") : "";
-  const utm = `utm_source=youtube&utm_medium=social&utm_campaign=${CAMPAIGN}`;
+  const utm = `utm_source=youtube&utm_medium=social&utm_campaign=${campaignOf(dir)}`;
   const link = (path: string) => `${SITE_URL}${path}?${utm}`;
   const credits = ["VOICEVOX:春日部つむぎ", "VOICEVOX:ずんだもん", BGM_CREDIT];
   if (existsSync(JINGLE_FILE)) credits.push("効果音：効果音ラボ");
   // 立ち絵（chara.py で作った絵を使ったとき）。つむぎ＝春日部つくし（KASUKABEproject）・ずんだもん＝坂本アヒル
   if (artFiles.some((f) => /tsumugi/.test(f))) credits.push("立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)");
   if (artFiles.some((f) => /zundamon/.test(f))) credits.push("ずんだもん立ち絵：坂本アヒル様");
+  // script.md に概要欄の下書き（チャプターの置き場所つき）があれば、それを本文にする。クレジットはここで作る
+  const draft = md.match(/^## 概要欄（下書き）\s*\n```\s*\n([\s\S]*?)\n```/m)?.[1];
+  if (draft?.includes(CHAPTERS_PLACEHOLDER)) {
+    const lines = draft.split(/\r?\n/);
+    const creditAt = lines.findIndex((l) => l.startsWith("VOICEVOX:"));
+    const body = (creditAt < 0 ? lines : lines.slice(0, creditAt)).join("\n").trim().replace(CHAPTERS_PLACEHOLDER, chaptersText(tl).trim());
+    const tags = [...lines].reverse().find((l) => l.startsWith("#")) ?? "#中古iPhone #iPhone";
+    return [title, "", body, "", ...credits, "", tags].join("\n") + "\n";
+  }
   return [
     title,
     "",
@@ -287,8 +299,18 @@ function youtubeText(dir: string, tl: Timeline, artFiles: string[]): string {
   ].join("\n") + "\n";
 }
 
-function Thumbnail({ art }: { art: CharaArt }) {
+/** 1本目のサムネ（data.json に thumbnail がないとき） */
+const DEFAULT_THUMB: ThumbnailData = {
+  lines: ["中古iPhone", "予算別の正解"],
+  badge: [{ text: "5万円", red: true }, { text: "→" }, { text: "iPhone 13" }],
+  footer: "17店・約7万件の相場から ｜ used.gadelog.com",
+};
+const thumbText = (t: ThumbnailData) => [...t.lines, ...t.badge.map((b) => b.text), t.footer].join("");
+
+function Thumbnail({ art, thumb }: { art: CharaArt; thumb: ThumbnailData }) {
   const tsumugi = art.つむぎ?.closed;
+  // 2行目は つむぎ に重ならない幅（約900px）に収める
+  const titleSize = Math.min(128, Math.floor(900 / Math.max(1, [...(thumb.lines[1] ?? "")].length)));
   const row = { display: "flex", flexDirection: "row", alignItems: "flex-end" } as const;
   return (
     <div style={{ display: "flex", flexDirection: "column", position: "relative", width: 1280, height: 720, background: SITE.brand900, fontFamily: "Noto Sans JP", padding: "56px 64px" }}>
@@ -296,14 +318,20 @@ function Thumbnail({ art }: { art: CharaArt }) {
         // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
         <img src={tsumugi.src} width={Math.round((tsumugi.w * 660) / tsumugi.h)} height={660} style={{ position: "absolute", right: 0, bottom: 0 }} />
       ) : null}
-      <div style={{ display: "flex", fontSize: 92, fontWeight: 900, color: ON_DARK.white, lineHeight: 1.1 }}>中古iPhone</div>
-      <div style={{ display: "flex", fontSize: 128, fontWeight: 900, color: ON_DARK.white, lineHeight: 1.15, marginTop: 8 }}>予算別の正解</div>
+      <div style={{ display: "flex", fontSize: 92, fontWeight: 900, color: ON_DARK.white, lineHeight: 1.1 }}>{thumb.lines[0]}</div>
+      <div style={{ display: "flex", fontSize: titleSize, fontWeight: 900, color: ON_DARK.white, lineHeight: 1.15, marginTop: 8 }}>{thumb.lines[1]}</div>
       <div style={{ ...row, marginTop: 44, padding: "18px 40px 24px", background: ON_DARK.white, borderRadius: 28, alignSelf: "flex-start" }}>
-        <div style={{ display: "flex", fontSize: 140, fontWeight: 900, color: SITE.price, lineHeight: 1 }}>5万円</div>
-        <div style={{ display: "flex", fontSize: 96, fontWeight: 900, color: SITE.ink, margin: "0 18px 14px", lineHeight: 1 }}>→</div>
-        <div style={{ display: "flex", fontSize: 112, fontWeight: 900, color: SITE.ink, lineHeight: 1 }}>iPhone 13</div>
+        {thumb.badge.map((b, i) =>
+          b.red ? (
+            <div key={i} style={{ display: "flex", fontSize: 140, fontWeight: 900, color: SITE.price, lineHeight: 1 }}>{b.text}</div>
+          ) : b.text === "→" ? (
+            <div key={i} style={{ display: "flex", fontSize: 96, fontWeight: 900, color: SITE.ink, margin: "0 18px 14px", lineHeight: 1 }}>→</div>
+          ) : (
+            <div key={i} style={{ display: "flex", fontSize: thumb.badge.some((x) => x.text === "→") ? 112 : 96, fontWeight: 900, color: SITE.ink, lineHeight: 1, margin: "0 6px 8px" }}>{b.text}</div>
+          ),
+        )}
       </div>
-      <div style={{ display: "flex", marginTop: "auto", fontSize: 36, fontWeight: 900, color: ON_DARK.safe }}>17店・約7万件の相場から ｜ used.gadelog.com</div>
+      <div style={{ display: "flex", marginTop: "auto", fontSize: 36, fontWeight: 900, color: ON_DARK.safe }}>{thumb.footer}</div>
     </div>
   );
 }
@@ -311,8 +339,9 @@ function Thumbnail({ art }: { art: CharaArt }) {
 async function meta(dir: string, tl: Timeline, art: CharaArt, artFiles: string[]) {
   writeFileSync(join(dir, "chapters.txt"), chaptersText(tl));
   writeFileSync(join(dir, "youtube.txt"), youtubeText(dir, tl, artFiles));
-  const fonts = await longFonts(tl, "中古iPhone予算別の正解5万円→iPhone 13 17店・約7万件の相場から｜used.gadelog.com");
-  const res = new ImageResponse(<Thumbnail art={art} />, { width: 1280, height: 720, fonts });
+  const thumb = (JSON.parse(readFileSync(join(dir, "data.json"), "utf8")) as LongData).thumbnail ?? DEFAULT_THUMB;
+  const fonts = await longFonts(tl, thumbText(thumb));
+  const res = new ImageResponse(<Thumbnail art={art} thumb={thumb} />, { width: 1280, height: 720, fonts });
   writeFileSync(join(dir, "thumbnail.png"), Buffer.from(await res.arrayBuffer()));
   console.log(`  chapters.txt・youtube.txt・thumbnail.png → ${dir}`);
 }

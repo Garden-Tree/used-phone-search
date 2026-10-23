@@ -193,6 +193,7 @@
 （チャプターは書き出し後の実測）
 
 iPhone 14 の容量・ランク・電池別の在庫: https://used.gadelog.com/iphone/iphone-14?utm_source=youtube&utm_medium=social&utm_campaign=long_20261023
+中古iPhoneの値段は何で決まる？（毎日更新）: https://used.gadelog.com/iphone/price-factors?utm_source=youtube&utm_medium=social&utm_campaign=long_20261023
 全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261023
 
 VOICEVOX:春日部つむぎ

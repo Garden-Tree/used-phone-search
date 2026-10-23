@@ -14,7 +14,7 @@ import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { synthesize } from "../shorts/voice";
 import { CHAPTER_GAP, DEFAULT_LONG_SPEED, LINE_GAP, SPEAKERS, forVoice, scriptChapters } from "./script";
-import { FPS, H, W, textEm, wrapSubtitle } from "./scenes";
+import { FPS, H, W, wrapSubtitle } from "./scenes";
 import type { LongData, SceneData, SubPage, Timeline, TimelineChapter, TimelineLine } from "./types";
 
 /** キャッシュにない台詞の秒／文字（voice-draft の実測 約575秒・約3,600字・速さ 1.15 から） */
@@ -81,12 +81,45 @@ export function subtitlePages(text: string): string[] {
   return pages;
 }
 
-function pagesWithTime(text: string, start: number, end: number): SubPage[] {
+/**
+ * 読む長さの目安（字幕のページを声に合わせる）。字の幅（textEm）で割ると、数字・英字の多いページが
+ * 読み終わる前に次へ進んでいた（10/23「6万5,980円」）。数字は桁ごとに「ろく・まん」のように読むので重く、
+ * 漢字は2拍くらい、読点・句点は間の分を足す
+ */
+export function spokenWeight(text: string): number {
+  let w = 0;
+  for (const m of text.matchAll(/[0-9][0-9,.]*|[A-Za-z]+|./gu)) {
+    const tok = m[0];
+    if (/^[0-9]/.test(tok)) {
+      const digits = tok.replace(/[,.]/g, "");
+      w += [...digits].filter((d) => d !== "0").length * 3.5 + (tok.includes(".") ? 2 : 0);
+    } else if (/^[A-Za-z]/.test(tok)) w += tok.length * 1.6;
+    else if (/[、。！？]/.test(tok)) w += 1.5;
+    else if (/[一-鿿]/.test(tok)) w += 1.8; // 漢字
+    else if (/[぀-ヿ]/.test(tok)) w += 1; // かな
+    else w += 0.3;
+  }
+  return Math.max(w, 1);
+}
+
+/** 声の切れ目（無音 0.12 秒以上）の終わり＝次に話し出す秒（台詞の頭からの秒） */
+function speechResumes(file: string): number[] {
+  const r = spawnSync("ffmpeg", ["-hide_banner", "-i", file, "-af", "silencedetect=n=-35dB:d=0.12", "-f", "null", "-"], { encoding: "utf8" });
+  return [...(r.stderr ?? "").matchAll(/silence_end: ([\d.]+)/g)].map((m) => Number(m[1]));
+}
+
+function pagesWithTime(text: string, start: number, end: number, audio?: string): SubPage[] {
   const texts = subtitlePages(text);
-  const total = texts.reduce((a, p) => a + textEm(p), 0);
+  const total = texts.reduce((a, p) => a + spokenWeight(p), 0);
+  // ページの切り替えは、見積もりにいちばん近い声の切れ目（1.5秒以内）に合わせる（話し出す 0.05 秒前）
+  const resumes = texts.length > 1 && audio ? speechResumes(audio).map((x) => start + x - 0.05) : [];
   let t = start;
   return texts.map((p, i) => {
-    const e = i === texts.length - 1 ? end : t + ((end - start) * textEm(p)) / total;
+    let e = i === texts.length - 1 ? end : t + ((end - start) * spokenWeight(p)) / total;
+    if (i < texts.length - 1) {
+      const near = resumes.filter((x) => x > t + 0.5 && x < end - 0.3).sort((x, y) => Math.abs(x - e) - Math.abs(y - e))[0];
+      if (near !== undefined && Math.abs(near - e) <= 1.5) e = near;
+    }
     const page = { text: p, start: round(t), end: round(e) };
     t = e;
     return page;
@@ -159,7 +192,7 @@ export async function buildTimeline(dir: string, speed = DEFAULT_LONG_SPEED): Pr
       if (!clip) missing++;
       if (staleFile) staleCount++;
       const dur = clip?.dur ?? Array.from(l.text).length * SEC_PER_CHAR;
-      lines.push({ who: l.who, text: l.text, start: round(t), end: round(t + dur), audio: clip?.file ?? null, estimated: !clip, stale: !!staleFile, pages: pagesWithTime(l.text, t, t + dur) });
+      lines.push({ who: l.who, text: l.text, start: round(t), end: round(t + dur), audio: clip?.file ?? null, estimated: !clip, stale: !!staleFile, pages: pagesWithTime(l.text, t, t + dur, clip?.file) });
       t += dur;
     }
     const { reveal, lastLine } = resolveReveal(d.scene, lines, chStart, ch.title, warnings);
