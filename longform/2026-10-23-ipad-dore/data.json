@@ -1,0 +1,299 @@
+{
+  "date": "2026-10-23",
+  "shops": 16,
+  "source": "script.md の数字そのまま（2026/10/23 の集計。相場＝在庫がいちばん多い容量の中央値。Pencil は Apple 公式 support.apple.com/ja-jp/108937・apple.com/jp/apple-pencil、iPadOS 27 の対応は lib/ipadSpecs.ts）",
+  "chapters": [
+    {
+      "title": "結論",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "中古iPad 使い方で選ぶ正解",
+        "items": [
+          {
+            "label": "5万円",
+            "value": "第9世代",
+            "cue": "先に結論"
+          },
+          {
+            "label": "7万円",
+            "value": "Air 第5世代",
+            "cue": "先に結論"
+          },
+          {
+            "label": "10万円・描く",
+            "value": "Air M2",
+            "cue": "先に結論"
+          },
+          {
+            "label": "10万円・動画",
+            "value": "Pro 第3世代",
+            "cue": "先に結論"
+          }
+        ],
+        "note": "動画とネット・お絵描き・持ち歩きで、正解が変わる"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "どうやって調べた？",
+        "items": [
+          {
+            "label": "大手中古ショップ",
+            "value": "16",
+            "unit": "店",
+            "cue": "調べたのは"
+          },
+          {
+            "label": "相場",
+            "value": "真ん中の値段",
+            "cue": "いちばん在庫が多い容量の"
+          }
+        ],
+        "note": "相場＝在庫がいちばん多い容量の中央値（容量も一緒に出す）。新品の値段は今回は使わない"
+      }
+    },
+    {
+      "title": "安すぎるiPadの落とし穴",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "iPad 第8世代（2020年）",
+        "items": [
+          {
+            "label": "相場（32GB）",
+            "value": "2.6",
+            "unit": "万円",
+            "cue": "第8世代は2020年発売"
+          },
+          {
+            "label": "iPadOS 27",
+            "value": "非対応",
+            "cue": "対応してないの"
+          }
+        ],
+        "note": "無印 iPad で iPadOS 27 に対応するのは 第9世代・第10世代・A16（Apple 公式）"
+      }
+    },
+    {
+      "title": "動画とネット：無印iPad",
+      "scene": {
+        "type": "bars",
+        "heading": "無印の中古iPad（相場）",
+        "unit": "万円",
+        "rows": [
+          {
+            "label": "第9世代",
+            "sub": "64GB・2021年",
+            "median": 4.4,
+            "cue": "まず無印のiPad"
+          },
+          {
+            "label": "第10世代",
+            "sub": "64GB・2022年",
+            "median": 6.6,
+            "cue": "まず無印のiPad"
+          },
+          {
+            "label": "A16",
+            "sub": "128GB・2025年",
+            "median": 7.6,
+            "cue": "まず無印のiPad"
+          }
+        ],
+        "note": "第9世代＝ホームボタン・Lightning／第10世代・A16＝USB-C・トップボタンの Touch ID"
+      }
+    },
+    {
+      "title": "お絵描き：Pencilで選ぶ",
+      "scene": {
+        "type": "table",
+        "heading": "使える Apple Pencil（Apple 公式）",
+        "columns": [
+          "iPad",
+          "使えるPencil",
+          "相場"
+        ],
+        "emphasis": [
+          1
+        ],
+        "rows": [
+          {
+            "cells": [
+              "第9世代",
+              "第1世代",
+              "4.4万円"
+            ],
+            "cue": "無印の第9世代は"
+          },
+          {
+            "cells": [
+              "第10世代・A16",
+              "USB-C・第1世代（アダプタ）",
+              "6.6〜7.6万円"
+            ],
+            "cue": "無印の第9世代は"
+          },
+          {
+            "cells": [
+              "Air 第5世代",
+              "第2世代・USB-C",
+              "7.1万円"
+            ],
+            "cue": "iPad Airの第5世代がちょうどいい"
+          },
+          {
+            "cells": [
+              "Air 11インチ M2",
+              "Pro・USB-C",
+              "9.7万円"
+            ],
+            "cue": "Airの11インチ、M2"
+          }
+        ],
+        "note": "USB-C の Pencil は筆圧感知に非対応（Apple 公式）。第2世代と Pro は側面のマグネットで充電"
+      }
+    },
+    {
+      "title": "持ち歩き：iPad mini",
+      "scene": {
+        "type": "bars",
+        "heading": "iPad mini（8.3インチ・相場）",
+        "unit": "万円",
+        "rows": [
+          {
+            "label": "第6世代",
+            "sub": "256GB・2021年",
+            "median": 7.3,
+            "min": 4.4,
+            "minLabel": "4.4万円",
+            "cue": "mini 第6世代は"
+          },
+          {
+            "label": "A17 Pro",
+            "sub": "128GB・2024年",
+            "median": 8.4,
+            "cue": "いちばん新しいmini"
+          }
+        ],
+        "note": "読書と動画なら第6世代。Pencil Pro を使うなら A17 Pro"
+      }
+    },
+    {
+      "title": "本格派：AirとProどっち？",
+      "scene": {
+        "type": "bars",
+        "heading": "Air と Pro（11インチ・相場）",
+        "unit": "万円",
+        "rows": [
+          {
+            "label": "Pro",
+            "sub": "第3世代・128GB",
+            "median": 9.9,
+            "cue": "Pro 11インチの第3世代"
+          },
+          {
+            "label": "Air",
+            "sub": "M2・128GB",
+            "median": 9.7,
+            "cue": "Air M2は9万6,580円"
+          },
+          {
+            "label": "Pro M4",
+            "sub": "256GB・有機EL",
+            "median": 15.0,
+            "cue": "Pro 11インチのM4"
+          }
+        ],
+        "note": "Pro 第3世代＝ProMotion・Face ID（10万円以下）／Air M2＝新しいチップ・Pencil Pro。どちらも iPadOS 27 に対応"
+      }
+    },
+    {
+      "title": "買う前に見ること",
+      "scene": {
+        "type": "checklist",
+        "heading": "買う前に見る4つ",
+        "items": [
+          {
+            "text": "iPadOS 27 に対応しているか",
+            "sub": "無印は第9世代から",
+            "cue": "1つ目は"
+          },
+          {
+            "text": "Wi-Fi モデルか Cellular か",
+            "sub": "外で使うなら Cellular",
+            "cue": "2つ目は"
+          },
+          {
+            "text": "バッテリーの状態",
+            "sub": "書いてある店で確かめる",
+            "cue": "バッテリー。iPad"
+          },
+          {
+            "text": "使える Apple Pencil",
+            "sub": "サイトの機種ページにも",
+            "cue": "絵を描くなら、買う前に"
+          }
+        ]
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "table",
+        "heading": "中古iPad 使い方で選ぶ正解",
+        "columns": [
+          "使い方",
+          "おすすめ",
+          "相場"
+        ],
+        "emphasis": [
+          1
+        ],
+        "rows": [
+          {
+            "cells": [
+              "動画とネット",
+              "第9世代",
+              "4.4万円"
+            ],
+            "cue": "動画とネットなら、5万円"
+          },
+          {
+            "cells": [
+              "お絵描き",
+              "Air 第5世代",
+              "7.1万円"
+            ],
+            "cue": "お絵描きなら"
+          },
+          {
+            "cells": [
+              "もっと描く",
+              "Air 11インチ M2",
+              "9.7万円"
+            ],
+            "cue": "お絵描きなら"
+          },
+          {
+            "cells": [
+              "持ち歩き",
+              "mini 第6世代",
+              "7.3万円"
+            ],
+            "cue": "持ち歩きならmini"
+          },
+          {
+            "cells": [
+              "動画・ゲームを本格的に",
+              "Pro 11インチ 第3世代",
+              "9.9万円"
+            ],
+            "cue": "持ち歩きならmini"
+          }
+        ],
+        "note": "第8世代（約2.6万円）は iPadOS 27 非対応なので選ばない"
+      }
+    }
+  ]
+}
