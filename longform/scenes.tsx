@@ -124,8 +124,8 @@ const ease = (x: number) => 1 - Math.pow(1 - clamp01(x), 3);
 /** 項目が出る進み具合（0〜1）。0.4 秒で出きる */
 const shown = (reveal: Record<string, number>, key: string, t: number) => ease((t - (reveal[key] ?? 0)) / 0.4);
 
-const money = (v: number, unit: "万円" | "円") => (unit === "円" ? `${Math.round(v).toLocaleString("ja-JP")}円` : `${v.toFixed(1)}万円`);
-const signed = (v: number, unit: "万円" | "円") => `${v >= 0 ? "+" : "−"}${money(Math.abs(v), unit)}`;
+const money = (v: number, unit: BarsScene["unit"]) => (unit === "万円" ? `${v.toFixed(1)}万円` : `${Math.round(v).toLocaleString("ja-JP")}${unit}`);
+const signed = (v: number, unit: BarsScene["unit"]) => `${v >= 0 ? "+" : "−"}${money(Math.abs(v), unit)}`;
 
 /** 棒の目盛りの上限（いちばん大きい値の 1.1 倍を、上2桁で切り上げ） */
 function axisMax(values: number[]): number {
@@ -182,6 +182,9 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
   const track = INNER_W - LABEL - VALUE - GAP * 2;
   const max = axisMax(s.rows.flatMap((r) => [r.median, r.min ?? 0]));
   const rowH = Math.min(150, Math.floor(440 / s.rows.length));
+  // 5行以上（1行 88px 以下）は文字を小さくして、下の補足（売り場・在庫）が次の行に重ならないように（10/24）
+  const dense = rowH < 100;
+  const F = dense ? { label: 44, sub: 22, value: 44, small: 22 } : { label: 52, sub: 28, value: 56, small: 28 };
   const DOT = 30;
   return (
     <div style={{ ...col, width: INNER_W, height: "100%" }}>
@@ -194,10 +197,10 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0, borderTop: i ? `2px solid ${C.line}` : "none" }}>
             <div style={{ ...col, width: LABEL }}>
               <div style={{ ...row }}>
-                <div style={{ display: "flex", fontSize: fitFontSize(r.label, r.pick ? LABEL - 150 : LABEL - 10, 52), fontWeight: 900, color: C.ink }}>{r.label}</div>
+                <div style={{ display: "flex", fontSize: fitFontSize(r.label, r.pick ? LABEL - 150 : LABEL - 10, F.label), fontWeight: 900, color: C.ink, lineHeight: dense ? 1.15 : undefined }}>{r.label}</div>
                 {r.pick ? <div style={{ display: "flex", flexShrink: 0, marginLeft: 12, padding: "2px 12px", borderRadius: 8, background: C.red, color: C.white, fontSize: 24, fontWeight: 900 }}>おすすめ</div> : null}
               </div>
-              {r.sub ? <div style={{ display: "flex", fontSize: 28, fontWeight: 500, color: C.sub }}>{r.sub}</div> : null}
+              {r.sub ? <div style={{ display: "flex", fontSize: F.sub, fontWeight: 500, color: C.sub, lineHeight: dense ? 1.15 : undefined }}>{r.sub}</div> : null}
             </div>
             <div style={{ display: "flex", position: "relative", width: track, height: DOT + 8, marginLeft: GAP, alignItems: "center" }}>
               <div style={{ display: "flex", position: "absolute", left: 0, top: 4, width: track, height: DOT, background: C.track, borderRadius: 8 }} />
@@ -207,9 +210,9 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
               ) : null}
             </div>
             <div style={{ ...col, width: VALUE, marginLeft: GAP, opacity: p }}>
-              <div style={{ display: "flex", fontSize: 56, fontWeight: 900, color: C.ink, lineHeight: 1.1 }}>{money(r.median, s.unit)}</div>
+              <div style={{ display: "flex", fontSize: F.value, fontWeight: 900, color: C.ink, lineHeight: 1.1 }}>{money(r.median, s.unit)}</div>
               {r.min !== undefined && pm > 0 ? <div style={{ display: "flex", fontSize: 28, fontWeight: 900, color: C.red, opacity: pm }}>{`最安 ${r.minLabel ?? money(r.min, s.unit)}`}</div> : null}
-              {r.stock ? <div style={{ display: "flex", fontSize: 28, fontWeight: 500, color: C.sub }}>{r.stock}</div> : null}
+              {r.stock ? <div style={{ display: "flex", fontSize: F.small, fontWeight: 500, color: C.sub, lineHeight: dense ? 1.15 : undefined }}>{r.stock}</div> : null}
             </div>
           </div>
         );

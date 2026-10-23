@@ -16,6 +16,13 @@
     { "surface": "相場", "pronunciation": "ソウバ", "accent_type": 0, "word_type": "COMMON_NOUN", "priority": 5 },
     { "surface": "値下がり", "pronunciation": "ネサガリ", "accent_type": 0, "word_type": "COMMON_NOUN", "priority": 5 },
     { "surface": "検品担当", "pronunciation": "ケンピンタントウ", "accent_type": 5, "word_type": "COMMON_NOUN", "priority": 5 },
-    { "surface": "ランキング", "pronunciation": "ランキング", "accent_type": 0, "word_type": "COMMON_NOUN", "priority": 5 }
+    { "surface": "ランキング", "pronunciation": "ランキング", "accent_type": 0, "word_type": "COMMON_NOUN", "priority": 5 },
+    { "surface": "じゃんぱら", "pronunciation": "ジャンパラ", "accent_type": 0, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "にこスマ", "pronunciation": "ニコスマ", "accent_type": 0, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "モバステ", "pronunciation": "モバステ", "accent_type": 0, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "エムモバ", "pronunciation": "エムモバ", "accent_type": 0, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "ニューズドテック", "pronunciation": "ニュウズドテック", "accent_type": 5, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "リユスマ", "pronunciation": "リユスマ", "accent_type": 0, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "赤ロム", "pronunciation": "アカロム", "accent_type": 0, "word_type": "PROPER_NOUN", "priority": 8 }
   ]
 }

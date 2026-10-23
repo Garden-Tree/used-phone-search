@@ -251,7 +251,39 @@ const PRIORITY: Variant[] = [
   ) },
 ];
 
-const PLANS: Record<string, Variant[]> = { "2026-10-21-iphone-dore": DORE, "2026-10-23-iphone-priority": PRIORITY };
+// 4本目「どこで買う？」（10/24）: サムネは「どこで買う？」＋「1.6万円差」（iPhone 16 128GB の店ごとの最安値・安い順の1位と5位の差 15,820円）。
+// タイトル（店選びの正解・保証・電池表記・赤ロム）と言葉を重ねない。写真は CC BY の iPhone 16 だけ（立ち絵と混ぜてよい）
+const WHERE: Variant[] = [
+  // G2b: 2本目・1本目で選ばれた型。帯3段＋つむぎのウインク＋iPhone 16＋吹き出し
+  { name: "G2b", photos: [PH.iphone16], chara: true, el: () => (
+    <Bars bg={`linear-gradient(135deg, ${NAVY} 0%, ${BLACK} 70%)`} width={720} bars={[{ text: "中古iPhone", bg: WHITE, color: BLACK }, { text: "どこで買う？", bg: RED, color: WHITE }, { text: "1.6万円差", bg: YELLOW, color: BLACK, key: true }]}
+      right={<>
+        {chara("tsumugi-wink", { left: 940, top: 150, height: 660 })}
+        {photo(PH.iphone16, { left: 760, top: 250, width: 270, height: 460, transform: "rotate(-12deg)" })}
+        <Bubble text={"同じ機種でも\n店で違う！"} size={58} style={{ left: 790, top: 20 }} />
+      </>} />
+  ) },
+  // O1b: 黄色の地・つむぎの驚き・上に「中古iPhone」
+  { name: "O1b", photos: [PH.iphone16], chara: true, el: () => (
+    <div style={{ width: W, height: H, display: "flex", position: "relative", background: `radial-gradient(circle at 70% 50%, #FFF7AE 0%, ${YELLOW} 45%, #F59E0B 100%)`, fontFamily: "Noto Sans JP" }}>
+      {photo(PH.iphone16, { left: 900, top: 270, width: 290, height: 430, transform: "rotate(8deg)" })}
+      {chara("tsumugi-surprised", { left: -30, top: 110, height: 760 })}
+      <div style={{ position: "absolute", left: 380, top: 16, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+        <div style={{ display: "flex", padding: "2px 22px", background: BLACK, color: WHITE, fontSize: 64, fontWeight: 900 }}>中古iPhone</div>
+        <div style={{ display: "flex", marginTop: 10 }}><Outlined text="どこで買う？" size={fit("どこで買う？", 860, 130)} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} /></div>
+        <div style={{ display: "flex", marginTop: 4 }}><Outlined text="1.6万円差" size={fit("1.6万円差", 880, 200)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-8} /></div>
+      </div>
+      <Bubble text={"同じiPhone 16\nなのに！"} size={60} style={{ left: 300, top: 480 }} />
+    </div>
+  ) },
+  // G1: 黒の地・青ざめたずんだもん＋iPhone 16
+  { name: "G1", photos: [PH.iphone16], chara: true, el: () => (
+    <Bars bg={BLACK} width={780} bars={[{ text: "中古iPhone", bg: WHITE, color: BLACK }, { text: "どこで買う？", bg: RED, color: WHITE }, { text: "1.6万円差", bg: YELLOW, color: BLACK, key: true }]}
+      right={<>{photo(PH.iphone16, { left: 980, top: 40, width: 280, height: 520, transform: "rotate(10deg)" })}{chara("zundamon-shock", { left: 820, top: 260, height: 520 })}</>} />
+  ) },
+];
+
+const PLANS: Record<string, Variant[]> = { "2026-10-21-iphone-dore": DORE, "2026-10-23-iphone-priority": PRIORITY, "2026-10-24-where-to-buy": WHERE };
 
 (async () => {
   const dir = process.argv[2];

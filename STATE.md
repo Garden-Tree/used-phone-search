@@ -53,7 +53,7 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube: 横動画2本。未投稿: promax・macbudget・横3本目（iPad）
+1. YouTube: 未投稿: 横3本目（iPad）・横4本目（どこで買う）・probudget
 2. 伸ばし方（ideas/10-24-growth の1・3: CTR・月次レポート）
 3. X の日々の運用（ideas/x-posts）
 ```
