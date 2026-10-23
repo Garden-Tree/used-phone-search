@@ -28,3 +28,13 @@ export const getGoodRankMin = cache(async (model: string): Promise<number | null
   });
   return agg._min.price;
 });
+
+/**
+ * 機種ページの「安い在庫」に添える1台（2026-10-23〜）: 上の2つと同じ条件でいちばん安い在庫の行。
+ * withBattery=false は MacBook・Apple Watch（ランクB以上だけ）。DB で1件だけ取り出す
+ */
+export const getGoodDevice = cache(async (model: string, withBattery: boolean) => {
+  const where = await modelWhere(model);
+  const and = [where, { conditionRank: { in: ["S", "A", "B", "s", "a", "b"] } }, ...(withBattery ? [minBatteryWhere(85)] : [])];
+  return prisma.deviceInventory.findFirst({ where: { AND: and }, orderBy: [{ price: "asc" }, { id: "asc" }] });
+});

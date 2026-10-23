@@ -243,6 +243,16 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
                 <> ・ <Link href={modelPagePath(pageModel)} className="text-brand-600 hover:text-brand-800">相場まとめ ›</Link></>
               )}
             </p>
+            {/* バッテリー85%以上だけに1回で切り替える（10/23〜。最初は全件・安い順のまま。MacBook・Apple Watch はバッテリーを書かない店が多いので出さない） */}
+            {!(device.key === 'mac' || watchView || models.some((q) => /^\s*macbook/i.test(q))) && (
+              <button type="button" aria-pressed={mb === 85}
+                onClick={() => updateParams({ minBattery: mb === 85 ? null : '85' })}
+                className={`h-9 px-3.5 rounded-full border text-[13px] font-bold flex items-center gap-1 ${
+                  mb === 85 ? 'bg-safe border-safe text-white' : 'bg-white border-[#A7F3D0] text-safe hover:border-safe'
+                }`}>
+                {mb === 85 ? '✓ ' : ''}バッテリー85%以上だけ
+              </button>
+            )}
             {/* PC では並び替えをここに置く（スマホは画面下の固定バー） */}
             <div className="hidden md:flex items-center gap-2">
               <label htmlFor="sort-pc" className="text-sm text-ink-sub">並び替え</label>

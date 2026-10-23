@@ -40,7 +40,7 @@ import ShopBars from "@/app/components/ShopBars";
 import StackedBar from "@/app/components/StackedBar";
 import Sparkline, { recentPoints } from "@/app/components/Sparkline";
 import InspectionTips, { inspectionTips } from "@/app/components/InspectionTips";
-import { getGoodConditionMin, getGoodRankMin } from "@/lib/modelBest";
+import { getGoodDevice } from "@/lib/modelBest";
 import { getBuyNowNotes, getBuyNowStats } from "@/lib/buyNow";
 import { getBreakdown, getRankSMax, getShopBars, type Breakdown, type ShopBarRow } from "@/lib/modelBreakdown";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -221,17 +221,18 @@ export default async function ModelPage({ params }: Props) {
   // Xperia・AQUOS・Apple Watch（2026-10-15〜）も予算別ページはまだない
   const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || device === "watch" ? null : device;
   const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
-  const [stats, history, batteryRows, matrix, macMatrix, budget, goodMin, buyNowNotes, statTiles] = await Promise.all([
+  const [stats, history, batteryRows, matrix, macMatrix, budget, goodDevice, buyNowNotes, statTiles] = await Promise.all([
     getModelStats(model),
     getPriceHistory(slug),
     getBatteryRows(model),
     mac ? Promise.resolve(emptyMatrix) : getStorageRankMatrix(model),
     mac ? getMemorySsdRankMatrix(model) : Promise.resolve(null),
     budgetDevice ? smallestBudgetFor(model, budgetDevice) : Promise.resolve(null),
-    mac || watch ? getGoodRankMin(model) : getGoodConditionMin(model),
+    getGoodDevice(model, !(mac || watch)),
     getBuyNowNotes(model),
     getBuyNowStats(model),
   ]);
+  const goodMin = goodDevice?.price ?? null;
   // 図の集計（在庫があるときだけ。どれも DB 側の groupBy / aggregate）
   const emptyBreakdown: Breakdown = { ranks: [], battery: { b90: 0, b85: 0, b80: 0, over80: 0, low: 0, unknown: 0 }, batteryKnown: 0, total: 0 };
   const [shopRows, breakdown, rankSMax]: [ShopBarRow[], Breakdown, number | null] = stats.count > 0
@@ -664,6 +665,15 @@ export default async function ModelPage({ params }: Props) {
                 </div>
                 <DeviceList>
                   {cheapest5.map((d) => <DeviceCard key={d.id} device={d} showModel={false} />)}
+                  {/* 安い5件に「ランクB以上・バッテリー85%以上」の在庫がなければ、その条件でいちばん安い1台を添える（10/23〜） */}
+                  {goodDevice && !cheapest5.some((d) => d.id === goodDevice.id) && (
+                    <>
+                      <p className="px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe border-t border-line">
+                        {mac || watch ? "ランクB以上でいちばん安い1台" : "ランクB以上・バッテリー85%以上でいちばん安い1台"}
+                      </p>
+                      <DeviceCard device={goodDevice} showModel={false} />
+                    </>
+                  )}
                   <Link href={searchHref(model)} className={`flex items-center justify-center h-12 text-sm font-bold ${LINK}`}>
                     {stats.count.toLocaleString()}件すべて見る ›
                   </Link>
