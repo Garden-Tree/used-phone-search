@@ -277,6 +277,7 @@ def scrape_iosis(max_pages=200):
             last = min(max_pages, cap or max_pages)
             page = 1
             done = False
+            failed_batches = 0  # 続けて全ページ取得に失敗した回数
             while page <= last and not done:
                 pages = list(range(page, min(page + BATCH, last + 1)))
                 results = list(executor.map(lambda p: fetch_page_raw(tpl, parse, p), pages))
@@ -286,6 +287,12 @@ def scrape_iosis(max_pages=200):
                     all_items.extend(result[0])
                     if result[1] == 0:
                         done = True  # 商品のないページ＝最後のページの先
+                failed_batches = failed_batches + 1 if all(r is None for r in results) else 0
+                # サイト全体が止まっている（503 など）ときに、上限の200ページまで再試行し続けない（10/22〜23 に1回28分・約1,440回の要求になった）。
+                # 最初の4ページが全部だめならこの種類はやめる。途中でも4ページまとめての失敗が2回続いたらやめる
+                if failed_batches and (page == 1 or failed_batches >= 2):
+                    print(f"  警告: {tpl} は{'最初の' if page == 1 else '続けて'}{len(pages)}ページを取得できなかったので打ち切る（サイトが止まっている疑い）")
+                    break
                 page += BATCH
                 time.sleep(0.5)  # 4ページごとに間を空ける（店に負担をかけない）
             if not done and page > last:

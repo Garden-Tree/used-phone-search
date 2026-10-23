@@ -34,6 +34,13 @@ on:
         description: '楽天の JSON の取り直し回数（自動で付く。手動では 0 のまま）'
         required: false
         default: '0'
+      site_only:
+        description: 'true ならサイトの書き出しと配置だけ（在庫の取得・取り込み・価格推移・監視を飛ばす。コードだけ変えたとき。約6〜7分）'
+        required: false
+        default: ''
+
+# 手動実行で site_only=true のときは、在庫の取得・取り込み・価格推移・監視を飛ばし、書き出しと配置だけを行う（ページの見た目やコードだけ直したとき。
+# 在庫と価格は前回の取り込みのまま。gh workflow run scraper.yaml --ref main -f site_only=true）
 
 # 手動実行と定期実行が重ならないように（楽天の洗い替え・書き出し・rsync --delete が同時に走らない）
 concurrency:
@@ -75,12 +82,14 @@ jobs:
         run: echo "DATABASE_URL=$DATABASE_URL" > .env
 
       - name: Python 3.11 をセットアップ
+        if: ${{ inputs.site_only != 'true' }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
 
       - name: 依存ライブラリのインストール
+        if: ${{ inputs.site_only != 'true' }}
         run: |
           cd scraper
           pip install -r requirements.txt
@@ -88,6 +97,7 @@ jobs:
       # 1店だけの失敗（403・429・タイムアウト・0件）は警告にして続ける。2店以上の同時失敗・Python の例外（Traceback）はここで失敗にする。
       # 1店の失敗が続いたときは、下の「データ更新の監視」が在庫の古さで失敗にする（docs/operations.md「失敗と警告の分け方」）
       - name: スクレイパーの実行
+        if: ${{ inputs.site_only != 'true' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           # フォームからの入力値を渡す。定期実行(cron)の時は空になるので '100' をフォールバックとして渡す
@@ -115,7 +125,7 @@ jobs:
       # 楽天の取り込みと同様、失敗しても前回の在庫のまま書き出しは続ける（ジョブは失敗として通知される。取得に失敗した店のファイルは書かれず、取り込みも飛ばされる）
       - name: Yahoo!ショッピングの在庫を取り込む
         # リンクはバリューコマース（VC_SID/VC_PID が入ったら）、未提携のあいだはもしもアフィリエイト経由（lib/affiliate.ts）
-        if: ${{ !cancelled() && env.YAHOO_APP_ID != '' }}
+        if: ${{ !cancelled() && env.YAHOO_APP_ID != '' && inputs.site_only != 'true' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
@@ -127,7 +137,7 @@ jobs:
       # Amazon.co.jp の整備済み品（lib/amazonShops.ts）: Creators API を直接呼んで取り込む（1秒1回・最大約12分）。Yahoo と同じ扱い（失敗しても書き出しは続け、ジョブは失敗として通知）。
       # 取得に失敗した回は amazon-data/amazon.json.gz が書かれず、取り込みが Amazon の在庫を隠す（価格は24時間を超えて出せない）
       - name: Amazon 整備済み品を取り込む
-        if: ${{ !cancelled() && env.AMAZON_CREDENTIAL_ID != '' }}
+        if: ${{ !cancelled() && env.AMAZON_CREDENTIAL_ID != '' && inputs.site_only != 'true' }}
         timeout-minutes: 20
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -155,7 +165,7 @@ jobs:
       # 失敗しても前回の在庫のまま書き出しは続ける（ジョブは失敗として通知される）
       - name: 楽天市場店の在庫を取り込む
         id: rakuten
-        if: ${{ !cancelled() && env.RAKUTEN_DATA_URL != '' }}
+        if: ${{ !cancelled() && env.RAKUTEN_DATA_URL != '' && inputs.site_only != 'true' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           RAKUTEN_RETRY: ${{ inputs.rakuten_retry || '0' }}
@@ -179,7 +189,7 @@ jobs:
 
       # にこスマ・イオシスの iPad は店の表記のまま入るので、lib/ipadCatalog.ts の正式名にそろえる
       - name: iPad の機種名をそろえる
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && inputs.site_only != 'true' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run normalize:ipad
@@ -187,14 +197,14 @@ jobs:
       # 公式（イオシス・エムモバ）とモール店（楽天・Yahoo!ショッピング）の同じ商品を突き合わせる（公式のカードにモール店の価格を添え、重複を隠す）。
       # 公式・楽天の取り込みと iPad の機種名そろえの後に行う
       - name: 公式とモール店（イオシス楽天・エムコム Yahoo）の同じ商品を突き合わせる
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && inputs.site_only != 'true' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx tsx scripts/link-duplicate-shops.ts
 
       # 一部のショップの取得に失敗しても、取れた分で価格推移は記録する（ジョブ自体は失敗のまま通知される）
       - name: 価格推移の記録
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && inputs.site_only != 'true' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run snapshot:prices
@@ -203,7 +213,7 @@ jobs:
       # 1回きりの取得の失敗は警告（::warning::）だけ。最終更新が13時間超・8時間超が2店以上・「0件」が2回続いた、などで失敗（scripts/check-health.ts）
       - name: データ更新の監視
         id: health
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && inputs.site_only != 'true' }}
         continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

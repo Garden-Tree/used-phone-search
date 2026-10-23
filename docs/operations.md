@@ -92,7 +92,13 @@
   スクレイパーは `FORCE_REPLACE=1`、楽天は `npx tsx scripts/ingest-rakuten.ts <dir> --allow-shrink`
 
 ### サイトを今すぐ更新したい
-- GitHub の Actions → Phone Inventory Scraper → Run workflow（main）。10分ほどで配置まで終わる
+- GitHub の Actions → Phone Inventory Scraper → Run workflow（main）。在庫の取得から配置まで約16分（イオシスなどが止まっていなければ）
+- **コード・見た目だけ直したとき**は `site_only` を `true` にして実行（`gh workflow run scraper.yaml --ref main -f site_only=true`）。在庫の取得・取り込み・価格推移・監視を飛ばし、書き出しと配置だけ（約6〜7分。在庫と価格は前回の取り込みのまま）。10/23〜
+- 実行は1本ずつ（concurrency）。実行中に新しく実行をかけると、順番待ちの分は最新の1本に置き換わる
+
+### 店のサイトが止まっているとき（スクレイパー）
+- イオシスは、ある種類（iPhone・iPad など）の最初の4ページが全部取れなければその種類を打ち切る。途中でも4ページまとめての失敗が2回続いたら打ち切る（10/23〜。以前は 503 のまま上限200ページ×3回再試行し、1回28分・約1,440回の要求になっていた）
+- 取れない状態が12時間続くと在庫は自動で隠れる（上の「取得が止まった店の在庫を隠す」）
 
 ### エムモバの公式とエムコム Yahoo!ショッピング店（2026-10-10〜）
 - 同じ会社（株式会社エムコム）。`scripts/link-duplicate-shops.ts` がイオシスと同じ仕組みで、エムモバの行に Yahoo の価格・URL を添え、同じ商品の Yahoo の行を隠す。
