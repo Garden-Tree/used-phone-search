@@ -14,8 +14,8 @@ import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 
-/** 規則を変えたら上げる（声のキャッシュを作り直すため）。2: 長音のモーラを延ばす（10/21）。3: ギャラクシー・ピクセルを機種名の頭に（10/22）。4: 「ランク＋A〜C・S」と続く助詞を1つの句に・機種名の頭と助詞を切らない（10/22） */
-export const TUNING_VERSION = 5;
+/** 規則を変えたら上げる（声のキャッシュを作り直すため）。2: 長音のモーラを延ばす（10/21）。3: ギャラクシー・ピクセルを機種名の頭に（10/22）。4: 「ランク＋A〜C・S」と続く助詞を1つの句に・機種名の頭と助詞を切らない（10/22）。6: 型名・「相場」の後ろにくっついた数字を切り離す（MacBook・10/23）。7: 「ショップ」の後ろの数字も切り離す・「オオエ/ス」（OS）をつなぐ（横動画 iPad・10/23） */
+export const TUNING_VERSION = 7;
 
 export type DictWord = { surface: string; pronunciation: string; accent_type: number; word_type?: string; priority?: number };
 const DICT_FILE = resolve(__dirname, "voice-dict.json");
@@ -61,6 +61,8 @@ const BRANDS: Record<string, string> = {
 };
 /** 番号の後ろにつく型名（長いものから） */
 const MODEL_SUFFIX = ["プロマックス", "プラス", "プロ", "エアア", "ミニ", "イイ"];
+/** 後ろに数字がくっつきやすい語（「相場14万」→「ソオバジュウ/ヨンマン」・「中古ショップ16店」→「チュウコショップジュウ/ロクテン」）。句の終わりにあれば切る */
+const NUM_LEADS = ["ソオバ", "ショップ"];
 /** 状態ランクの記号の読み（A・B・C・S）と、その後ろにつなぐ助詞 */
 const RANK_LETTER = new Set(["エイ", "ビイ", "シイ", "エス"]);
 const PARTICLE = new Set(["ト", "ノ", "ニ", "ガ", "ワ", "デ", "ナラ", "ヨリ", "モ", "オ"]);
@@ -112,6 +114,17 @@ export async function tuneKana(kana: string, kanaOf: (text: string) => Promise<s
     const [a, b] = cut(p.raw, m[1].length);
     return [{ raw: a, sep: "/" }, { raw: b, sep: p.sep }];
   });
+  // 2b) 型名・「相場」の後ろにくっついた数字を切り離す（macbudget・10/23）: 「マックブ'ック/エ'アアジュウ/サンイ'ンチ」「ソオバジュウ'/ヨンマ'ン」→
+  //     「エ'アア / ジュウ」「ソオバ / ジュウ'」（切った数字は 4 で後ろの「サンインチ」「ヨンマン」とつながる）。
+  //     助詞の「ニ」「ゴ」だけのとき（「エアアニ」）は切らないよう、数字は2文字以上
+  ps = ps.flatMap((p) => {
+    const s = strip(p.raw);
+    const m = s.match(new RegExp(`^(${MODEL_SUFFIX.join("|")}|.*?(?:${NUM_LEADS.join("|")}))(${NUM_WORD}+)$`));
+    if (!m || m[2].length < 2) return [p];
+    const [a, b] = cut(p.raw, m[1].length);
+    // 「相場」は平板（エンジンに単独で読ませると「ソ'オバ」と頭高になる）
+    return [{ raw: m[1] === "ソオバ" && !a.includes("'") ? "ソオバ'" : a, sep: "/" }, { raw: b, sep: p.sep }];
+  });
   // 3) 切ってアクセントの印がなくなった句は、エンジンにその部分だけ読ませて決める
   const resolved: Phrase[] = [];
   for (const p of ps) {
@@ -137,6 +150,11 @@ export async function tuneKana(kana: string, kanaOf: (text: string) => Promise<s
       }
       // 「プロエ'ッ_クス/エ'ル」（Pixel の Pro XL・10/22）: XL は1語なので「エル」を前の句につなぐ
       if (b === "エル" && a.endsWith("エックス")) {
+        out[out.length - 1] = { raw: joinLast(prev.raw, p.raw), sep: p.sep };
+        continue;
+      }
+      // 「アイパ'ッド/オオエ'/ス'」（iPadOS・10/23）: OS は1語なので「ス」を前の句につなぐ
+      if (b === "ス" && a.endsWith("オオエ")) {
         out[out.length - 1] = { raw: joinLast(prev.raw, p.raw), sep: p.sep };
         continue;
       }

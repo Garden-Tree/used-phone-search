@@ -7,7 +7,7 @@ import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
-import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Script } from "./types";
+import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, isProVs, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -19,10 +19,10 @@ const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
 const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
 const HEAD_TITLE = (s: Script) =>
-  s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"]
+  s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"]
     : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? ["電池90%台だと", "いくら高い？中古iPhone"]
     : s.theme === "gen" ? ["iPhone", "1世代前でいくら安い？"] : s.theme === "storage" ? ["容量を1つ上げると", "いくら高い？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
-    : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : ["今週の中古iPhone", "値下がりランキング"];
+    : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : ["今週の中古iPhone", "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
   s.theme === "rank" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
@@ -31,8 +31,9 @@ const FOOT = (s: Script) =>
     : s.theme === "storage" ? `${s.date.replace(/-/g, "/")}・容量ごとの中央値`
     : s.theme === "pixelbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・アップデートはGoogle公式`
     : s.theme === "ipadbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・PencilはApple公式`
+    : s.theme === "macbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`
     : s.theme === "newused" ? `${s.date.replace(/-/g, "/")}・新品はApple公式・中古は同じ容量の中央値`
-    : s.theme === "provs" || s.theme === "fold" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値` : `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`;
+    : s.theme === "provs" || s.theme === "promax" || s.theme === "fold" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値` : `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`;
 
 /**
  * 色はサイトと同じ（lib/brandColors.ts = app/globals.css の @theme）。白いカードの上は SITE、紺の地の上は ON_DARK
@@ -101,8 +102,20 @@ const reveal = (dur: number): Scene => ({ id: "reveal", dur, anim: 2.0, se: [{ t
 const outro = (k: number): Scene => ({ id: "outro", dur: 1.2 * k + 0.4 + 0.8, anim: 1.2 * k + 0.4, o: { k } });
 const comment = (dur: number, start: number, gap: number, n: number): Scene => ({ id: "comment", dur, anim: start + (n - 1) * gap + 0.5, o: { start, gap } });
 
+/**
+ * 場面の並び。関連動画につながるテーマ（RELATED_LONG_THEMES）は、締めの「▼ くわしい解説は…」の札が 2.2k 秒で出るので、締めの動き（anim）をそこまで延ばす
+ * （10/23 まで anim が 1.2k+0.4 秒で止まり、札が動画に出ていなかった。render.ts は anim の後は最後のコマを止める）
+ */
+export const TIMELINE = (s: Script, v: Variant): Scene[] =>
+  baseTimeline(s, v).map((sc) => {
+    if (sc.id !== "outro" || !RELATED_LONG_THEMES.has(s.theme)) return sc;
+    const k = sc.o?.k ?? 1.5;
+    const anim = Math.max(sc.anim, 2.2 * k + 0.4);
+    return { ...sc, anim, dur: Math.max(sc.dur, anim + 0.8) };
+  });
+
 /** 声なしの長さ: A「標準」約29秒 / B「速い」約19秒（数字先出し・グラフなし）/ C「グラフ先」約24秒（最初に推移グラフ）。声があると場面が延びる（render.ts） */
-export const TIMELINE = (s: Script, v: Variant): Scene[] => {
+const baseTimeline = (s: Script, v: Variant): Scene[] => {
   const n = s.scenes.comment.lines.length;
   // budget（声なし約26秒）: 問い（声が約2秒と短いので動きも2秒で止め、声＋0.5秒で次へ）→ 予算の4行（声に合わせて上から出す）→ 注目の機種 → ひと言 → 締め
   if (isBudget(s)) return [
@@ -112,7 +125,7 @@ export const TIMELINE = (s: Script, v: Variant): Scene[] => {
   // provs・fold も newused と同じ（問い → 3位・2位・伏せた1位 → 1位の2本の棒 → ひと言 → 締め）
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
-  if (s.theme === "newused" || s.theme === "provs" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage") return [
+  if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -239,14 +252,15 @@ function Hook({ s, t }: { s: DropsScript; t: number }) {
 function BudgetHook({ s, t }: { s: BudgetScript; t: number }) {
   const L = lookOf(s);
   const rows = s.scenes.budgets.rows;
-  const lines = ["予算ぴったりで買える", s.theme === "pixelbudget" ? "中古Pixelは…？" : "中古iPhoneは…？"];
+  const lines = ["予算ぴったりで買える", s.theme === "pixelbudget" ? "中古Pixelは…？" : s.theme === "macbudget" ? "中古MacBookは…？" : "中古iPhoneは…？"];
   const TW = (CW - 30) / 2;
   return (
     <Frame s={s}>
       <Question lines={lines} max={92} />
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", width: CW, marginTop: 40, transform: `scale(${pulseOf(t)})` }}>
         {rows.map((r, i) => {
-          const sub = r.updateUntil ? `更新 ${jaYm(r.updateUntil)}まで` : "なら？";
+          // pixelbudget はアップデート保証の終わり、macbudget はチップ（M1・M2…）、budget は「なら？」
+          const sub = r.updateUntil ? `更新 ${jaYm(r.updateUntil)}まで` : r.chip ? `${r.chip}チップ` : "なら？";
           return (
             <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: TW, height: 190, marginTop: i >= 2 ? 30 : 0, background: L.chip, borderRadius: Math.min(L.card.radius, 32), boxShadow: L.card.shadow, color: C.white }}>
               <div style={{ ...row, fontSize: FIT(r.label, TW - 40, 92), fontWeight: 900, lineHeight: 1.1 }}>{r.label}</div>
@@ -756,8 +770,8 @@ function BudgetRows({ s, t, o }: { s: BudgetScript; t: number; o: Scene["o"] }) 
   const rows = s.scenes.budgets.rows;
   const RH = 190;
   const RIGHT = 660;
-  // 3段目: pixelbudget はアップデート保証の終わり、ipadbudget は使える Apple Pencil
-  const extraOf = (r: BudgetScript["scenes"]["budgets"]["rows"][number]) => (r.updateUntil ? `アップデート ${jaYm(r.updateUntil)}まで` : r.pencil ? `Pencil ${r.pencil}` : "");
+  // 3段目: pixelbudget はアップデート保証の終わり、ipadbudget は使える Apple Pencil、macbudget はチップと発売年
+  const extraOf = (r: BudgetScript["scenes"]["budgets"]["rows"][number]) => (r.updateUntil ? `アップデート ${jaYm(r.updateUntil)}まで` : r.pencil ? `Pencil ${r.pencil}` : r.chip ? `${r.chip}チップ・${r.released}発売` : "");
   const upd = rows.some((r) => extraOf(r));
   return (
     <Frame s={s}>
@@ -792,8 +806,8 @@ function Pick({ s, t }: { s: BudgetScript; t: number }) {
   const sub = `${p.storage}・${p.released}発売`;
   const stock = `在庫 ${n(p.count)}台`;
   // pixelbudget: アップデート保証の終わり（ナレーションも読む）
-  // ipadbudget: 使える Apple Pencil（ナレーションは在庫数を読む）
-  const upd = p.updateUntil ? `アップデート ${jaYm(p.updateUntil)}まで` : p.pencil ? `Apple Pencil ${p.pencil}` : "";
+  // ipadbudget: 使える Apple Pencil（ナレーションは在庫数を読む）・macbudget: チップ（ナレーションは在庫数を読む）
+  const upd = p.updateUntil ? `アップデート ${jaYm(p.updateUntil)}まで` : p.pencil ? `Apple Pencil ${p.pencil}` : p.chip ? `${p.chip}チップ` : "";
   return (
     <Frame s={s}>
       <div style={{ ...row, fontSize: 84, fontWeight: 900, marginBottom: 40, opacity: prog(t, 0, 0.25) }}>{`注目は${p.label}`}</div>
@@ -862,12 +876,14 @@ function ProVsReveal({ s, t }: { s: ProVsScript; t: number }) {
   const name = pairName(r.base, r.pro);
   const diffText = `+${n(r.diff)}円`;
   const sub = `${r.storage}・中古の相場`;
-  const note = u ? `無印を${u.to}にするなら +${n(u.diff)}円` : "";
-  const LABEL = 150;
+  // promax は base＝Pro・pro＝Pro Max（棒の札と容量の注記の呼び方だけ変える）
+  const [baseLabel, proLabel] = s.theme === "promax" ? ["Pro", "Pro Max"] : ["無印", "Pro"];
+  const note = u ? `${baseLabel}を${u.to}にするなら +${n(u.diff)}円` : "";
+  const LABEL = s.theme === "promax" ? 210 : 150;
   const BAR = CW - 60 - LABEL - 20;
   const bars = [
-    { label: "無印", price: r.baseMedian, color: C.budget, w: Math.round((BAR * r.baseMedian) / r.proMedian) },
-    { label: "Pro", price: r.proMedian, color: lookOf(s).accent, w: BAR },
+    { label: baseLabel, price: r.baseMedian, color: C.budget, w: Math.round((BAR * r.baseMedian) / r.proMedian) },
+    { label: proLabel, price: r.proMedian, color: lookOf(s).accent, w: BAR },
   ];
   return (
     <Frame s={s}>
@@ -1104,18 +1120,19 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       default: throw new Error(`fold に場面 ${sc.id} はありません`);
     }
   }
-  if (s.theme === "provs") {
+  if (isProVs(s)) {
+    const pm = s.theme === "promax";
     switch (sc.id) {
       case "hook": {
         const r = s.scenes.ranking.items[0];
-        return <SplitHook s={s} t={t} lines={["Proと無印、", "同じ容量だと", "いくら違う？"]} teaser={`+${n(r.diff)}円`}
-          left={{ label: "無印", sub: r.storage, fill: C.budget }} right={{ label: "Pro", sub: r.storage, fill: lookOf(s).chip }} />;
+        return <SplitHook s={s} t={t} lines={pm ? ["Pro MaxとPro、", "同じ容量だと", "いくら違う？"] : ["Proと無印、", "同じ容量だと", "いくら違う？"]} teaser={`+${n(r.diff)}円`}
+          left={{ label: pm ? "Pro" : "無印", sub: r.storage, fill: C.budget }} right={{ label: pm ? "Pro Max" : "Pro", sub: r.storage, fill: lookOf(s).chip }} />;
       }
       case "ranking": return <ProVsRanking s={s} t={t} o={sc.o} />;
       case "reveal": return <ProVsReveal s={s} t={t} />;
       case "comment": return <Comment s={s} t={t} o={sc.o} />;
       case "outro": return <Outro s={s} t={t} o={sc.o} />;
-      default: throw new Error(`provs に場面 ${sc.id} はありません`);
+      default: throw new Error(`${s.theme} に場面 ${sc.id} はありません`);
     }
   }
   if (s.theme === "newused") {

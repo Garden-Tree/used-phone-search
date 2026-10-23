@@ -5,7 +5,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 
 # YouTube ショートの作り方（@used_gadelog）
 
-週1本。テーマを回す: **drops**（今週いちばん値下がりした中古iPhone のランキング）・**budget**（予算ぴったりで買える中古iPhone。10/21〜）・**newused**（新品より中古でいくら安い？ 10/21〜）・**provs**（Proと無印、同じ容量でいくら違う？ 10/22〜）・**fold**（折りたたみスマホ、1世代前にするといくら安い？ 10/22〜）・**pixelbudget**（予算ぴったりで買える中古Pixel 10/22〜）・**ipadbudget**（予算ぴったりで買える中古iPad 10/23〜）・**rank**（状態ランクでいくら違う？中古iPhone 10/22〜）・**battery**（電池90%台だといくら高い？中古iPhone 10/23〜）・**gen**（iPhone、1世代前にするといくら安い？ 10/23〜・ずんだもん）・**storage**（容量を1つ上げるといくら高い？中古iPhone 10/23〜・つむぎ）。
+週1本。テーマを回す: **drops**（今週いちばん値下がりした中古iPhone のランキング）・**budget**（予算ぴったりで買える中古iPhone。10/21〜）・**newused**（新品より中古でいくら安い？ 10/21〜）・**provs**（Proと無印、同じ容量でいくら違う？ 10/22〜）・**fold**（折りたたみスマホ、1世代前にするといくら安い？ 10/22〜）・**pixelbudget**（予算ぴったりで買える中古Pixel 10/22〜）・**ipadbudget**（予算ぴったりで買える中古iPad 10/23〜）・**rank**（状態ランクでいくら違う？中古iPhone 10/22〜）・**battery**（電池90%台だといくら高い？中古iPhone 10/23〜）・**gen**（iPhone、1世代前にするといくら安い？ 10/23〜・ずんだもん）・**storage**（容量を1つ上げるといくら高い？中古iPhone 10/23〜・つむぎ）・**promax**（Pro MaxとPro、同じ容量でいくら違う？ 10/23〜・青山龍星）・**macbudget**（予算ぴったりで買える中古MacBook 10/23〜・つむぎ）。
 チャンネルの説明「値下がりランキングや予算別のおすすめ」に合わせる。
 仕組みの説明は `shorts/README.md` と `docs/youtube-shorts.md`。記録は `ideas/YYYY-MM-DD.md`。報告は日本語。
 このスキルの「決まっていること」は、10/21 にユーザーと何度も作り直して決めたもの。**勝手に元に戻さない**。
@@ -15,7 +15,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 1. **準備**
    - VOICEVOX アプリが起動しているか確かめる: `curl -s http://127.0.0.1:50021/version`。起動していなければ、ユーザーに起動を頼む。声なしで作らない。
    - BGM `shorts/assets/bgm.mp3` があるか確かめる。git には入らないので、別の PC では置き直す。
-2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|newused|provs|fold|rank> plan`
+2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|newused|provs|promax|fold|rank|battery|gen|storage> plan`
    - `shorts/out/<日付>-<テーマ>/script.json` ができる（すでにあれば止まる。上書きは `--force`）。
    - drops: 1〜3位。budget: 予算（3万・5万・7万・10万円）ごとの機種と相場、注目（5万円の行）の最安・在庫数。newused: 新品と中古の相場の差の1〜3位（候補の全機種も出る）。provs: 無印と Pro の相場の差の1〜3位（候補の全組と、1位の無印の容量を上げたときの差も出る）。fold: 折りたたみの新しい方と1世代前の相場の差の1〜3位（候補の全組も出る）。
    - 検品担当のひと言（`comment.lines`）、ナレーション、説明文を確かめる。
@@ -23,7 +23,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 3. **読みを確かめる**: `npx tsx shorts/make-short.tsx --voice-dump script`（最後に書いた台本・その台本の話者で）
    - アクセント句の直す前と後が出る。機種名・数字が細切れになっていないかを見る。
    - 直らない場面は、script.json の `narrationKana` に読みを書く。
-4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|newused|provs|fold|rank> render`
+4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|newused|provs|promax|fold|rank|battery|gen|storage> render`
    - drops は A・B・C の3本、ほかは A の1本と、`youtube.txt` ができる。
    - **`--no-bgm`**: BGM なし（声と効果音だけ・音量の決め方は同じ）の `short-A-nobgm.mp4` と `youtube-nobgm.txt`（BGM のクレジットなし）。ユーザーが YouTube のスマホアプリで投稿し、「音源を追加」で流行りの曲を付けるとき用。BGM 入りの版とは別のファイル。重い処理なので、render は1本ずつ（同時に走らせない。この PC は負荷で落ちる）。
    - 長さ（60秒以内。今は30〜35秒）、音量（-11 LUFS 前後）、タイムライン（場面・行・声の秒）を確かめる。
@@ -60,6 +60,14 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - **予算は 5万・7万・10万・15万円**（相場3万円以下の iPad は 10/23 時点ですべて iPadOS 27 非対応で、3万円の行が作れない）。注目は5万円の行。
   - 切り口: 各行と注目に**使える Apple Pencil**（`lib/ipadPencil.ts`。「Pencil USB-C／第1世代」）。注目の声は在庫数を読む。見出しの帯は「予算ぴったりで買える／中古iPad」。下の注記に「PencilはApple公式」。
   - 説明欄のリンクは注目の機種ページ・/ipad/budget/under-50000・/ipad。utm の末尾は `_ipadbudget`。ハッシュタグ #iPad #中古iPad。ひと言の下書き「iPadは機種ごとに／使えるPencilが／違います」。声は 青山龍星。
+- promax: provs と同じ場面・同じ行（台本の型は ProVsScript で theme "promax"・base＝Pro・pro＝Pro Max。`shorts/themes/promax.ts`。10/23〜・約35秒）。
+  - 組: iPhone 13〜18 の Pro と Pro Max（18 は在庫5件以上の容量があれば入る。10/23 は 18 Pro Max 256GB が8件で入った）。容量は両方に在庫5件以上の最小の容量。差（Pro Max − Pro）の大きい順、率は Pro に対して。1位の Pro を1つ上の容量にしたときの差も出す。
+  - 見出しの帯「Pro MaxとPro／同じ容量でいくら違う？」・つかみ「Pro vs Pro Max」・棒の札「Pro／Pro Max」・注記「Proを512GBにするなら +○円」。見た目は provs と同じ VERSUS。声は 青山龍星。締めに関連動画の誘導が入る（RELATED_LONG_THEMES）。
+  - ナレーション: hook「Pro MaxとPro、同じ容量だと、いくら違う？」・ranking「3位はiPhone 13 Proと13 Pro Max、128GB。差は16,300円です。」・reveal「1位は<Pro>と<番号 Pro Max>。Pro Maxにすると、約○.○万円、およそ○%高くなります。」・outro「…あなたは、Pro Max派？Pro派？」。ひと言の下書きは容量を上げる差が小さいとき「大画面か容量か／同じ差額なら／使い方で選びましょう」、ほかは「画面の大きさと重さで／選びましょう」。utm の末尾 `_promax`
+- macbudget: budget と同じ構成・同じ選び方（`pickBudgetModels` を共有。`shorts/themes/macbudget.ts`。10/23〜・約45秒）。
+  - 対象: `lib/macCatalog.ts` の MacBook（MAC_MODELS・在庫5件以上）。**予算は 10万・15万・20万・30万円**（10/23 は在庫5件以上の最安が MacBook Air M1 の相場 81,980円で、5万・7万円の帯が空。帯ごとの候補は 2・4・8・7機種）。**注目は15万円の行**（4つの予算の2番目）。plan が帯ごとの候補の数を出すので、空の帯ができたら段を見直す。
+  - 切り口: 各行に**チップと発売年**（「M3チップ・2024年発売」。`MAC_INFO`）。つかみの札は「M1チップ」など。注目の声は在庫数を読む。見出しの帯は「予算ぴったりで買える／中古MacBook」。声は 春日部つむぎ。関連動画の締めは付けない（iPhone ではない）。
+  - 説明欄のリンクは注目の機種ページ・/mac（Mac の予算別ページはない）。utm の末尾は `_macbudget`。ハッシュタグ #MacBook #中古MacBook。ひと言の下書き「メモリは後から／増やせないので／容量を確認しましょう」
 - rank: **hook → ranking（3位・2位・伏せた1位）→ reveal（1位のランク A・B・C の3本の棒と件数・A→C の差額と率）→ comment → outro**（型 A だけ・約39秒。10/22〜）。
   - 対象: iPhone 13〜16 の無印と Pro（`shorts/themes/rank.ts` の MODELS）。容量は在庫がいちばん多い容量。ランクは各店の表記（大文字にそろえる）で A・B・C だけ（S＝未使用品・D・ジャンク・不明は除く）。各ランク在庫5件以上。差（A − C）の大きい順、率は A に対して。差0以下は出さない。
   - ランクの基準は店ごとに違い、ランクごとに店の顔ぶれも違う（10/22 は 13 Pro で B の相場が A より高かった）。画面の注記「ランクは各店の表記・同じ容量の中央値」と説明欄で断る。
@@ -82,7 +90,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 ### ナレーション（VOICEVOX）
 - **標準の声は 春日部つむぎ（ノーマル）**。drops と budget はこの声（10/21 ユーザーの指示。1本目の drops だけ ずんだもん）。
   - **rank は ずんだもん（ノーマル）**（10/22。口調は です・ます のまま。クレジット「VOICEVOX:ずんだもん」。規約は docs/youtube-shorts.md）。pixelbudget は 春日部つむぎ。
-  - **newused・provs・fold・ipadbudget は 青山龍星（ノーマル）**（10/21・10/22 ユーザーの指示。クレジット「VOICEVOX:青山龍星」。法人が関わる利用は事前に ななはぴ へ確認。docs/youtube-shorts.md）。
+  - **newused・provs・promax・fold・ipadbudget は 青山龍星（ノーマル）**（macbudget は 春日部つむぎ）（10/21・10/22 ユーザーの指示。クレジット「VOICEVOX:青山龍星」。法人が関わる利用は事前に ななはぴ へ確認。docs/youtube-shorts.md）。
   - 名前で指定する（`voice.ts` の `DEFAULT_SPEAKER`・`make-short.tsx` の `THEME_SPEAKER`）。ID はエンジンの GET /speakers から引く（この PC では 8）。
   - 説明欄のクレジットは「VOICEVOX:春日部つむぎ」（公式の規約で商用可・クレジット必須。10/21 確認。docs/youtube-shorts.md）。
   - 説明欄のクレジット「VOICEVOX:<キャラクター名>」は render が自動で入れる。
@@ -107,6 +115,8 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - 「−8,000円」は「マイナス8,000円」と読ませる（「円安」と聞き違えないように）。問いかけは「？」で終える。
   - **長音を延ばす**: エンジンは「ジュウ」「パア」「ソオ」の伸ばす音を母音だけのモーラで持ち、その長さが 0.03〜0.07 秒しかない（つむぎで「じゅよん」「ぱせんと」と聞こえた）。合成の直前に、前の母音を伸ばすモーラ（ア段+ア・イ段+イ・ウ段+ウ・オ段+オ／ウ）の母音を 0.12 秒以上にする（`lengthenLongVowels`）。読みの「ー」はエンジンが受け付けない（400）。`--voice-dump` の「長音」「モーラ」の行で確かめる。
   - 「iPhone SE (第3世代)」は括弧を外して読ませる（括弧で間が空くため）。「○」は「マル」。
+  - 型名・「相場」の後ろにくっついた数字は切り離す（`voiceTuning.ts` の 2b・TUNING_VERSION 6・10/23）: 「エ'アアジュウ/サンイ'ンチ」→「エ'アア/ジュウサンイ'ンチ」、「ソオバジュウ'/ヨンマ'ン」→「ソオバ'/ジュウヨンマ'ン」（10万円台の相場で出る）
+- **締めの関連動画の札**（「▼ くわしい解説は 下の関連動画で」）は締めの 2.2k 秒に出る。10/23 に、締めの動き（anim）が 1.2k+0.4 秒で止まって札が動画に出ない不具合を直した（`scenes.tsx` の TIMELINE が関連テーマの締めの anim を延ばす）。静止画は締めの最後のコマで札を確かめる
 
 - 各場面で読む文（newused）:
   - hook: 「新品より、中古でいくら安くなる？」
@@ -159,6 +169,8 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 | ipadbudget | 藍 brand600 | 塗らない白い太枠（frame） | 右下にずらした紺の影 | price（札は brand900） | 問い＋予算の丸い札 2×2（淡い金・数字を大きく）＋「使えるApple Pencilも」 |
 | rank | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | 問い＋ランク A・B・C の札＋A→C の最大の差額 |
 | battery | 墨 ink | 塗らない・緑の下線 | 下に緑の厚い線 | safe | 問い＋縦の電池の形「90%台 vs 80%台」＋最大の差額 |
+| promax | provs と同じ（VERSUS） | 〃 | 〃 | safe | 問い＋「Pro vs Pro Max」＋最大の差額 |
+| macbudget | budget と同じ（BUDGET） | 〃 | 〃 | price | 問い＋予算の札 2×2（チップ「M3チップ」） |
 
 ### 色
 - **サイトの色にそろえる。** すべて `lib/brandColors.ts` から取る（`app/globals.css` と同じ値）。

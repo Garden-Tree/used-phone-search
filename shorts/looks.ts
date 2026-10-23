@@ -54,13 +54,13 @@ const DROPS: Omit<Look, "hook"> = {
   band: { shape: "full", fill: SITE.price, text: ON_DARK.white, sub: ON_DARK.white },
   card: { radius: 28, shadow: "none" }, accent: SITE.price, chip: SITE.price,
 };
-// ② 予算別（iPhone・Pixel・iPad）: 明るい地・藍の角丸の帯・縁と影のあるカード
+// ② 予算別（iPhone・Pixel・iPad・MacBook）: 明るい地・藍の角丸の帯・縁と影のあるカード
 const BUDGET: Omit<Look, "hook"> = {
   name: "予算別（明るい地・藍の帯）", dark: false, bg: SITE.ground, fg: SITE.ink, sub: SITE.inkSub, accentOnBg: SITE.price, url: SITE.safe,
   band: { shape: "card", fill: SITE.brand600, text: ON_DARK.white, sub: ON_DARK.white },
   card: { radius: 24, shadow: `${ring(3, SITE.line)}, 0 12px 28px rgba(17,24,39,0.10)` }, accent: SITE.price, chip: SITE.brand600,
 };
-// ③ 2つを比べる（新品と中古・Pro と無印・折りたたみの世代）: 紺の地・左寄せの藍の札（左に緑の線）・左に緑の線のカード。強調は緑
+// ③ 2つを比べる（新品と中古・Pro と無印・Pro Max と Pro・折りたたみの世代）: 紺の地・左寄せの藍の札（左に緑の線）・左に緑の線のカード。強調は緑
 const VERSUS: Omit<Look, "hook"> = {
   name: "比べる（紺・左寄せの札・緑）", dark: true, bg: SITE.brand900, fg: ON_DARK.white, sub: ON_DARK.sub, accentOnBg: ON_DARK.safe, url: ON_DARK.safe,
   band: { shape: "tab", fill: SITE.brand600, text: ON_DARK.white, sub: ON_DARK.white, stripe: ON_DARK.safe },
@@ -77,10 +77,12 @@ export const LOOKS: Record<Script["theme"], Look> = {
   drops: { ...DROPS, hook: "number" },
   budget: { ...BUDGET, hook: "chips" },
   pixelbudget: { ...BUDGET, hook: "chips" },
+  macbudget: { ...BUDGET, hook: "chips" },
   // iPad は予算の丸い札（淡い金・数字を大きく）
   ipadbudget: { ...BUDGET, coin: { fill: SITE.inspectLine, text: SITE.brand900 }, hook: "coins" },
   newused: { ...VERSUS, hook: "split" },
   provs: { ...VERSUS, hook: "split" },
+  promax: { ...VERSUS, hook: "split" },
   fold: { ...VERSUS, hook: "fold" },
   rank: { ...CONDITION, hook: "abc" },
   battery: { ...CONDITION, hook: "battery" },

@@ -51,7 +51,7 @@ npx tsx longform/video.tsx      longform/2026-10-21-iphone-dore check      # 長
 
 | ファイル | 役割 |
 | --- | --- |
-| `script.ts` | script.md を章・【画面】・台詞に分ける。行の間 0.25 秒・章の間 1.1 秒（ジングルの分）・速さ 1.15・読みの直し（forVoice） |
+| `script.ts` | script.md を章・【画面】・台詞に分ける。行の間 0.25 秒・章の間 1.1 秒（ジングルの分）・速さ 1.15・読みの直し（forVoice。「十分」→じゅうぶん（「で十分」がジュップンになる）など） |
 | `voice-draft.ts` | 声だけの試作（script.ts を使う） |
 | `types.ts` | data.json と timeline.json の型 |
 | `timeline.ts` | 台詞ごとの声の長さ → 開始秒・字幕のページ（2行まで）・各項目の出る秒 |
