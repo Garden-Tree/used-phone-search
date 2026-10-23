@@ -37,7 +37,28 @@ export type StorageFactor = { model: string; from: number; to: number; fromMedia
 export type GenFactor = { newer: string; older: string; storage: number; newerMedian: number; olderMedian: number; diff: number };
 export type PriceFactors = { battery: BatteryFactor[]; rank: RankFactor[]; storage: StorageFactor[]; gen: GenFactor[] };
 
-export async function getPriceFactors(): Promise<PriceFactors> {
+/** 冒頭のタイル（ページ・OG 画像で共通）: 各表の差の平均。行がなければ出さない。save＝節約の側（緑） */
+export type FactorTile = { label: string; value: string; tone: "save" | "keep"; note: string };
+const avgOf = (xs: number[]) => Math.round(xs.reduce((a, b) => a + b, 0) / xs.length);
+const man = (n: number) => `約${(Math.round(n / 1000) / 10).toFixed(1)}万円`;
+export function factorTiles(f: PriceFactors): FactorTile[] {
+  const t: (FactorTile | null)[] = [
+    f.gen.length ? { label: "1世代前にすると", value: `−${man(avgOf(f.gen.map((r) => r.diff)))}`, tone: "save", note: "節約するならここ" } : null,
+    f.rank.length ? { label: "ランクA→Cで", value: `−${man(avgOf(f.rank.map((r) => r.diff)))}`, tone: "save", note: "ケースを使うなら" } : null,
+    f.storage.length ? { label: "容量を1つ上げると", value: `+${man(avgOf(f.storage.map((r) => r.diff)))}`, tone: "keep", note: "あとから増やせない" } : null,
+    f.battery.length ? { label: "電池80→90%台で", value: `+${man(avgOf(f.battery.map((r) => r.diff)))}`, tone: "keep", note: "交換より安い" } : null,
+  ];
+  return t.filter((x): x is FactorTile => x !== null);
+}
+
+/** ページと OG 画像で同じ集計を2回しないよう、ビルドのワーカーごとに1回だけ集計する */
+let memo: Promise<PriceFactors> | null = null;
+export function getPriceFactors(): Promise<PriceFactors> {
+  memo ??= computePriceFactors();
+  return memo;
+}
+
+async function computePriceFactors(): Promise<PriceFactors> {
   const out: PriceFactors = { battery: [], rank: [], storage: [], gen: [] };
   try {
     const side = new Map<string, { where: Where; c: Map<number, number> }>();

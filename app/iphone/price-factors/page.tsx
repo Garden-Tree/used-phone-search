@@ -6,7 +6,7 @@ import { modelPagePath } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
 import { activeShops } from "@/lib/activeShops";
 import { APPLE_REPAIR_CHECKED, APPLE_REPAIR_SOURCE } from "@/lib/appleRepairPrices";
-import { getPriceFactors } from "@/lib/priceFactors";
+import { factorTiles, getPriceFactors } from "@/lib/priceFactors";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
@@ -40,13 +40,8 @@ export default async function PriceFactorsPage() {
   const f = await getPriceFactors();
   const today = new Date().toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
 
-  // 冒頭の4つの数字（それぞれの表の平均。行がなければ出さない）
-  const tiles = [
-    f.gen.length ? { label: "1世代前にすると", value: `−${man(avg(f.gen.map((r) => r.diff)))}`, tone: "save", note: "節約するならここ" } : null,
-    f.rank.length ? { label: "ランクA→Cで", value: `−${man(avg(f.rank.map((r) => r.diff)))}`, tone: "save", note: "ケースを使うなら" } : null,
-    f.storage.length ? { label: "容量を1つ上げると", value: `+${man(avg(f.storage.map((r) => r.diff)))}`, tone: "keep", note: "あとから増やせない" } : null,
-    f.battery.length ? { label: "電池80%台→90%台で", value: `+${man(avg(f.battery.map((r) => r.diff)))}`, tone: "keep", note: "交換より安い" } : null,
-  ].filter((t): t is { label: string; value: string; tone: string; note: string } => t !== null);
+  // 冒頭の4つの数字（OG 画像と共通。lib/priceFactors.ts の factorTiles）
+  const tiles = factorTiles(f);
   // 要約の1文（構造化データの説明。画面ではタイルで同じ数字を出す）
   const parts = [
     f.gen.length ? `1世代前にすると平均${man(avg(f.gen.map((r) => r.diff)))}安く` : null,
