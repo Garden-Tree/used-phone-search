@@ -89,7 +89,9 @@ export const SHOPS: Shop[] = [
     warranty: "商品ごと（中古品は3ヶ月・1ヶ月・10日間のいずれか。商品ページに記載）", redRom: "記載なし（確認中）",
     warrantyShort: "保証 商品ごと", redRomShort: "赤ロム 記載なし",
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/jtus2014/guide.html", marketplace: "yahoo" },
-  { name: "MyWiT（Yahoo!ショッピング店）", label: "MyWiT", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: false, battery: "over80",
+  // Galaxy は 10/18〜22 の在庫が1件だけで、10/22 に売り切れてからは店の Galaxy 168 件がすべて在庫なし（10/23 確認）。取り込みは続ける（fetch-yahoo.ts は全店で同じキーワード）が、
+  // 「扱う種類」からは外す（lib/health.ts の「Galaxy が0件」で監視が毎回失敗しないように）。在庫がまとまって戻れば true に戻す
+  { name: "MyWiT（Yahoo!ショッピング店）", label: "MyWiT", note: "Yahoo!ショッピング店", pixel: true, galaxy: false, ipad: false, battery: "over80",
     warranty: "初期不良は到着後30日以内（ストアレビュー投稿で90日に延長）", redRom: "購入日数に関係なく同等品と交換または返金",
     warrantyShort: "初期不良30日", redRomShort: "赤ロム交換・返金",
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/mywit/guide.html", marketplace: "yahoo" },
