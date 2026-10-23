@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・newused・provs・fold・rank）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・newused・provs・fold・rank・battery）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -142,7 +142,26 @@ export type RankScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript;
+/**
+ * battery の1行: 1機種の在庫がいちばん多い容量で、電池（バッテリー最大容量）90%台（90〜99）と 80%台（81〜89）の中古の相場（中央値）（shorts/themes/battery.ts）。
+ * diff = 90%台の相場 − 80%台の相場、pct = diff / 80%台の相場（%・小数1桁）
+ */
+export type BatteryRow = { model: string; storage: string; storageGb: number; hiMedian: number; loMedian: number; hiCount: number; loCount: number; diff: number; pct: number;
+  /** Apple 公式の電池交換の料金（保証対象外・税込。lib/appleRepairPrices.ts。載っていない機種は無し） */
+  repair?: number };
+
+/** テーマ battery「電池90%台だと、中古iPhoneはいくら高い？」 */
+export type BatteryScript = Common & {
+  theme: "battery";
+  scenes: {
+    /** 場面 ranking（3位・2位・伏せた1位）と reveal（1位）。差額の大きい順（items[0] が1位） */
+    ranking: { items: BatteryRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript;
 
 /** budget・pixelbudget・ipadbudget（予算の4行・注目の1機種の場面を共有） */
 export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget";

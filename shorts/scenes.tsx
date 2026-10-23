@@ -7,7 +7,7 @@ import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
-import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type Script } from "./types";
+import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -20,11 +20,12 @@ const BODY = { top: 590, height: 810 };
 const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
 const HEAD_TITLE = (s: Script) =>
   s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"]
-    : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
+    : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? ["電池90%台だと", "いくら高い？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : ["今週の中古iPhone", "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
   s.theme === "rank" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
+    : s.theme === "battery" ? `${s.date.replace(/-/g, "/")}・電池の%を数字で出す店・同じ容量の中央値`
     : s.theme === "pixelbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・アップデートはGoogle公式`
     : s.theme === "ipadbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・PencilはApple公式`
     : s.theme === "newused" ? `${s.date.replace(/-/g, "/")}・新品はApple公式・中古は同じ容量の中央値`
@@ -107,7 +108,8 @@ export const TIMELINE = (s: Script, v: Variant): Scene[] => {
   // newused（声なし約25秒）: 問い → 3位・2位・伏せた1位（声に合わせて出す）→ 1位の新品と中古の相場 → ひと言 → 締め。推移グラフはなし
   // provs・fold も newused と同じ（問い → 3位・2位・伏せた1位 → 1位の2本の棒 → ひと言 → 締め）
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
-  if (s.theme === "newused" || s.theme === "provs" || s.theme === "fold" || s.theme === "rank") return [
+  // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
+  if (s.theme === "newused" || s.theme === "provs" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -357,6 +359,33 @@ function AbcHook({ s, t }: { s: RankScript; t: number }) {
   );
 }
 
+/** battery: 問い＋縦の電池の形2つ（90%台・80%台。中の塗りの高さは 95%・85% の見た目）＋1位の差額 */
+function BatteryHook({ s, t }: { s: BatteryScript; t: number }) {
+  const L = lookOf(s);
+  const r = s.scenes.ranking.items[0];
+  const BW = 230;
+  const BH = 300;
+  const cell = (label: string, level: number, fill: string) => (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{ display: "flex", width: 80, height: 22, background: L.fg, borderRadius: "10px 10px 0 0" }} />
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", width: BW, height: BH, padding: 14, borderRadius: 30, boxShadow: `0 0 0 10px ${L.fg}` }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: Math.round((BH - 28) * level), background: fill, borderRadius: 16, color: C.white, fontSize: 56, fontWeight: 900, whiteSpace: "nowrap" }}>{label}</div>
+      </div>
+    </div>
+  );
+  return (
+    <Frame s={s}>
+      <Question lines={["電池が90%台だと、", "中古iPhoneは", "いくら高い？"]} max={74} />
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", width: CW, marginTop: 40, transform: `scale(${pulseOf(t)})` }}>
+        {cell("90%台", 0.95, SITE.safe)}
+        <div style={{ ...row, width: 150, fontSize: 60, fontWeight: 900, color: L.fg, paddingBottom: 110 }}>vs</div>
+        {cell("80%台", 0.85, C.budget)}
+      </div>
+      <Teaser s={s} label="最大" value={`+${n(r.diff)}円`} mt={36} />
+    </Frame>
+  );
+}
+
 const BADGE = [C.gold, C.silver, C.bronze, C.navy, C.navy];
 
 /** ランキングの行の下段の欄（文字・幅・最大の大きさ・色）。幅の合計は右の列（680）に収める */
@@ -394,6 +423,19 @@ const pairName = (base: string, pro: string) => `${base}／${pro.replace(/^iPhon
 function ProVsRanking({ s, t, o }: { s: ProVsScript; t: number; o: Scene["o"] }) {
   const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
     model: pairName(it.base, it.pro),
+    cells: [
+      { text: it.storage, w: 170, max: 44, color: C.muted },
+      { text: `+${n(it.diff)}円`, w: 320, max: 76, color: lookOf(s).accent },
+      { text: `+${rate(it.pct)}%`, w: 190, max: 50, color: lookOf(s).accent },
+    ],
+  }));
+  return <RankRows s={s} t={t} o={o} items={items} />;
+}
+
+/** battery のランキング: 機種名、下段は 容量・90%台にした差（額・大）・率（80%台に対して） */
+function BatteryRanking({ s, t, o }: { s: BatteryScript; t: number; o: Scene["o"] }) {
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
+    model: it.model,
     cells: [
       { text: it.storage, w: 170, max: 44, color: C.muted },
       { text: `+${n(it.diff)}円`, w: 320, max: 76, color: lookOf(s).accent },
@@ -790,6 +832,52 @@ function ProVsReveal({ s, t }: { s: ProVsScript; t: number }) {
 }
 
 /**
+ * battery の1位: 機種名・容量、電池80%台と90%台の相場の2本の棒（90%台を幅いっぱいにした比。在庫の件数を添える）、差額（大）と率（80%台に対して）、Apple 公式の電池交換の料金。
+ * 棒は 0.8 秒から伸び、差額は数え上げる
+ */
+function BatteryReveal({ s, t }: { s: BatteryScript; t: number }) {
+  const r = s.scenes.ranking.items[0];
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const grow = prog(t, 0.8, 0.7);
+  const diffText = `+${n(r.diff)}円`;
+  const sub = `${r.storage}・中古の相場`;
+  const LABEL = 170;
+  const BAR = CW - 60 - LABEL - 20;
+  const bars = [
+    { label: "80%台", price: r.loMedian, count: r.loCount, color: C.budget, w: Math.round((BAR * r.loMedian) / r.hiMedian) },
+    { label: "90%台", price: r.hiMedian, count: r.hiCount, color: lookOf(s).accent, w: BAR },
+  ];
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: 52, fontWeight: 900, marginBottom: 8, opacity: prog(t, 0, 0.25) }}>1位は…</div>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "20px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 88), fontWeight: 900 }}>{r.model}</div>
+        <div style={{ ...row, fontSize: FIT(sub, CW - 60, 44), fontWeight: 900, color: C.muted, marginTop: 4 }}>{sub}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 12 }}>
+          {bars.map((b, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 12 : 0 }}>
+              <div style={{ ...row, justifyContent: "flex-end", width: LABEL, fontSize: 48, fontWeight: 900, color: b.color }}>{b.label}</div>
+              <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
+                <div style={{ display: "flex", alignItems: "baseline" }}>
+                  <div style={{ ...row, fontSize: 50, fontWeight: 900, color: b.color }}>{`${n(b.price)}円`}</div>
+                  <div style={{ ...row, fontSize: 34, fontWeight: 700, color: C.muted, marginLeft: 14 }}>{`${n(b.count)}件`}</div>
+                </div>
+                <div style={{ display: "flex", width: Math.max(8, Math.round(b.w * grow)), height: 30, background: b.color, borderRadius: 12, marginTop: 4 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 8 }}>
+          <div style={{ ...row, fontSize: FIT(diffText, 600, 112), fontWeight: 900, color: lookOf(s).accent }}>{`+${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
+          <div style={{ ...row, fontSize: 64, fontWeight: 900, color: lookOf(s).accent, marginLeft: 16 }}>{`+${rate(r.pct)}%`}</div>
+        </div>
+        {r.repair && <div style={{ ...row, fontSize: 44, fontWeight: 900, color: C.muted, marginTop: 10, opacity: prog(t, 1.6, 0.3) }}>{`Appleの電池交換は ${n(r.repair)}円`}</div>}
+      </div>
+    </Frame>
+  );
+}
+
+/**
  * fold の1位: 「新しい方／1世代前」・容量、新しい方と1世代前の相場の2本の棒（新しい方を幅いっぱいにした比）、差額（大）と率（新しい方に対して）。
  * 棒は 0.8 秒から伸び、差額は数え上げる
  */
@@ -891,6 +979,16 @@ function RankReveal({ s, t }: { s: RankScript; t: number }) {
 }
 
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
+  if (s.theme === "battery") {
+    switch (sc.id) {
+      case "hook": return <BatteryHook s={s} t={t} />;
+      case "ranking": return <BatteryRanking s={s} t={t} o={sc.o} />;
+      case "reveal": return <BatteryReveal s={s} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`battery に場面 ${sc.id} はありません`);
+    }
+  }
   if (s.theme === "rank") {
     switch (sc.id) {
       case "hook": return <AbcHook s={s} t={t} />;

@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type RankScript, type Script, type VoiceConfig } from "./types";
+import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type RankScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -48,7 +48,7 @@ export function commentSentence(lines: string[]): string {
  */
 export function defaultNarration(s: Script): Partial<Record<NarrationKey, string>> {
   return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : s.theme === "provs" ? proVsNarration(s)
-    : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : dropsNarration(s);
+    : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s) : dropsNarration(s);
 }
 
 /**
@@ -65,6 +65,23 @@ function rankNarration(s: RankScript): Partial<Record<NarrationKey, string>> {
     reveal: `1位は${top.model}。ランクCにすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、ランクAとランクC、どちらにしますか？",
+  };
+}
+
+/**
+ * battery の既定: hook 問い / ranking 3位・2位を1文ずつ（「3位は<機種>、<容量>。電池80%台より、<額>高いです。」。文頭の「○位は」で行を出す）
+ * reveal 1位の差額と Apple 公式の電池交換の料金。容量・帯ごとの額・率は画面に出す / comment ひと言の本文だけ / outro サイトへの誘導と問い
+ */
+function batteryNarration(s: BatteryScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  return {
+    hook: "電池が90%台だと、中古iPhoneはいくら高い？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、${items[i].storage}。電池80%台より、${yen(items[i].diff)}高いです。`).join(""),
+    // 差は1万円未満なので「約○.○万円」でなく額のまま読む。公式の電池交換の料金があれば並べる（画面にも出す）
+    reveal: `1位は${top.model}。電池90%台にすると、${yen(top.diff)}高くなります。${top.repair ? `Appleの電池交換は、${yen(top.repair)}です。` : ""}`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、電池90%台と80%台、どちらにしますか？",
   };
 }
 
