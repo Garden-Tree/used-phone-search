@@ -192,5 +192,12 @@ export type StorageScript = Common & {
 
 export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript;
 
+/**
+ * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。
+ * YouTube 公式ブログ 2026/7「最後の5秒で声と画面の両方で誘導」）。いまの横動画は iPhone なので、Pixel・iPad・折りたたみは外す
+ */
+export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "newused", "provs", "rank", "battery", "gen", "storage"]);
+export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";
+
 /** budget・pixelbudget・ipadbudget（予算の4行・注目の1機種の場面を共有） */
 export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget";

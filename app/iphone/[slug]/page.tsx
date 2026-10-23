@@ -673,7 +673,7 @@ export default async function ModelPage({ params }: Props) {
               {hasStock && (
                 <div className="md:order-5 min-[1360px]:col-span-2">
                   <ModelGuide model={model} verdict={verdict} notes={buyNowNotes} trendText={trend ? trendSentence(trend, mLabel) : null} medianLabel={mLabel}
-                    daily={dailyRows(medianSeries)} monthly={monthlyRows(medianSeries)} same={same} sources={guideSources} />
+                    daily={dailyRows(medianSeries)} monthly={monthlyRows(medianSeries)} same={same} sources={guideSources} factorsHref={isIphone ? "/iphone/price-factors" : undefined} />
                 </div>
               )}
 

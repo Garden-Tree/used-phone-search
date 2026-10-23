@@ -29,6 +29,8 @@ export default function ModelGuide(p: {
   monthly: MonthlyRow[];
   same: SameBudgetRow[];
   sources: SourceItem[];
+  /** 「値段は何で決まる？」のページ（iPhone だけ） */
+  factorsHref?: string;
 }) {
   const shownDays = 7;
   const head = p.daily.slice(0, shownDays);
@@ -72,6 +74,9 @@ export default function ModelGuide(p: {
           <ul className="flex flex-col gap-1.5 list-disc pl-5">
             {p.notes.map((t) => <li key={t} className="text-[13px] text-ink-sub leading-[1.7]">{t}</li>)}
           </ul>
+        )}
+        {p.factorsHref && (
+          <Link href={p.factorsHref} className={`text-[13px] font-bold ${LINK}`}>電池・状態ランク・容量・世代で、値段はいくら違う？ ›</Link>
         )}
       </section>
 

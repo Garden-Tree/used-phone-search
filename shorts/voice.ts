@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Script, type VoiceConfig } from "./types";
+import { RELATED_LONG_THEMES, isBudget, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -47,6 +47,13 @@ export function commentSentence(lines: string[]): string {
  * script.json の narration に書いた場面はそちらが優先。空文字にするとその場面は声なし
  */
 export function defaultNarration(s: Script): Partial<Record<NarrationKey, string>> {
+  const n = baseNarration(s);
+  // 関連動画（横動画）につながるテーマは、締めの最後に本編への誘導（types.ts の RELATED_LONG_THEMES）
+  if (RELATED_LONG_THEMES.has(s.theme) && n.outro) n.outro += "くわしい解説は、下の関連動画からどうぞ。";
+  return n;
+}
+
+function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
   return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : s.theme === "provs" ? proVsNarration(s)
     : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s)
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s) : dropsNarration(s);

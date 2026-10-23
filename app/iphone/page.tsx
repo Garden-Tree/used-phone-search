@@ -34,6 +34,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Row = { model: string; market?: ModelMarket };
 
+/** 冒頭の1文に出す代表の機種（古い順。よく検索される無印と SE） */
+const SUMMARY_MODELS = ["iPhone SE (第3世代)", "iPhone 12", "iPhone 13", "iPhone 14", "iPhone 15", "iPhone 16", "iPhone 17"];
+
 // 機種以外の列は PC で幅を固定する（シリーズごとの表で列の位置がそろうように）
 function MarketTable({ rows }: { rows: Row[] }) {
   return (
@@ -83,14 +86,28 @@ export default async function IphoneIndexPage() {
     .sort((a, b) => a.market.medianPrice - b.market.medianPrice)
     .slice(0, 10);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "中古iPhoneの相場一覧", item: `${SITE_URL}/iphone` },
-    ],
-  };
+  // 冒頭の1文（AI の概要が「13 は約5.1万円、14 は約6.6万円…」の形で答えるので、同じ形で引用できるように。10/23〜）。
+  // 代表の機種は在庫5件以上のものだけ。相場は在庫がいちばん多い容量の中央値（表と同じ数字）
+  const today = new Date().toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
+  const man = (n: number) => `約${(Math.round(n / 1000) / 10).toFixed(1)}万円`;
+  const picks = SUMMARY_MODELS.map(rowOf).filter((r): r is Required<Row> => !!r.market && r.market.count >= 5);
+  const summary = picks.length > 0
+    ? `${today}時点の中古iPhoneの相場は、${picks.map((r) => `${r.model.replace(/^iPhone\s+/, "")}${r.market.medianStorage ? `（${storageLabel(r.market.medianStorage, r.model)}）` : ""}${man(r.market.medianPrice)}`).join("、")}です（大手中古ショップ${shopNum}社の在庫から、在庫がいちばん多い容量の中央値）。`
+    : null;
+
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: "中古iPhoneの相場一覧", item: `${SITE_URL}/iphone` },
+      ],
+    },
+    ...(summary
+      ? [{ "@context": "https://schema.org", "@type": "WebPage", name: "中古iPhoneの相場一覧", url: `${SITE_URL}/iphone`, description: summary, dateModified: new Date().toISOString() }]
+      : []),
+  ];
 
   return (
     <div className="min-h-screen text-ink">
@@ -108,6 +125,10 @@ export default async function IphoneIndexPage() {
         <p className="text-ink-sub mb-4 leading-relaxed">
           大手中古ショップ{shopNum}社の中古iPhone <strong>{total.toLocaleString()}件</strong>から、機種ごとの相場（中央値）と最安値をまとめています。
           在庫は6時間ごとに更新しています。
+        </p>
+        {summary && <p className="text-sm text-ink-sub mb-4 leading-relaxed">{summary}</p>}
+        <p className="text-sm mb-4">
+          <Link href="/iphone/price-factors" className="font-bold text-brand-600 hover:underline underline-offset-4">電池・状態ランク・容量・世代で、値段はいくら違う？ &rarr;</Link>
         </p>
         <AdDisclosure compact />
 

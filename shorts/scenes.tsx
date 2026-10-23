@@ -7,7 +7,7 @@ import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
-import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type GenScript, type StorageScript, type Script } from "./types";
+import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -739,6 +739,10 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
           <div style={{ ...row, fontSize: 34, fontWeight: 500, color: lookOf(s).sub, marginTop: 40 }}>{out.note}</div>
         </div>
         <div style={{ ...row, fontSize: 52, fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>{out.question ?? "来週の1位は…？"}</div>
+        {/* 関連動画（横動画）への誘導。画面の下の関連動画のリンクを指す（types.ts の RELATED_LONG_THEMES） */}
+        {RELATED_LONG_THEMES.has(s.theme) && (
+          <div style={{ ...row, fontSize: 46, fontWeight: 900, marginTop: 56, padding: "14px 30px", borderRadius: 999, background: lookOf(s).chip, color: C.white, opacity: prog(t, 2.2 * k, 0.4) }}>{`▼ ${RELATED_LONG_LINE}`}</div>
+        )}
       </div>
     </Frame>
   );
