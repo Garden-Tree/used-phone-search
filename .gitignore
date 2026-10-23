@@ -90,3 +90,7 @@ rakuten-sync/sample.json
 # 立ち絵（第三者素材）が入る画像は公開リポジトリに入れない（二次配布の禁止）
 /longform/*/stills/
 /longform/*/thumbnail.png
+
+# サムネの案（立ち絵・CC 画像を含む。Git に入れない）
+/longform/*/thumb-ab/
+/longform/thumb-*.png
