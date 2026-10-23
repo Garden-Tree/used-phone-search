@@ -334,12 +334,12 @@ export default async function ModelPage({ params }: Props) {
     : undefined;
   const osName = isIphone ? "iOS 27" : isIpad(model) ? "iPadOS 27" : watch ? "watchOS 27" : pixel ? "Google のアップデート保証" : undefined;
   const newMin = newRows[0];
-  const verdict = hasStock ? buyVerdict({ model, trend, supported, osName, newDiff: newMin ? newMin.diff : null }) : "";
+  const verdict = hasStock ? buyVerdict({ model, trend, supported, osName, newDiff: newMin ? newMin.diff : null }) : [];
   const same = hasStock && stats.medianPrice !== null ? await sameBudgetModels(model, stats.medianPrice) : [];
   const guideSources: SourceItem[] = [
-    { label: "在庫", text: `大手中古ショップ${shopNum}店の販売中の在庫${hasStock ? `（いま${stats.shopCount}店・${stats.count.toLocaleString()}件${updatedText ? `・${updatedText}時点` : ""}）` : ""}。1日4回（6時間ごと）取得し、売り切れを除いています` },
-    { label: "相場", text: "在庫がいちばん多い容量の販売中の在庫を、安い順に並べた真ん中の値（中央値）。容量をまぜると在庫の多い容量に引っぱられるため、容量をそろえています。最安値にはジャンク品が含まれることがあります" },
-    { label: "推移", text: "上の相場と最安値を毎日記録した値（Amazon 整備済み品は含めない）" },
+    { label: "在庫", text: `大手中古ショップ${shopNum}店の販売中の在庫${hasStock ? `（いま${stats.shopCount}店・${stats.count.toLocaleString()}件${updatedText ? `・${updatedText}時点` : ""}）` : ""}。1日4回取得` },
+    { label: "相場", text: "在庫がいちばん多い容量の中央値（真ん中の値段）。最安値にはジャンク品を含むことがあります" },
+    { label: "推移", text: "相場と最安値を毎日記録（Amazon 整備済み品は含めない）" },
     ...(newSource && newRows.length > 0 ? [{ label: "新品価格", text: `${newSource.name}（税込・${newCheckedJa}確認）`, href: newSource.url }] : []),
     ...(spec ? [{ label: "スペック", text: specSourceName(spec, model), href: specUrl(spec) }] : []),
   ];

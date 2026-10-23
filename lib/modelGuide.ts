@@ -42,16 +42,19 @@ export function trendOf(points: PricePoint[], days = 30): Trend | null {
   };
 }
 
-/** 値動きの1〜2文（例: 「直近30日（9/23→10/23）の相場（128GB）は 65,980円→65,980円で、ほぼ横ばいです。」） */
-export function trendSentence(t: Trend, label: string): string {
+/**
+ * 値動きの文を3つの部品で（画面では move を太字にする。つなげると1文: 「直近27日（9/26→10/23）の相場（128GB）は 63,700円→65,980円で、2,280円（3.6%）上がりました。」）。
+ * range は最安値の動き（画面では小さく）
+ */
+export function trendSentence(t: Trend, label: string): { head: string; move: string; range: string } {
   const head = `直近${t.days}日（${md(t.from.date)}→${md(t.to.date)}）の${label}は${yen(t.from.medianPrice)}→${yen(t.to.medianPrice)}で、`;
   const move = Math.abs(t.rate) <= FLAT
-    ? "ほぼ横ばいです（変化は2%以内）。"
+    ? "ほぼ横ばいです。"
     : t.diff < 0
       ? `${yen(-t.diff)}（${(Math.abs(t.rate) * 100).toFixed(1)}%）下がりました。`
       : `${yen(t.diff)}（${(t.rate * 100).toFixed(1)}%）上がりました。`;
-  const range = t.minLow === t.minHigh ? `この間の最安値は${yen(t.minLow)}でした。` : `この間の最安値は${yen(t.minLow)}〜${yen(t.minHigh)}で動いています。`;
-  return head + move + range;
+  const range = t.minLow === t.minHigh ? `最安値は${yen(t.minLow)}` : `最安値は${yen(t.minLow)}〜${yen(t.minHigh)}`;
+  return { head, move, range };
 }
 
 /** 日ごとの表（新しい順・n 日分）。前日比は、その日と前の日の件数が MIN_COUNT_FOR_DIFF 以上のときだけ */
@@ -83,18 +86,18 @@ export function monthlyRows(points: PricePoint[]): MonthlyRow[] {
  * - 値動き: 2% を超えて下がっていれば「待つ手もある」、上がっていれば「早めに」、横ばいなら「条件の良い個体が見つかったら」
  * - 新品との差: 中古の最安が新品以上なら新品も比べる、安ければその差
  */
-export function buyVerdict(p: { model: string; trend: Trend | null; supported?: boolean; osName?: string; newDiff?: number | null }): string {
+export function buyVerdict(p: { model: string; trend: Trend | null; supported?: boolean; osName?: string; newDiff?: number | null }): string[] {
   const parts: string[] = [];
-  if (p.supported === false) parts.push(`${p.model}は${p.osName ?? "最新の OS"}に対応していないため、メインで長く使うより、サブ機や用途を絞った使い方向けです。`);
+  if (p.supported === false) parts.push(`${p.osName ?? "最新の OS"}に非対応。メインよりサブ機向けです。`);
   if (p.trend && Math.abs(p.trend.rate) > FLAT) {
     parts.push(p.trend.diff < 0
-      ? `相場はこの${p.trend.days}日で下がっています。急がないなら、もう少し様子を見る手もあります。`
-      : `相場はこの${p.trend.days}日で上がっています。欲しいなら早めに探すのがおすすめです。`);
+      ? `相場は下がり気味。急がないなら様子見も手です。`
+      : `相場は上がり気味。欲しいなら早めがおすすめです。`);
   } else if (p.trend) {
-    parts.push("相場は落ち着いています。容量・バッテリー・状態ランクの条件が合う個体が見つかったときが買い時です。");
+    parts.push("相場は落ち着いています。条件の合う個体が見つかったときが買い時です。");
   }
   if (p.newDiff != null) {
-    parts.push(p.newDiff > 0 ? `新品より最安で${yen(p.newDiff)}安く買えます。` : "中古の最安が新品と同じかそれ以上なので、新品も比べてください。");
+    parts.push(p.newDiff > 0 ? `新品より最安で${yen(p.newDiff)}安く買えます。` : "中古の最安が新品以上なので、新品も比べてください。");
   }
-  return parts.join("");
+  return parts;
 }

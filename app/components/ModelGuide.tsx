@@ -21,9 +21,11 @@ export type SourceItem = { label: string; text: string; href?: string };
 
 export default function ModelGuide(p: {
   model: string;
-  verdict: string;
+  /** 結論（1つ目を太字で大きく、2つ目からは小さく） */
+  verdict: string[];
+  /** 根拠の文（たたんで出す。ページの文字としては残す） */
   notes: string[];
-  trendText: string | null;
+  trendText: { head: string; move: string; range: string } | null;
   medianLabel: string;
   daily: DailyRow[];
   monthly: MonthlyRow[];
@@ -67,13 +69,17 @@ export default function ModelGuide(p: {
   return (
     <div className="flex flex-col gap-4">
       {/* 今買うのはあり？ */}
-      <section className={`${CARD} p-3.5 flex flex-col gap-2`}>
+      <section className={`${CARD} p-3.5 flex flex-col gap-1.5`}>
         <h2 className={H2}>{p.model}は今買うのはあり？</h2>
-        {p.verdict && <p className="text-[14px] font-bold leading-[1.7]">{p.verdict}</p>}
+        {p.verdict[0] && <p className="text-[15px] font-bold leading-[1.6]">{p.verdict[0]}</p>}
+        {p.verdict.length > 1 && <p className="text-[13px] text-ink-sub leading-[1.6]">{p.verdict.slice(1).join("")}</p>}
         {p.notes.length > 0 && (
-          <ul className="flex flex-col gap-1.5 list-disc pl-5">
-            {p.notes.map((t) => <li key={t} className="text-[13px] text-ink-sub leading-[1.7]">{t}</li>)}
-          </ul>
+          <details className="group">
+            <summary className={`text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden ${LINK}`}>根拠を見る</summary>
+            <ul className="mt-1.5 flex flex-col gap-1 list-disc pl-5">
+              {p.notes.map((t) => <li key={t} className="text-[12px] text-ink-sub leading-[1.7]">{t}</li>)}
+            </ul>
+          </details>
         )}
         {p.factorsHref && (
           <Link href={p.factorsHref} className={`text-[13px] font-bold ${LINK}`}>電池・状態ランク・容量・世代で、値段はいくら違う？ ›</Link>
@@ -84,7 +90,12 @@ export default function ModelGuide(p: {
       {p.daily.length > 0 && (
         <section className={`${CARD} p-3.5 flex flex-col gap-2`}>
           <h2 className={H2}>{p.model}の中古相場の推移</h2>
-          {p.trendText && <p className="text-[13px] text-ink-sub leading-[1.7]">{p.trendText}</p>}
+          {p.trendText && (
+            <p className="text-[13px] text-ink-sub leading-[1.7]">
+              {p.trendText.head}<strong className="text-ink">{p.trendText.move}</strong>
+              <span className="text-[12px] text-ink-mute">（{p.trendText.range}）</span>
+            </p>
+          )}
           <div className="flex flex-col">
             {dayHead}
             {dayTable(head)}
@@ -118,7 +129,7 @@ export default function ModelGuide(p: {
               </table>
             </div>
           )}
-          <p className="text-[11px] text-ink-mute">毎日の記録（Amazon 整備済み品は含めない）。前日比は、その日と前の日の在庫がどちらも5件以上のときだけ出しています。</p>
+          <p className="text-[11px] text-ink-mute">毎日の記録。前日比は在庫5件以上の日だけ。</p>
         </section>
       )}
 
@@ -139,9 +150,13 @@ export default function ModelGuide(p: {
       )}
 
       {/* データの出典 */}
-      <section className={`${CARD} p-3.5 flex flex-col gap-2`}>
-        <h2 className={H2}>データの出典</h2>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[13px] leading-[1.7]">
+      <details className={`${CARD} group`}>
+        <summary className="min-h-11 flex items-center justify-between px-3.5 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+          <h2 className={H2}>データの出典</h2>
+          <span className={`text-[12px] ${LINK}`}>見る</span>
+        </summary>
+        <div className="px-3.5 pb-3.5 flex flex-col gap-2">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[12px] leading-[1.7]">
           {p.sources.map((s) => (
             <div key={s.label} className="contents">
               <dt className="text-ink-mute font-bold whitespace-nowrap">{s.label}</dt>
@@ -152,7 +167,8 @@ export default function ModelGuide(p: {
         <p className="text-[12px] text-ink-mute">
           集め方の詳しい説明は<Link href="/about#data" className={`${LINK} underline underline-offset-2`}>「このサイトについて」</Link>にあります。
         </p>
-      </section>
+        </div>
+      </details>
     </div>
   );
 }

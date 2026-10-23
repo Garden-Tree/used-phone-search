@@ -40,7 +40,14 @@ export default async function PriceFactorsPage() {
   const f = await getPriceFactors();
   const today = new Date().toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
 
-  // 要約の数字（それぞれの表の平均。行がなければ出さない）
+  // 冒頭の4つの数字（それぞれの表の平均。行がなければ出さない）
+  const tiles = [
+    f.gen.length ? { label: "1世代前にすると", value: `−${man(avg(f.gen.map((r) => r.diff)))}`, tone: "save", note: "節約するならここ" } : null,
+    f.rank.length ? { label: "ランクA→Cで", value: `−${man(avg(f.rank.map((r) => r.diff)))}`, tone: "save", note: "ケースを使うなら" } : null,
+    f.storage.length ? { label: "容量を1つ上げると", value: `+${man(avg(f.storage.map((r) => r.diff)))}`, tone: "keep", note: "あとから増やせない" } : null,
+    f.battery.length ? { label: "電池80%台→90%台で", value: `+${man(avg(f.battery.map((r) => r.diff)))}`, tone: "keep", note: "交換より安い" } : null,
+  ].filter((t): t is { label: string; value: string; tone: string; note: string } => t !== null);
+  // 要約の1文（構造化データの説明。画面ではタイルで同じ数字を出す）
   const parts = [
     f.gen.length ? `1世代前にすると平均${man(avg(f.gen.map((r) => r.diff)))}安く` : null,
     f.rank.length ? `状態ランクをAからCにすると平均${man(avg(f.rank.map((r) => r.diff)))}安く` : null,
@@ -78,17 +85,27 @@ export default async function PriceFactorsPage() {
             <span className="text-ink-sub">値段は何で決まる？</span>
           </nav>
           <h1 className="text-2xl md:text-3xl font-bold mb-3">中古iPhoneの値段は何で決まる？</h1>
-          {summary && <p className="text-ink-sub leading-relaxed">{summary}</p>}
-          <p className="text-sm text-ink-sub leading-relaxed mt-2">
-            節約するなら「世代」と「状態ランク」、ケチらないほうがいいのは差の小さい「容量」と「電池」です。
-            どの表も、同じ機種・同じ容量のまま1つだけ変えて、販売中の在庫の真ん中の値段（中央値）を比べています。
+          <p className="text-sm text-ink-sub">
+            同じ機種・同じ容量で、1つだけ変えたときの相場の差（平均・{today}時点）。
           </p>
+          {tiles.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              {tiles.map((t) => (
+                <div key={t.label} className="bg-white rounded-xl border border-line p-3 flex flex-col gap-0.5">
+                  <span className="text-[12px] text-ink-mute">{t.label}</span>
+                  <span className={`text-xl font-bold ${t.tone === "save" ? "text-safe" : "text-ink"}`}>{t.value}</span>
+                  <span className="text-[11px] text-ink-mute">{t.note}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="text-sm mt-3">節約は<strong>世代とランク</strong>で。<strong>容量と電池</strong>は差が小さいのでケチらない。</p>
         </div>
 
         {f.gen.length > 0 && (
           <section className="flex flex-col gap-2">
             <h2 className="text-lg md:text-xl font-bold">1世代前にすると、いくら安い？</h2>
-            <p className="text-sm text-ink-sub">差がいちばん大きいのが世代です。予算が足りないときは、まず1世代下げるのがいちばん効きます。</p>
+            <p className="text-sm text-ink-sub">差がいちばん大きい。予算が足りないときは<strong className="text-ink">まず1世代下げる</strong>。</p>
             <div className={CARD}>
               <table className="w-full text-sm">
                 <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">比べた組</th><th className={TH}>容量</th><th className={TH}>新しい方</th><th className={TH}>1世代前</th><th className={`${TH} pr-4`}>差</th></tr></thead>
@@ -111,7 +128,7 @@ export default async function PriceFactorsPage() {
         {f.rank.length > 0 && (
           <section className="flex flex-col gap-2">
             <h2 className="text-lg md:text-xl font-bold">状態ランクAとCで、いくら違う？</h2>
-            <p className="text-sm text-ink-sub">ランクの差は主に外装の傷で、電池の状態とは別です。ケースやフィルムを使うなら、ランクCは妥協しやすいところです。ランクの基準は店ごとに違います。</p>
+            <p className="text-sm text-ink-sub">差は主に<strong className="text-ink">外装の傷</strong>。ケースを使うならCでも十分です（基準は店ごとに違います）。</p>
             <div className={CARD}>
               <table className="w-full text-sm">
                 <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">機種</th><th className={TH}>容量</th><th className={TH}>ランクA</th><th className={TH}>B</th><th className={TH}>C</th><th className={`${TH} pr-4`}>A→C</th></tr></thead>
@@ -135,7 +152,7 @@ export default async function PriceFactorsPage() {
         {f.storage.length > 0 && (
           <section className="flex flex-col gap-2">
             <h2 className="text-lg md:text-xl font-bold">容量を1つ上げると、いくら高い？</h2>
-            <p className="text-sm text-ink-sub">容量はあとから増やせません。写真や動画、ゲームが多いなら、数千円〜1万円台の差で上げておくと安心です。</p>
+            <p className="text-sm text-ink-sub">容量は<strong className="text-ink">あとから増やせません</strong>。写真やゲームが多いなら上げておくと安心です。</p>
             <div className={CARD}>
               <table className="w-full text-sm">
                 <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">機種</th><th className={TH}>小さい容量</th><th className={TH}>1つ上</th><th className={`${TH} pr-4`}>差</th></tr></thead>
@@ -159,7 +176,7 @@ export default async function PriceFactorsPage() {
             <h2 className="text-lg md:text-xl font-bold">電池90%台と80%台で、いくら違う？</h2>
             <p className="text-sm text-ink-sub">
               {batteryCheaper.length > 0
-                ? `${batteryCheaper.length}機種で、90%台との差が Apple の電池交換の料金より小さく、80%台を買ってあとで交換するより、最初から90%台を選ぶほうが安く済みます。`
+                ? <>{batteryCheaper.length}機種で、差が電池交換より小さい。<strong className="text-ink">最初から90%台を選ぶほうが安く済みます</strong>。</>
                 : "電池の差と、Apple の電池交換の料金を比べて選ぶのがおすすめです。"}
             </p>
             <div className={CARD}>
@@ -188,10 +205,9 @@ export default async function PriceFactorsPage() {
 
         <section className="flex flex-col gap-2 text-sm text-ink-sub">
           <h2 className="text-lg font-bold text-ink">データの出典</h2>
-          <p className="leading-relaxed">
-            大手中古ショップ{shopNum}社の販売中の在庫を1日4回取得して集計しています。相場は、同じ機種・同じ容量の在庫を安い順に並べた真ん中の値（中央値）で、比べるそれぞれの在庫が5件以上ある機種だけを載せています。
-            状態ランクは各店の表記のまま（大文字にそろえる）で、未使用品のランクS・D・ジャンクは含めません。
-            詳しくは<Link href="/about#data" className="text-brand-600 underline underline-offset-2">「このサイトについて」</Link>をご覧ください。
+          <p className="leading-relaxed text-[13px]">
+            大手中古ショップ{shopNum}社の販売中の在庫（1日4回取得）の中央値。比べるそれぞれの在庫が5件以上の機種だけ。ランクは各店の表記のまま（未使用品のS・D・ジャンクは除く）。
+            <Link href="/about#data" className="text-brand-600 underline underline-offset-2">詳しく</Link>
           </p>
           <p><Link href="/iphone" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPhoneの相場一覧 &rarr;</Link></p>
         </section>

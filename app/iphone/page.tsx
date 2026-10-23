@@ -126,7 +126,7 @@ export default async function IphoneIndexPage() {
           大手中古ショップ{shopNum}社の中古iPhone <strong>{total.toLocaleString()}件</strong>から、機種ごとの相場（中央値）と最安値をまとめています。
           在庫は6時間ごとに更新しています。
         </p>
-        {summary && <p className="text-sm text-ink-sub mb-4 leading-relaxed">{summary}</p>}
+        {summary && <p className="text-[13px] text-ink-mute mb-3 leading-relaxed">{summary}</p>}
         <p className="text-sm mb-4">
           <Link href="/iphone/price-factors" className="font-bold text-brand-600 hover:underline underline-offset-4">電池・状態ランク・容量・世代で、値段はいくら違う？ &rarr;</Link>
         </p>
