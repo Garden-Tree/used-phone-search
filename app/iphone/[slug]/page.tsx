@@ -54,6 +54,9 @@ import RepairOrReplace from "@/app/components/RepairOrReplace";
 import IpadGuide from "@/app/components/IpadGuide";
 import { buildFaq, buildSummary, modelDescription } from "@/lib/modelFaq";
 import { BUYBACK_PROGRAMS, REPAIR_PROGRAMS } from "@/lib/buyback";
+import ModelGuide, { type SourceItem } from "@/app/components/ModelGuide";
+import { buyVerdict, dailyRows, monthlyRows, seriesFor, trendOf, trendSentence } from "@/lib/modelGuide";
+import { sameBudgetModels } from "@/lib/sameBudget";
 import { SIM_PLANS } from "@/lib/simPlans";
 
 // スクレイパーの後にビルドするので、在庫はその時点のもの
@@ -318,6 +321,28 @@ export default async function ModelPage({ params }: Props) {
         medianPrice: stats.medianPrice, medianStorage: stats.medianStorage, shopCount: stats.shopCount, count: stats.count, newVsUsed: newRows, newSourceName: newSource?.name,
       })
     : null;
+
+  // 「今買うのはあり？」「中古相場の推移」「同じ予算の他機種」「データの出典」（2026-10-23〜。lib/modelGuide.ts・components/ModelGuide.tsx）
+  const medianSeries = seriesFor(history, stats.medianStorage);
+  const trend = trendOf(medianSeries);
+  const mLabel = medianLabel(stats.medianStorage, model);
+  // 最新 OS への対応（確かめた情報がある種類だけ。なければ結論に入れない）
+  const supported: boolean | undefined = isIphone ? ALL_CATALOG_MODELS.includes(model)
+    : isIpad(model) ? IPADOS27_MODELS.has(model)
+    : watch ? isWatchOS27(model)
+    : pixel && pixelLeft !== undefined ? pixelLeft > 0
+    : undefined;
+  const osName = isIphone ? "iOS 27" : isIpad(model) ? "iPadOS 27" : watch ? "watchOS 27" : pixel ? "Google のアップデート保証" : undefined;
+  const newMin = newRows[0];
+  const verdict = hasStock ? buyVerdict({ model, trend, supported, osName, newDiff: newMin ? newMin.diff : null }) : "";
+  const same = hasStock && stats.medianPrice !== null ? await sameBudgetModels(model, stats.medianPrice) : [];
+  const guideSources: SourceItem[] = [
+    { label: "在庫", text: `大手中古ショップ${shopNum}店の販売中の在庫${hasStock ? `（いま${stats.shopCount}店・${stats.count.toLocaleString()}件${updatedText ? `・${updatedText}時点` : ""}）` : ""}。1日4回（6時間ごと）取得し、売り切れを除いています` },
+    { label: "相場", text: "在庫がいちばん多い容量の販売中の在庫を、安い順に並べた真ん中の値（中央値）。容量をまぜると在庫の多い容量に引っぱられるため、容量をそろえています。最安値にはジャンク品が含まれることがあります" },
+    { label: "推移", text: "上の相場と最安値を毎日記録した値（Amazon 整備済み品は含めない）" },
+    ...(newSource && newRows.length > 0 ? [{ label: "新品価格", text: `${newSource.name}（税込・${newCheckedJa}確認）`, href: newSource.url }] : []),
+    ...(spec ? [{ label: "スペック", text: specSourceName(spec, model), href: specUrl(spec) }] : []),
+  ];
 
   const jsonLd = [
     {
@@ -645,6 +670,13 @@ export default async function ModelPage({ params }: Props) {
                 </DeviceList>
               </section>
 
+              {hasStock && (
+                <div className="md:order-5 min-[1360px]:col-span-2">
+                  <ModelGuide model={model} verdict={verdict} notes={buyNowNotes} trendText={trend ? trendSentence(trend, mLabel) : null} medianLabel={mLabel}
+                    daily={dailyRows(medianSeries)} monthly={monthlyRows(medianSeries)} same={same} sources={guideSources} />
+                </div>
+              )}
+
               {/* 最安値の推移（30日）。容量別・長い期間のグラフ（クライアント部品）は折りたたみの中 */}
               <div className="md:order-4 flex flex-col gap-2">
                 {showSpark ? (
@@ -702,16 +734,6 @@ export default async function ModelPage({ params }: Props) {
                       </p>
                     </div>
                   </Accordion>
-                  {/* 相場の見方（実データから自動生成。lib/buyNow.ts。在庫がなければ空） */}
-                  {buyNowNotes.length > 0 && (
-                    <Accordion title="相場の見方（今日のデータから）">
-                      <div className="flex flex-col gap-1.5">
-                        {buyNowNotes.map((t) => (
-                          <p key={t} className="text-[13px] text-ink-sub leading-[1.7]">{t}</p>
-                        ))}
-                      </div>
-                    </Accordion>
-                  )}
                   {priceLists}
                 </div>
                 <div className="border-t border-line-soft md:border-t-0 md:bg-white md:border md:border-line md:rounded-xl md:overflow-hidden">
@@ -844,14 +866,6 @@ export default async function ModelPage({ params }: Props) {
                     </div>
                   </Accordion>
                 )}
-                  <Accordion title="価格・在庫データの集め方" hint={`${shopNum}店・1日4回`}>
-                    <p className="text-[13px] leading-[1.7] text-gray-700">
-                      {shopNum}店の公開在庫を1日4回（6時間ごと）取得し、売り切れを除いた在庫をまとめています。
-                      相場は、在庫がいちばん多い容量の販売中の在庫を安い順に並べた真ん中の値（中央値）です（容量をまぜると在庫の多い容量に引っぱられるため）。最安値にはジャンク品が含まれることがあります。
-                      価格・在庫は取得した時点のもので、売り切れや値下げが反映されるまで最大6時間ほどかかります。
-                      詳しくは<Link href="/about" className={`${LINK} underline underline-offset-2`}>「このサイトについて」</Link>をご覧ください。
-                    </p>
-                  </Accordion>
                   {faqs.length > 0 && (
                     <Accordion title="よくある質問" hint={`${faqs.length}件`}>
                       <div className="flex flex-col gap-3">

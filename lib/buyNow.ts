@@ -48,14 +48,16 @@ export function previousGeneration(model: string): string | null {
 const getMedianTrend = cache(async (model: string, storage: number | null) => {
   const slug = modelToSlug(model);
   const where = { modelSlug: slug, storage: storage ?? ALL_STORAGE };
-  const latest = await prisma.priceSnapshot.findFirst({ where, orderBy: { date: "desc" }, select: { date: true, medianPrice: true } });
+  const latest = await prisma.priceSnapshot.findFirst({ where, orderBy: { date: "desc" }, select: { date: true, medianPrice: true, count: true } });
   if (!latest) return null;
   const target = new Date(latest.date);
   target.setUTCDate(target.getUTCDate() - 30);
   const past =
-    (await prisma.priceSnapshot.findFirst({ where: { ...where, date: { lte: target } }, orderBy: { date: "desc" }, select: { date: true, medianPrice: true } })) ??
-    (await prisma.priceSnapshot.findFirst({ where, orderBy: { date: "asc" }, select: { date: true, medianPrice: true } }));
+    (await prisma.priceSnapshot.findFirst({ where: { ...where, date: { lte: target } }, orderBy: { date: "desc" }, select: { date: true, medianPrice: true, count: true } })) ??
+    (await prisma.priceSnapshot.findFirst({ where, orderBy: { date: "asc" }, select: { date: true, medianPrice: true, count: true } }));
   if (!past) return null;
+  // 在庫が数件の日どうしの相場は1台で大きく動くので、値動きとして出さない（lib/modelGuide.ts の MIN_COUNT_FOR_TREND と同じ 10 件。10/23〜）
+  if (latest.count < 10 || past.count < 10) return null;
   const days = Math.round((latest.date.getTime() - past.date.getTime()) / 86400000);
   return { now: latest.medianPrice, before: past.medianPrice, days };
 });
