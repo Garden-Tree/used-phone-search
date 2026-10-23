@@ -10,6 +10,7 @@
  *   藍 brand600 の地（ipadbudget）: 白 7.90・brand200 5.30・inspectLine 6.09・ON_DARK.safe 5.22（ON_DARK.inspect 3.66・ON_DARK.price 2.96 は使わない）
  *   inspectLine の丸い札の上: brand900 12.32
  *   墨 ink の地（battery）: 白 17.74。ON_DARK.safe・ON_DARK.sub は brand900 の地より暗い地なので比は上がる
+ *   墨 ink の地（probudget）: 白 17.74・ON_DARK.sub 11.89・ON_DARK.inspect 8.23・ON_DARK.safe 11.71。淡い金 inspectLine の帯の上の ink 13.68
  */
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import type { Script } from "./types";
@@ -45,7 +46,7 @@ export type Look = {
 const ring = (w: number, color: string) => `0 0 0 ${w}px ${color}`;
 
 /**
- * 見た目は中身の型ごとに4つ（10/23 ユーザーの指示「多くても5種類」）。テーマごとに変えるのは つかみの型（hook）だけ。
+ * 見た目は中身の型ごとに5つ（10/23 ユーザーの指示「多くても5種類」。⑤ Pro の予算別は 10/24〜）。テーマごとに変えるのは つかみの型（hook）だけ。
  * それぞれ再生の多かった回の見た目を残した（予算別 iPhone 1,057 回・Pro と無印 1,045 回）
  */
 // ① 値下がり: 紺の地・左右いっぱいの赤い帯。つかみは 1位の下がった額
@@ -73,11 +74,20 @@ const CONDITION: Omit<Look, "hook"> = {
   card: { radius: 28, shadow: `${ring(3, SITE.inspectLine)}, 0 14px 30px rgba(146,64,14,0.14)` }, accent: SITE.price, chip: SITE.ink,
 };
 
+// ⑤ Pro だけの予算別（10/24〜）: 墨（ink）の地・淡い金（inspectLine）の丸い端の帯（墨の文字）・金の縁のカード・琥珀の札。
+//    予算別の型だが、Pro の回だと1コマ目で分かるように明るい地の BUDGET と分ける（見た目は5種類まで。10/23 ユーザーの指示）
+const PRO: Omit<Look, "hook"> = {
+  name: "Pro の予算別（墨・金の帯）", dark: true, bg: SITE.ink, fg: ON_DARK.white, sub: ON_DARK.sub, accentOnBg: ON_DARK.inspect, url: ON_DARK.safe,
+  band: { shape: "pill", fill: SITE.inspectLine, text: SITE.ink, sub: SITE.ink },
+  card: { radius: 20, shadow: ring(6, SITE.inspectLine) }, accent: SITE.price, chip: SITE.inspect700,
+};
+
 export const LOOKS: Record<Script["theme"], Look> = {
   drops: { ...DROPS, hook: "number" },
   budget: { ...BUDGET, hook: "chips" },
   pixelbudget: { ...BUDGET, hook: "chips" },
   macbudget: { ...BUDGET, hook: "chips" },
+  probudget: { ...PRO, hook: "chips" },
   // iPad は予算の丸い札（淡い金・数字を大きく）
   ipadbudget: { ...BUDGET, coin: { fill: SITE.inspectLine, text: SITE.brand900 }, hook: "coins" },
   newused: { ...VERSUS, hook: "split" },

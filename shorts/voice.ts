@@ -213,9 +213,10 @@ function budgetNarration(s: BudgetScript): Partial<Record<NarrationKey, string>>
   const pixel = s.theme === "pixelbudget";
   const ipad = s.theme === "ipadbudget";
   const mac = s.theme === "macbudget";
+  const pro = s.theme === "probudget";
   const until = p.updateUntil ? `${Number(p.updateUntil.slice(0, 4))}年${Number(p.updateUntil.slice(5, 7))}月` : "";
   return {
-    hook: pixel ? "予算ぴったりで買える中古Pixelは…？" : ipad ? "予算ぴったりで買える中古iPadは…？" : mac ? "予算ぴったりで買える中古MacBookは…？" : "予算ぴったりで買える中古iPhoneは…？",
+    hook: pixel ? "予算ぴったりで買える中古Pixelは…？" : ipad ? "予算ぴったりで買える中古iPadは…？" : mac ? "予算ぴったりで買える中古MacBookは…？" : pro ? "予算ぴったりで買える中古iPhone Proは…？" : "予算ぴったりで買える中古iPhoneは…？",
     ranking: s.scenes.budgets.rows.map((r) => `${r.label}なら、${spokenModel(r.model)}、相場${yen(r.median)}です。`).join(""),
     reveal: pixel && until
       ? `注目は${p.label}の${p.model}。相場${yen(p.median)}、アップデートは${until}までです。`
@@ -224,6 +225,7 @@ function budgetNarration(s: BudgetScript): Partial<Record<NarrationKey, string>>
     outro: pixel ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのPixelにしますか？"
       : ipad ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのiPadにしますか？"
       : mac ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのMacBookにしますか？"
+      : pro ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのProにしますか？"
       : "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの機種にしますか？",
   };
 }

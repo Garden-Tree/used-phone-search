@@ -21,6 +21,7 @@ npx tsx shorts/make-short.tsx ipadbudget plan       # 予算ぴったりで買�
 npx tsx shorts/make-short.tsx ipadbudget render
 npx tsx shorts/make-short.tsx promax plan           # Pro MaxとProの差のテーマ（shorts/out/<日付>-promax/。型 A だけ）
 npx tsx shorts/make-short.tsx macbudget plan        # 予算ぴったりで買える中古MacBook（shorts/out/<日付>-macbudget/。型 A だけ）
+npx tsx shorts/make-short.tsx probudget plan        # 予算ぴったりで買える中古iPhone Pro（shorts/out/<日付>-probudget/。型 A だけ）
 npx tsx shorts/make-short.tsx rank plan             # 状態ランク A と C の差のテーマ（shorts/out/<日付>-rank/。型 A だけ）
 npx tsx shorts/make-short.tsx rank render
 npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）
@@ -35,7 +36,7 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 
 - `drops`: 今週いちばん値下がりした中古iPhone（型 A・B・C）
 - `budget`: 予算ぴったりで買える中古iPhone（型 A だけ・約35秒）
-- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs・fold は 青山龍星（ノーマル・1.25倍。クレジット「VOICEVOX:青山龍星」）、pixelbudget は 春日部つむぎ、ipadbudget は 青山龍星、rank は ずんだもん（ノーマル・1.25倍・口調は です・ます。クレジット「VOICEVOX:ずんだもん」）、promax は 青山龍星、macbudget は 春日部つむぎ
+- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs・fold は 青山龍星（ノーマル・1.25倍。クレジット「VOICEVOX:青山龍星」）、pixelbudget は 春日部つむぎ、ipadbudget は 青山龍星、rank は ずんだもん（ノーマル・1.25倍・口調は です・ます。クレジット「VOICEVOX:ずんだもん」）、promax は 青山龍星、macbudget は 春日部つむぎ、probudget は 春日部つむぎ（10/24〜）
   - 3万・5万・7万・10万円ごとに、相場（getModelMarket＝在庫がいちばん多い容量の中央値）が帯（0〜3万・3万超〜5万・5万超〜7万・7万超〜10万）に入る iPhone（iPhone 12 シリーズ以降と SE (第3世代)。11 系・SE (第2世代) は古すぎるので出さない・在庫5件以上）のうち、相場がいちばん高い機種。同じ相場なら発売の新しい方。帯が空なら「予算以下で発売年がいちばん新しい機種」
   - 注目は5万円の行（固定）。出すのは相場（容量つき）と在庫数だけ。最安は出さない（3万円の行より安く見えて分かりにくい）
   - 場面 hook（問い＋予算の札）→ ranking（4行。「○万円なら」の声に合わせて上から）→ reveal（注目）→ comment → outro（「あなたの予算なら…？」）
@@ -80,6 +81,15 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
   - この回の切り口: 各行にチップと発売年（`chip`。`MAC_INFO`。「M3チップ・2024年発売」）、つかみの札と注目にチップ。注目のナレーションは在庫数を読む
   - 説明欄のリンクは注目の機種ページ・/mac。utm の末尾は `_macbudget`。ハッシュタグ #MacBook #中古MacBook。関連動画の締めは付けない
   - 読み: 「MacBook Air 13インチ」は型名と数字がくっつく（「エ'アアジュウ/サンイ'ンチ」）ので、`voiceTuning.ts` の 2b で切り離して「ジュウサンインチ」をつなぐ。「相場14万」の「ソオバジュウ」も同じ
+
+- `probudget`: 予算ぴったりで買える中古iPhone Pro（型 A だけ・約46秒。10/24〜）
+  - budget と同じ選び方・同じ場面（`pickBudgetModels` を共有・台本の型は BudgetScript で theme が "probudget"）。対象は iPhone 13 Pro 以降の Pro・Pro Max（`themes/probudget.ts` の PRO_MODELS・在庫5件以上）。同じ相場なら発売年の新しい方
+  - **予算は 7万・10万・15万・20万円**（`PRO_SHORT_BUDGETS`）。10/24 は在庫5件以上の Pro の最安が iPhone 13 Pro の相場 65,980円で、5万円の帯が空になるため。帯ごとの候補は 1・2・3・3機種（plan が毎回、帯ごとの機種と相場を出す）。注目は10万円の行（`PRO_PICK_BUDGET`・4つの予算の2番目）
+  - この回の切り口: 各行と注目に画面の大きさと端子（`spec`。「6.1インチ・Lightning」。`lib/iphoneSpecs.ts`・Apple 公式）と発売年。14 Pro までは Lightning・15 Pro から USB-C。注目のナレーションは在庫数を読む。下の注記に「画面と端子はApple公式」
+  - ひと言の下書きは、注目が Lightning なら「14 Proまでは／Lightning端子／15 ProからUSB-Cです」（声は narration.comment に「ユーエスビーシー」と書く）、USB-C なら「Proでも中古は／バッテリー85%以上を／選びましょう」
+  - 説明欄のリンクは注目の機種ページ・/iphone/where-to-buy・トップ。utm の末尾は `_probudget`。ハッシュタグ #中古iPhone #iPhonePro。関連動画の締めあり（RELATED_LONG_THEMES）
+  - 見た目は5つ目の型 PRO（墨 ink の地・淡い金 inspectLine の丸い端の帯に墨の文字・金の縁のカード・琥珀 inspect700 の予算の札）。予算別だが、Pro の回だと1コマ目で分かるように BUDGET と分けた
+  - 読み: つかみの「中古iPhone Proは」が1つの句（「チュウコアイフォン'プロワ」）になるので、10/24 は narrationKana.hook で「チュ'ウコ/アイフォ'ン/プ'ロワ？」に切った
 
 - `rank`: 状態ランクでいくら違う？中古iPhone（型 A だけ・約39秒。10/22〜）
   - iPhone 13〜16 の無印と Pro（`themes/rank.ts` の MODELS）で、在庫がいちばん多い容量のランク A・B・C（各店の表記を大文字にそろえる。S＝未使用品・D・ジャンク・不明は除く）の相場（中央値）を比べ、A − C の差額の大きい順。率は A の相場に対して。A・B・C のどれかが在庫5件未満の機種と、差が0以下の機種は出さない。3機種未満なら止まる
@@ -153,6 +163,7 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
 | rank | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | 問い＋ランク A・B・C の札＋A→C の最大の差額 |
 | promax | provs と同じ（VERSUS） | 〃 | 〃 | safe | 問い＋「Pro vs Pro Max」＋最大の差額 |
 | macbudget | budget と同じ（BUDGET） | 〃 | 〃 | price | 問い＋予算の札 2×2（チップ） |
+| probudget | 墨 ink（PRO） | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | 問い＋予算の札 2×2（琥珀・「なら？」） |
 
 関連動画につながるテーマ（`types.ts` の RELATED_LONG_THEMES）は、締めの「▼ くわしい解説は 下の関連動画で」の札が出るまで締めの動きを延ばす（`scenes.tsx` の TIMELINE。10/23 まで札が動画に出ていなかった）。
 
