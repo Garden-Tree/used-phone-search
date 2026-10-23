@@ -7,6 +7,8 @@ import time
 import os
 import sys
 
+from common import hide_stale_inventory
+
 # Windowsターミナルでの文字化け対策
 if sys.platform == 'win32':
     import io
@@ -17,6 +19,14 @@ if sys.platform == 'win32':
 FAILED = []
 # 失敗のうち、Python の例外（Traceback）で止まったもの＝コードの誤りの疑い。1店でもジョブを失敗にする
 CODE_ERRORS = []
+
+# スクリプト → DB の shopName（各スクレイパーの run_scraper の第1引数と同じ）
+SHOP_NAMES = {
+    "nicosuma_scraper.py": "にこスマ",
+    "iosis_scraper.py": "イオシス",
+    "mmoba_scraper.py": "エムモバ",
+    "daiwan_scraper.py": "ダイワンテレコム",
+}
 
 def run_scraper(script_name, args=""):
     print(f"[*] Starting {script_name} with args: {args}...")
@@ -108,6 +118,12 @@ def main():
         
     total_elapsed = time.time() - start_all
     print(f"\n=== All scrapers completed in {total_elapsed:.1f}s ===")
+
+    # 取得が止まった店（公式サイトの休止・障害）の古い在庫を隠す。取得が戻れば洗い替えで自動的に表示に戻る
+    try:
+        hide_stale_inventory(list(SHOP_NAMES.values()))
+    except Exception as e:
+        print(f"::warning::古い在庫を隠す処理に失敗: {e}")
 
     # 失敗の扱い（docs/operations.md「失敗と警告の分け方」）:
     # - 1店だけの失敗（403・429・タイムアウト・0件・DB の一時的な切断など。前回の在庫はそのまま残る）は警告だけにする。

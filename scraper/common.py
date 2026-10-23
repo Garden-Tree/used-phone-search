@@ -234,3 +234,32 @@ def run_scraper(shop_name: str, scrape, default_limit: int) -> None:
         sys.exit(1)
 
     print("--- スクレイピング処理完了 ---")
+
+
+# 取得が止まった店の在庫を隠すまでの時間。スクレイパーは6時間ごとなので、2周期続けて取れなかったら隠す
+# （公式サイトの休止・全体の障害で買えない商品を出し続けないため。2026-10-23 ダイワンテレコムの休止・イオシスの 503）
+STALE_HIDE_HOURS = 12
+
+
+def hide_stale_inventory(shop_names: list[str]) -> None:
+    """最終更新が STALE_HIDE_HOURS より古い店の在庫を隠す（isSoldOut = true。行は消さない）。
+    取得が戻れば replace_shop_inventory の洗い替えで自動的に表示に戻る。画面の店数は表示中の在庫がある店だけ数える（lib/activeShops.ts）"""
+    conn = psycopg2.connect(load_database_url())
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    'SELECT "shopName" FROM "DeviceInventory" WHERE "shopName" = ANY(%s) '
+                    "GROUP BY \"shopName\" HAVING MAX(\"updatedAt\") < (NOW() AT TIME ZONE 'UTC') - make_interval(hours => %s)",
+                    (shop_names, STALE_HIDE_HOURS),
+                )
+                stale = [r[0] for r in cur.fetchall()]
+                for shop in stale:
+                    cur.execute(
+                        'UPDATE "DeviceInventory" SET "isSoldOut" = true WHERE "shopName" = %s AND "isSoldOut" = false',
+                        (shop,),
+                    )
+                    if cur.rowcount:
+                        print(f"::warning::{shop}: {STALE_HIDE_HOURS}時間以上取得できていないので在庫 {cur.rowcount} 件を隠した（取得が戻れば自動で表示）")
+    finally:
+        conn.close()

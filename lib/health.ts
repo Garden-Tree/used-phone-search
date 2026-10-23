@@ -40,6 +40,8 @@ export type HealthReport = {
     lastUpdated: string | null;
     ageHours: number | null;
     stale: boolean;
+    /** 在庫を全部隠している（取得が止まって scraper/common.py の hide_stale_inventory が隠した・Amazon の古い価格など） */
+    hidden?: boolean;
     devices: Record<string, number>;
   }[];
   lastPriceSnapshot?: string | null;
@@ -79,6 +81,7 @@ export async function checkHealth(): Promise<HealthReport> {
           lastUpdated: updated?.toISOString() ?? null,
           ageHours,
           stale: visibleShops.has(s.shopName) && (ageHours === null || ageHours > STALE_HOURS),
+          hidden: !visibleShops.has(s.shopName),
           devices: Object.fromEntries(DEVICES.map((d) => [d.key, deviceCounts.get(`${s.shopName}:${d.key}`) ?? 0])),
         };
       })

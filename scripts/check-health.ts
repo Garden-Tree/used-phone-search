@@ -8,6 +8,7 @@
  *          ／ WARN_HOURS より古い店が2店以上（まとめて止まった）
  *          ／ 「〇〇 が0件」が前回の実行（公開中の /health.json）にもあった（2回続いた）
  *   警告 … 最終更新が WARN_HOURS より古い店が1店だけ ／ 「〇〇 が0件」が今回だけ
+ *          ／ 在庫を全部隠した店（取得が12時間止まり scraper/common.py の hide_stale_inventory が隠した）の更新なし
  * Amazon は取得を1日2〜3回に間引くので、年齢の判定から外す（lib/health.ts の24時間判定だけ）。
  *   npx tsx scripts/check-health.ts [--previous <health.json のパスか URL>] [--report <health.json のパス>]
  *   --report … DB を読まずに、その結果で判定だけ試す（判定の確認用）
@@ -64,7 +65,11 @@ async function main() {
   }
 
   // 最終更新の古さ（取得に失敗した店は前回の在庫のまま残り、最終更新が進まない）
-  const old = (report.shops ?? []).filter((s) => !AMAZON_SHOP_NAMES.has(s.shop) && !s.stale && s.ageHours !== null && s.ageHours > WARN_HOURS);
+  // 在庫を全部隠した店（取得が12時間止まって scraper/common.py が隠した。公式サイトの休止など）は、画面に古い価格が出ないので警告だけにする
+  for (const s of (report.shops ?? []).filter((s) => s.hidden && !AMAZON_SHOP_NAMES.has(s.shop))) {
+    warnings.push(`${s.shop}: ${s.ageHours ?? "?"}時間更新なし（在庫は隠し中。取得が戻れば自動で表示）`);
+  }
+  const old = (report.shops ?? []).filter((s) => !AMAZON_SHOP_NAMES.has(s.shop) && !s.stale && !s.hidden && s.ageHours !== null && s.ageHours > WARN_HOURS);
   for (const s of old) {
     const msg = `${s.shop}: ${s.ageHours}時間更新なし`;
     if (s.ageHours! > FAIL_HOURS) failures.push(`${msg}（${FAIL_HOURS}時間超）`);
