@@ -7,7 +7,7 @@ import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
-import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type Script } from "./types";
+import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type GenScript, type StorageScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -20,12 +20,15 @@ const BODY = { top: 590, height: 810 };
 const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
 const HEAD_TITLE = (s: Script) =>
   s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"]
-    : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? ["電池90%台だと", "いくら高い？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
+    : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? ["電池90%台だと", "いくら高い？中古iPhone"]
+    : s.theme === "gen" ? ["iPhone", "1世代前でいくら安い？"] : s.theme === "storage" ? ["容量を1つ上げると", "いくら高い？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : ["今週の中古iPhone", "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
   s.theme === "rank" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
     : s.theme === "battery" ? `${s.date.replace(/-/g, "/")}・電池の%を数字で出す店・同じ容量の中央値`
+    : s.theme === "gen" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値`
+    : s.theme === "storage" ? `${s.date.replace(/-/g, "/")}・容量ごとの中央値`
     : s.theme === "pixelbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・アップデートはGoogle公式`
     : s.theme === "ipadbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・PencilはApple公式`
     : s.theme === "newused" ? `${s.date.replace(/-/g, "/")}・新品はApple公式・中古は同じ容量の中央値`
@@ -109,7 +112,7 @@ export const TIMELINE = (s: Script, v: Variant): Scene[] => {
   // provs・fold も newused と同じ（問い → 3位・2位・伏せた1位 → 1位の2本の棒 → ひと言 → 締め）
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
-  if (s.theme === "newused" || s.theme === "provs" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery") return [
+  if (s.theme === "newused" || s.theme === "provs" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -290,7 +293,7 @@ function CoinHook({ s, t }: { s: BudgetScript; t: number }) {
 type Tile = { label: string; sub: string; fill: string };
 
 /** newused・provs: 問い＋2つを並べた札（真ん中に vs）＋1位の差額 */
-function SplitHook({ s, t, lines, left, right, teaser }: { s: Script; t: number; lines: string[]; left: Tile; right: Tile; teaser: string }) {
+function SplitHook({ s, t, lines, left, right, teaser, label = "最大" }: { s: Script; t: number; lines: string[]; left: Tile; right: Tile; teaser: string; label?: string }) {
   const L = lookOf(s);
   const TW = 400;
   const TH = 250;
@@ -309,7 +312,7 @@ function SplitHook({ s, t, lines, left, right, teaser }: { s: Script; t: number;
         {tile(right)}
         <div style={{ position: "absolute", left: (CW - VS) / 2, top: (TH - VS) / 2, width: VS, height: VS, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: VS / 2, background: L.bg, boxShadow: `0 0 0 6px ${L.fg}`, fontSize: 60, fontWeight: 900, color: L.fg }}>vs</div>
       </div>
-      <Teaser s={s} label="最大" value={teaser} />
+      <Teaser s={s} label={label} value={teaser} />
     </Frame>
   );
 }
@@ -445,8 +448,66 @@ function BatteryRanking({ s, t, o }: { s: BatteryScript; t: number; o: Scene["o"
   return <RankRows s={s} t={t} o={o} items={items} />;
 }
 
+/** storage のランキング: 機種名、下段は 容量（from→to）・上乗せ（額・大）・率（from に対して） */
+function StorageRanking({ s, t, o }: { s: StorageScript; t: number; o: Scene["o"] }) {
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
+    model: it.model,
+    cells: [
+      { text: `${it.from}→${it.to}`, w: 230, max: 40, color: C.muted },
+      { text: `+${n(it.diff)}円`, w: 290, max: 76, color: lookOf(s).accent },
+      { text: `+${rate(it.pct)}%`, w: 160, max: 46, color: lookOf(s).accent },
+    ],
+  }));
+  return <RankRows s={s} t={t} o={o} items={items} />;
+}
+
+/**
+ * storage の1位: 機種名、小さい容量と次の容量の相場の2本の棒（大きい容量を幅いっぱいにした比。件数を添える）、上乗せ（大）と率。
+ * 棒は 0.8 秒から伸び、差額は数え上げる
+ */
+function StorageReveal({ s, t }: { s: StorageScript; t: number }) {
+  const r = s.scenes.ranking.items[0];
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const grow = prog(t, 0.8, 0.7);
+  const diffText = `+${n(r.diff)}円`;
+  const sub = "中古の相場（容量ごとの中央値）";
+  const LABEL = 170;
+  const BAR = CW - 60 - LABEL - 20;
+  const bars = [
+    { label: r.from, price: r.fromMedian, count: r.fromCount, color: C.budget, w: Math.round((BAR * r.fromMedian) / r.toMedian) },
+    { label: r.to, price: r.toMedian, count: r.toCount, color: lookOf(s).accent, w: BAR },
+  ];
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: 52, fontWeight: 900, marginBottom: 8, opacity: prog(t, 0, 0.25) }}>1位は…</div>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "20px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 88), fontWeight: 900 }}>{r.model}</div>
+        <div style={{ ...row, fontSize: FIT(sub, CW - 60, 40), fontWeight: 900, color: C.muted, marginTop: 4 }}>{sub}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 12 }}>
+          {bars.map((b, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 12 : 0 }}>
+              <div style={{ ...row, justifyContent: "flex-end", width: LABEL, fontSize: FIT(b.label, LABEL, 48), fontWeight: 900, color: b.color }}>{b.label}</div>
+              <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
+                <div style={{ display: "flex", alignItems: "baseline" }}>
+                  <div style={{ ...row, fontSize: 50, fontWeight: 900, color: b.color }}>{`${n(b.price)}円`}</div>
+                  <div style={{ ...row, fontSize: 34, fontWeight: 700, color: C.muted, marginLeft: 14 }}>{`${n(b.count)}件`}</div>
+                </div>
+                <div style={{ display: "flex", width: Math.max(8, Math.round(b.w * grow)), height: 30, background: b.color, borderRadius: 12, marginTop: 4 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 8 }}>
+          <div style={{ ...row, fontSize: FIT(diffText, 600, 112), fontWeight: 900, color: lookOf(s).accent }}>{`+${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
+          <div style={{ ...row, fontSize: 64, fontWeight: 900, color: lookOf(s).accent, marginLeft: 16 }}>{`+${rate(r.pct)}%`}</div>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
 /** "Galaxy Z Fold8" と "Galaxy Z Fold7" → "Galaxy Z Fold8／Fold7"、"Pixel 11 Pro Fold" と "Pixel 10 Pro Fold" → "Pixel 11 Pro Fold／10 Pro Fold" */
-const foldShort = (model: string) => model.replace(/^Galaxy Z\s+|^Pixel\s+/, "");
+const foldShort = (model: string) => model.replace(/^Galaxy Z\s+|^Pixel\s+|^iPhone\s+/, "");
 const foldName = (newer: string, older: string) => `${newer}／${foldShort(older)}`;
 
 /** fold のランキング: 機種名は「新しい方／1世代前」、下段は 容量・1世代前にした差（額・大）・率（新しい方に対して） */
@@ -979,6 +1040,36 @@ function RankReveal({ s, t }: { s: RankScript; t: number }) {
 }
 
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
+  if (s.theme === "gen") {
+    // 場面は fold と同じ（行の型が同じ）。つかみだけ「最新 vs 1世代前」の札
+    const f = s as unknown as FoldScript;
+    switch (sc.id) {
+      case "hook": {
+        const r = s.scenes.ranking.items[0];
+        return <SplitHook s={s} t={t} lines={["iPhone、", "1世代前にすると", "いくら安い？"]} teaser={`−${n(r.diff)}円`}
+          left={{ label: "最新", sub: r.storage, fill: C.budget }} right={{ label: "1世代前", sub: r.storage, fill: lookOf(s).chip }} />;
+      }
+      case "ranking": return <FoldRanking s={f} t={t} o={sc.o} />;
+      case "reveal": return <FoldReveal s={f} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`gen に場面 ${sc.id} はありません`);
+    }
+  }
+  if (s.theme === "storage") {
+    switch (sc.id) {
+      case "hook": {
+        const r = s.scenes.ranking.items[0];
+        return <SplitHook s={s} t={t} lines={["容量を1つ上げると、", "中古iPhoneは", "いくら高い？"]} teaser={`+${n(r.diff)}円`} label="最小"
+          left={{ label: r.from, sub: "いまの容量", fill: C.budget }} right={{ label: r.to, sub: "1つ上", fill: lookOf(s).chip }} />;
+      }
+      case "ranking": return <StorageRanking s={s} t={t} o={sc.o} />;
+      case "reveal": return <StorageReveal s={s} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`storage に場面 ${sc.id} はありません`);
+    }
+  }
   if (s.theme === "battery") {
     switch (sc.id) {
       case "hook": return <BatteryHook s={s} t={t} />;

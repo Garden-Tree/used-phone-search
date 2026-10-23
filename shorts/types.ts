@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・newused・provs・fold・rank・battery）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・newused・provs・fold・rank・battery・gen・storage）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -161,7 +161,36 @@ export type BatteryScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript;
+/** テーマ gen「iPhone、1世代前にするといくら安い？」（行と場面は fold と同じ FoldRow。shorts/themes/gen.ts） */
+export type GenScript = Common & {
+  theme: "gen";
+  scenes: {
+    ranking: { items: FoldRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+/**
+ * storage の1行: 1機種の、在庫5件以上でいちばん小さい容量（from）と次の容量（to）の中古の相場（中央値）（shorts/themes/storage.ts）。
+ * diff = to の相場 − from の相場、pct = diff / from の相場（%・小数1桁）
+ */
+export type StorageRow = {
+  model: string; from: string; to: string; fromGb: number; toGb: number;
+  fromMedian: number; toMedian: number; fromCount: number; toCount: number; diff: number; pct: number;
+};
+
+/** テーマ storage「容量を1つ上げると、中古iPhoneはいくら高い？」（差の小さい順） */
+export type StorageScript = Common & {
+  theme: "storage";
+  scenes: {
+    ranking: { items: StorageRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript;
 
 /** budget・pixelbudget・ipadbudget（予算の4行・注目の1機種の場面を共有） */
 export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget";

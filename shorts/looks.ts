@@ -84,6 +84,8 @@ export const LOOKS: Record<Script["theme"], Look> = {
   fold: { ...VERSUS, hook: "fold" },
   rank: { ...CONDITION, hook: "abc" },
   battery: { ...CONDITION, hook: "battery" },
+  gen: { ...VERSUS, hook: "split" },
+  storage: { ...VERSUS, hook: "split" },
 };
 
 export const lookOf = (s: Script): Look => LOOKS[s.theme];

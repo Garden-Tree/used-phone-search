@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type RankScript, type Script, type VoiceConfig } from "./types";
+import { isBudget, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -48,7 +48,8 @@ export function commentSentence(lines: string[]): string {
  */
 export function defaultNarration(s: Script): Partial<Record<NarrationKey, string>> {
   return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : s.theme === "provs" ? proVsNarration(s)
-    : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s) : dropsNarration(s);
+    : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s)
+    : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s) : dropsNarration(s);
 }
 
 /**
@@ -82,6 +83,38 @@ function batteryNarration(s: BatteryScript): Partial<Record<NarrationKey, string
     reveal: `1位は${top.model}。電池90%台にすると、${yen(top.diff)}高くなります。${top.repair ? `Appleの電池交換は、${yen(top.repair)}です。` : ""}`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、電池90%台と80%台、どちらにしますか？",
+  };
+}
+
+/**
+ * gen の既定: hook 問い / ranking 3位・2位を1文ずつ（「3位は<新>から<旧の番号>、<容量>。差は<額>です。」。文頭の「○位は」で行を出す）
+ * reveal 1位の差（約○.○万円）と率（およそ○%）だけ / comment ひと言の本文だけ / outro サイトへの誘導と問い。声は ずんだもんで、口調は「です・ます」
+ */
+function genNarration(s: GenScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  return {
+    hook: "iPhone、1世代前にすると、いくら安い？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].newer}から${shortName(items[i].older)}、${items[i].storage}。差は${yen(items[i].diff)}です。`).join(""),
+    reveal: `1位は${top.newer}から${shortName(top.older)}。1世代前にすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、最新派？1世代前派？",
+  };
+}
+
+/**
+ * storage の既定: hook 問い / ranking 3位・2位を1文ずつ（「3位は<機種>。<from>から<to>で、<額>高くなります。」）
+ * reveal 1位の差額（額のまま）と容量 / comment ひと言の本文だけ / outro サイトへの誘導と問い
+ */
+function storageNarration(s: StorageScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  return {
+    hook: "容量を1つ上げると、中古iPhoneはいくら高い？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}。${items[i].from}から${items[i].to}で、${yen(items[i].diff)}高くなります。`).join(""),
+    reveal: `1位は${top.model}。${top.from}から${top.to}にしても、${yen(top.diff)}しか変わりません。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、何ギガ派ですか？",
   };
 }
 
