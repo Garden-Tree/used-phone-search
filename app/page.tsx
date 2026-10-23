@@ -358,6 +358,7 @@ export default async function Home() {
                 ・<Link href="/about#notation" className="text-brand-600 hover:text-brand-800">ほか{restShops}店</Link>
               </span>
             )}
+            <Link href="/iphone/where-to-buy" className="text-brand-600 hover:text-brand-800 ml-1.5">中古iPhoneはどこで買う？ ›</Link>
           </p>
           {/* iPhone の目的別ページ（/pick/…）へのリンクはここだけ。消すと孤立する */}
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-sub">

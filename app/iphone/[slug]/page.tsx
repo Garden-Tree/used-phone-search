@@ -741,6 +741,7 @@ export default async function ModelPage({ params }: Props) {
                       <p className="pt-2 border-t border-line-soft text-[11px] text-ink-mute leading-relaxed">
                         保証は各店の公式ページで確認した内容です（詳しくは
                         <Link href="/about" className={`${LINK} underline underline-offset-2`}>「このサイトについて」</Link>）。
+                        {isIphone && <> 店ごとの在庫数・電池の書き方の比較は<Link href="/iphone/where-to-buy" className={`${LINK} underline underline-offset-2`}>「中古iPhoneはどこで買う？」</Link></>}
                       </p>
                     </div>
                   </Accordion>

@@ -19,11 +19,11 @@
 - **ホスティング**: Cloudflare Pages（10/6〜。`docs/cloudflare-pages.md`）
 - **DB**: Neon（Launch。Vercel を止めた後に Free へ。ideas/10-04）
 - **データ更新**: シンの cron → Actions → 取り込み・書き出し・配置（`docs/operations.md`）
-- **IndexNow**: 1日1回サイトマップ全件。Bing WMT 登録済み
+- **IndexNow**: 毎日サイトマップ全件。Bing 登録済み
 - **デザイン**: `docs/design.md`（決定版 A+B・OG の決まり・ロゴ案1）
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える。10/16〜）
-- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。検索の既定は全件・安い順（電池85%以上は切り替え）
-- **画面の店数は表示中の在庫がある店だけ数える**（`lib/activeShops.ts`）。スクレイパー4店は取得が12時間止まると在庫を隠す（戻れば自動で表示）
+- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。検索の既定は全件・安い順（電池85%以上は切り替え）。店の比較 `/iphone/where-to-buy`（10/24〜）
+- **画面の店数は表示中の在庫がある店だけ数える**（`lib/activeShops.ts`）。スクレイパー4店は取得が12時間止まると在庫を隠す（戻れば表示）
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**（保証は各店の公式で確認）
 - **スペック・保証期限・発売年月・Apple 修理料金・Pencil 対応は公式で確かめた値だけ**（`lib/*Specs.ts`・`*Catalog.ts`・`appleRepairPrices.ts`・`ipadPencil.ts`）
 - **新品価格は公式で確かめた値だけ**（`lib/applePrices.ts`・`lib/officialPrices.ts`・毎月1日に見直し）
@@ -53,8 +53,8 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube: 横動画2本（関連はテーマ別）。未投稿: promax・macbudget・横3本目（iPad）
-2. 伸ばし方（ideas/10-24-growth の1〜3: CTR・どこで買う・月次レポート）
+1. YouTube: 横動画2本。未投稿: promax・macbudget・横3本目（iPad）
+2. 伸ばし方（ideas/10-24-growth の1・3: CTR・月次レポート）
 3. X の日々の運用（ideas/x-posts）
 ```
 

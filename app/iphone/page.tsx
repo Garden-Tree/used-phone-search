@@ -130,6 +130,9 @@ export default async function IphoneIndexPage() {
         <p className="text-sm mb-4">
           <Link href="/iphone/price-factors" className="font-bold text-brand-600 hover:underline underline-offset-4">電池・状態ランク・容量・世代で、値段はいくら違う？ &rarr;</Link>
         </p>
+        <p className="text-sm mb-4">
+          <Link href="/iphone/where-to-buy" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPhoneはどこで買う？店ごとの在庫・保証・電池表記の比較 &rarr;</Link>
+        </p>
         <AdDisclosure compact />
 
         <details className="my-6 rounded-xl bg-ground p-4 text-sm text-ink-sub">
