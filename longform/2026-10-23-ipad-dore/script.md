@@ -104,7 +104,7 @@
 ずんだもん: 7万円なのだ。
 つむぎ: チップはM1で、2022年発売。いまのiPadOS 27にも対応してる。
 ずんだもん: もっと描きたい人は？
-つむぎ: Airの11インチ、M2。Pencil Proが使えて、相場は128GBで9万6,580円。ペンを握って道具を切り替えたりできる、いちばん新しいペンね。
+つむぎ: Airの11インチ、M2。Pencil Proが使えて、相場は128GBで9万6,580円。ペンをぎゅっと握ると道具のパレットが出せる、いちばん新しいペンね。
 ずんだもん: 絵を描くなら、7万円でAir 第5世代、10万円でAir M2、なのだ。
 つむぎ: 正解。描かないなら、ここまで出さなくて大丈夫だよ。
 
@@ -195,8 +195,12 @@ BGM: Cyber Society by のる（OpenTracks）
 
 ## 作る前に確かめること
 - 数字は作る日に取り直す（台本は 10/23）
-- **「USB-C の Pencil は筆圧に対応していない」「Pencil Pro は握って道具を切り替え」「第2世代は横にくっつけて充電」は Apple 公式の比較ページ（support.apple.com/ja-jp/108937 ほか）で確かめてから使う**。`lib/ipadPencil.ts` には対応表しかない
-- 「Pro 第3世代は画面がなめらか（120Hz）・Face ID」「Air M2 は Touch ID」「mini は 8.3インチ」「Pro M4 は有機EL」は `lib/ipadSpecs.ts`（auth・display・panel）と Apple 公式で
+- 確認済み（10/23）:
+  - 対応表（第9世代＝第1世代／第10世代・A16＝USB-C と第1世代（アダプタ）／Air 第5世代・mini 第6世代・Pro 11 第3世代＝第2世代と USB-C／Air M2・mini A17 Pro＝Pro と USB-C）… Apple サポート https://support.apple.com/ja-jp/108937
+  - USB-C の Pencil は筆圧感知「非対応」、Pencil Pro は筆圧・スクイーズ（握るとパレット）・側面にマグネットでペアリングと充電 … https://www.apple.com/jp/apple-pencil/
+  - Pro 11インチ 第3世代は ProMotion … Apple「ProMotion を搭載したモデル」 https://support.apple.com/guide/ipad/aside/ipad1ef24f28/ipados （「120Hz」の数字は台詞で言わない）
+  - 第2世代は iPad の右側の磁気コネクタに付けてペアリング・充電 … Apple の iPad ユーザガイド https://support.apple.com/guide/ipad/pair-and-charge-apple-pencil-2ndgeneration-ipad51ac5369/ipados
+- 「Air M2 は Touch ID」「mini は 8.3インチ」「Pro M4 は有機EL」「Pro 第3世代は Face ID」は `lib/ipadSpecs.ts`（Apple 公式の仕様）と同じ
 - 「iPadOS 27 非対応だとアプリやセキュリティ更新がいずれ止まる」は一般論の言い方にとどめる（時期は言わない）
 - 第8世代の在庫の件数（2,533件）は全容量の合計。画面では「在庫も多い」程度に
 - 機種ページの URL（modelPagePath）を実際の値で入れる（/ipad/ipad-air-5th-gen は要確認）
