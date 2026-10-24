@@ -37,6 +37,8 @@ export function forVoice(text: string): string {
     [/描/g, "か"],
     // 「SIM」を「エスアイエム」と読む → 「シム」（eSIM も。10/24 ユーザー指示）
     [/eSIM/g, "イーシム"], [/SIM/g, "シム"],
+    // 「LiDAR」を1字ずつ読まないように（Pro と無印・10/25）
+    [/LiDAR/g, "ライダー"],
   ];
   return words.reduce((t, [re, to]) => t.replace(re, to), text);
 }
