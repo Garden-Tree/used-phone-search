@@ -19,7 +19,7 @@ const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
 const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
 const HEAD_TITLE = (s: Script) =>
-  s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"] : s.theme === "probudget" ? ["予算ぴったりで買える", "中古iPhone Pro"]
+  s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"] : s.theme === "probudget" ? ["予算ぴったりで買える", "中古iPhone Pro"] : s.theme === "foldbudget" ? ["予算ぴったりで買える", "中古折りたたみスマホ"]
     : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? ["電池90%台だと", "いくら高い？中古iPhone"]
     : s.theme === "gen" ? ["iPhone", "1世代前でいくら安い？"] : s.theme === "storage" ? ["容量を1つ上げると", "いくら高い？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : ["今週の中古iPhone", "値下がりランキング"];
@@ -33,6 +33,7 @@ const FOOT = (s: Script) =>
     : s.theme === "ipadbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・PencilはApple公式`
     : s.theme === "macbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`
     : s.theme === "probudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・画面と端子はApple公式`
+    : s.theme === "foldbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・画面は公式の仕様`
     : s.theme === "newused" ? `${s.date.replace(/-/g, "/")}・新品はApple公式・中古は同じ容量の中央値`
     : s.theme === "provs" || s.theme === "promax" || s.theme === "fold" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値` : `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`;
 
@@ -253,7 +254,7 @@ function Hook({ s, t }: { s: DropsScript; t: number }) {
 function BudgetHook({ s, t }: { s: BudgetScript; t: number }) {
   const L = lookOf(s);
   const rows = s.scenes.budgets.rows;
-  const lines = ["予算ぴったりで買える", s.theme === "pixelbudget" ? "中古Pixelは…？" : s.theme === "macbudget" ? "中古MacBookは…？" : s.theme === "probudget" ? "中古iPhone Proは…？" : "中古iPhoneは…？"];
+  const lines = ["予算ぴったりで買える", s.theme === "pixelbudget" ? "中古Pixelは…？" : s.theme === "macbudget" ? "中古MacBookは…？" : s.theme === "probudget" ? "中古iPhone Proは…？" : s.theme === "foldbudget" ? "中古折りたたみスマホは…？" : "中古iPhoneは…？"];
   const TW = (CW - 30) / 2;
   return (
     <Frame s={s}>

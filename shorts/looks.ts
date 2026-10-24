@@ -88,6 +88,9 @@ export const LOOKS: Record<Script["theme"], Look> = {
   pixelbudget: { ...BUDGET, hook: "chips" },
   macbudget: { ...BUDGET, hook: "chips" },
   probudget: { ...PRO, hook: "chips" },
+  // 折りたたみの予算別（10/24〜）: 見た目は5つまで（10/23 ユーザーの指示）なので新しく作らず、fold と同じ VERSUS（紺・左寄せの札・緑）を使う。
+  // つかみは予算の札（chips）。fold のつかみ（開いた折りたたみの形）は FoldScript のランキングの値を使うので使えない
+  foldbudget: { ...VERSUS, hook: "chips" },
   // iPad は予算の丸い札（淡い金・数字を大きく）
   ipadbudget: { ...BUDGET, coin: { fill: SITE.inspectLine, text: SITE.brand900 }, hook: "coins" },
   newused: { ...VERSUS, hook: "split" },

@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・newused・provs・promax・fold・rank・battery・gen・storage）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・newused・provs・promax・fold・rank・battery・gen・storage）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -47,13 +47,13 @@ export type DropsScript = Common & {
  * updateUntil: Pixel のアップデート保証の終わり（"2027-07"。lib/pixelCatalog.ts の updateUntil。pixelbudget だけ）
  * pencil: その iPad で使える Apple Pencil（新しい順・"USB-C／第1世代"。lib/ipadPencil.ts。ipadbudget だけ）
  * chip: その MacBook のチップ（"M2"・"M1 Pro"・"A18 Pro"。lib/macCatalog.ts の MAC_INFO。macbudget だけ）
- * spec: 画面の大きさと端子（"6.1インチ・Lightning"。lib/iphoneSpecs.ts・Apple 公式。probudget だけ）
+ * spec: 画面の大きさと端子（"6.1インチ・Lightning"。lib/iphoneSpecs.ts・Apple 公式。probudget）。foldbudget は型と開いたときの画面（"Fold型・開いて7.6インチ"。lib/galaxySpecs.ts・lib/pixelSpecs.ts）
  */
 export type BudgetRow = { budget: number; label: string; model: string; storage: string; median: number; released: string; updateUntil?: string; pencil?: string; chip?: string; spec?: string };
 
 /** テーマ budget「予算ぴったりで買える中古iPhoneは？」・pixelbudget「…中古Pixelは？」・ipadbudget「…中古iPadは？」（同じ場面・同じ選び方） */
 export type BudgetScript = Common & {
-  theme: "budget" | "pixelbudget" | "ipadbudget" | "macbudget" | "probudget";
+  theme: "budget" | "pixelbudget" | "ipadbudget" | "macbudget" | "probudget" | "foldbudget";
   scenes: {
     /** 場面 ranking: 予算の行（予算の小さい順） */
     budgets: { rows: BudgetRow[] };
@@ -201,7 +201,7 @@ export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | 
 export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "newused", "provs", "promax", "rank", "battery", "gen", "storage"]);
 export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";
 
-/** budget・pixelbudget・ipadbudget・macbudget・probudget（予算の4行・注目の1機種の場面を共有） */
-export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget" || s.theme === "macbudget" || s.theme === "probudget";
+/** budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget（予算の4行・注目の1機種の場面を共有） */
+export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget" || s.theme === "macbudget" || s.theme === "probudget" || s.theme === "foldbudget";
 /** provs・promax（2機種の差のランキング・場面を共有） */
 export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax";
