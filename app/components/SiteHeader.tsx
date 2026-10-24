@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 
 /**
  * ロゴ（案1・10/23〜。決まりは docs/design.md）。紺の帯なので反転版:
- * 白の角丸（一辺の 21.5%）に紺の「中」（一辺の 78%・上に 4.3% ずらす）＋白「中古スマホ」＋#A5B4FC「一括検索」
+ * 白の角丸（一辺の 21.5%）に紺の「中」（一辺の 78%・下に 6.7% ずらす。サイトの字 IBM Plex Sans JP は字が上に寄るので、OG（Noto Sans JP・上に 4.3%）とは逆。10/24 実測で上下の中心をそろえた）＋白「中古スマホ」＋#A5B4FC「一括検索」
  */
 const MARK = 30;
 
@@ -19,7 +19,7 @@ export default function SiteHeader({ label }: { label?: string }) {
             className="flex shrink-0 items-center justify-center bg-white text-brand-900 font-bold"
             style={{ width: MARK, height: MARK, borderRadius: MARK * 0.215 }}
           >
-            <span className="relative leading-none" style={{ top: -MARK * 0.043, fontSize: MARK * 0.78 }}>中</span>
+            <span className="relative leading-none" style={{ top: MARK * 0.067, fontSize: MARK * 0.78 }}>中</span>
           </span>
           <span className="flex flex-col min-w-0">
             <span className="text-base font-bold leading-tight tracking-tight whitespace-nowrap">
