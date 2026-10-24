@@ -53,7 +53,7 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube: 未投稿: 横3本目（iPad）・横4本目（どこで買う）・横5本目（Proと無印・台本だけ）・ショート foldbudget（台本だけ）
+1. YouTube: 未投稿: 横3（iPad）・横4（どこで買う）・横5（Proと無印・台本）・ショート foldbudget（台本）
 2. 伸ばし方（ideas/10-24-growth の1・3: CTR・月次レポート）
 3. X の日々の運用（ideas/x-posts）
 ```
