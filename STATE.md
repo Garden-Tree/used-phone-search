@@ -53,7 +53,7 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube: 横5（Proと無印・台本のみ）を書き出し。ショート galaxybudget は 10/25 8:00 予約済み
+1. YouTube: 10/25 はショート galaxybudget 8:00・横5（Proと無印）9:00 を予約済み。次の横動画の台本
 2. 伸ばし方（ideas/10-24-growth の1・3: CTR・月次レポート）
 3. X の日々の運用（ideas/x-posts）
 ```
