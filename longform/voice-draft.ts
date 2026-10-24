@@ -12,7 +12,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { engineAvailable, synthesize } from "../shorts/voice";
-import { CHAPTER_GAP, DEFAULT_LONG_SPEED, LINE_GAP, SPEAKERS, forVoice, scriptItems } from "./script";
+import { CHAPTER_GAP, DEFAULT_LONG_SPEED, LINE_GAP, LONG_PAUSE, SPEAKERS, forVoice, scriptItems } from "./script";
 
 const arg = (name: string) => {
   const i = process.argv.indexOf(name);
@@ -54,7 +54,7 @@ const arg = (name: string) => {
       t += gap;
     }
     pendingGap = 0;
-    const clip = await synthesize(forVoice(it.text!), { speaker: SPEAKERS[it.who!], speedScale: speed }, true);
+    const clip = await synthesize(forVoice(it.text!), { speaker: SPEAKERS[it.who!], speedScale: speed, pauseLengthScale: LONG_PAUSE }, true);
     if (!clip) throw new Error(`合成できませんでした: ${it.text}`);
     if (!clip.cached && rest > 0) await new Promise((r) => setTimeout(r, rest * 1000));
     parts.push(clip.file);

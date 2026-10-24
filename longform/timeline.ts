@@ -13,7 +13,7 @@ import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { synthesize } from "../shorts/voice";
-import { CHAPTER_GAP, DEFAULT_LONG_SPEED, LINE_GAP, SPEAKERS, forVoice, scriptChapters } from "./script";
+import { CHAPTER_GAP, DEFAULT_LONG_SPEED, LINE_GAP, LONG_PAUSE, SPEAKERS, forVoice, scriptChapters } from "./script";
 import { FPS, H, W, wrapSubtitle } from "./scenes";
 import type { LongData, SceneData, SubPage, Timeline, TimelineChapter, TimelineLine } from "./types";
 
@@ -186,7 +186,7 @@ export async function buildTimeline(dir: string, speed = DEFAULT_LONG_SPEED): Pr
     for (const [li, l] of ch.lines.entries()) {
       if (li > 0) t += LINE_GAP;
       const spoken = forVoice(l.text);
-      const fresh = await synthesize(spoken, { speaker: SPEAKERS[l.who], speedScale: speed }, false);
+      const fresh = await synthesize(spoken, { speaker: SPEAKERS[l.who], speedScale: speed, pauseLengthScale: LONG_PAUSE }, false);
       const staleFile = fresh ? undefined : stale.get(`${SPEAKERS[l.who]}|${speed}|${spoken}`);
       const clip = fresh ?? (staleFile ? { file: staleFile, dur: probe(staleFile) } : null);
       if (!clip) missing++;

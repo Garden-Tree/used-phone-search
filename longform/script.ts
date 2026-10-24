@@ -14,6 +14,8 @@ export const CHAPTER_GAP = 1.1;
 export const CHAPTER_LEAD = 0.9;
 /** voice-draft の既定の速さ（キャッシュの鍵に入るので、同じ値でないと声のキャッシュに当たらない） */
 export const DEFAULT_LONG_SPEED = 1.15;
+/** 読点・句点の間の倍率。ショート（shorts/voice.ts の DEFAULT_PAUSE）と同じくエンジンの半分（10/24 ユーザーの指示で横動画も） */
+export const LONG_PAUSE = 0.5;
 
 /**
  * shorts の speakable が知らない語・記号を、台本のうちに読みへ直す。
