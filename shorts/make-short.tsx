@@ -1,7 +1,7 @@
 /**
  * YouTube ショート（縦 1080x1920・約40秒）を、サイトの相場と同じ数字で作る
- *   npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|newused|provs|promax|fold|rank|battery|gen|storage> plan [--force]                     … 台本 JSON を作る（shorts/out/<日付>-<テーマ>/script.json）
- *   npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|newused|provs|promax|fold|rank|battery|gen|storage> render [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm]  … 台本から short-*.mp4 と youtube.txt を作る
+ *   npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|newused|provs|promax|fold|rank|battery|gen|storage> plan [--force]                     … 台本 JSON を作る（shorts/out/<日付>-<テーマ>/script.json）
+ *   npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|newused|provs|promax|fold|rank|battery|gen|storage> render [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm]  … 台本から short-*.mp4 と youtube.txt を作る
  * テーマ: drops＝今週いちばん値下がりした中古iPhone（型 A・B・C）/ budget＝予算ぴったりで買える中古iPhone / newused＝新品より中古でいくら安い？ / provs＝Proと無印、同じ容量でいくら違う？ / fold＝折りたたみスマホ、1世代前にするといくら安い？ / pixelbudget＝予算ぴったりで買える中古Pixel / ipadbudget＝予算ぴったりで買える中古iPad / macbudget＝予算ぴったりで買える中古MacBook / probudget＝予算ぴったりで買える中古iPhone Pro / foldbudget＝予算ぴったりで買える中古折りたたみスマホ / promax＝Pro MaxとPro、同じ容量でいくら違う？ / rank＝状態ランクでいくら違う？中古iPhone / battery＝電池90%台だといくら高い？中古iPhone / gen＝iPhone、1世代前にするといくら安い？ / storage＝容量を1つ上げるといくら高い？中古iPhone（drops 以外は型 A だけ）
  * --no-bgm: BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）。YouTube アプリの「音源を追加」で流行りの曲を付けて投稿する用
  *   npx tsx shorts/make-short.tsx --voice-test "テキスト" [--speaker 8|春日部つむぎ/ノーマル] [--speed 1.25]  … VOICEVOX の声だけ試す（shorts/out/voice-test.wav）
@@ -21,6 +21,7 @@ import { buildProMaxScript } from "./themes/promax";
 import { buildMacBudgetScript } from "./themes/macbudget";
 import { buildProBudgetScript } from "./themes/probudget";
 import { buildFoldBudgetScript } from "./themes/foldbudget";
+import { buildGalaxyBudgetScript } from "./themes/galaxybudget";
 import { buildFoldScript } from "./themes/fold";
 import { buildPixelBudgetScript } from "./themes/pixelbudget";
 import { buildIpadBudgetScript } from "./themes/ipadbudget";
@@ -41,14 +42,14 @@ const opt = (name: string) => {
 };
 const OUT = resolve(__dirname, "out");
 const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
-const THEMES = ["drops", "budget", "pixelbudget", "ipadbudget", "macbudget", "probudget", "foldbudget", "newused", "provs", "promax", "fold", "rank", "battery", "gen", "storage"] as const;
+const THEMES = ["drops", "budget", "pixelbudget", "ipadbudget", "macbudget", "probudget", "foldbudget", "galaxybudget", "newused", "provs", "promax", "fold", "rank", "battery", "gen", "storage"] as const;
 /**
  * テーマごとの声。drops・budget は 春日部つむぎ（ノーマル）＝ DEFAULT_SPEAKER（10/21 ユーザーの指示。1本目の drops は ずんだもんだった）。
  * newused・provs・fold は 青山龍星（ノーマル）（10/21・10/22 ユーザーの指示。この PC では ID 13）。pixelbudget は 春日部つむぎ、rank は ずんだもん（ノーマル。口調は「です・ます」のまま）（10/22）。ipadbudget・battery は 青山龍星（10/23）。gen は ずんだもん、storage は 春日部つむぎ（10/23）。promax は provs と同じ 青山龍星、macbudget は 春日部つむぎ（10/23）。probudget は 春日部つむぎ（10/24）。foldbudget は fold と同じ 青山龍星（10/24）。
  * 名前で指定するので、ID はエンジン（GET /speakers）から引く。クレジットは render がキャラクター名から自動で入れる
  */
 const THEME_SPEAKER: Record<(typeof THEMES)[number], number | string> = {
-  drops: DEFAULT_SPEAKER, budget: DEFAULT_SPEAKER, pixelbudget: DEFAULT_SPEAKER, macbudget: "春日部つむぎ/ノーマル", probudget: "春日部つむぎ/ノーマル", foldbudget: "青山龍星/ノーマル", promax: "青山龍星/ノーマル",
+  drops: DEFAULT_SPEAKER, budget: DEFAULT_SPEAKER, pixelbudget: DEFAULT_SPEAKER, macbudget: "春日部つむぎ/ノーマル", probudget: "春日部つむぎ/ノーマル", foldbudget: "青山龍星/ノーマル", galaxybudget: "青山龍星/ノーマル", promax: "青山龍星/ノーマル",
   ipadbudget: "青山龍星/ノーマル", newused: "青山龍星/ノーマル", provs: "青山龍星/ノーマル", fold: "青山龍星/ノーマル", rank: "ずんだもん/ノーマル", battery: "青山龍星/ノーマル", gen: "ずんだもん/ノーマル", storage: "春日部つむぎ/ノーマル",
 };
 
@@ -59,7 +60,7 @@ async function plan() {
   const file = join(dir, "script.json");
   if (existsSync(file) && !flag("force")) throw new Error(`${file} はすでにあります（上書きするなら --force。コメントを直した後は上書きしないでください）`);
   const built: Script = theme === "budget" ? await buildBudgetScript(today) : theme === "newused" ? await buildNewUsedScript(today)
-    : theme === "provs" ? await buildProVsScript(today) : theme === "promax" ? await buildProMaxScript(today) : theme === "macbudget" ? await buildMacBudgetScript(today) : theme === "probudget" ? await buildProBudgetScript(today) : theme === "foldbudget" ? await buildFoldBudgetScript(today) : theme === "fold" ? await buildFoldScript(today)
+    : theme === "provs" ? await buildProVsScript(today) : theme === "promax" ? await buildProMaxScript(today) : theme === "macbudget" ? await buildMacBudgetScript(today) : theme === "probudget" ? await buildProBudgetScript(today) : theme === "foldbudget" ? await buildFoldBudgetScript(today) : theme === "galaxybudget" ? await buildGalaxyBudgetScript(today) : theme === "fold" ? await buildFoldScript(today)
     : theme === "pixelbudget" ? await buildPixelBudgetScript(today) : theme === "ipadbudget" ? await buildIpadBudgetScript(today) : theme === "rank" ? await buildRankScript(today) : theme === "battery" ? await buildBatteryScript(today) : theme === "gen" ? await buildGenScript(today) : theme === "storage" ? await buildStorageScript(today) : await buildDropsScript(today, days);
   // ナレーションの下書き（全場面・台本の数字だけ）と声の設定。comment は narration から消せば comment.lines を読む（直した lines が声にも反映）
   const { comment: _c, ...narration } = defaultNarration(built);
@@ -173,7 +174,7 @@ async function main() {
   const vt = opt("voice-test");
   if (vt !== undefined) return voiceTest(vt);
   if (!THEMES.includes(theme as (typeof THEMES)[number]) || (step !== "plan" && step !== "render")) {
-    throw new Error("使い方: npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|newused|provs|promax|fold|rank|battery|gen|storage> <plan|render> [--force] [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm]\n      npx tsx shorts/make-short.tsx --voice-test \"テキスト\" [--speaker 3] [--speed 1.25]\n      npx tsx shorts/make-short.tsx --voice-dump \"テキスト\"|script [--dir <フォルダ>]");
+    throw new Error("使い方: npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|newused|provs|promax|fold|rank|battery|gen|storage> <plan|render> [--force] [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm]\n      npx tsx shorts/make-short.tsx --voice-test \"テキスト\" [--speaker 3] [--speed 1.25]\n      npx tsx shorts/make-short.tsx --voice-dump \"テキスト\"|script [--dir <フォルダ>]");
   }
   await (step === "plan" ? plan() : render());
 }

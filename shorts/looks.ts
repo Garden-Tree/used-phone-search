@@ -91,6 +91,9 @@ export const LOOKS: Record<Script["theme"], Look> = {
   // 折りたたみの予算別（10/24〜）: 見た目は5つまで（10/23 ユーザーの指示）なので新しく作らず、fold と同じ VERSUS（紺・左寄せの札・緑）を使う。
   // つかみは予算の札（chips）。fold のつかみ（開いた折りたたみの形）は FoldScript のランキングの値を使うので使えない
   foldbudget: { ...VERSUS, hook: "chips" },
+  // Galaxy の予算別（10/25〜）: 見た目は5つまでなので新しく作らない。1コマ目が直前の予算別（明るい地の BUDGET・Pro の PRO・折りたたみの VERSUS）と
+  // 続けて同じにならないよう、紺の地・赤い帯の DROPS を使う（つかみは予算の札）
+  galaxybudget: { ...DROPS, hook: "chips" },
   // iPad は予算の丸い札（淡い金・数字を大きく）
   ipadbudget: { ...BUDGET, coin: { fill: SITE.inspectLine, text: SITE.brand900 }, hook: "coins" },
   newused: { ...VERSUS, hook: "split" },

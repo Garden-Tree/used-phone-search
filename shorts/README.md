@@ -99,6 +99,12 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
   - ひと言の下書きは「折りたたみの中古は／折り目とヒンジを／確認しましょう」（fold と同じく折りたたみならではの確認）
   - 説明欄のリンクは注目の機種ページ・/galaxy・/pixel。utm の末尾は `_foldbudget`。ハッシュタグ #折りたたみスマホ #Galaxy。関連動画の締めはなし（RELATED_LONG_THEMES に入れない）
   - 見た目は fold と同じ VERSUS（見た目の型は5つまで。10/23 ユーザーの指示）。つかみは予算の札（chips）。声は 青山龍星
+- `galaxybudget`: 予算ぴったりで買える中古Galaxy（型 A だけ。10/25〜）
+  - budget と同じ選び方・同じ場面（`pickBudgetModels` を共有・BudgetScript で theme が "galaxybudget"）。対象は Galaxy のうち Z Fold・Z Flip を除く S・A シリーズ（`themes/galaxybudget.ts` の GALAXY_BAR_MODELS・在庫5件以上）。同じ相場なら発売の新しい方
+  - **予算は 3万・4万・7万・9万円**（`GALAXY_SHORT_BUDGETS`。相場に近い額でぴったりに見せる・10/24 ユーザーの指示）。注目は4万円の行（`GALAXY_PICK_BUDGET`）
+  - 切り口: 各行と注目に画面の大きさ（`spec`「画面6.1インチ」。`lib/galaxySpecs.ts` の display）と発売年月。ひと言の下書きは「キャリア版は／使う回線に対応か／確認しましょう」
+  - 説明欄のリンクは注目の機種ページ・/galaxy。utm の末尾は `_galaxybudget`。ハッシュタグ #Galaxy #中古スマホ。関連動画の締めはなし
+  - 見た目は DROPS（紺・赤い帯。5つの型から、直前の予算別と1コマ目が続けて同じにならないもの）。つかみは予算の札（chips）。声は 青山龍星。読みは「5G」→ファイブジー・「Ultra」→ウルトラ（`voice.ts` の speakable）
 
 - `rank`: 状態ランクでいくら違う？中古iPhone（型 A だけ・約39秒。10/22〜）
   - iPhone 13〜16 の無印と Pro（`themes/rank.ts` の MODELS）で、在庫がいちばん多い容量のランク A・B・C（各店の表記を大文字にそろえる。S＝未使用品・D・ジャンク・不明は除く）の相場（中央値）を比べ、A − C の差額の大きい順。率は A の相場に対して。A・B・C のどれかが在庫5件未満の機種と、差が0以下の機種は出さない。3機種未満なら止まる

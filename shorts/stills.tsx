@@ -13,7 +13,7 @@ import { H, TIMELINE, W, sceneFrame, type SceneId } from "./scenes";
 import type { Script } from "./types";
 
 const OUT = resolve(__dirname, "out");
-const THEMES = ["drops", "budget", "pixelbudget", "ipadbudget", "macbudget", "probudget", "foldbudget", "newused", "provs", "promax", "fold", "rank", "battery", "gen", "storage"] as const;
+const THEMES = ["drops", "budget", "pixelbudget", "ipadbudget", "macbudget", "probudget", "foldbudget", "galaxybudget", "newused", "provs", "promax", "fold", "rank", "battery", "gen", "storage"] as const;
 const SHOTS: { id: SceneId; at: "start" | "end" }[] = [{ id: "hook", at: "start" }, { id: "ranking", at: "end" }, { id: "reveal", at: "end" }];
 /** 一覧の1枚の大きさ（1080x1920 の 1/4） */
 const TW = 270;

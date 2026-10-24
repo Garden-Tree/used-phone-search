@@ -215,9 +215,10 @@ function budgetNarration(s: BudgetScript): Partial<Record<NarrationKey, string>>
   const mac = s.theme === "macbudget";
   const pro = s.theme === "probudget";
   const fold = s.theme === "foldbudget";
+  const galaxy = s.theme === "galaxybudget";
   const until = p.updateUntil ? `${Number(p.updateUntil.slice(0, 4))}年${Number(p.updateUntil.slice(5, 7))}月` : "";
   return {
-    hook: pixel ? "予算ぴったりで買える中古Pixelは…？" : ipad ? "予算ぴったりで買える中古iPadは…？" : mac ? "予算ぴったりで買える中古MacBookは…？" : pro ? "予算ぴったりで買える中古iPhone Proは…？" : fold ? "予算ぴったりで買える中古折りたたみスマホは…？" : "予算ぴったりで買える中古iPhoneは…？",
+    hook: pixel ? "予算ぴったりで買える中古Pixelは…？" : ipad ? "予算ぴったりで買える中古iPadは…？" : mac ? "予算ぴったりで買える中古MacBookは…？" : pro ? "予算ぴったりで買える中古iPhone Proは…？" : fold ? "予算ぴったりで買える中古折りたたみスマホは…？" : galaxy ? "予算ぴったりで買える中古Galaxyは…？" : "予算ぴったりで買える中古iPhoneは…？",
     ranking: s.scenes.budgets.rows.map((r) => `${r.label}なら、${spokenModel(r.model)}、相場${yen(r.median)}です。`).join(""),
     reveal: pixel && until
       ? `注目は${p.label}の${p.model}。相場${yen(p.median)}、アップデートは${until}までです。`
@@ -228,6 +229,7 @@ function budgetNarration(s: BudgetScript): Partial<Record<NarrationKey, string>>
       : mac ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのMacBookにしますか？"
       : pro ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのProにしますか？"
       : fold ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの折りたたみにしますか？"
+      : galaxy ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのGalaxyにしますか？"
       : "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの機種にしますか？",
   };
 }
@@ -278,7 +280,8 @@ export function speakable(text: string): string {
   const words: [RegExp, string][] = [
     ...READING_FIXES,
     [/iPhone/g, "アイフォン"], [/iPad/g, "アイパッド"], [/MacBook/g, "マックブック"], [/Apple Watch/g, "アップルウォッチ"],
-    [/Galaxy/g, "ギャラクシー"], [/\bZ\s*(?=Fold|Flip)/g, "ゼット"], [/Fold/g, "フォールド"], [/Flip/g, "フリップ"], [/Pixel/g, "ピクセル"],
+    // 「Galaxy A53 5G」は空白を詰めると「A535G」で「ゴヒャクサンジュウゴ」と読むので、5G を先にカナに（galaxybudget・10/24）
+    [/Galaxy/g, "ギャラクシー"], [/\b5G\b/g, "ファイブジー"], [/\bUltra\b/g, "ウルトラ"], [/\bZ\s*(?=Fold|Flip)/g, "ゼット"], [/Fold/g, "フォールド"], [/Flip/g, "フリップ"], [/Pixel/g, "ピクセル"],
     [/Pro Max/g, "プロマックス"], [/\bPro\b/g, "プロ"], [/\bMax\b/g, "マックス"], [/\bPlus\b/g, "プラス"], [/\bmini\b/g, "ミニ"],
     [/\bAir\b/g, "エアー"], [/\bSE\b/g, "エスイー"], [/\bDuo\b/g, "デュオ"], [/(\d+)e\b/g, "$1イー"], [/(\d+)a\b/g, "$1エー"], [/\bXL\b/g, "エックスエル"],
     [/(\d+)\s*GB/g, "$1ギガ"], [/(\d+)\s*TB/g, "$1テラ"], [/(\d),(?=\d{3})/g, "$1"], [/%/g, "パーセント"],

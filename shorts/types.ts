@@ -60,7 +60,7 @@ export type BudgetRow = { budget: number; label: string; model: string; storage:
 
 /** テーマ budget「予算ぴったりで買える中古iPhoneは？」・pixelbudget「…中古Pixelは？」・ipadbudget「…中古iPadは？」（同じ場面・同じ選び方） */
 export type BudgetScript = Common & {
-  theme: "budget" | "pixelbudget" | "ipadbudget" | "macbudget" | "probudget" | "foldbudget";
+  theme: "budget" | "pixelbudget" | "ipadbudget" | "macbudget" | "probudget" | "foldbudget" | "galaxybudget";
   scenes: {
     /** 場面 ranking: 予算の行（予算の小さい順） */
     budgets: { rows: BudgetRow[] };
@@ -209,6 +209,6 @@ export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", 
 export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";
 
 /** budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget（予算の4行・注目の1機種の場面を共有） */
-export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget" || s.theme === "macbudget" || s.theme === "probudget" || s.theme === "foldbudget";
+export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget" || s.theme === "macbudget" || s.theme === "probudget" || s.theme === "foldbudget" || s.theme === "galaxybudget";
 /** provs・promax（2機種の差のランキング・場面を共有） */
 export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax";

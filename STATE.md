@@ -53,7 +53,7 @@
 ## 次にやる（順序）
 
 ```
-1. YouTube: 横5（Proと無印・台本のみ）を書き出し。横3（iPad）は 10/24 公開
+1. YouTube: 横5（Proと無印・台本のみ）を書き出し。ショート galaxybudget は 10/25 8:00 予約済み
 2. 伸ばし方（ideas/10-24-growth の1・3: CTR・月次レポート）
 3. X の日々の運用（ideas/x-posts）
 ```

@@ -15,7 +15,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 1. **準備**
    - VOICEVOX アプリが起動しているか確かめる: `curl -s http://127.0.0.1:50021/version`。起動していなければ、ユーザーに起動を頼む。声なしで作らない。
    - BGM `shorts/assets/bgm.mp3` があるか確かめる。git には入らないので、別の PC では置き直す。
-2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|newused|provs|promax|fold|rank|battery|gen|storage> plan`
+2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|newused|provs|promax|fold|rank|battery|gen|storage> plan`
    - `shorts/out/<日付>-<テーマ>/script.json` ができる（すでにあれば止まる。上書きは `--force`）。
    - drops: 1〜3位。budget: 予算（3万・5万・7万・10万円）ごとの機種と相場、注目（5万円の行）の最安・在庫数。newused: 新品と中古の相場の差の1〜3位（候補の全機種も出る）。provs: 無印と Pro の相場の差の1〜3位（候補の全組と、1位の無印の容量を上げたときの差も出る）。fold: 折りたたみの新しい方と1世代前の相場の差の1〜3位（候補の全組も出る）。
    - 検品担当のひと言（`comment.lines`）、ナレーション、説明文を確かめる。
@@ -23,7 +23,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 3. **読みを確かめる**: `npx tsx shorts/make-short.tsx --voice-dump script`（最後に書いた台本・その台本の話者で）
    - アクセント句の直す前と後が出る。機種名・数字が細切れになっていないかを見る。
    - 直らない場面は、script.json の `narrationKana` に読みを書く。
-4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|newused|provs|promax|fold|rank|battery|gen|storage> render`
+4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|newused|provs|promax|fold|rank|battery|gen|storage> render`
    - drops は A・B・C の3本、ほかは A の1本と、`youtube.txt` ができる。
    - **`--no-bgm`**: BGM なし（声と効果音だけ・音量の決め方は同じ）の `short-A-nobgm.mp4` と `youtube-nobgm.txt`（BGM のクレジットなし）。ユーザーが YouTube のスマホアプリで投稿し、「音源を追加」で流行りの曲を付けるとき用。BGM 入りの版とは別のファイル。重い処理なので、render は1本ずつ（同時に走らせない。この PC は負荷で落ちる）。
    - 長さ（60秒以内。今は30〜35秒）、音量（-11 LUFS 前後）、タイムライン（場面・行・声の秒）を確かめる。
@@ -80,6 +80,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - 切り口: 各行と注目に**型と開いたときの画面**（「Fold型・開いて7.6インチ」。型は機種名の Fold／Flip、画面は `lib/galaxySpecs.ts`・`lib/pixelSpecs.ts` の displayInner＝ドコモ・Google の公式の仕様）と発売年月。見出しの帯は「予算ぴったりで買える／中古折りたたみスマホ」。下の注記に「画面は公式の仕様」。声は fold と同じ 青山龍星。関連動画の締めは付けない（iPhone ではない）。
   - 見た目は fold と同じ VERSUS（**見た目の型は5つが上限なので新しく作らない**）。つかみは予算の札（chips。fold の「開いた折りたたみの形」は FoldScript の値を使うので使えない）。
   - 説明欄のリンクは注目の機種ページ・/galaxy・/pixel。utm の末尾は `_foldbudget`。ハッシュタグ #折りたたみスマホ #Galaxy。ひと言の下書き「折りたたみの中古は／折り目とヒンジを／確認しましょう」。
+- galaxybudget: budget と同じ構成・同じ選び方（`shorts/themes/galaxybudget.ts`。10/25〜）。対象は折りたたみ（Z Fold・Z Flip）を除く Galaxy S・A シリーズ、在庫5件以上。**予算は 3万・4万・7万・9万円**（相場に近い額・10/24 ユーザーの指示）、注目は4万円の行。切り口は各行に**画面の大きさと発売年月**（`lib/galaxySpecs.ts`）。見出しの帯「予算ぴったりで買える／中古Galaxy」・注記「画面は公式の仕様」。見た目は DROPS（紺・赤い帯）＋予算の札。声は 青山龍星。utm の末尾 `_galaxybudget`・#Galaxy #中古スマホ。ひと言の下書き「キャリア版は／使う回線に対応か／確認しましょう」。関連動画の締めはなし。
 - rank: **hook → ranking（3位・2位・伏せた1位）→ reveal（1位のランク A・B・C の3本の棒と件数・A→C の差額と率）→ comment → outro**（型 A だけ・約39秒。10/22〜）。
   - 対象: iPhone 13〜16 の無印と Pro（`shorts/themes/rank.ts` の MODELS）。容量は在庫がいちばん多い容量。ランクは各店の表記（大文字にそろえる）で A・B・C だけ（S＝未使用品・D・ジャンク・不明は除く）。各ランク在庫5件以上。差（A − C）の大きい順、率は A に対して。差0以下は出さない。
   - ランクの基準は店ごとに違い、ランクごとに店の顔ぶれも違う（10/22 は 13 Pro で B の相場が A より高かった）。画面の注記「ランクは各店の表記・同じ容量の中央値」と説明欄で断る。
