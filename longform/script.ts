@@ -35,6 +35,8 @@ export function forVoice(text: string): string {
     [/最安が/g, "さいやすが"],
     // 「絵を描く」を「エガク」と読む → 「かく」（お絵描き・描いて も同じ。10/23 ユーザー指示）
     [/描/g, "か"],
+    // 「SIM」を「エスアイエム」と読む → 「シム」（eSIM も。10/24 ユーザー指示）
+    [/eSIM/g, "イーシム"], [/SIM/g, "シム"],
   ];
   return words.reduce((t, [re, to]) => t.replace(re, to), text);
 }
