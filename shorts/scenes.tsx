@@ -7,7 +7,7 @@ import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
-import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, isProVs, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Script } from "./types";
+import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -17,12 +17,12 @@ const CW = W - MARGIN * 2; // 920
 const HEADER = { top: 250, height: 320 };
 const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
-const HEAD_SUB = (shops: number) => `毎週更新・大手中古ショップ${shops}店の相場`;
+const HEAD_SUB = (s: Script) => `${s.theme === "drops" && s.period ? "毎日集計" : "毎週更新"}・大手中古ショップ${s.shopCount}店の相場`;
 const HEAD_TITLE = (s: Script) =>
   s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"] : s.theme === "probudget" ? ["予算ぴったりで買える", "中古iPhone Pro"] : s.theme === "foldbudget" ? ["予算ぴったりで買える", "中古折りたたみスマホ"]
     : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? ["電池90%台だと", "いくら高い？中古iPhone"]
     : s.theme === "gen" ? ["iPhone", "1世代前でいくら安い？"] : s.theme === "storage" ? ["容量を1つ上げると", "いくら高い？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
-    : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : ["今週の中古iPhone", "値下がりランキング"];
+    : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : [`${periodOf(s as DropsScript).name}の中古iPhone`, "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
   s.theme === "rank" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
@@ -173,7 +173,7 @@ function Band({ s, L }: { s: Script; L: Look }) {
       background: b.fill, borderRadius: radius, color: b.text, border: frame ? `10px solid ${b.stripe ?? b.text}` : "none",
       boxShadow: tab && b.stripe ? `-18px 0 0 0 ${b.stripe}` : "none",
     }}>
-      <div style={{ ...row, fontSize: FIT(HEAD_SUB(s.shopCount), tw, 52), fontWeight: 700, color: b.sub }}>{HEAD_SUB(s.shopCount)}</div>
+      <div style={{ ...row, fontSize: FIT(HEAD_SUB(s), tw, 52), fontWeight: 700, color: b.sub }}>{HEAD_SUB(s)}</div>
       {title.map((l, i) => (
         <div key={i} style={{ ...row, fontSize: Math.min(...title.map((x) => FIT(x, tw, 104))), fontWeight: 900, lineHeight: 1.15, marginTop: i ? 0 : 6 }}>{l}</div>
       ))}
@@ -237,12 +237,12 @@ function Hook({ s, t }: { s: DropsScript; t: number }) {
   const full = `−${n(h.drop)}円`;
   return (
     <Frame s={s}>
-      <Question lines={["今週いちばん値下がりした", "中古iPhoneは…？"]} />
+      <Question lines={[`${periodOf(s).lead}いちばん値下がりした`, "中古iPhoneは…？"]} />
       <div style={{ ...card(lookOf(s)), width: CW, padding: "30px 30px 40px", marginTop: 44, transform: `scale(${pulseOf(t)})` }}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <div style={{ display: "flex", fontSize: 52, fontWeight: 900, color: C.white, background: C.gold, borderRadius: 18, padding: "6px 26px" }}>1位</div>
           <div style={{ display: "flex", fontSize: 64, fontWeight: 900, marginLeft: 26 }}>？？？</div>
-          <div style={{ display: "flex", fontSize: 44, fontWeight: 900, color: C.muted, marginLeft: 26 }}>1週間で</div>
+          <div style={{ display: "flex", fontSize: 44, fontWeight: 900, color: C.muted, marginLeft: 26 }}>{periodOf(s).span}</div>
         </div>
         <div style={{ ...row, fontSize: FIT(full, CW - 60, 200), fontWeight: 900, color: C.red, marginTop: 6 }}>{full}</div>
       </div>
@@ -660,7 +660,7 @@ function Trend({ s, t }: { s: DropsScript; t: number }) {
       <Frame s={s}>
         {title}
         <div style={{ ...card(lookOf(s)), width: CW, padding: "40px 0" }}>
-          <div style={{ ...row, fontSize: 44, fontWeight: 900, color: C.muted }}>1週間前</div>
+          <div style={{ ...row, fontSize: 44, fontWeight: 900, color: C.muted }}>{periodOf(s).ago}</div>
           <div style={{ ...row, fontSize: 90, fontWeight: 900 }}>{`${n(h.before)}円`}</div>
           <div style={{ ...row, fontSize: 44, fontWeight: 900, color: C.muted, marginTop: 24 }}>いま</div>
           <div style={{ ...row, fontSize: 110, fontWeight: 900, color: C.red }}>{`${n(h.after)}円`}</div>
@@ -692,7 +692,7 @@ function Trend({ s, t }: { s: DropsScript; t: number }) {
 function HookNum({ s, t }: { s: DropsScript; t: number }) {
   const h = s.scenes.hook;
   const full = `−${n(h.drop)}円`;
-  const lines = ["1週間でこれだけ下がった", "中古iPhoneは…？"];
+  const lines = [`${periodOf(s).span}これだけ下がった`, "中古iPhoneは…？"];
   return (
     <Frame s={s}>
       <div style={{ ...card(lookOf(s)), width: CW, padding: "50px 0" }}>
@@ -717,7 +717,7 @@ function HookChart({ s, t }: { s: DropsScript; t: number }) {
     <Frame s={s}>
       <div style={{ ...row, fontSize: FIT(heading, CW, 64), fontWeight: 900, marginBottom: 30 }}>{heading}</div>
       <ChartCard s={s} points={points} p={prog(t, 0.3, 2.5)} labels={false} chartH={520} />
-      <div style={{ ...row, fontSize: 110, fontWeight: 900, color: lookOf(s).accentOnBg, marginTop: 36, opacity: clamp((t - 2.8) / 0.3) }}>{`1週間で−${n(h.drop)}円`}</div>
+      <div style={{ ...row, fontSize: 110, fontWeight: 900, color: lookOf(s).accentOnBg, marginTop: 36, opacity: clamp((t - 2.8) / 0.3) }}>{`${periodOf(s).span}−${n(h.drop)}円`}</div>
     </Frame>
   );
 }
@@ -754,7 +754,7 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
           <div style={{ ...row, fontSize: FIT(out.url, CW, 80), fontWeight: 900, color: lookOf(s).url, marginTop: 56 }}>{out.url}</div>
           <div style={{ ...row, fontSize: 34, fontWeight: 500, color: lookOf(s).sub, marginTop: 40 }}>{out.note}</div>
         </div>
-        <div style={{ ...row, fontSize: 52, fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>{out.question ?? "来週の1位は…？"}</div>
+        <div style={{ ...row, fontSize: 52, fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>{out.question ?? `${s.theme === "drops" ? periodOf(s).next : "来週"}の1位は…？`}</div>
         {/* 関連動画（横動画）への誘導。画面の下の関連動画のリンクを指す（types.ts の RELATED_LONG_THEMES） */}
         {RELATED_LONG_THEMES.has(s.theme) && (
           <div style={{ ...row, fontSize: 46, fontWeight: 900, marginTop: 56, padding: "14px 30px", borderRadius: 999, background: lookOf(s).chip, color: C.white, opacity: prog(t, 2.2 * k, 0.4) }}>{`▼ ${RELATED_LONG_LINE}`}</div>

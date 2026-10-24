@@ -7,6 +7,7 @@
 ```
 npx tsx shorts/make-short.tsx drops plan            # 台本 shorts/out/<日付>-drops/script.json を作る（あれば止まる。上書きは --force）
 npx tsx shorts/make-short.tsx drops render          # 最新の台本から short-A/B/C.mp4 と youtube.txt を作る
+npx tsx shorts/make-short.tsx drops plan --days 24  # 比べる期間を変える（7日以外は「この1か月」の言い方・フォルダ <日付>-drops-24d。render は --dir で。10/24〜）
 npx tsx shorts/make-short.tsx budget plan           # 予算のテーマ（shorts/out/<日付>-budget/）
 npx tsx shorts/make-short.tsx budget render         # short-A.mp4 と youtube.txt（budget は型 A だけ）
 npx tsx shorts/make-short.tsx newused plan          # 新品と中古の差のテーマ（shorts/out/<日付>-newused/。型 A だけ）

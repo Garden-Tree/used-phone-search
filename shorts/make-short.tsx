@@ -53,12 +53,14 @@ const THEME_SPEAKER: Record<(typeof THEMES)[number], number | string> = {
 };
 
 async function plan() {
-  const dir = join(OUT, `${today}-${theme}`);
+  // drops の --days（既定7）。7日以外は別のフォルダ（<日付>-drops-<日数>d）
+  const days = Number(opt("days") ?? 7);
+  const dir = join(OUT, `${today}-${theme}${theme === "drops" && days !== 7 ? `-${days}d` : ""}`);
   const file = join(dir, "script.json");
   if (existsSync(file) && !flag("force")) throw new Error(`${file} はすでにあります（上書きするなら --force。コメントを直した後は上書きしないでください）`);
   const built: Script = theme === "budget" ? await buildBudgetScript(today) : theme === "newused" ? await buildNewUsedScript(today)
     : theme === "provs" ? await buildProVsScript(today) : theme === "promax" ? await buildProMaxScript(today) : theme === "macbudget" ? await buildMacBudgetScript(today) : theme === "probudget" ? await buildProBudgetScript(today) : theme === "foldbudget" ? await buildFoldBudgetScript(today) : theme === "fold" ? await buildFoldScript(today)
-    : theme === "pixelbudget" ? await buildPixelBudgetScript(today) : theme === "ipadbudget" ? await buildIpadBudgetScript(today) : theme === "rank" ? await buildRankScript(today) : theme === "battery" ? await buildBatteryScript(today) : theme === "gen" ? await buildGenScript(today) : theme === "storage" ? await buildStorageScript(today) : await buildDropsScript(today);
+    : theme === "pixelbudget" ? await buildPixelBudgetScript(today) : theme === "ipadbudget" ? await buildIpadBudgetScript(today) : theme === "rank" ? await buildRankScript(today) : theme === "battery" ? await buildBatteryScript(today) : theme === "gen" ? await buildGenScript(today) : theme === "storage" ? await buildStorageScript(today) : await buildDropsScript(today, days);
   // ナレーションの下書き（全場面・台本の数字だけ）と声の設定。comment は narration から消せば comment.lines を読む（直した lines が声にも反映）
   const { comment: _c, ...narration } = defaultNarration(built);
   void _c;

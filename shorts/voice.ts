@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { RELATED_LONG_THEMES, isBudget, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Script, type VoiceConfig } from "./types";
+import { RELATED_LONG_THEMES, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -236,6 +236,7 @@ function dropsNarration(s: DropsScript): Partial<Record<NarrationKey, string>> {
   const h = s.scenes.hook;
   const items = s.scenes.ranking.items;
   const top = items[0];
+  const per = periodOf(s);
   const ranking = [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、マイナス${yen(items[i].drop)}。`).join("");
   const pts = s.scenes.trend.points;
   let trend = "";
@@ -248,13 +249,13 @@ function dropsNarration(s: DropsScript): Partial<Record<NarrationKey, string>> {
     trend = big.d > 0 ? `${jpDate(pts[big.i].date)}に大きく下がりました。` : `${jpDate(first.date)}からの推移です。`;
   }
   return {
-    hook: "今週いちばん値下がりした中古iPhoneは…？",
+    hook: `${per.lead}いちばん値下がりした中古iPhoneは…？`,
     ranking,
-    reveal: `1位は${h.model}、${h.storage}。1週間で${yen(h.drop)}、${top.rate.toFixed(1)}%の値下がりです。`,
+    reveal: `1位は${h.model}、${h.storage}。${per.span}${yen(h.drop)}、${top.rate.toFixed(1)}%の値下がりです。`,
     trend,
     // 「検品担当のひと言」は画面の札に出ているので読まない
     comment: commentSentence(s.scenes.comment.lines),
-    outro: "全機種の相場は、プロフィールのリンクから見られます。来週の1位は、どの機種でしょう？",
+    outro: `全機種の相場は、プロフィールのリンクから見られます。${per.next}の1位は、どの機種でしょう？`,
   };
 }
 

@@ -27,12 +27,19 @@ type CommentScene = { speaker: string; lines: string[] };
 /** question: 締めの最後の問い（なければ「来週の1位は…？」） */
 type OutroScene = { lines: string[]; url: string; note: string; question?: string };
 
+/** drops の比べる期間の言い方。なければ1週間（10/24〜 約1か月も。make-short の plan --days） */
+export type DropsPeriod = { days: number; lead: string; name: string; span: string; ago: string; next: string };
+export const WEEK_PERIOD: DropsPeriod = { days: 7, lead: "今週", name: "今週", span: "1週間で", ago: "1週間前", next: "来週" };
+export const MONTH_PERIOD = (days: number): DropsPeriod => ({ days, lead: "この1か月で", name: "この1か月", span: "約1か月で", ago: "約1か月前", next: "来月" });
+export const periodOf = (s: DropsScript): DropsPeriod => s.period ?? WEEK_PERIOD;
+
 /** テーマ drops「今週いちばん値下がりした中古iPhone」 */
 export type DropsScript = Common & {
   theme: "drops";
   /** 比べた期間（記録日） */
   fromDate: string;
   toDate: string;
+  period?: DropsPeriod;
   scenes: {
     hook: { label: string; model: string; storage: string; drop: number; before: number; after: number };
     ranking: { title: string; items: RankItem[] };

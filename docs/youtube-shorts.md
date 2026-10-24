@@ -18,6 +18,7 @@
 npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|newused|provs|promax|fold|rank|battery|gen|storage> plan     # 台本 script.json（--force で作り直し）
 # script.json の scenes.comment.lines（検品担当のひと言・3行×16字まで）をユーザーと決めて書き換える
 npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|newused|provs|promax|fold|rank|battery|gen|storage> render   # drops は short-A/B/C.mp4（--variant A|B|C で1つだけ）、ほかは short-A.mp4
+- drops は plan に `--days N` で比べる期間を変えられる（既定7＝「今週」。7以外は「この1か月」「約1か月で」「来月」・帯の上の行は「毎日集計」。推移グラフはどちらも比べた期間だけ。10/24〜）。記録は iPhone 9/26・iPad 9/27・Galaxy／Pixel 9/30・MacBook 10/15・Apple Watch 10/16 から
 npx tsx shorts/make-short.tsx <テーマ> render --no-bgm   # BGM なしの short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）。YouTube アプリの「音源を追加」で流行りの曲を付ける用
 ```
 
