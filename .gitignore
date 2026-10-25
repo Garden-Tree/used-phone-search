@@ -94,3 +94,6 @@ rakuten-sync/sample.json
 # サムネの案（立ち絵・CC 画像を含む。Git に入れない）
 /longform/*/thumb-ab/
 /longform/thumb-*.png
+
+# アップロード用に別名でコピーした動画（10/25〜）
+longform/**/*.mp4
