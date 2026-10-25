@@ -31,6 +31,7 @@
 - **Amazon 整備済み品**: 10/11〜停止中
 - **Yahoo! 7店**: もしも経由（VC 審査後に VC）
 - **収益の枠**: 機種ページの回線（`lib/simPlans.ts`）・買取・iPhone の修理（`lib/buyback.ts`）。修理料金・iPad 目安は非広告
+- **値動きの速報**: `scripts/price-alerts.ts`（X の型④）
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch は storage＝mm）
 
