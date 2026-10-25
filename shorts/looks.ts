@@ -100,6 +100,8 @@ export const LOOKS: Record<Script["theme"], Look> = {
   newused: { ...VERSUS, hook: "split" },
   provs: { ...VERSUS, hook: "split" },
   promax: { ...VERSUS, hook: "split" },
+  // plusvs（10/25〜）: provs と同じ VERSUS。直前の回（19時の drops ＝ ① DROPS）と見た目が続かない
+  plusvs: { ...VERSUS, hook: "split" },
   fold: { ...VERSUS, hook: "fold" },
   rank: { ...CONDITION, hook: "abc" },
   battery: { ...CONDITION, hook: "battery" },

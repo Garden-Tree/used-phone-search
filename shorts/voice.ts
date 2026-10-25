@@ -53,11 +53,11 @@ export function defaultNarration(s: Script): Partial<Record<NarrationKey, string
   return n;
 }
 
-// provs と promax は同じ台本の型（ProVsScript）
-const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax";
+// provs・promax・plusvs は同じ台本の型（ProVsScript）
+const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs";
 
 function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
-  return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : isProVs(s) ? (s.theme === "promax" ? proMaxNarration(s) : proVsNarration(s))
+  return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : isProVs(s) ? (s.theme === "promax" ? proMaxNarration(s) : s.theme === "plusvs" ? plusVsNarration(s) : proVsNarration(s))
     : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s)
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s) : dropsNarration(s);
@@ -234,6 +234,21 @@ function proMaxNarration(s: ProVsScript): Partial<Record<NarrationKey, string>> 
     reveal: `1位は${top.base}と${shortName(top.pro)}。Pro Maxにすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%高くなります。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、Pro Max派？Pro派？",
+  };
+}
+
+/**
+ * plusvs の既定（provs と同じ形。base＝無印・pro＝Plus）: ranking「3位は<無印>と<番号 Plus>、<容量>。差は<額>です。」/ reveal「Plusにすると、約○.○万円、およそ○%高くなります。」
+ */
+function plusVsNarration(s: ProVsScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  return {
+    hook: "Plusと無印、同じ容量だと、いくら違う？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].base}と${shortName(items[i].pro)}、${items[i].storage}。差は${yen(items[i].diff)}です。`).join(""),
+    reveal: `1位は${top.base}と${shortName(top.pro)}。Plusにすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%高くなります。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、大きい画面のPlus派？無印派？",
   };
 }
 

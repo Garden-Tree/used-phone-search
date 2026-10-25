@@ -21,6 +21,7 @@ npx tsx shorts/make-short.tsx pixelbudget render
 npx tsx shorts/make-short.tsx ipadbudget plan       # 予算ぴったりで買える中古iPad（shorts/out/<日付>-ipadbudget/。型 A だけ）
 npx tsx shorts/make-short.tsx ipadbudget render
 npx tsx shorts/make-short.tsx promax plan           # Pro MaxとProの差のテーマ（shorts/out/<日付>-promax/。型 A だけ）
+npx tsx shorts/make-short.tsx plusvs plan           # Plusと無印の差のテーマ（shorts/out/<日付>-plusvs/。型 A だけ・10/25〜）
 npx tsx shorts/make-short.tsx macbudget plan        # 予算ぴったりで買える中古MacBook（shorts/out/<日付>-macbudget/。型 A だけ）
 npx tsx shorts/make-short.tsx probudget plan        # 予算ぴったりで買える中古iPhone Pro（shorts/out/<日付>-probudget/。型 A だけ）
 npx tsx shorts/make-short.tsx foldbudget plan       # 予算ぴったりで買える中古折りたたみスマホ（shorts/out/<日付>-foldbudget/。型 A だけ）
@@ -41,7 +42,7 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 
 - `drops`: 今週いちばん値下がりした中古iPhone（型 A・B・C）
 - `budget`: 予算ぴったりで買える中古iPhone（型 A だけ・約35秒）
-- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs・fold は 青山龍星（ノーマル・1.25倍。クレジット「VOICEVOX:青山龍星」）、pixelbudget は 春日部つむぎ、ipadbudget は 青山龍星、rank は ずんだもん（ノーマル・1.25倍・口調は です・ます。クレジット「VOICEVOX:ずんだもん」）、promax は 青山龍星、macbudget は 春日部つむぎ、probudget は 春日部つむぎ（10/24〜）、foldbudget は 青山龍星（10/24〜）
+- 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs・fold は 青山龍星（ノーマル・1.25倍。クレジット「VOICEVOX:青山龍星」）、pixelbudget は 春日部つむぎ、ipadbudget は 青山龍星、rank は ずんだもん（ノーマル・1.25倍・口調は です・ます。クレジット「VOICEVOX:ずんだもん」）、promax は 青山龍星、macbudget は 春日部つむぎ、probudget は 春日部つむぎ（10/24〜）、foldbudget は 青山龍星（10/24〜）、plusvs は 青山龍星（10/25〜）
   - 3万・5万・7万・10万円ごとに、相場（getModelMarket＝在庫がいちばん多い容量の中央値）が帯（0〜3万・3万超〜5万・5万超〜7万・7万超〜10万）に入る iPhone（iPhone 12 シリーズ以降と SE (第3世代)。11 系・SE (第2世代) は古すぎるので出さない・在庫5件以上）のうち、相場がいちばん高い機種。同じ相場なら発売の新しい方。帯が空なら「予算以下で発売年がいちばん新しい機種」
   - 注目は5万円の行（固定）。出すのは相場（容量つき）と在庫数だけ。最安は出さない（3万円の行より安く見えて分かりにくい）
   - 場面 hook（問い＋予算の札）→ ranking（4行。「○万円なら」の声に合わせて上から）→ reveal（注目）→ comment → outro（「あなたの予算なら…？」）
@@ -60,6 +61,11 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
   - `themes/promax.ts`（provs を写したもの）。台本の型は provs と同じ ProVsScript で theme が "promax"（base＝Pro・pro＝Pro Max。`types.ts` の `isProVs`）。場面・行の部品も provs と共有（棒の札・注記・つかみの札だけ「Pro／Pro Max」に）
   - 組は iPhone 13〜18 の Pro と Pro Max。容量は両方に在庫5件以上の最小の容量、差（Pro Max − Pro）の大きい順、率は Pro に対して。1位の Pro を1つ上の容量にしたときの差（`scenes.upgrade`）も出す
   - ナレーション: ranking「3位は<Pro>と<番号 Pro Max>、<容量>。差は<額>です。」・reveal「1位は<Pro>と<番号 Pro Max>。Pro Maxにすると、約<X.X>万円、およそ<Y>%高くなります。」・outro「…あなたは、Pro Max派？Pro派？」＋関連動画の誘導。utm の末尾 `_promax`
+
+- `plusvs`: Plusと無印、同じ容量でいくら違う？（型 A だけ・約36秒。10/25〜）
+  - `themes/plusvs.ts`（provs を写したもの）。台本の型は ProVsScript で theme が "plusvs"（base＝無印・pro＝Plus）。場面・行の部品も provs と共有（棒の札・つかみの札だけ「無印／Plus」に）
+  - 組は iPhone 14／14 Plus・15／15 Plus・16／16 Plus（17 に Plus はない）。容量は両方に在庫5件以上の最小の容量、差（Plus − 無印）の大きい順、率は無印に対して。Plus の方が安い（差0以下）組は外して plan のログに「★注意」で出す。3組未満なら止まる
+  - ナレーション: ranking「3位は<無印>と<番号 Plus>、<容量>。差は<額>です。」・reveal「1位は<無印>と<番号 Plus>。Plusにすると、約<X.X>万円、およそ<Y>%高くなります。」・outro「…あなたは、大きい画面のPlus派？無印派？」＋関連動画の誘導。説明欄のリンクは1位の Plus の機種ページと /iphone。utm の末尾 `_plusvs`
 
 - `fold`: 折りたたみスマホ、1世代前にするといくら安い？（型 A だけ・約36秒。10/22〜）
   - 連続する2世代の組（`themes/fold.ts` の PAIRS: Galaxy Z Fold8→7・7→6・6→5、Galaxy Z Flip8→7・7→6・6→5、Pixel 11 Pro Fold→10 Pro Fold・10→9 Pro Fold）で、両方に在庫5件以上ある容量のうちいちばん小さい容量の相場（中央値）どうしを比べ、差額（新しい方 − 1世代前）の大きい順。率は新しい方の相場に対して。差が0以下の組は出さない。3組未満なら止まる
@@ -143,7 +149,7 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 
 ## 予算を変える・前の回と同じ中身にしない（10/25〜）
 
-- ランキング型（provs・battery・rank・gen・storage・newused・fold・ios27line・batteryswap・overnew）は数日では1位が変わらない（10/25 に作り直すと 10/22〜23 とほぼ同じだった）。plan の1位とタイトルを前の回と比べ、ほぼ同じなら作らない
+- ランキング型（provs・plusvs・battery・rank・gen・storage・newused・fold・ios27line・batteryswap・overnew）は数日では1位が変わらない（10/25 に作り直すと 10/22〜23 とほぼ同じだった）。plan の1位とタイトルを前の回と比べ、ほぼ同じなら作らない
 - **予算と相場は1万円以内**（10/25 ユーザーの指示）: 各行は帯 (max(前の予算, 予算−1万円), 予算] の機種だけ。帯に機種がなければ plan がエラーになるので予算を変える（`themes/budget.ts` の BUDGET_GAP）
 - 予算別（budget・ipadbudget・pixelbudget・foldbudget）は `--budgets 40000,60000,80000,120000 --pick 40000` で予算の並びと注目を変えられる（`themes/budget.ts` の BudgetOpts）。注目の予算は予算別ページ（`lib/budgets.ts`）がある額にする（説明欄のリンク先）
 - 声の実験は script.json の `voice.speaker` を書き換えて render する
@@ -202,7 +208,7 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
 | --- | --- | --- | --- | --- | --- |
 | ① 値下がり DROPS | 紺 brand900 | 赤 price・左右いっぱい | 角丸28・縁なし | price | drops（1位の下がった額）・galaxybudget（予算の札） |
 | ② 予算別 BUDGET | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | budget・pixelbudget・macbudget（予算の札）・ipadbudget（予算の丸い札・淡い金）・overnew（新品と中古の割合の2本の棒） |
-| ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
+| ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・plusvs・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
 | ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形）・batteryswap（「中古＋電池交換＝1つ上」の札） |
 | ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札） |
 

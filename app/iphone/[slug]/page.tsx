@@ -947,7 +947,7 @@ export default async function ModelPage({ params }: Props) {
               {/* Proと無印を比べた横動画（iPhone 13〜17 の無印・Pro・Pro Max。lib/videos.ts） */}
               {video && (
                 <div className="md:order-6 min-[1360px]:col-span-2">
-                  <VideoEmbed video={video} heading="Proと無印の違いを動画で見る" />
+                  <VideoEmbed video={video} heading={video.heading} />
                 </div>
               )}
               {device === "ipad" && (
