@@ -22,7 +22,7 @@ import { pencilNeedsAdapter, pencilsFor } from "@/lib/ipadPencil";
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import type { BudgetRow, BudgetScript } from "../types";
-import { MIN_COUNT, PICK_BUDGET, pickBudgetModels } from "./budget";
+import { MIN_COUNT, PICK_BUDGET, bandsText, pickBudgetModels, type BudgetOpts } from "./budget";
 
 /** 動画に出す予算（4行）。iPad は 5万円から（上の説明）。注目は PICK_BUDGET（5万円）で budget と同じ */
 export const IPAD_SHORT_BUDGETS = [50000, 70000, 100000, 150000];
@@ -34,16 +34,18 @@ const yearOf = (model: string) => Number(IPAD_SPECS[model]?.released.replace("�
 const pencilOf = (model: string) => pencilsFor(model).join("／");
 const utm = (date: string) => `utm_source=youtube&utm_medium=social&utm_campaign=shorts_${date.replace(/-/g, "")}_ipadbudget`;
 
-export async function buildIpadBudgetScript(date: string): Promise<BudgetScript> {
+export async function buildIpadBudgetScript(date: string, opts: BudgetOpts = {}): Promise<BudgetScript> {
+  const budgets = opts.budgets ?? IPAD_SHORT_BUDGETS;
+  const pickBudget = opts.pick ?? PICK_BUDGET;
   const market = await getModelMarket(IPAD_MODELS);
   const old = IPAD_MODELS.filter((m) => !IPADOS27_MODELS.has(m) && (market.get(m)?.count ?? 0) >= MIN_COUNT);
   if (old.length) console.log(`  対象外（iPadOS 27 非対応・在庫${MIN_COUNT}件以上）: ${old.join("・")}`);
   const cands = [...market].filter(([m, r]) => r.count >= MIN_COUNT && IPADOS27_MODELS.has(m));
-  const rows: (BudgetRow & { count: number })[] = pickBudgetModels(cands, yearOf, " iPadOS 27 対応 iPad ", IPAD_SHORT_BUDGETS).map(({ budget, model, r }) => ({
+  const rows: (BudgetRow & { count: number })[] = pickBudgetModels(cands, yearOf, " iPadOS 27 対応 iPad ", budgets).map(({ budget, model, r }) => ({
     budget, label: budgetLabel(budget), model, storage: r.medianStorage ? storageLabel(r.medianStorage, model) : "", median: r.medianPrice,
     released: IPAD_SPECS[model].released, pencil: pencilOf(model) || undefined, count: r.count,
   }));
-  const { count, ...pickRow } = rows.find((r) => r.budget === PICK_BUDGET) ?? rows[0];
+  const { count, ...pickRow } = rows.find((r) => r.budget === pickBudget) ?? rows[0];
   const pick = { ...pickRow, count };
 
   const shopCount = (await activeShops(SHOPS)).length;
@@ -52,9 +54,9 @@ export async function buildIpadBudgetScript(date: string): Promise<BudgetScript>
   const lines = ["iPadは機種ごとに", "使えるPencilが", "違います"];
 
   const rawTitle = `${pick.label}なら${pick.model}！予算ぴったりで買える中古iPad`;
-  const title = rawTitle.length <= 60 ? rawTitle : `予算ぴったりで買える中古iPad（${IPAD_SHORT_BUDGETS.map(budgetLabel).join("・")}）`;
+  const title = rawTitle.length <= 60 ? rawTitle : `予算ぴったりで買える中古iPad（${budgets.map(budgetLabel).join("・")}）`;
   // 予算の帯の書き方（「5万円以下・5万超〜7万・7万超〜10万・10万超〜15万円」）
-  const bands = IPAD_SHORT_BUDGETS.map((b, i) => (i === 0 ? `${budgetLabel(b)}以下` : `${IPAD_SHORT_BUDGETS[i - 1] / 10000}万超〜${b / 10000}万${i === IPAD_SHORT_BUDGETS.length - 1 ? "円" : ""}`)).join("・");
+  const bands = bandsText(budgets);
   const pen = (r: BudgetRow) => (r.pencil ? `・Apple Pencil ${r.pencil}${pencilNeedsAdapter(r.model) ? "（第1世代はUSB-Cアダプタが必要）" : ""}` : "");
   const description = [
     `予算ごとに、相場で買えるいちばん上の中古iPadです。${pick.label}なら${pick.model}（${pick.storage}・相場${man(pick.median)}円・在庫${man(pick.count)}台${pen(pick)}）。`,
@@ -65,7 +67,7 @@ export async function buildIpadBudgetScript(date: string): Promise<BudgetScript>
     "",
     // utm で YouTube から来た人を GA で数える（canonical は印なしなので検索には影響しない）
     `${pick.model}の店ごとの在庫と最安値: https://used.gadelog.com${modelPagePath(pick.model)}?${utm(date)}`,
-    `${pick.label}以下で買える中古iPad: https://used.gadelog.com${budgetPath(PICK_BUDGET, "ipad")}?${utm(date)}`,
+    `${pick.label}以下で買える中古iPad: https://used.gadelog.com${budgetPath(pick.budget, "ipad")}?${utm(date)}`,
     `中古iPadの全機種の相場: https://used.gadelog.com/ipad?${utm(date)}`,
   ].join("\n");
 

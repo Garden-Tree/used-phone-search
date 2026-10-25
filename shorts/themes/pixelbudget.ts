@@ -18,7 +18,7 @@ import { PIXEL_INFO, PIXEL_MODELS, jaMonth, updateUntil, updateYearsLeft } from 
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import type { BudgetRow, BudgetScript } from "../types";
-import { MIN_COUNT, PICK_BUDGET, SHORT_BUDGETS, pickBudgetModels } from "./budget";
+import { MIN_COUNT, PICK_BUDGET, SHORT_BUDGETS, bandsText, pickBudgetModels, type BudgetOpts } from "./budget";
 
 const man = (n: number) => n.toLocaleString();
 /** 販売開始の新しさ（"2024-05" → 2024*12+5） */
@@ -28,7 +28,9 @@ const ageOf = (model: string) => {
 };
 const utm = (date: string) => `utm_source=youtube&utm_medium=social&utm_campaign=shorts_${date.replace(/-/g, "")}_pixelbudget`;
 
-export async function buildPixelBudgetScript(date: string): Promise<BudgetScript> {
+export async function buildPixelBudgetScript(date: string, opts: BudgetOpts = {}): Promise<BudgetScript> {
+  const budgets = opts.budgets ?? SHORT_BUDGETS;
+  const pickBudget = opts.pick ?? PICK_BUDGET;
   const month = date.slice(0, 7);
   const market = await getModelMarket(PIXEL_MODELS);
   const ended: string[] = [];
@@ -40,11 +42,11 @@ export async function buildPixelBudgetScript(date: string): Promise<BudgetScript
     }
     return r.count >= MIN_COUNT && left !== undefined && left > 0;
   });
-  const rows: (BudgetRow & { count: number })[] = pickBudgetModels(cands, ageOf, " Pixel（アップデート保証あり）").map(({ budget, model, r }) => ({
+  const rows: (BudgetRow & { count: number })[] = pickBudgetModels(cands, ageOf, " Pixel（アップデート保証あり）", budgets).map(({ budget, model, r }) => ({
     budget, label: budgetLabel(budget), model, storage: r.medianStorage ? storageLabel(r.medianStorage, model) : "", median: r.medianPrice,
     released: jaMonth(PIXEL_INFO[model].available), updateUntil: updateUntil(model)!, count: r.count,
   }));
-  const { count, ...pickRow } = rows.find((r) => r.budget === PICK_BUDGET) ?? rows[0];
+  const { count, ...pickRow } = rows.find((r) => r.budget === pickBudget) ?? rows[0];
   const pick = { ...pickRow, count };
 
   const shopCount = (await activeShops(SHOPS)).length;
@@ -53,17 +55,17 @@ export async function buildPixelBudgetScript(date: string): Promise<BudgetScript
   const lines = ["Pixelは機種ごとに", "アップデート期限を", "確認しましょう"];
 
   const rawTitle = `${pick.label}なら${pick.model}！予算ぴったりで買える中古Pixel`;
-  const title = rawTitle.length <= 60 ? rawTitle : `予算ぴったりで買える中古Pixel（${SHORT_BUDGETS.map(budgetLabel).join("・")}）`;
+  const title = rawTitle.length <= 60 ? rawTitle : `予算ぴったりで買える中古Pixel（${budgets.map(budgetLabel).join("・")}）`;
   const description = [
     `予算ごとに、相場で買えるいちばん上の中古Google Pixelです。${pick.label}なら${pick.model}（${pick.storage}・相場${man(pick.median)}円・在庫${man(pick.count)}台・アップデート保証は${jaMonth(pick.updateUntil!)}まで）。`,
     "",
     ...rows.map((r) => `${r.label}以下 ${r.model}（${r.released}発売・${r.storage}） 相場${man(r.median)}円・アップデート保証 ${jaMonth(r.updateUntil!)}まで`),
     "",
-    `選び方: 相場が予算の帯（3万円以下・3万超〜5万・5万超〜7万・7万超〜10万円）に入る Pixel のうち、相場がいちばん高い機種（同じなら販売開始の新しい方・在庫${MIN_COUNT}件以上。帯に機種がなければ、相場が予算以下でいちばん新しい機種）。${ended.length ? `Google のアップデート保証が終わった機種（${ended.join("・")}）は除いています。` : "Google のアップデート保証が終わった機種は除いています。"}アップデート保証の期限は Google 公式の「販売開始から5年／7年」から。データ: 大手中古ショップ${shopCount}店の在庫（相場＝在庫がいちばん多い容量の中央値・${date.replace(/-/g, "/")}時点）。`,
+    `選び方: 相場が予算の帯（${bandsText(budgets)}）に入る Pixel のうち、相場がいちばん高い機種（同じなら販売開始の新しい方・在庫${MIN_COUNT}件以上。帯に機種がなければ、相場が予算以下でいちばん新しい機種）。${ended.length ? `Google のアップデート保証が終わった機種（${ended.join("・")}）は除いています。` : "Google のアップデート保証が終わった機種は除いています。"}アップデート保証の期限は Google 公式の「販売開始から5年／7年」から。データ: 大手中古ショップ${shopCount}店の在庫（相場＝在庫がいちばん多い容量の中央値・${date.replace(/-/g, "/")}時点）。`,
     "",
     // utm で YouTube から来た人を GA で数える（canonical は印なしなので検索には影響しない）
     `${pick.model}の店ごとの在庫と最安値: https://used.gadelog.com${modelPagePath(pick.model)}?${utm(date)}`,
-    `${pick.label}以下で買える中古Pixel: https://used.gadelog.com${budgetPath(PICK_BUDGET, "pixel")}?${utm(date)}`,
+    `${pick.label}以下で買える中古Pixel: https://used.gadelog.com${budgetPath(pick.budget, "pixel")}?${utm(date)}`,
     `中古Pixelの全機種の相場: https://used.gadelog.com/pixel?${utm(date)}`,
   ].join("\n");
 

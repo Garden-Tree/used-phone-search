@@ -119,6 +119,12 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 テーマを足すときは、`types.ts` に台本の型、`themes/` に「データ → 台本」、`voice.ts` に既定のナレーション、`scenes.tsx` に場面、`make-short.tsx` の `THEMES`・`THEME_SPEAKER` を足す。
 同じテーマ・同じデータのショートを同じ日に2本出さない（ほぼ同じ内容は勧められにくい）。
 
+## 予算を変える・前の回と同じ中身にしない（10/25〜）
+
+- ランキング型（provs・battery・rank・gen・storage・newused・fold）は数日では1位が変わらない（10/25 に作り直すと 10/22〜23 とほぼ同じだった）。plan の1位とタイトルを前の回と比べ、ほぼ同じなら作らない
+- 予算別（budget・ipadbudget・pixelbudget）は `--budgets 40000,60000,80000,120000 --pick 40000` で予算の並びと注目を変えられる（`themes/budget.ts` の BudgetOpts）。注目の予算は予算別ページ（`lib/budgets.ts`）がある額にする（説明欄のリンク先）
+- 声の実験は script.json の `voice.speaker` を書き換えて render する
+
 ## 毎週の流れ
 
 1. `plan` で台本を作る（DB の既存の集計だけ読む）

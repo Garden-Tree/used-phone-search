@@ -19,6 +19,8 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
    - `shorts/out/<日付>-<テーマ>/script.json` ができる（すでにあれば止まる。上書きは `--force`）。
    - drops: 1〜3位。budget: 予算（3万・5万・7万・10万円）ごとの機種と相場、注目（5万円の行）の最安・在庫数。newused: 新品と中古の相場の差の1〜3位（候補の全機種も出る）。provs: 無印と Pro の相場の差の1〜3位（候補の全組と、1位の無印の容量を上げたときの差も出る）。fold: 折りたたみの新しい方と1世代前の相場の差の1〜3位（候補の全組も出る）。
    - 検品担当のひと言（`comment.lines`）、ナレーション、説明文を確かめる。
+   - **前の回と同じ中身にしない**（10/25）: ランキング型（provs・battery・rank・gen・storage・newused・fold）は数日では1位が変わらない。plan の1位とタイトルを前の回（shorts/out の同じテーマ）と比べ、ほぼ同じなら作らない。予算別（budget・ipadbudget・pixelbudget）は `--budgets 40000,60000,80000,120000 --pick 40000` で予算を変えて作れる（注目の予算は予算別ページ lib/budgets.ts がある額）
+   - **声を変えて試す**（10/25〜の実験）: script.json の `voice.speaker` を書き換える（例 "ずんだもん/ノーマル"）。1本で変えるのは1つだけ。結果は公開48時間後の再生数と「視聴を選んだ割合」で ideas に記録
    - ひと言は下書き。古めの機種ならバッテリーと状態ランク、のように中身に合わせて直す。
 3. **読みを確かめる**: `npx tsx shorts/make-short.tsx --voice-dump script`（最後に書いた台本・その台本の話者で）
    - アクセント句の直す前と後が出る。機種名・数字が細切れになっていないかを見る。

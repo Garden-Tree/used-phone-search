@@ -26,6 +26,16 @@ import type { BudgetRow, BudgetScript } from "../types";
 export const SHORT_BUDGETS = [30000, 50000, 70000, 100000];
 /** 注目にする予算（固定のルール。4つの予算の2番目） */
 export const PICK_BUDGET = 50000;
+
+/**
+ * 予算の並びと注目の予算（make-short の --budgets 40000,60000,80000,120000 --pick 40000。10/25〜）。
+ * 予算別のテーマは数日では1位が変わらないので、同じ中身の回を避けるため予算を変えて作る。注目の予算は予算別ページ（lib/budgets.ts）がある額にする（説明欄のリンク先）
+ */
+export type BudgetOpts = { budgets?: number[]; pick?: number };
+
+/** 予算の帯の書き方（「3万円以下・3万超〜5万・5万超〜7万・7万超〜10万円」） */
+export const bandsText = (budgets: number[]) =>
+  budgets.map((b, i) => (i === 0 ? `${budgetLabel(b)}以下` : `${budgets[i - 1] / 10000}万超〜${b / 10000}万${i === budgets.length - 1 ? "円" : ""}`)).join("・");
 /** 相場が数件の在庫で決まらないように */
 export const MIN_COUNT = 5;
 
@@ -58,13 +68,15 @@ export function pickBudgetModels(cands: [string, ModelMarket][], age: (model: st
   });
 }
 
-export async function buildBudgetScript(date: string): Promise<BudgetScript> {
+export async function buildBudgetScript(date: string, opts: BudgetOpts = {}): Promise<BudgetScript> {
+  const budgets = opts.budgets ?? SHORT_BUDGETS;
+  const pickBudget = opts.pick ?? PICK_BUDGET;
   const market = await getModelMarket(ALL_CATALOG_MODELS);
   const cands = [...market].filter(([m, r]) => r.count >= MIN_COUNT && isRecentEnough(m));
-  const rows: (BudgetRow & { count: number })[] = pickBudgetModels(cands, yearOf, " iOS 27 対応 iPhone ").map(({ budget, model, r }) => (
+  const rows: (BudgetRow & { count: number })[] = pickBudgetModels(cands, yearOf, " iOS 27 対応 iPhone ", budgets).map(({ budget, model, r }) => (
     { budget, label: budgetLabel(budget), model, storage: r.medianStorage ? storageLabel(r.medianStorage, model) : "", median: r.medianPrice, released: specOf(model)!.released, count: r.count }
   ));
-  const { count, ...pickRow } = rows.find((r) => r.budget === PICK_BUDGET) ?? rows[0];
+  const { count, ...pickRow } = rows.find((r) => r.budget === pickBudget) ?? rows[0];
   const pick = { ...pickRow, count };
 
   const shopCount = (await activeShops(SHOPS)).length;
@@ -73,17 +85,17 @@ export async function buildBudgetScript(date: string): Promise<BudgetScript> {
   const lines = ["予算内でも", "バッテリー85%以上と", "利用制限○を確認しましょう"];
 
   const rawTitle = `${pick.label}なら${pick.model}！予算ぴったりで買える中古iPhone`;
-  const title = rawTitle.length <= 60 ? rawTitle : `予算ぴったりで買える中古iPhone（${SHORT_BUDGETS.map(budgetLabel).join("・")}）`;
+  const title = rawTitle.length <= 60 ? rawTitle : `予算ぴったりで買える中古iPhone（${budgets.map(budgetLabel).join("・")}）`;
   const description = [
     `予算ごとに、相場で買えるいちばん上の中古iPhoneです。${pick.label}なら${pick.model}（${pick.storage}・相場${man(pick.median)}円・在庫${man(pick.count)}台）。`,
     "",
     ...rows.map((r) => `${r.label}以下 ${r.model}（${r.released}発売・${r.storage}） 相場${man(r.median)}円`),
     "",
-    `選び方: 相場が予算の帯（3万円以下・3万超〜5万・5万超〜7万・7万超〜10万円）に入る iPhone 12 シリーズ以降と SE (第3世代) のうち、相場がいちばん高い機種（同じなら発売の新しい方・在庫5件以上。帯に機種がなければ、相場が予算以下で発売年のいちばん新しい機種）。データ: 大手中古ショップ${shopCount}店の在庫（相場＝在庫がいちばん多い容量の中央値・${date.replace(/-/g, "/")}時点）。`,
+    `選び方: 相場が予算の帯（${bandsText(budgets)}）に入る iPhone 12 シリーズ以降と SE (第3世代) のうち、相場がいちばん高い機種（同じなら発売の新しい方・在庫5件以上。帯に機種がなければ、相場が予算以下で発売年のいちばん新しい機種）。データ: 大手中古ショップ${shopCount}店の在庫（相場＝在庫がいちばん多い容量の中央値・${date.replace(/-/g, "/")}時点）。`,
     "",
     // utm で YouTube から来た人を GA で数える（canonical は印なしなので検索には影響しない）
     `${pick.model}の店ごとの在庫と最安値: https://used.gadelog.com${modelPagePath(pick.model)}?${utm(date)}`,
-    `${pick.label}以下で買える中古iPhone: https://used.gadelog.com${budgetPath(PICK_BUDGET)}?${utm(date)}`,
+    `${pick.label}以下で買える中古iPhone: https://used.gadelog.com${budgetPath(pick.budget)}?${utm(date)}`,
     `全機種の中古相場: https://used.gadelog.com/?${utm(date)}`,
   ].join("\n");
 
