@@ -20,7 +20,7 @@ import { specOf } from "@/lib/iphoneSpecs";
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import type { BudgetRow, BudgetScript } from "../types";
-import { MIN_COUNT, pickBudgetModels } from "./budget";
+import { MIN_COUNT, bandsText, pickBudgetModels } from "./budget";
 
 /** 対象の Pro・Pro Max（13 Pro 以降。18 は在庫が MIN_COUNT 件以上なら入る） */
 export const PRO_MODELS = [13, 14, 15, 16, 17, 18].flatMap((g) => [`iPhone ${g} Pro`, `iPhone ${g} Pro Max`]);
@@ -64,7 +64,7 @@ export async function buildProBudgetScript(date: string): Promise<BudgetScript> 
   const rawTitle = `${pick.label}なら${pick.model}！予算ぴったりで買える中古iPhone Pro`;
   const title = rawTitle.length <= 60 ? rawTitle : `予算ぴったりで買える中古iPhone Pro（${PRO_SHORT_BUDGETS.map(budgetLabel).join("・")}）`;
   // 予算の帯の書き方（「7万円以下・7万超〜10万・10万超〜15万・15万超〜20万円」）
-  const bands = PRO_SHORT_BUDGETS.map((b, i) => (i === 0 ? `${budgetLabel(b)}以下` : `${PRO_SHORT_BUDGETS[i - 1] / 10000}万超〜${b / 10000}万${i === PRO_SHORT_BUDGETS.length - 1 ? "円" : ""}`)).join("・");
+  const bands = bandsText(PRO_SHORT_BUDGETS);
   const description = [
     `予算ごとに、相場で買えるいちばん上の中古iPhone Pro・Pro Maxです。${pick.label}なら${pick.model}（${pick.released}発売・${pick.storage}・${pick.spec}・相場${man(pick.median)}円・在庫${man(pick.count)}台）。`,
     "",

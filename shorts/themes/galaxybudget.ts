@@ -21,7 +21,7 @@ import { jaMonth } from "@/lib/pixelCatalog";
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import type { BudgetRow, BudgetScript } from "../types";
-import { MIN_COUNT, pickBudgetModels } from "./budget";
+import { MIN_COUNT, bandsText, pickBudgetModels } from "./budget";
 
 /** 対象の Galaxy（折りたたみの Z Fold・Z Flip を除く S・A シリーズ） */
 export const GALAXY_BAR_MODELS = GALAXY_MODELS.filter((m) => !/^Galaxy Z /.test(m));
@@ -69,7 +69,7 @@ export async function buildGalaxyBudgetScript(date: string): Promise<BudgetScrip
 
   const rawTitle = `${pick.label}なら${pick.model}！予算ぴったりで買える中古Galaxy`;
   const title = rawTitle.length <= 60 ? rawTitle : `予算ぴったりで買える中古Galaxy（${GALAXY_SHORT_BUDGETS.map(budgetLabel).join("・")}）`;
-  const bands = GALAXY_SHORT_BUDGETS.map((b, i) => (i === 0 ? `${budgetLabel(b)}以下` : `${GALAXY_SHORT_BUDGETS[i - 1] / 10000}万超〜${b / 10000}万${i === GALAXY_SHORT_BUDGETS.length - 1 ? "円" : ""}`)).join("・");
+  const bands = bandsText(GALAXY_SHORT_BUDGETS);
   const description = [
     `予算ごとに、相場で買えるいちばん上の中古Galaxy（S・A シリーズ）です。${pick.label}なら${pick.model}（${pick.released}発売・${pick.storage}・${pick.spec}・相場${man(pick.median)}円・在庫${man(pick.count)}台）。`,
     "",

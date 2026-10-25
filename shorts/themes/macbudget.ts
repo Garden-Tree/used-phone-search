@@ -19,7 +19,7 @@ import { MAC_INFO, MAC_MODELS } from "@/lib/macCatalog";
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import type { BudgetRow, BudgetScript } from "../types";
-import { MIN_COUNT, pickBudgetModels } from "./budget";
+import { MIN_COUNT, bandsText, pickBudgetModels } from "./budget";
 
 /** 動画に出す予算（4行）。MacBook は10万円から（上の説明） */
 export const MAC_SHORT_BUDGETS = [100000, 150000, 200000, 300000];
@@ -54,7 +54,7 @@ export async function buildMacBudgetScript(date: string): Promise<BudgetScript> 
   const rawTitle = `${pick.label}なら${pick.model}！予算ぴったりで買える中古MacBook`;
   const title = rawTitle.length <= 60 ? rawTitle : `予算ぴったりで買える中古MacBook（${MAC_SHORT_BUDGETS.map(budgetLabel).join("・")}）`;
   // 予算の帯の書き方（「10万円以下・10万超〜15万・15万超〜20万・20万超〜30万円」）
-  const bands = MAC_SHORT_BUDGETS.map((b, i) => (i === 0 ? `${budgetLabel(b)}以下` : `${MAC_SHORT_BUDGETS[i - 1] / 10000}万超〜${b / 10000}万${i === MAC_SHORT_BUDGETS.length - 1 ? "円" : ""}`)).join("・");
+  const bands = bandsText(MAC_SHORT_BUDGETS);
   const description = [
     `予算ごとに、相場で買えるいちばん上の中古MacBookです。${pick.label}なら${pick.model}（${pick.chip}チップ・${pick.released}発売・${pick.storage}・相場${man(pick.median)}円・在庫${man(pick.count)}台）。`,
     "",

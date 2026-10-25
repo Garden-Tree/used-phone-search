@@ -13,7 +13,7 @@
  * DB は機種ごとの集計（groupBy と中央値の1行）だけ。在庫の行を丸ごと取らない
  */
 import { getModelMarket } from "@/lib/marketStats";
-import { budgetLabel, budgetPath } from "@/lib/budgets";
+import { IPAD_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import { modelPagePath } from "@/lib/catalog";
 import { storageLabel } from "@/lib/format";
 import { IPAD_MODELS } from "@/lib/ipadCatalog";
@@ -22,7 +22,7 @@ import { pencilNeedsAdapter, pencilsFor } from "@/lib/ipadPencil";
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import type { BudgetRow, BudgetScript } from "../types";
-import { MIN_COUNT, PICK_BUDGET, bandsText, pickBudgetModels, type BudgetOpts } from "./budget";
+import { MIN_COUNT, PICK_BUDGET, bandsText, pageBudget, pickBudgetModels, type BudgetOpts } from "./budget";
 
 /** 動画に出す予算（4行）。iPad は 5万円から（上の説明）。注目は PICK_BUDGET（5万円）で budget と同じ */
 export const IPAD_SHORT_BUDGETS = [50000, 70000, 100000, 150000];
@@ -67,7 +67,7 @@ export async function buildIpadBudgetScript(date: string, opts: BudgetOpts = {})
     "",
     // utm で YouTube から来た人を GA で数える（canonical は印なしなので検索には影響しない）
     `${pick.model}の店ごとの在庫と最安値: https://used.gadelog.com${modelPagePath(pick.model)}?${utm(date)}`,
-    `${pick.label}以下で買える中古iPad: https://used.gadelog.com${budgetPath(pick.budget, "ipad")}?${utm(date)}`,
+    `${budgetLabel(pageBudget(pick.budget, IPAD_BUDGETS))}以下で買える中古iPad: https://used.gadelog.com${budgetPath(pageBudget(pick.budget, IPAD_BUDGETS), "ipad")}?${utm(date)}`,
     `中古iPadの全機種の相場: https://used.gadelog.com/ipad?${utm(date)}`,
   ].join("\n");
 

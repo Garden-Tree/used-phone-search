@@ -122,7 +122,8 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 ## 予算を変える・前の回と同じ中身にしない（10/25〜）
 
 - ランキング型（provs・battery・rank・gen・storage・newused・fold）は数日では1位が変わらない（10/25 に作り直すと 10/22〜23 とほぼ同じだった）。plan の1位とタイトルを前の回と比べ、ほぼ同じなら作らない
-- 予算別（budget・ipadbudget・pixelbudget）は `--budgets 40000,60000,80000,120000 --pick 40000` で予算の並びと注目を変えられる（`themes/budget.ts` の BudgetOpts）。注目の予算は予算別ページ（`lib/budgets.ts`）がある額にする（説明欄のリンク先）
+- **予算と相場は1万円以内**（10/25 ユーザーの指示）: 各行は帯 (max(前の予算, 予算−1万円), 予算] の機種だけ。帯に機種がなければ plan がエラーになるので予算を変える（`themes/budget.ts` の BUDGET_GAP）
+- 予算別（budget・ipadbudget・pixelbudget・foldbudget）は `--budgets 40000,60000,80000,120000 --pick 40000` で予算の並びと注目を変えられる（`themes/budget.ts` の BudgetOpts）。注目の予算は予算別ページ（`lib/budgets.ts`）がある額にする（説明欄のリンク先）
 - 声の実験は script.json の `voice.speaker` を書き換えて render する
 
 ## 毎週の流れ

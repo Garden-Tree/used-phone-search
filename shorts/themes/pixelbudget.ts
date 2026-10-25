@@ -11,14 +11,14 @@
  * DB は機種ごとの集計（groupBy と中央値の1行）だけ。在庫の行を丸ごと取らない
  */
 import { getModelMarket } from "@/lib/marketStats";
-import { budgetLabel, budgetPath } from "@/lib/budgets";
+import { PIXEL_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import { modelPagePath } from "@/lib/catalog";
 import { storageLabel } from "@/lib/format";
 import { PIXEL_INFO, PIXEL_MODELS, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import type { BudgetRow, BudgetScript } from "../types";
-import { MIN_COUNT, PICK_BUDGET, SHORT_BUDGETS, bandsText, pickBudgetModels, type BudgetOpts } from "./budget";
+import { MIN_COUNT, PICK_BUDGET, SHORT_BUDGETS, bandsText, pageBudget, pickBudgetModels, type BudgetOpts } from "./budget";
 
 const man = (n: number) => n.toLocaleString();
 /** 販売開始の新しさ（"2024-05" → 2024*12+5） */
@@ -65,7 +65,7 @@ export async function buildPixelBudgetScript(date: string, opts: BudgetOpts = {}
     "",
     // utm で YouTube から来た人を GA で数える（canonical は印なしなので検索には影響しない）
     `${pick.model}の店ごとの在庫と最安値: https://used.gadelog.com${modelPagePath(pick.model)}?${utm(date)}`,
-    `${pick.label}以下で買える中古Pixel: https://used.gadelog.com${budgetPath(pick.budget, "pixel")}?${utm(date)}`,
+    `${budgetLabel(pageBudget(pick.budget, PIXEL_BUDGETS))}以下で買える中古Pixel: https://used.gadelog.com${budgetPath(pageBudget(pick.budget, PIXEL_BUDGETS), "pixel")}?${utm(date)}`,
     `中古Pixelの全機種の相場: https://used.gadelog.com/pixel?${utm(date)}`,
   ].join("\n");
 

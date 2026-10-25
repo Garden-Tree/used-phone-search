@@ -24,7 +24,7 @@ import { PIXEL_INFO, PIXEL_MODELS, jaMonth, updateUntil, updateYearsLeft } from 
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import type { BudgetRow, BudgetScript } from "../types";
-import { MIN_COUNT, pickBudgetModels } from "./budget";
+import { MIN_COUNT, bandsText, pickBudgetModels, type BudgetOpts } from "./budget";
 
 /** 対象の折りたたみ（Galaxy Z Fold・Z Flip と Pixel の Fold） */
 export const FOLD_MODELS = [...GALAXY_MODELS.filter((m) => /^Galaxy Z (Fold|Flip)/.test(m)), ...PIXEL_MODELS.filter((m) => /Fold$/.test(m))];
@@ -49,7 +49,9 @@ const specLine = (model: string) => {
 };
 const utm = (date: string) => `utm_source=youtube&utm_medium=social&utm_campaign=shorts_${date.replace(/-/g, "")}_foldbudget`;
 
-export async function buildFoldBudgetScript(date: string): Promise<BudgetScript> {
+export async function buildFoldBudgetScript(date: string, opts: BudgetOpts = {}): Promise<BudgetScript> {
+  const budgets = opts.budgets ?? FOLD_SHORT_BUDGETS;
+  const pickBudget = opts.pick ?? FOLD_PICK_BUDGET;
   const month = date.slice(0, 7);
   const market = await getModelMarket(FOLD_MODELS);
   const cands = [...market].filter(([m, r]) => {
@@ -60,17 +62,17 @@ export async function buildFoldBudgetScript(date: string): Promise<BudgetScript>
     }
     return r.count >= MIN_COUNT;
   });
-  const rows: (BudgetRow & { count: number })[] = pickBudgetModels(cands, ageOf, "折りたたみスマホ", FOLD_SHORT_BUDGETS).map(({ budget, model, r }) => ({
+  const rows: (BudgetRow & { count: number })[] = pickBudgetModels(cands, ageOf, "折りたたみスマホ", budgets).map(({ budget, model, r }) => ({
     budget, label: budgetLabel(budget), model, storage: r.medianStorage ? storageLabel(r.medianStorage, model) : "", median: r.medianPrice,
     released: jaMonth(releasedYm(model)), spec: specLine(model), count: r.count,
   }));
   // 帯ごとの候補の数（予算の段を決め直すときの目安）
-  FOLD_SHORT_BUDGETS.forEach((b, i) => {
-    const prev = i ? FOLD_SHORT_BUDGETS[i - 1] : 0;
+  budgets.forEach((b, i) => {
+    const prev = i ? budgets[i - 1] : 0;
     const inBand = cands.filter(([, r]) => r.medianPrice > prev && r.medianPrice <= b);
     console.log(`  帯 ${prev ? `${budgetLabel(prev)}超` : ""}〜${budgetLabel(b)}: ${inBand.length}機種（${inBand.map(([m, r]) => `${m} ${man(r.medianPrice)}円・${r.count}件`).join("・")}）`);
   });
-  const { count, ...pickRow } = rows.find((r) => r.budget === FOLD_PICK_BUDGET) ?? rows[0];
+  const { count, ...pickRow } = rows.find((r) => r.budget === pickBudget) ?? rows[0];
   const pick = { ...pickRow, count };
 
   const shopCount = (await activeShops(SHOPS)).length;
@@ -79,8 +81,8 @@ export async function buildFoldBudgetScript(date: string): Promise<BudgetScript>
   const lines = ["折りたたみの中古は", "折り目とヒンジを", "確認しましょう"];
 
   const rawTitle = `${pick.label}なら${pick.model}！予算ぴったりで買える中古折りたたみスマホ`;
-  const title = rawTitle.length <= 60 ? rawTitle : `予算ぴったりで買える中古折りたたみスマホ（${FOLD_SHORT_BUDGETS.map(budgetLabel).join("・")}）`;
-  const bands = FOLD_SHORT_BUDGETS.map((b, i) => (i === 0 ? `${budgetLabel(b)}以下` : `${FOLD_SHORT_BUDGETS[i - 1] / 10000}万超〜${b / 10000}万${i === FOLD_SHORT_BUDGETS.length - 1 ? "円" : ""}`)).join("・");
+  const title = rawTitle.length <= 60 ? rawTitle : `予算ぴったりで買える中古折りたたみスマホ（${budgets.map(budgetLabel).join("・")}）`;
+  const bands = bandsText(budgets);
   const description = [
     `予算ごとに、相場で買えるいちばん上の中古折りたたみスマホ（Galaxy Z Fold・Z Flip・Pixel の Fold）です。${pick.label}なら${pick.model}（${pick.released}発売・${pick.storage}・${pick.spec}・相場${man(pick.median)}円・在庫${man(pick.count)}台）。`,
     "",

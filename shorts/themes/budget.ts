@@ -5,16 +5,16 @@
  * - 対象は iOS 27 対応の iPhone（ALL_CATALOG_MODELS。drops と同じ）のうち iPhone 12 シリーズ以降（isRecentEnough）で、在庫が MIN_COUNT 件以上の機種
  *   iPhone 11・11 Pro・11 Pro Max（2019年）と iPhone SE (第2世代)（2020年・A13）は古すぎるので出さない（10/21 ユーザーの指示）。SE (第3世代)（2022年）は入れる
  * - 相場＝在庫がいちばん多い容量の中央値（getModelMarket。サイトの相場と同じ数字）
- * - 予算 B ごとに、ひとつ前の予算 P との帯 (P, B]（3万: 0〜3万・5万: 3万超〜5万・7万: 5万超〜7万・10万: 7万超〜10万）に
- *   相場が入る機種のうち、相場がいちばん高い機種（＝その予算でいちばん上の機種）。同じ相場なら発売年（lib/iphoneSpecs.ts）の新しい方
- *   （前のルール「相場が予算以下で発売年がいちばん新しい」だと、5万円の枠に相場3.3万円の SE 第3世代が入って分かりにくかった）
- * - 帯に機種がなければ、前のルール（相場が予算以下で発売年がいちばん新しい・同じ年なら相場の高い方）
+ * - 予算 B ごとに、帯 (max(ひとつ前の予算, B−1万円), B]（4万: 3万超〜4万）に相場が入る機種のうち、相場がいちばん高い機種
+ *   （＝その予算でいちばん上の機種）。同じ相場なら発売年（lib/iphoneSpecs.ts）の新しい方
+ *   （「予算ぴったり」なので、予算と相場が1万円以上開く機種は出さない。10/25 ユーザーの指示。12万円の枠に相場10.7万円の 16e が入っていた）
+ * - 帯に機種がなければエラー。--budgets で予算を変える
  * - 注目（reveal）は PICK_BUDGET（5万円）の行の機種に固定。出すのは相場（容量つき）と在庫数（相場と同じ、販売中の全在庫）だけ。
  *   最安は出さない（3万円の行より安く見えて分かりにくいため）
  * DB は機種ごとの集計（groupBy と中央値の1行）だけ。在庫の行を丸ごと取らない
  */
 import { getModelMarket, type ModelMarket } from "@/lib/marketStats";
-import { budgetLabel, budgetPath } from "@/lib/budgets";
+import { BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import { ALL_CATALOG_MODELS, modelPagePath } from "@/lib/catalog";
 import { storageLabel } from "@/lib/format";
 import { specOf } from "@/lib/iphoneSpecs";
@@ -33,9 +33,16 @@ export const PICK_BUDGET = 50000;
  */
 export type BudgetOpts = { budgets?: number[]; pick?: number };
 
-/** 予算の帯の書き方（「3万円以下・3万超〜5万・5万超〜7万・7万超〜10万円」） */
+/** 説明欄の予算別ページ: 注目の予算にページ（lib/budgets.ts）がなければ、それより下でいちばん近いページ */
+export const pageBudget = (pick: number, pages: number[]) => [...pages].filter((b) => b <= pick).pop() ?? pages[0];
+
+/** 「予算ぴったり」の幅: 相場が予算より BUDGET_GAP 未満だけ安い機種だけ（10/25 ユーザーの指示「1万円以上開かないように」） */
+export const BUDGET_GAP = 10000;
+/** 予算の帯の下端（ひとつ前の予算か、予算−BUDGET_GAP の高い方。帯は (下端, 予算]） */
+const bandFloor = (budgets: number[], i: number) => Math.max(i > 0 ? budgets[i - 1] : 0, budgets[i] - BUDGET_GAP);
+/** 予算の帯の書き方（「3万超〜4万・5万超〜6万・7万超〜8万・11万超〜12万円」） */
 export const bandsText = (budgets: number[]) =>
-  budgets.map((b, i) => (i === 0 ? `${budgetLabel(b)}以下` : `${budgets[i - 1] / 10000}万超〜${b / 10000}万${i === budgets.length - 1 ? "円" : ""}`)).join("・");
+  budgets.map((b, i) => `${bandFloor(budgets, i) / 10000}万超〜${b / 10000}万${i === budgets.length - 1 ? "円" : ""}`).join("・");
 /** 相場が数件の在庫で決まらないように */
 export const MIN_COUNT = 5;
 
@@ -49,21 +56,17 @@ const utm = (date: string) => `utm_source=youtube&utm_medium=social&utm_campaign
 
 /**
  * 予算ごとの機種（budget・pixelbudget で共通の選び方）。cands は対象の機種と相場（在庫 MIN_COUNT 件以上に絞ったもの）、
- * age は発売の新しさ（大きいほど新しい）。帯 (前の予算, 予算] で相場のいちばん高い機種（同じなら新しい方）、帯が空なら予算以下でいちばん新しい機種。
+ * age は発売の新しさ（大きいほど新しい）。帯 (下端, 予算] で相場のいちばん高い機種（同じなら新しい方）。下端は前の予算か予算−1万円の高い方（予算と相場が1万円以上開かない）。帯が空ならエラー（予算を変える）。
  * budgets は予算の並び（既定 SHORT_BUDGETS。ipadbudget は IPAD_SHORT_BUDGETS）
  */
 export function pickBudgetModels(cands: [string, ModelMarket][], age: (model: string) => number, what: string, budgets: number[] = SHORT_BUDGETS): { budget: number; model: string; r: ModelMarket }[] {
   return budgets.map((budget, i) => {
-    const prev = i > 0 ? budgets[i - 1] : 0;
-    // 帯 (prev, budget] の中で相場のいちばん高い機種。同じ相場なら発売の新しい方
-    const band = cands.filter(([, r]) => r.medianPrice > prev && r.medianPrice <= budget)
+    const floor = bandFloor(budgets, i);
+    // 帯 (floor, budget] の中で相場のいちばん高い機種。同じ相場なら発売の新しい方
+    const band = cands.filter(([, r]) => r.medianPrice > floor && r.medianPrice <= budget)
       .sort(([a, ra], [b, rb]) => rb.medianPrice - ra.medianPrice || age(b) - age(a));
-    // 帯が空なら前のルール（予算以下で発売年がいちばん新しい・同じ年なら相場の高い方）
-    const fallback = cands.filter(([, r]) => r.medianPrice <= budget)
-      .sort(([a, ra], [b, rb]) => age(b) - age(a) || rb.medianPrice - ra.medianPrice);
-    const hit = band[0] ?? fallback[0];
-    if (!hit) throw new Error(`相場が ${budgetLabel(budget)} 以下の${what}がありません`);
-    if (!band.length) console.warn(`注意: ${budgetLabel(budget)} の帯に機種がないので、予算以下で発売年のいちばん新しい機種にしました`);
+    const hit = band[0];
+    if (!hit) throw new Error(`相場が ${floor / 10000}万円超〜${budgetLabel(budget)} の${what}がありません（予算と相場が1万円以上開くので、--budgets で予算を変える）`);
     return { budget, model: hit[0], r: hit[1] };
   });
 }
@@ -95,7 +98,7 @@ export async function buildBudgetScript(date: string, opts: BudgetOpts = {}): Pr
     "",
     // utm で YouTube から来た人を GA で数える（canonical は印なしなので検索には影響しない）
     `${pick.model}の店ごとの在庫と最安値: https://used.gadelog.com${modelPagePath(pick.model)}?${utm(date)}`,
-    `${pick.label}以下で買える中古iPhone: https://used.gadelog.com${budgetPath(pick.budget)}?${utm(date)}`,
+    `${budgetLabel(pageBudget(pick.budget, BUDGETS))}以下で買える中古iPhone: https://used.gadelog.com${budgetPath(pageBudget(pick.budget, BUDGETS))}?${utm(date)}`,
     `全機種の中古相場: https://used.gadelog.com/?${utm(date)}`,
   ].join("\n");
 
