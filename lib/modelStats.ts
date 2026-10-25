@@ -1,7 +1,7 @@
 import { cache } from "react";
 import type { Device } from "@/app/components/DeviceCard";
 import prisma from "@/lib/prisma";
-import { groupMinPrice, modelWhere, primaryMedian, type PriceGroup } from "@/lib/modelInventory";
+import { groupMinPrice, medianPrice, modelWhere, primaryMedian, type PriceGroup } from "@/lib/modelInventory";
 import { minBatteryWhere } from "@/lib/deviceSearch";
 import { findShop } from "@/lib/shops";
 
@@ -77,6 +77,26 @@ export const getModelStats = cache(async (model: string): Promise<ModelStats> =>
     byShop: byShop.sort((a, b) => a.minPrice - b.minPrice),
     cheapest,
   };
+});
+
+export type StorageMedianRow = { storage: number; minPrice: number; medianPrice: number | null; count: number };
+
+/**
+ * 容量（Apple Watch はサイズ・MacBook は SSD）ごとの最安値・中央値・件数（機種ページの「容量別の相場」。10/25〜）。
+ * 最安値と件数は getModelStats の byStorage をそのまま使い、中央値だけ容量ごとに1行取り出す（在庫の行は取らない。lib/modelInventory.ts の medianPrice）。
+ * 相場の容量（medianStorage）の中央値は getModelStats で取ったものを使い、問い合わせを1回減らす
+ */
+export const getStorageMedians = cache(async (model: string): Promise<StorageMedianRow[]> => {
+  const stats = await getModelStats(model);
+  if (stats.byStorage.length === 0) return [];
+  const where = await modelWhere(model);
+  return Promise.all(
+    stats.byStorage.map(async (r) => {
+      const storage = Number(r.key);
+      const median = storage === stats.medianStorage ? stats.medianPrice : await medianPrice({ AND: [where, { storage }] }, r.count);
+      return { storage, minPrice: r.minPrice, medianPrice: median, count: r.count };
+    }),
+  );
 });
 
 /** 機種ページの「バッテリー別の最安値」の区切り（検索の絞り込みのボタンと同じ） */

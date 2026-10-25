@@ -70,7 +70,7 @@ export function buildFaq(p: {
   newCheckedJa?: string;
   /** 「いつまで使えるか」の根拠がある機種だけ。なければ質問ごと出さない */
   supportAnswer: string | null;
-  /** バッテリー85%以上の最安値と件数（iPhone のみ。なければ質問ごと出さない） */
+  /** バッテリー85%以上の最安値と件数（iPhone・iPad。なければ質問ごと出さない） */
   battery85?: { minPrice: number; count: number } | null;
   /** ランクごとの最安値（iPhone のみ。A/B/C のうち2つ以上あるときだけ質問を出す） */
   byRank?: PriceRow[];

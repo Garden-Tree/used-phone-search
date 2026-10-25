@@ -12,6 +12,7 @@ import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from '@/lib/catalog';
 import { SEARCH_DEVICES, findSearchDevice, matchesModel, splitModelQuery } from '@/lib/modelMatch';
 import type { InventoryFile, InventoryIndex } from '@/lib/searchData';
 import { findShop } from '@/lib/shops';
+import { affiliateUrl, isAffiliateUrl } from '@/lib/affiliate';
 import { BUILD_TIME } from '@/lib/buildTime';
 import { ranksAtLeast } from '@/lib/rankFilter';
 
@@ -59,6 +60,18 @@ const toInt = (v: string | null) => {
   if (!v) return undefined;
   const n = parseInt(v, 10);
   return Number.isFinite(n) ? n : undefined;
+};
+
+/**
+ * 「ランクB以上・バッテリー85%以上」に当たるか（機種ページの結論・lib/modelBest.ts の getGoodDevice と同じ条件）。
+ * ランクは S・A・B（小文字も）。バッテリーは数値が 85 以上（「80%以上」の店は 80 なので外れる。未使用品の 100 は入る）。
+ * ランクS（未使用品）はバッテリーの表記がなくても含める（lib/deviceSearch.ts の minBatteryWhere と同じ）。
+ * withBattery=false は MacBook・Apple Watch（バッテリーを書かない店が多いので、ランクB以上だけ）
+ */
+const isGoodDevice = (d: Device, withBattery: boolean): boolean => {
+  const rank = d.conditionRank.toUpperCase();
+  if (rank !== 'S' && rank !== 'A' && rank !== 'B') return false;
+  return !withBattery || rank === 'S' || (d.batteryHealth ?? 0) >= 85;
 };
 
 /** 条件に必要なファイル（拡張子なし）。機種の指定があればその機種と、どの機種にも当たらない表記の other-*。なければ種類の全機種 */
@@ -213,6 +226,27 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
   const clearAll = () => updateParams({ shop: null, storage: null, memory: null, carrier: null, rank: null, minRank: null, minBattery: null, minPrice: null, maxPrice: null });
   const minShown = devices.length ? devices.reduce((m, d) => Math.min(m, d.price), Infinity) : null;
 
+  // 一覧の上に添える「ランクB以上・バッテリー85%以上でいちばん安い1台」（10/25〜。機種ページの「安い在庫」の1台と同じ条件・同じ文言）。
+  // 読み込んだ配列から選ぶだけ（通信は増やさない）。並びは価格のままで、この行は条件つきの1台だと分かる見出しを付ける。
+  // 条件がすでに適用されているとき（バッテリー85%以上・ランクB以上／ランクS・A・Bの完全一致）と、いちばん安い在庫がもう条件に当たるとき（同じ行が2回出る）は出さない
+  const macView = device.key === 'mac' || models.some((q) => /^\s*macbook/i.test(q));
+  const goodWithBattery = !(macView || watchView);
+  const rankParam = params.get('rank');
+  const goodAlreadyApplied =
+    (goodWithBattery && mb !== undefined && mb >= 85) ||
+    (minRank !== null && ['S', 'A', 'B'].includes(minRank)) ||
+    (rankParam !== null && ['S', 'A', 'B'].includes(rankParam.toUpperCase()));
+  const goodPick = useMemo(() => {
+    if (goodAlreadyApplied || minShown === null) return null;
+    let best: Device | null = null;
+    for (const d of devices) {
+      if (isGoodDevice(d, goodWithBattery) && (best === null || d.price < best.price)) best = d;
+    }
+    return best && best.price > minShown ? best : null;
+  }, [devices, goodAlreadyApplied, goodWithBattery, minShown]);
+  const goodLabel = goodWithBattery ? 'ランクB以上・バッテリー85%以上でいちばん安い1台' : 'ランクB以上でいちばん安い1台';
+  const applyGood = () => updateParams(goodWithBattery ? { minRank: 'B', minBattery: '85', rank: null } : { minRank: 'B', rank: null });
+
   // 絞り込みの画面（スマホ）を開いている間は背面をスクロールさせず、Esc で閉じる
   useEffect(() => {
     if (!sheetOpen) return;
@@ -323,8 +357,28 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
               <p className="text-sm text-ink-mute mt-2">条件を変更して検索してみてください。</p>
             </div>
           ) : (
-            // 検索条件が変わったら作り直して、表示件数を最初に戻す
-            <ClientDeviceList key={params.toString()} devices={devices} showModel={models.length !== 1} />
+            <>
+              {goodPick && (
+                <section aria-label={goodLabel} className="mb-2">
+                  <DeviceList>
+                    <p className="px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe flex items-center gap-1.5">
+                      {goodLabel}
+                      {/* アフィリエイト経由のリンクには PR を添える（機種ページの PR タイルと同じ印） */}
+                      {isAffiliateUrl(affiliateUrl(goodPick.shopName, goodPick.url)) && (
+                        <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1 py-px leading-none">PR</span>
+                      )}
+                    </p>
+                    <DeviceCard device={goodPick} showModel={models.length !== 1} />
+                    <button type="button" onClick={applyGood}
+                      className="w-full h-11 text-sm font-bold text-brand-600 hover:bg-ground flex items-center justify-center">
+                      この条件で絞り込む ›
+                    </button>
+                  </DeviceList>
+                </section>
+              )}
+              {/* 検索条件が変わったら作り直して、表示件数を最初に戻す */}
+              <ClientDeviceList key={params.toString()} devices={devices} showModel={models.length !== 1} />
+            </>
           )}
         </div>
       </div>
