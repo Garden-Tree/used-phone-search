@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
+import VideoEmbed from "@/app/components/VideoEmbed";
+import { VIDEOS } from "@/lib/videos";
 import { modelPagePath } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
 import { getWhereToBuy } from "@/lib/whereToBuy";
@@ -264,6 +266,9 @@ export default async function WhereToBuyPage() {
             <p><Link href="/iphone/price-factors" className="font-bold text-brand-600 hover:underline underline-offset-4">電池・状態ランク・容量・世代で、値段はいくら違う？ &rarr;</Link></p>
           </div>
         </section>
+
+        {/* 同じテーマの横動画（10/24 公開） */}
+        <VideoEmbed video={VIDEOS.whereToBuy} />
 
         <section className="flex flex-col gap-2 text-sm text-ink-sub">
           <h2 className="text-lg font-bold text-ink">データの出典</h2>

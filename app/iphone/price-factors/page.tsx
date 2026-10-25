@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
+import VideoEmbed from "@/app/components/VideoEmbed";
+import { VIDEOS } from "@/lib/videos";
 import { modelPagePath } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
 import { activeShops } from "@/lib/activeShops";
@@ -17,8 +19,6 @@ export const dynamic = "force-static";
  * 「中古iPhone バッテリー 何%」「状態ランク 違い」などの検索と、AI の概要の関連する問いに答える常設ページ。数字は lib/priceFactors.ts
  */
 const TITLE = "中古iPhoneの値段は何で決まる？電池・状態ランク・容量・世代の差【毎日更新】";
-// 同じテーマの横動画（YouTube）
-const VIDEO_ID = "S8Oa_pOJ8NY";
 const PATH = "/iphone/price-factors";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -201,22 +201,8 @@ export default async function PriceFactorsPage() {
           </section>
         )}
 
-        {/* 同じテーマの横動画（10/23 公開。数字は公開日の時点） */}
-        <section className="flex flex-col gap-2">
-          <h2 className="text-lg md:text-xl font-bold">動画で見る（約9分）</h2>
-          <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-line bg-black">
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${VIDEO_ID}`}
-              title="【中古iPhone】どこにお金をかけるべき？ 世代・Pro・ランク・容量・電池を約7万件の相場で比べた"
-              loading="lazy"
-              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-              className="absolute inset-0 w-full h-full"
-            />
-          </div>
-          <p className="text-xs text-ink-mute">動画の数字は 2026/10/23 時点。このページの表は毎日更新しています。</p>
-        </section>
+        {/* 同じテーマの横動画（10/23 公開） */}
+        <VideoEmbed video={VIDEOS.priceFactors} />
 
         <section className="flex flex-col gap-2 text-sm text-ink-sub">
           <h2 className="text-lg font-bold text-ink">データの出典</h2>

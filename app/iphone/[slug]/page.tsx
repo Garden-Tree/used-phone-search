@@ -5,6 +5,8 @@ import { ArrowDown, Check, ChevronDown } from "lucide-react";
 import DeviceCard, { DeviceList, type Device } from "@/app/components/DeviceCard";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
+import VideoEmbed from "@/app/components/VideoEmbed";
+import { videoForModel } from "@/lib/videos";
 import {
   ALL_CATALOG_MODELS,
   ALL_DEVICE_PAGE_MODELS,
@@ -272,6 +274,7 @@ export default async function ModelPage({ params }: Props) {
   const cheapest5 = stats.cheapest.slice(0, 5);
   const cheapestDevice = stats.cheapest[0];
   const isIphone = deviceOf(model) === "iphone";
+  const video = videoForModel(model);
   const has64GB = stats.byStorage.some((r) => r.key === "64");
   const tips = isIphone ? inspectionTips({ model, has64GB }) : [];
   const updatedText = stats.lastUpdated
@@ -896,6 +899,12 @@ export default async function ModelPage({ params }: Props) {
               {isIphone && (
                 <div className="md:order-6 min-[1360px]:col-span-2 empty:hidden">
                   <RepairOrReplace model={model} minPrice={stats.minPrice} medianPrice={stats.medianPrice} medianStorage={stats.medianStorage} />
+                </div>
+              )}
+              {/* Proと無印を比べた横動画（iPhone 13〜17 の無印・Pro・Pro Max。lib/videos.ts） */}
+              {video && (
+                <div className="md:order-6 min-[1360px]:col-span-2">
+                  <VideoEmbed video={video} heading="Proと無印の違いを動画で見る" />
                 </div>
               )}
               {device === "ipad" && (

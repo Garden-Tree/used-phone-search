@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
+import VideoEmbed from "@/app/components/VideoEmbed";
+import { VIDEOS } from "@/lib/videos";
 import PopularModels from "@/app/components/PopularModels";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import PriceDrops from "@/app/components/PriceDrops";
@@ -155,6 +157,9 @@ export default async function IphoneIndexPage() {
         )}
 
         <PopularModels />
+
+        {/* 予算別のおすすめを解説した横動画（10/21 公開） */}
+        <VideoEmbed video={VIDEOS.iphoneDore} heading="予算別のおすすめを動画で見る" className="my-8" />
 
         {IPHONE_CATALOG.map((series) => (
           <section key={series.series} className="my-8">

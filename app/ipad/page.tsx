@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
+import VideoEmbed from "@/app/components/VideoEmbed";
+import { VIDEOS } from "@/lib/videos";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { getModelMarket } from "@/lib/marketStats";
 import { isIpad, modelPagePath } from "@/lib/catalog";
@@ -89,6 +91,9 @@ export default async function IpadIndexPage() {
             ))}
           </div>
         </section>
+
+        {/* 使い方別のおすすめを解説した横動画（10/24 公開） */}
+        <VideoEmbed video={VIDEOS.ipadDore} heading="使い方別のおすすめを動画で見る" className="my-6" />
 
         {/* iPad の比較ページ */}
         <section className="my-6">
