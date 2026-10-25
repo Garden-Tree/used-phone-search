@@ -33,16 +33,23 @@ const FOOT_Y = 1024;
  * 終了画面（YouTube Studio の「終了画面」で要素を重ねる場所。画面の座標・1920x1080）。
  * YouTube の決まり（support.google.com/youtube/answer/6388789・10/25 確認）: 動画の最後の 5〜20 秒・動画は 25 秒以上・
  * 16:9 なら要素は4つまで・位置はプレーヤーの上でドラッグ（グリッドに合わせられる）。要素の大きさの決まりは書かれていない。
- * ここでは「動画2枠（16:9）＋チャンネル登録（丸）」をカードの中に置く。字幕・立ち絵・章の帯には重ねない
+ * ここでは「動画2枠（16:9）＋チャンネル登録（丸）」を横一列に置く。字幕と章の帯には重ねない（立ち絵には重なる。要素が出ている間は隠れる）。
+ * 大きさは Studio が実際に置く要素に合わせる（10/25 に6本目の本番で測った値: 動画は幅 32.5%＝624px・16:9、登録は約 296px 四方）。
+ * 5・6本目は動画 600px と登録 132px の枠をカードの中に描いていたため、Studio の要素が収まらず、2本目の動画と登録が重なって下にずらすしかなかった
  */
+const ES_VIDEO_W = 624;
+const ES_VIDEO_H = 351;
+const ES_SUB = 296;
+const ES_GAP = 20;
+const ES_LEFT = Math.round((W - (ES_VIDEO_W * 2 + ES_GAP + 40 + ES_SUB)) / 2);
 export const END_SCREEN = {
   /** 終了画面の長さ（秒。YouTube の上限）。最後の章の絵が出てから動画の終わりまでをこの秒数にする（足りなければ最後に BGM だけの間を足す） */
   sec: 20,
   videos: [
-    { x: CARD.x + CARD.pad, y: CARD.y + CARD.pad + 156, w: 600, h: 338 },
-    { x: CARD.x + CARD.w - CARD.pad - 600, y: CARD.y + CARD.pad + 156, w: 600, h: 338 },
+    { x: ES_LEFT, y: 300, w: ES_VIDEO_W, h: ES_VIDEO_H },
+    { x: ES_LEFT + ES_VIDEO_W + ES_GAP, y: 300, w: ES_VIDEO_W, h: ES_VIDEO_H },
   ],
-  subscribe: { x: CARD.x + CARD.w - CARD.pad - 132, y: CARD.y + CARD.pad, size: 132 },
+  subscribe: { x: ES_LEFT + ES_VIDEO_W * 2 + ES_GAP + 40, y: 300 + Math.round((ES_VIDEO_H - ES_SUB) / 2), size: ES_SUB },
 } as const;
 
 /** 最後の台詞のあとに残す秒（BGM が下がりきる） */
@@ -367,32 +374,40 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
 }
 
 /**
- * 終了画面。YouTube の要素が重なる枠（END_SCREEN）に、動画の題とチャンネル登録の丸を描いておく
- * （要素は枠の上に重ねて置く。終了画面が出ない環境でも何の動画かわかる）
+ * 終了画面のカードの中身（見出しと注記だけ）。要素を置く枠は EndScreenSlots が画面の座標で上に重ねる
  */
 function EndScreen({ s }: { s: EndScreenScene }) {
-  const ox = CARD.x + CARD.pad;
   const oy = CARD.y + CARD.pad;
-  const sub = END_SCREEN.subscribe;
-  const label = "チャンネル登録はこちら";
   return (
     <div style={{ display: "flex", position: "relative", width: INNER_W, height: CARD.h - CARD.pad * 2 }}>
-      <div style={{ display: "flex", position: "absolute", left: 0, top: 10, width: INNER_W - sub.size - 480, fontSize: fitFontSize(s.heading, INNER_W - sub.size - 480, 52), fontWeight: 900, color: C.ink }}>{s.heading}</div>
-      <div style={{ display: "flex", position: "absolute", left: sub.x - ox - 440, top: sub.y - oy + sub.size / 2 - 24, width: 420, justifyContent: "flex-end", fontSize: 34, fontWeight: 900, color: C.red }}>{`${label} →`}</div>
-      <div style={{ display: "flex", position: "absolute", left: sub.x - ox, top: sub.y - oy, width: sub.size, height: sub.size, borderRadius: 999, background: C.barFill, border: `6px dashed ${C.line}`, alignItems: "center", justifyContent: "center", color: C.white, fontSize: 34, fontWeight: 900 }}>登録</div>
+      <div style={{ display: "flex", position: "absolute", left: 0, top: 10, width: INNER_W, fontSize: fitFontSize(s.heading, INNER_W, 52), fontWeight: 900, color: C.ink }}>{s.heading}</div>
+      {s.note ? (
+        <div style={{ display: "flex", position: "absolute", left: 0, top: END_SCREEN.videos[0].y - oy + END_SCREEN.videos[0].h + 22, width: INNER_W, fontSize: fitFontSize(s.note, INNER_W, 28, 22), fontWeight: 500, color: C.sub }}>{s.note}</div>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * 終了画面の要素を置く枠（END_SCREEN・画面の座標）。カードと立ち絵の上に重ねて、動画の題とチャンネル登録の丸を描く
+ * （Studio で要素をこの枠に合わせて置く。終了画面が出ない環境でも何の動画かわかる）
+ */
+function EndScreenSlots({ s }: { s: EndScreenScene }) {
+  const sub = END_SCREEN.subscribe;
+  return (
+    <>
       {s.videos.map((v, i) => {
         const b = END_SCREEN.videos[i];
         return (
-          <div key={i} style={{ ...col, position: "absolute", left: b.x - ox, top: b.y - oy, width: b.w, height: b.h, padding: "26px 30px", background: C.bg, borderRadius: 16, border: `4px dashed ${C.url}` }}>
+          <div key={i} style={{ ...col, position: "absolute", left: b.x, top: b.y, width: b.w, height: b.h, padding: "26px 30px", background: C.bg, borderRadius: 16, border: `4px dashed ${C.url}` }}>
             <div style={{ display: "flex", fontSize: 28, fontWeight: 900, color: C.url }}>{i === 0 ? "次におすすめ" : "こちらもどうぞ"}</div>
             <div style={{ display: "flex", marginTop: 14, width: b.w - 68, fontSize: 38, lineHeight: 1.35, fontWeight: 900, color: C.white }}>{v.title}</div>
           </div>
         );
       })}
-      {s.note ? (
-        <div style={{ display: "flex", position: "absolute", left: 0, top: END_SCREEN.videos[0].y - oy + END_SCREEN.videos[0].h + 22, width: INNER_W, fontSize: fitFontSize(s.note, INNER_W, 28, 22), fontWeight: 500, color: C.sub }}>{s.note}</div>
-      ) : null}
-    </div>
+      <div style={{ display: "flex", position: "absolute", left: sub.x, top: sub.y, width: sub.size, height: sub.size, borderRadius: 999, background: C.barFill, border: `6px dashed ${C.line}`, alignItems: "center", justifyContent: "center", color: C.white, fontSize: 56, fontWeight: 900 }}>登録</div>
+      <div style={{ display: "flex", position: "absolute", left: sub.x - 40, top: sub.y + sub.size + 16, width: sub.size + 80, justifyContent: "center", fontSize: 30, fontWeight: 900, color: C.url }}>チャンネル登録</div>
+    </>
   );
 }
 
@@ -534,6 +549,7 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
       <div style={{ ...col, position: "absolute", left: CARD.x, top: CARD.y, width: CARD.w, height: CARD.h, padding: CARD.pad, background: C.white, borderRadius: 24 }}>
         <SceneBody ch={scene} t={local} />
       </div>
+      {ch.scene.type === "endScreen" ? <EndScreenSlots s={ch.scene} /> : null}
       <Subtitle who={who} text={page?.text ?? ""} />
       <div style={{ display: "flex", position: "absolute", left: SUB.x + 8, top: FOOT_Y, fontSize: 26, fontWeight: 500, color: C.onDarkSub }}>{`${date} 時点・大手中古ショップ${tl.shops}店の在庫から`}</div>
     </div>
