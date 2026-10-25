@@ -110,3 +110,12 @@ timeline.ts は `shorts/voice.ts` の `synthesize`（オフライン）で声の
 - 時間: `tailOf`（scenes.tsx）が、最後の章の絵が出てから動画の終わりまでを **20 秒**にそろえる（台詞のあとは BGM だけ）。台詞が 20 秒を超えると timeline.ts が警告する
 - 書き出すと `endscreen.txt`（開始秒・各要素の動画の URL と位置）ができる。`video.tsx check` は `stills/check-endscreen.png` も作る
 - Studio: 動画 → 編集 → 終了画面 → 要素「動画」を2つ（「特定の動画を選択」で endscreen.txt の URL）と「登録」を足し、3つとも endscreen.txt の開始秒から終わりまで。枠に合わせて大きさと位置を直し、プレビューで確かめて保存
+
+## 固定コメント（10/25〜。公開したら必ず）
+
+ショートの説明欄・コメントのリンクは押せないので、YouTube からサイトへの道は「ショート → 関連動画（横動画）→ 横動画の説明欄・固定コメント」だけ（10/18〜24 の YouTube からの訪問は0）。公開後、動画のページでコメントを1つ書いて「固定」する。
+
+- 文面: 「動画の数字は<月/日>時点です。<テーマ>の今日の相場と最安値は、サイトで毎日更新しています → <URL>」（1行。リンクは押せる）
+- URL: 同じテーマのページに `?utm_source=youtube&utm_medium=comment&utm_campaign=pin_<説明欄と同じ日付>`（説明欄は utm_medium=social なので GA で分けて見られる）
+- 入力は computer の type（JS で文字を入れない）。投稿後、⋮ →「固定」→ 確認の「固定」
+
