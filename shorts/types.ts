@@ -21,6 +21,11 @@ type Common = {
   narrationKana?: Partial<Record<NarrationKey, string>>;
   /** VOICEVOX の設定（任意）。なければ 春日部つむぎ・速さ 1.25 */
   voice?: VoiceConfig;
+  /**
+   * つかみの型（任意・10/26〜の実験）。"answer" は問いでなく1位の答え（機種と差額）から始める。
+   * いまは minie だけが絵を切り替える。声は narration.hook に答えの文を書く
+   */
+  hookStyle?: "question" | "answer";
 };
 /** 検品担当のひと言。人が書き換える（1行16字以内・3行まで） */
 type CommentScene = { speaker: string; lines: string[] };

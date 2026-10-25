@@ -1433,7 +1433,11 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
     switch (sc.id) {
       case "hook": {
         const r = s.scenes.ranking.items[0];
-        return <SplitHook s={s} t={t} lines={["miniとeは、", "無印より", "いくら安い？"]} teaser={`−${n(r.diff)}円`}
+        // hookStyle "answer"（10/26〜の実験）: 問いでなく1位の答えから（「iPhone 17eは／無印より／約2.6万円安い」）
+        const lines = s.hookStyle === "answer"
+          ? [`iPhone ${r.older.replace(/^iPhone /, "")}は`, "無印より", `約${(r.diff / 10000).toFixed(1)}万円安い`]
+          : ["miniとeは、", "無印より", "いくら安い？"];
+        return <SplitHook s={s} t={t} lines={lines} teaser={`−${n(r.diff)}円`} label={s.hookStyle === "answer" ? "1位" : "最大"}
           left={{ label: "無印", sub: r.storage, fill: C.budget }} right={{ label: "mini・e", sub: "弟分", fill: C.red }} />;
       }
       case "ranking": return <FoldRanking s={f} t={t} o={sc.o} nameOf={minieName} />;
