@@ -102,6 +102,10 @@ export const LOOKS: Record<Script["theme"], Look> = {
   promax: { ...VERSUS, hook: "split" },
   // plusvs（10/25〜）: provs と同じ VERSUS。直前の回（19時の drops ＝ ① DROPS）と見た目が続かない
   plusvs: { ...VERSUS, hook: "split" },
+  // minie・unused（10/26〜）: 見た目は5つまでなので新しく作らない。同じ日の plusvs（③ VERSUS）と続かないよう、minie は ② BUDGET（明るい地。
+  // つかみの「無印 vs mini・e」の右の札は price の赤＝白い文字 5.66。BUDGET の chip は左の札と同じ brand600 なので使わない）、unused は rank と同じ ④ CONDITION
+  minie: { ...BUDGET, hook: "split" },
+  unused: { ...CONDITION, hook: "split" },
   fold: { ...VERSUS, hook: "fold" },
   rank: { ...CONDITION, hook: "abc" },
   battery: { ...CONDITION, hook: "battery" },

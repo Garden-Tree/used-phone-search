@@ -7,7 +7,7 @@ import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
-import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type Script } from "./types";
+import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -23,10 +23,13 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? ["電池90%台だと", "いくら高い？中古iPhone"]
     : s.theme === "gen" ? ["iPhone", "1世代前でいくら安い？"] : s.theme === "storage" ? ["容量を1つ上げると", "いくら高い？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
     : s.theme === "ios27line" ? ["iOS 27対応で", "いちばん安い中古iPhone"] : s.theme === "batteryswap" ? ["電池交換を足すと", "1つ上の世代と同じ値段？"] : s.theme === "overnew" ? ["中古なのに", "新品より高い？中古iPhone"]
-    : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : [`${periodOf(s as DropsScript).name}の中古iPhone`, "値下がりランキング"];
+    : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"]
+    : s.theme === "minie" ? ["無印より安い“弟分”", "いくら安い？中古iPhone"] : s.theme === "unused" ? ["未使用品（ランクS）は", "中古よりいくら高い？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : [`${periodOf(s as DropsScript).name}の中古iPhone`, "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
   s.theme === "rank" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
+    : s.theme === "unused" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記（S＝未使用品）・同じ容量の中央値`
+    : s.theme === "minie" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値`
     : s.theme === "battery" ? `${s.date.replace(/-/g, "/")}・電池の%を数字で出す店・同じ容量の中央値`
     : s.theme === "gen" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値`
     : s.theme === "storage" ? `${s.date.replace(/-/g, "/")}・容量ごとの中央値`
@@ -130,7 +133,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // provs・fold も newused と同じ（問い → 3位・2位・伏せた1位 → 1位の2本の棒 → ひと言 → 締め）
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
-  if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
+  if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
     || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
@@ -531,9 +534,9 @@ const foldShort = (model: string) => model.replace(/^Galaxy Z\s+|^Pixel\s+|^iPho
 const foldName = (newer: string, older: string) => `${newer}／${foldShort(older)}`;
 
 /** fold のランキング: 機種名は「新しい方／1世代前」、下段は 容量・1世代前にした差（額・大）・率（新しい方に対して） */
-function FoldRanking({ s, t, o }: { s: FoldScript; t: number; o: Scene["o"] }) {
+function FoldRanking({ s, t, o, nameOf = foldName }: { s: FoldScript; t: number; o: Scene["o"]; nameOf?: (newer: string, older: string) => string }) {
   const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
-    model: foldName(it.newer, it.older),
+    model: nameOf(it.newer, it.older),
     cells: [
       { text: it.storage, w: 170, max: 44, color: C.muted },
       { text: `−${n(it.diff)}円`, w: 320, max: 76, color: lookOf(s).accent },
@@ -968,11 +971,11 @@ function BatteryReveal({ s, t }: { s: BatteryScript; t: number }) {
  * fold の1位: 「新しい方／1世代前」・容量、新しい方と1世代前の相場の2本の棒（新しい方を幅いっぱいにした比）、差額（大）と率（新しい方に対して）。
  * 棒は 0.8 秒から伸び、差額は数え上げる
  */
-function FoldReveal({ s, t }: { s: FoldScript; t: number }) {
+function FoldReveal({ s, t, nameOf = foldName }: { s: FoldScript; t: number; nameOf?: (newer: string, older: string) => string }) {
   const r = s.scenes.ranking.items[0];
   const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
   const grow = prog(t, 0.8, 0.7);
-  const name = foldName(r.newer, r.older);
+  const name = nameOf(r.newer, r.older);
   const diffText = `−${n(r.diff)}円`;
   const sub = `${r.storage}・中古の相場`;
   const LABEL = 230;
@@ -1342,6 +1345,69 @@ function OverNewReveal({ s, t }: { s: OverNewScript; t: number }) {
   );
 }
 
+/** minie の機種名: 弟分を先に「iPhone 13 mini／13」（ナレーション「<弟分>と<無印>」と同じ順。行の型は FoldRow で newer＝無印・older＝弟分） */
+const minieName = (base: string, sib: string) => `${sib}／${foldShort(base)}`;
+
+/** unused のランキング: 機種名、下段は 容量・未使用品にした差（額・大）・率（ランクA に対して） */
+function UnusedRanking({ s, t, o }: { s: UnusedScript; t: number; o: Scene["o"] }) {
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
+    model: it.model,
+    cells: [
+      { text: it.storage, w: 170, max: 44, color: C.muted },
+      { text: `+${n(it.diff)}円`, w: 320, max: 76, color: lookOf(s).accent },
+      { text: `+${rate(it.pct)}%`, w: 190, max: 50, color: lookOf(s).accent },
+    ],
+  }));
+  return <RankRows s={s} t={t} o={o} items={items} />;
+}
+
+/**
+ * unused の1位: 機種名・容量、ランクAと未使用品（ランクS）の相場の2本の棒（未使用品を幅いっぱいにした比。在庫の件数を添える）、差額（大）と率（A に対して）。
+ * 棒は 0.8 秒から伸び、差額は数え上げる（battery の1位と同じ形）
+ */
+function UnusedReveal({ s, t }: { s: UnusedScript; t: number }) {
+  const r = s.scenes.ranking.items[0];
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const grow = prog(t, 0.8, 0.7);
+  const diffText = `+${n(r.diff)}円`;
+  const sub = `${r.storage}・ランク別の中古の相場`;
+  const LABEL = 200;
+  const BAR = CW - 60 - LABEL - 20;
+  const bars = [
+    { label: "ランクA", price: r.aMedian, count: r.aCount, color: C.budget, w: Math.round((BAR * r.aMedian) / r.sMedian) },
+    { label: "未使用品", price: r.sMedian, count: r.sCount, color: lookOf(s).accent, w: BAR },
+  ];
+  const labelSize = Math.min(...bars.map((b) => FIT(b.label, LABEL, 48)));
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: 52, fontWeight: 900, marginBottom: 8, opacity: prog(t, 0, 0.25) }}>1位は…</div>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "20px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 88), fontWeight: 900 }}>{r.model}</div>
+        <div style={{ ...row, fontSize: FIT(sub, CW - 60, 44), fontWeight: 900, color: C.muted, marginTop: 4 }}>{sub}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 12 }}>
+          {bars.map((b, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 12 : 0 }}>
+              <div style={{ ...row, justifyContent: "flex-end", width: LABEL, fontSize: labelSize, fontWeight: 900, color: b.color }}>{b.label}</div>
+              <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
+                <div style={{ display: "flex", alignItems: "baseline" }}>
+                  <div style={{ ...row, fontSize: 50, fontWeight: 900, color: b.color }}>{`${n(b.price)}円`}</div>
+                  <div style={{ ...row, fontSize: 34, fontWeight: 700, color: C.muted, marginLeft: 14 }}>{`${n(b.count)}件`}</div>
+                </div>
+                <div style={{ display: "flex", width: Math.max(8, Math.round(b.w * grow)), height: 30, background: b.color, borderRadius: 12, marginTop: 4 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 8 }}>
+          <div style={{ ...row, fontSize: FIT(diffText, 600, 112), fontWeight: 900, color: lookOf(s).accent }}>{`+${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
+          <div style={{ ...row, fontSize: 64, fontWeight: 900, color: lookOf(s).accent, marginLeft: 16 }}>{`+${rate(r.pct)}%`}</div>
+        </div>
+        <div style={{ ...row, fontSize: 40, fontWeight: 900, color: C.muted, marginTop: 10, opacity: prog(t, 1.6, 0.3) }}>ランクは各店の表記</div>
+      </div>
+    </Frame>
+  );
+}
+
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
   if (s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew") {
     if (sc.id === "comment") return <Comment s={s} t={t} o={sc.o} />;
@@ -1360,6 +1426,36 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       if (sc.id === "reveal") return <OverNewReveal s={s} t={t} />;
     }
     throw new Error(`${s.theme} に場面 ${sc.id} はありません`);
+  }
+  if (s.theme === "minie") {
+    // 行と1位は fold・gen と同じ部品（FoldRow。newer＝無印・older＝弟分）。機種名は弟分を先に。つかみは「無印 vs mini・e」の札
+    const f = s as unknown as FoldScript;
+    switch (sc.id) {
+      case "hook": {
+        const r = s.scenes.ranking.items[0];
+        return <SplitHook s={s} t={t} lines={["miniとeは、", "無印より", "いくら安い？"]} teaser={`−${n(r.diff)}円`}
+          left={{ label: "無印", sub: r.storage, fill: C.budget }} right={{ label: "mini・e", sub: "弟分", fill: C.red }} />;
+      }
+      case "ranking": return <FoldRanking s={f} t={t} o={sc.o} nameOf={minieName} />;
+      case "reveal": return <FoldReveal s={f} t={t} nameOf={minieName} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`minie に場面 ${sc.id} はありません`);
+    }
+  }
+  if (s.theme === "unused") {
+    switch (sc.id) {
+      case "hook": {
+        const r = s.scenes.ranking.items[0];
+        return <SplitHook s={s} t={t} lines={["未使用品、", "中古より", "いくら高い？"]} teaser={`+${n(r.diff)}円`}
+          left={{ label: "ランクA", sub: "中古", fill: C.budget }} right={{ label: "未使用品", sub: "ランクS", fill: lookOf(s).chip }} />;
+      }
+      case "ranking": return <UnusedRanking s={s} t={t} o={sc.o} />;
+      case "reveal": return <UnusedReveal s={s} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`unused に場面 ${sc.id} はありません`);
+    }
   }
   if (s.theme === "gen") {
     // 場面は fold と同じ（行の型が同じ）。つかみだけ「最新 vs 1世代前」の札

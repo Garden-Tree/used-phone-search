@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・newused・provs・promax・plusvs・fold・rank・battery・gen・storage・ios27line・batteryswap・overnew）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・newused・provs・promax・plusvs・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -251,13 +251,39 @@ export type OverNewScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript;
+/** テーマ minie「無印より安い“弟分”、いくら安い？」（行と場面は fold・gen と同じ FoldRow。newer＝無印・older＝弟分（mini・e）。diff＝無印 − 弟分・pct は無印に対して。shorts/themes/minie.ts） */
+export type MinieScript = Common & {
+  theme: "minie";
+  scenes: {
+    ranking: { items: FoldRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+/**
+ * unused の1行: 1機種の在庫がいちばん多い容量で、状態ランク S（未使用品）と A（各店の表記）の中古の相場（中央値）（shorts/themes/unused.ts）。
+ * diff = ランクS の相場 − ランクA の相場、pct = diff / ランクA の相場（%・小数1桁）
+ */
+export type UnusedRow = { model: string; storage: string; storageGb: number; sMedian: number; aMedian: number; sCount: number; aCount: number; diff: number; pct: number };
+
+/** テーマ unused「未使用品（ランクS）は、中古（ランクA）よりいくら高い？」 */
+export type UnusedScript = Common & {
+  theme: "unused";
+  scenes: {
+    ranking: { items: UnusedRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript;
 
 /**
  * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。
  * YouTube 公式ブログ 2026/7「最後の5秒で声と画面の両方で誘導」）。いまの横動画は iPhone なので、Pixel・iPad・折りたたみは外す
  */
-export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "newused", "provs", "promax", "plusvs", "rank", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew"]);
+export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "newused", "provs", "promax", "plusvs", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew"]);
 export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";
 
 /** budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget（予算の4行・注目の1機種の場面を共有） */
