@@ -219,10 +219,11 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
   const track = INNER_W - LABEL - VALUE - GAP * 2;
   const max = axisMax(s.rows.flatMap((r) => [r.median, r.min ?? 0]));
   const rowH = Math.min(150, Math.floor(440 / s.rows.length));
-  // 5行以上（1行 88px 以下）は文字を小さくして、下の補足（売り場・在庫）が次の行に重ならないように（10/24）
-  const dense = rowH < 100;
+  // 5行以上（1行 88px 以下）か、補足が2行（sub に改行）の行があれば文字を小さくして、次の行に重ならないように（10/24・10/25）
+  const dense = rowH < 100 || s.rows.some((r) => r.sub?.includes("\n"));
   const F = dense ? { label: 44, sub: 22, value: 44, small: 22 } : { label: 52, sub: 28, value: 56, small: 28 };
   const DOT = 30;
+  const MIN_H = dense ? 26 : 32;
   return (
     <div style={{ ...col, width: INNER_W, height: "100%" }}>
       <Heading text={s.heading} />
@@ -237,18 +238,23 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
                 <div style={{ display: "flex", fontSize: fitFontSize(r.label, r.pick ? LABEL - 150 : LABEL - 10, F.label), fontWeight: 900, color: C.ink, lineHeight: dense ? 1.15 : undefined }}>{r.label}</div>
                 {r.pick ? <div style={{ display: "flex", flexShrink: 0, marginLeft: 12, padding: "2px 12px", borderRadius: 8, background: C.red, color: C.white, fontSize: 24, fontWeight: 900 }}>おすすめ</div> : null}
               </div>
-              {r.sub ? <div style={{ display: "flex", fontSize: F.sub, fontWeight: 500, color: C.sub, lineHeight: dense ? 1.15 : undefined }}>{r.sub}</div> : null}
+              {(r.sub ?? "").split("\n").filter(Boolean).map((line, k) => (
+                <div key={k} style={{ display: "flex", fontSize: F.sub, fontWeight: 500, color: C.sub, lineHeight: dense ? 1.15 : undefined }}>{line}</div>
+              ))}
             </div>
-            <div style={{ display: "flex", position: "relative", width: track, height: DOT + 8, marginLeft: GAP, alignItems: "center" }}>
+            {/* 最安は赤い点の下に（右の列に3行並べると、5行の表で次の行の罫線に重なった。10/25） */}
+            <div style={{ display: "flex", position: "relative", width: track, height: DOT + 8 + (r.min !== undefined ? MIN_H : 0), marginLeft: GAP, alignItems: "flex-start" }}>
               <div style={{ display: "flex", position: "absolute", left: 0, top: 4, width: track, height: DOT, background: C.track, borderRadius: 8 }} />
               <div style={{ display: "flex", position: "absolute", left: 0, top: 4, width: w, height: DOT, background: C.barFill, borderRadius: 8 }} />
               {r.min !== undefined && pm > 0 ? (
                 <div style={{ display: "flex", position: "absolute", left: Math.round((track * r.min) / max) - (DOT + 8) / 2, top: 0, width: DOT + 8, height: DOT + 8, borderRadius: 999, background: C.red, border: `5px solid ${C.white}`, opacity: pm }} />
               ) : null}
+              {r.min !== undefined && pm > 0 ? (
+                <div style={{ display: "flex", position: "absolute", left: Math.max(0, Math.round((track * r.min) / max) - 40), top: DOT + 10, fontSize: MIN_H - 4, fontWeight: 900, color: C.red, opacity: pm, whiteSpace: "nowrap" }}>{`最安 ${r.minLabel ?? money(r.min, s.unit)}`}</div>
+              ) : null}
             </div>
             <div style={{ ...col, width: VALUE, marginLeft: GAP, opacity: p }}>
               <div style={{ display: "flex", fontSize: F.value, fontWeight: 900, color: C.ink, lineHeight: 1.1 }}>{money(r.median, s.unit)}</div>
-              {r.min !== undefined && pm > 0 ? <div style={{ display: "flex", fontSize: 28, fontWeight: 900, color: C.red, opacity: pm }}>{`最安 ${r.minLabel ?? money(r.min, s.unit)}`}</div> : null}
               {r.stock ? <div style={{ display: "flex", fontSize: F.small, fontWeight: 500, color: C.sub, lineHeight: dense ? 1.15 : undefined }}>{r.stock}</div> : null}
             </div>
           </div>
