@@ -13,6 +13,7 @@ import { specOf } from "@/lib/iphoneSpecs";
 import { activeShops } from "@/lib/activeShops";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { storageLabel, yen } from "@/lib/format";
+import { monthJa, reportMonths } from "@/lib/monthlyReport";
 
 // 機種ページと同じくビルドのたびに作る（在庫の取り込みは6時間ごと）
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -78,6 +79,8 @@ function MarketTable({ rows }: { rows: Row[] }) {
 
 export default async function IphoneIndexPage() {
   const shopNum = (await activeShops()).length;
+  // 月次の相場レポート（終わった月があるときだけ。最初は 2026-11-01 に10月分）
+  const latestReport = reportMonths()[0];
   const [market, allDrops] = await Promise.all([getModelMarket(ALL_PAGE_MODELS), getPriceDrops(7, 20)]);
   const drops = allDrops.filter((d) => d.modelSlug.startsWith("iphone")).slice(0, 10);
   const rowOf = (model: string): Row => ({ model, market: market.get(model) });
@@ -135,6 +138,11 @@ export default async function IphoneIndexPage() {
         <p className="text-sm mb-4">
           <Link href="/iphone/where-to-buy" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPhoneはどこで買う？店ごとの在庫・保証・電池表記の比較 &rarr;</Link>
         </p>
+        {latestReport && (
+          <p className="text-sm mb-4">
+            <Link href={`/iphone/report/${latestReport}`} className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPhone相場レポート {monthJa(latestReport)}（1か月の値下がり・新品との差） &rarr;</Link>
+          </p>
+        )}
         <AdDisclosure compact />
 
         <details className="my-6 rounded-xl bg-ground p-4 text-sm text-ink-sub">

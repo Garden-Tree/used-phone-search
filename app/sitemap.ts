@@ -6,6 +6,7 @@ import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, SUMAHO_BUDGETS, b
 import { isSumahoIndexable } from "@/lib/budgetStats";
 import { isCompareIndexable, COMPARE_MIN_STOCK } from "@/lib/compareStock";
 import { SITE_URL } from "@/lib/site";
+import { reportMonths, reportPublished } from "@/lib/monthlyReport";
 import prisma from "@/lib/prisma";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 
@@ -29,6 +30,7 @@ async function lastIngestedAt(): Promise<Date | undefined> {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = await lastIngestedAt();
+  const reports = reportMonths();
 
   // 在庫が少ない比較ページ（どちらかが COMPARE_MIN_STOCK 件未満）は noindex なのでサイトマップからも外す
   const comparePairs: typeof COMPARE_PAIRS = [];
@@ -51,6 +53,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/iphone`, lastModified, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/iphone/price-factors`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/iphone/where-to-buy`, lastModified, changeFrequency: "daily", priority: 0.7 },
+    // 月次の相場レポート: 終わった月があるときだけ（一覧はレポートが1本もない間は noindex）。終わった月の中身は変わらないので lastmod は公開日（翌月1日）
+    ...(reports.length
+      ? [
+          { url: `${SITE_URL}/iphone/report`, lastModified: new Date(reportPublished(reports[0])), changeFrequency: "monthly" as const, priority: 0.6 },
+          ...reports.map((ym) => ({ url: `${SITE_URL}/iphone/report/${ym}`, lastModified: new Date(reportPublished(ym)), changeFrequency: "monthly" as const, priority: 0.6 })),
+        ]
+      : []),
     { url: `${SITE_URL}/ipad`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/pixel`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/galaxy`, lastModified, changeFrequency: "daily", priority: 0.8 },

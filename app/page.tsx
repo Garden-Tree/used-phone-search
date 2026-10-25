@@ -10,6 +10,7 @@ import { AQUOS_MODELS } from "@/lib/aquosCatalog";
 import { WATCH_MODELS } from "@/lib/watchCatalog";
 import { minPriceByModel } from "@/lib/budgetStats";
 import { yen } from "@/lib/format";
+import { monthJa, reportMonths } from "@/lib/monthlyReport";
 import { comparePath } from "@/lib/compare";
 import { IPHONE_PICKS, pickPath } from "@/lib/picks";
 import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
@@ -126,6 +127,7 @@ export default async function Home() {
   const [counts, prices, drops, popular] = await Promise.all([shopCounts(), modelPrices(), getPriceDrops(7, 6), popularMarket()]);
   // 店の数・一覧は、いま在庫がある店だけ（lib/activeShops.ts）
   const shops = await activeShops();
+  const latestReport = reportMonths()[0];
   const total = SHOPS.reduce((n, s) => n + (counts.get(s.name) ?? 0), 0);
   const popularRows = POPULAR_MODELS.flatMap((m) => {
     const r = popular.get(m);
@@ -359,6 +361,8 @@ export default async function Home() {
               </span>
             )}
             <Link href="/iphone/where-to-buy" className="text-brand-600 hover:text-brand-800 ml-1.5">中古iPhoneはどこで買う？ ›</Link>
+            {/* 月次の相場レポート（終わった月があるときだけ） */}
+            {latestReport && <Link href={`/iphone/report/${latestReport}`} className="text-brand-600 hover:text-brand-800 ml-1.5">中古iPhone相場レポート {monthJa(latestReport)} ›</Link>}
           </p>
           {/* iPhone の目的別ページ（/pick/…）へのリンクはここだけ。消すと孤立する */}
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-sub">
