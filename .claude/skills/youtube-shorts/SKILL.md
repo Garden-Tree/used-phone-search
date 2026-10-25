@@ -166,26 +166,21 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - YouTube は再生時に -14 前後へ下げるので、効くのは「声と BGM の差」。
 
 ### テーマごとに見た目を変える（10/22〜・`shorts/looks.ts`）
-- 2026/10 の方針（テンプレートの一括加工は独自とみなさない）と、1コマ目が毎回同じだとスワイプされやすいことから、**テーマごとに地・帯・カード・強調色・つかみを変える**。テーマを選べば自動で決まる（手で選ばない）。
+- 2026/10 の方針（テンプレートの一括加工は独自とみなさない）と、1コマ目が毎回同じだとスワイプされやすいことから、**中身の型ごとに地・帯・カード・強調色を変え（5つ）、テーマごとにつかみを変える**。テーマを選べば自動で決まる（手で選ばない）。
 - **つかみ（hook）は t=0 で絵がそろっている**（出る動きなし）。数字は台本の1位の値（「最大」）。画像・ロゴ・製品写真は使わず、文字と図形だけ。
 - 変えないもの: 帯の位置（y250〜570）・文字の大きさ・行と声の同期・場面の長さ・声・音・順位の札の色（1位 price・2位 inkMute・3位 inspect700）・ランク A・B・C の色・検品担当の札（inspect700）。
 - 確かめ方: `npx tsx shorts/stills.tsx [テーマ…]` で各テーマの最新の台本から つかみ・ランキング・1位の発表 の3枚だけ作り、`shorts/out/looks-contact.png` に並べる（mp4 は作らない）。
 
-| テーマ | 地 | 見出しの帯 | カード | 強調 | つかみ（t=0） |
+**見た目は5つ**（10/23 ユーザーの指示「多くても5種類」。`LOOKS`）。テーマごとに変えるのは**つかみ（1コマ目）だけ**。
+**続けて公開するショートは、前の回と違う見た目（①〜⑤）にする**（10/24 15:00 の値下がり1か月 → 10/25 8:00 の galaxybudget が同じ①で続いた）。
+
+| 見た目 | 地 | 見出しの帯 | カード | 強調 | 使うテーマ（つかみ） |
 | --- | --- | --- | --- | --- | --- |
-| drops | 紺 brand900 | 赤 price・左右いっぱい | 角丸28・縁なし | price | 問い＋「1位 ？？？ 1週間で −8,000円」 |
-| budget | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | 問い＋予算の札 2×2（「なら？」） |
-| pixelbudget | 藍 brand800 | 緑 safe・丸い端 | 緑の縁 | price（札は safe） | 問い＋予算の札 2×2（アップデートの終わり） |
-| newused | 薄い藍 brand50 | 塗らない・赤い下線 | brand200 の縁 | price | 問い＋「新品 vs 中古」＋最大の差額 |
-| provs | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | 問い＋「無印 vs Pro」＋最大の差額 |
-| fold | 藍 brand800 | 琥珀 inspect700・対角だけ丸い | 琥珀の縁 | inspect700 | 問い＋開いた折りたたみの形（図形）＋最大の差額 |
-| ipadbudget | 藍 brand600 | 塗らない白い太枠（frame） | 右下にずらした紺の影 | price（札は brand900） | 問い＋予算の丸い札 2×2（淡い金・数字を大きく）＋「使えるApple Pencilも」 |
-| rank | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | 問い＋ランク A・B・C の札＋A→C の最大の差額 |
-| battery | 墨 ink | 塗らない・緑の下線 | 下に緑の厚い線 | safe | 問い＋縦の電池の形「90%台 vs 80%台」＋最大の差額 |
-| promax | provs と同じ（VERSUS） | 〃 | 〃 | safe | 問い＋「Pro vs Pro Max」＋最大の差額 |
-| macbudget | budget と同じ（BUDGET） | 〃 | 〃 | price | 問い＋予算の札 2×2（チップ「M3チップ」） |
-| probudget | 墨 ink（PRO） | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | 問い＋予算の札 2×2（琥珀「なら？」） |
-| foldbudget | fold と同じ（VERSUS） | 〃 | 〃 | safe（札は safe） | 問い＋予算の札 2×2（「なら？」） |
+| ① 値下がり DROPS | 紺 brand900 | 赤 price・左右いっぱい | 角丸28・縁なし | price | drops（1位の下がった額）・galaxybudget（予算の札） |
+| ② 予算別 BUDGET | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | budget・pixelbudget・macbudget（予算の札）・ipadbudget（予算の丸い札・淡い金） |
+| ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札） |
+| ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形） |
+| ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札） |
 
 ### 色
 - **サイトの色にそろえる。** すべて `lib/brandColors.ts` から取る（`app/globals.css` と同じ値）。
