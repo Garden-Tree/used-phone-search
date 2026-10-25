@@ -26,6 +26,9 @@ npx tsx shorts/make-short.tsx probudget plan        # 予算ぴったりで買�
 npx tsx shorts/make-short.tsx foldbudget plan       # 予算ぴったりで買える中古折りたたみスマホ（shorts/out/<日付>-foldbudget/。型 A だけ）
 npx tsx shorts/make-short.tsx rank plan             # 状態ランク A と C の差のテーマ（shorts/out/<日付>-rank/。型 A だけ）
 npx tsx shorts/make-short.tsx rank render
+npx tsx shorts/make-short.tsx ios27line plan        # iOS 27 に対応する、いちばん安い中古iPhone（shorts/out/<日付>-ios27line/。型 A だけ・10/25〜）
+npx tsx shorts/make-short.tsx batteryswap plan      # 電池交換を足すと、1つ上の世代と同じ値段？（shorts/out/<日付>-batteryswap/。型 A だけ・10/25〜）
+npx tsx shorts/make-short.tsx overnew plan          # 中古なのに新品より高い？新品との差がいちばん小さい中古iPhone（shorts/out/<日付>-overnew/。型 A だけ・10/25〜）
 npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
 npx tsx shorts/make-short.tsx drops render --no-voice  # VOICEVOX の声を入れない
@@ -114,6 +117,25 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
   - ひと言の下書き「ランクの差は主に／外装の傷なので／電池は別に見ましょう」（サイトの説明「状態ランクは外装の傷の話」と同じ）。ランクの基準は店ごとに違い、ランクごとに店の顔ぶれも違う（説明欄に書く）
   - 説明欄のリンクは1位の機種ページ（ランク別の最安値の表がある）。utm の campaign の末尾は `_rank`
 
+- `ios27line`: iOS 27 に対応する、いちばん安い中古iPhoneは？（型 A だけ・約38秒。10/25〜・ずんだもん）
+  - 対象は iOS 27 対応の iPhone（`lib/catalog.ts` の IPHONE_CATALOG＝iPhone 11 以降と SE 第2世代以降。Apple 公式 https://www.apple.com/jp/ios/）。相場は getModelMarket と同じ「在庫がいちばん多い容量の中央値」（primaryMedian・その容量の在庫5件以上）。**相場の安い順**に3位・2位・1位（同じなら発売の新しい方）
+  - 1位には、同じ容量で在庫5件以上の **iOS 27 非対応（LEGACY_SERIES）で発売がいちばん新しい機種**（同じ年なら安い方）との差（`scenes.legacy`）を添える。10/25 は SE (第2世代) 64GB 20,680円 vs XR 64GB 19,580円（差1,100円）
+  - 場面 hook（スマホの形に「iOS 27」「対応」の札＋最安の相場）→ ranking（下段は容量・相場・発売年）→ reveal（1位の相場（大）と、対応・非対応の2本の棒・差）→ comment → outro
+  - ナレーション: ranking「3位は<機種>、<容量>。相場<額>です。」・reveal「1位は<機種>。相場<額>。iOS 27非対応の<機種>との差は、<額>です。」（容量は画面だけ）。読み: iOS→アイオーエス・XR→テンアール・XS→テンエス・X→テン（`voice.ts` の speakable）
+  - ひと言の下書き「OSの対応が／終わる前に／買い替えも計画を」。見出しの帯「iOS 27対応で／いちばん安い中古iPhone」・注記「iOS 27対応はApple公式」。utm の末尾 `_ios27line`・#中古iPhone #iPhone #iOS27。関連動画の締めあり
+- `batteryswap`: 電池交換を足すと、1つ上の世代と同じ値段？（型 A だけ・約39秒。10/25〜・ずんだもん）
+  - 組は古い方 → 1つ上の世代（`themes/batteryswap.ts` の PAIRS。無印 11→12〜16→17・12 mini→13 mini・Plus・Pro・Pro Max（〜18）・16e→17e・SE 第2→第3世代）。古い方に Apple 公式の電池交換の料金（`lib/appleRepairPrices.ts`）がある組だけ
+  - 容量は gen と同じ（両方に在庫5件以上のいちばん小さい容量）。合計＝古い方の相場＋電池交換、差＝1つ上の相場−合計。**差の絶対値の小さい順**（「ほぼ同じ値段」が1位）。差が負なら1つ上の世代の方が安い
+  - 場面 hook（「中古 ＋ 電池交換 ＝ 1つ上」の札3つ＋最小の差）→ ranking（行は「iPhone 13／14」、下段は容量・差・「1つ上が高い／安い」）→ reveal（古い方の相場と電池交換の積み上げの棒・1つ上の棒・差）→ comment → outro
+  - ナレーション: ranking「3位は<古い方>と<1つ上の番号>、<容量>。差は<額>です。」・reveal「1位は<古い方>。電池交換を足すと、<合計>。<1つ上>の方が、<額>安いです。」（1つ上が高いなら「<1つ上>との差は、<額>だけです。」）。読み: 「1つ上」は「ヒトツジョウ」と読まれるので READING_FIXES で「ひとつうえ」
+  - ひと言の下書きは、1つ上の方が安いなら「電池交換するより／1つ上の世代が／安く買えます」、ほかは「差がこれだけなら／1つ上の世代も／検討しましょう」。見出しの帯「電池交換を足すと／1つ上の世代と同じ値段？」・注記「電池交換はApple公式」。説明欄のリンクは両方の機種ページ。utm の末尾 `_batteryswap`・#中古iPhone #iPhone #電池交換。関連動画の締めあり
+- `overnew`: 中古なのに新品より高い？新品との差がいちばん小さい中古iPhone（型 A だけ・約38秒。10/25〜・ずんだもん）
+  - newused の裏返し。対象・容量の決め方は newused と同じ（Apple 公式の新品価格がある iPhone・公式価格のある容量で在庫がいちばん多い容量・在庫5件以上）。**中古の相場÷新品の高い順**。中古が新品以上の機種も入れる（1位なら「新品より +○円」）
+  - 場面 hook（新品 100% と中古の割合の2本の棒＋「新品より +○円」か「新品の○%」）→ ranking（下段は容量・新品の○%・差）→ reveal（新品と中古の相場の2本の棒・高い方を幅いっぱい）→ comment → outro
+  - ナレーション: ranking「3位は<機種>、<容量>。新品のおよそ<率>%です。」（中古が新品以上なら「新品より<額>高いです。」）・reveal「1位は<機種>、<容量>。中古の相場が、新品より<額>高くなっています。」
+  - 公式価格のある機種は6つ（`lib/applePrices.ts`）なので、並びは newused と裏返しになりやすい。10/25 は 18 Pro・18 Pro Max・17e で、newused（Air・16・17）とは重ならなかった。18 Pro Max は在庫5件ちょうど
+  - ひと言の下書きは、中古が新品以上なら「発売直後の中古は／新品の値段と／比べてから買いましょう」、ほかは「差が小さいなら／保証のある新品も／考えましょう」。utm の末尾 `_overnew`。関連動画の締めあり
+
 `--no-bgm`（どのテーマでも）: BGM を入れずに書き出す（声と効果音だけ。声のコンプレッサー・効果音の下げ方・-11 LUFS の2パスは同じ）。出力は `short-<型>-nobgm.mp4` と `youtube-nobgm.txt`（BGM のクレジットなし）で、BGM 入りの版は上書きしない。YouTube のスマホアプリで投稿し、「音源を追加」で流行りの曲を付けるとき用（曲の音量はアプリで下げる）。
 
 テーマを足すときは、`types.ts` に台本の型、`themes/` に「データ → 台本」、`voice.ts` に既定のナレーション、`scenes.tsx` に場面、`make-short.tsx` の `THEMES`・`THEME_SPEAKER` を足す。
@@ -121,7 +143,7 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 
 ## 予算を変える・前の回と同じ中身にしない（10/25〜）
 
-- ランキング型（provs・battery・rank・gen・storage・newused・fold）は数日では1位が変わらない（10/25 に作り直すと 10/22〜23 とほぼ同じだった）。plan の1位とタイトルを前の回と比べ、ほぼ同じなら作らない
+- ランキング型（provs・battery・rank・gen・storage・newused・fold・ios27line・batteryswap・overnew）は数日では1位が変わらない（10/25 に作り直すと 10/22〜23 とほぼ同じだった）。plan の1位とタイトルを前の回と比べ、ほぼ同じなら作らない
 - **予算と相場は1万円以内**（10/25 ユーザーの指示）: 各行は帯 (max(前の予算, 予算−1万円), 予算] の機種だけ。帯に機種がなければ plan がエラーになるので予算を変える（`themes/budget.ts` の BUDGET_GAP）
 - 予算別（budget・ipadbudget・pixelbudget・foldbudget）は `--budgets 40000,60000,80000,120000 --pick 40000` で予算の並びと注目を変えられる（`themes/budget.ts` の BudgetOpts）。注目の予算は予算別ページ（`lib/budgets.ts`）がある額にする（説明欄のリンク先）
 - 声の実験は script.json の `voice.speaker` を書き換えて render する
@@ -179,9 +201,9 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
 | 見た目 | 地 | 見出しの帯 | カード | 強調 | 使うテーマ（つかみ） |
 | --- | --- | --- | --- | --- | --- |
 | ① 値下がり DROPS | 紺 brand900 | 赤 price・左右いっぱい | 角丸28・縁なし | price | drops（1位の下がった額）・galaxybudget（予算の札） |
-| ② 予算別 BUDGET | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | budget・pixelbudget・macbudget（予算の札）・ipadbudget（予算の丸い札・淡い金） |
-| ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札） |
-| ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形） |
+| ② 予算別 BUDGET | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | budget・pixelbudget・macbudget（予算の札）・ipadbudget（予算の丸い札・淡い金）・overnew（新品と中古の割合の2本の棒） |
+| ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
+| ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形）・batteryswap（「中古＋電池交換＝1つ上」の札） |
 | ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札） |
 
 関連動画につながるテーマ（`types.ts` の RELATED_LONG_THEMES）は、締めの「▼ くわしい解説は 下の関連動画で」の札が出るまで締めの動きを延ばす（`scenes.tsx` の TIMELINE。10/23 まで札が動画に出ていなかった）。

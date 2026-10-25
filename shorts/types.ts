@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・newused・provs・promax・fold・rank・battery・gen・storage）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・newused・provs・promax・fold・rank・battery・gen・storage・ios27line・batteryswap・overnew）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -199,13 +199,65 @@ export type StorageScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript;
+/**
+ * ios27line の1行: iOS 27 対応の iPhone（lib/catalog.ts の IPHONE_CATALOG・Apple 公式）の相場（在庫がいちばん多い容量の中央値）（shorts/themes/ios27line.ts）
+ */
+export type Ios27Row = { model: string; storage: string; storageGb: number; median: number; count: number; released: string };
+/** 1位と同じ容量で比べた、iOS 27 非対応（LEGACY_SERIES）でいちばん安い機種。diff = 1位の相場 − この機種の相場（負なら1位の方が安い） */
+export type Ios27Legacy = { model: string; storage: string; median: number; count: number; diff: number };
+
+/** テーマ ios27line「iOS 27 に対応する、いちばん安い中古iPhoneは？」（相場の安い順。items[0] が1位＝いちばん安い） */
+export type Ios27Script = Common & {
+  theme: "ios27line";
+  scenes: {
+    ranking: { items: Ios27Row[] };
+    /** 同じ容量で在庫5件以上の非対応機種がなければ無し */
+    legacy?: Ios27Legacy;
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+/**
+ * batteryswap の1行: 古い方（older）の相場＋Apple 公式の電池交換の料金（battery）＝ total と、1つ上の世代（newer）の同じ容量の相場（shorts/themes/batteryswap.ts）。
+ * gap = newer の相場 − total（正なら「古い方＋電池交換」の方が安い、負なら1つ上の世代の方が安い）
+ */
+export type BatterySwapRow = {
+  older: string; newer: string; storage: string; storageGb: number;
+  olderMedian: number; battery: number; total: number; newerMedian: number; olderCount: number; newerCount: number; gap: number;
+};
+
+/** テーマ batteryswap「電池交換を足すと、1つ上の世代と同じ値段？」（差の小さい順。items[0] が1位） */
+export type BatterySwapScript = Common & {
+  theme: "batteryswap";
+  scenes: {
+    ranking: { items: BatterySwapRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+/** overnew の1行: newused と同じ行に、中古の相場 ÷ 新品（ratio・%・小数1桁）。diff = 新品 − 中古の相場（負なら中古の方が高い） */
+export type OverNewRow = NewUsedRow & { ratio: number };
+
+/** テーマ overnew「中古なのに新品より高い？ 新品との差がいちばん小さい中古iPhone」（ratio の高い順。items[0] が1位） */
+export type OverNewScript = Common & {
+  theme: "overnew";
+  appleChecked: string;
+  scenes: {
+    ranking: { items: OverNewRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript;
 
 /**
  * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。
  * YouTube 公式ブログ 2026/7「最後の5秒で声と画面の両方で誘導」）。いまの横動画は iPhone なので、Pixel・iPad・折りたたみは外す
  */
-export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "newused", "provs", "promax", "rank", "battery", "gen", "storage"]);
+export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "newused", "provs", "promax", "rank", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew"]);
 export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";
 
 /** budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget（予算の4行・注目の1機種の場面を共有） */

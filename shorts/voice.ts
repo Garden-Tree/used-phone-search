@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { RELATED_LONG_THEMES, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Script, type VoiceConfig } from "./types";
+import { RELATED_LONG_THEMES, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -59,7 +59,63 @@ const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme 
 function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
   return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : isProVs(s) ? (s.theme === "promax" ? proMaxNarration(s) : proVsNarration(s))
     : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s)
-    : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s) : dropsNarration(s);
+    : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
+    : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s) : dropsNarration(s);
+}
+
+/**
+ * ios27line の既定: hook 問い / ranking 3位・2位を1文ずつ（「3位は<機種>、<容量>。相場<額>です。」。文頭の「○位は」で行を出す）
+ * reveal 1位の相場と、同じ容量の iOS 27 非対応で発売がいちばん新しい機種との差（容量は画面だけ。40秒に収めるため） / comment ひと言の本文だけ / outro サイトへの誘導と問い。声は ずんだもんで、口調は「です・ます」
+ */
+function ios27Narration(s: Ios27Script): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const l = s.scenes.legacy;
+  const legacy = !l ? "" : l.diff > 0 ? `iOS 27非対応の${l.model}との差は、${yen(l.diff)}です。`
+    : l.diff < 0 ? `iOS 27非対応の${l.model}より、${yen(-l.diff)}安いです。` : `iOS 27非対応の${l.model}と、同じ値段です。`;
+  return {
+    hook: "iOS 27に対応する、いちばん安い中古iPhoneは…？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、${items[i].storage}。相場${yen(items[i].median)}です。`).join(""),
+    reveal: `1位は${top.model}。相場${yen(top.median)}。${legacy}`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、どの機種にしますか？",
+  };
+}
+
+/**
+ * batteryswap の既定: hook 問い / ranking 3位・2位を1文ずつ（「3位は<古い方>と<1つ上の番号>、<容量>。差は<額>です。」）
+ * reveal 1位の「相場＋電池交換」の合計と、1つ上の世代との差 / comment ひと言の本文だけ / outro サイトへの誘導と問い
+ */
+function batterySwapNarration(s: BatterySwapScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const up = top.newer;
+  return {
+    hook: "電池交換を足すと、1つ上の世代と同じ値段？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].older}と${shortName(items[i].newer)}、${items[i].storage}。差は${yen(Math.abs(items[i].gap))}です。`).join(""),
+    reveal: `1位は${top.older}。電池交換を足すと、${yen(top.total)}。${top.gap >= 0 ? `${up}との差は、${yen(top.gap)}だけです。` : `${up}の方が、${yen(-top.gap)}安いです。`}`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、電池交換？それとも1つ上？",
+  };
+}
+
+/**
+ * overnew の既定: hook 問い / ranking 3位・2位を1文ずつ（「3位は<機種>、<容量>。新品のおよそ<率>%です。」・中古が新品以上なら「新品より<額>高いです。」）
+ * reveal 1位（中古が新品以上なら高い額、ほかは率と差）/ comment ひと言の本文だけ / outro サイトへの誘導と問い
+ */
+function overNewNarration(s: OverNewScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const of = (r: OverNewScript["scenes"]["ranking"]["items"][number]) => (r.diff < 0 ? `新品より${yen(-r.diff)}高いです。` : `新品のおよそ${Math.round(r.ratio)}%です。`);
+  return {
+    hook: "中古なのに、新品より高い？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、${items[i].storage}。${of(items[i])}`).join(""),
+    reveal: top.diff < 0
+      ? `1位は${top.model}、${top.storage}。中古の相場が、新品より${yen(-top.diff)}高くなっています。`
+      : `1位は${top.model}、${top.storage}。中古の相場は新品のおよそ${Math.round(top.ratio)}%、差は${yen(top.diff)}だけです。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、この差で中古を選びますか？",
+  };
 }
 
 /**
@@ -267,18 +323,22 @@ export function narrationOf(s: Script): Partial<Record<NarrationKey, string>> {
 
 /**
  * エンジンが読み違える語（かなに開いて読ませる）。ショートと横動画（longform/script.ts の forVoice の後）で共有。10/22 に春日部つむぎ（ID 8）で確認:
- * 高すぎ→コオスギ・新すぎ→シンスギ・古すぎ→イニシエスギ・古め→イニシエメ・大きすぎ→タイキスギ・新しめ→シンシメ・7万件→ナナマンゲン。
+ * 高すぎ→コオスギ・新すぎ→シンスギ・古すぎ→イニシエスギ・古め→イニシエメ・大きすぎ→タイキスギ・新しめ→シンシメ・7万件→ナナマンゲン・1つ上→ヒトツジョウ（10/25 ずんだもん）。
  * 怖すぎ・安すぎ・重すぎ・多すぎ・高め・安めは正しく読むので入れない
  */
 export const READING_FIXES: [RegExp, string][] = [
   [/高すぎ/g, "たかすぎ"], [/新すぎ/g, "あたらしすぎ"], [/古すぎ/g, "ふるすぎ"], [/古め/g, "ふるめ"], [/大きすぎ/g, "おおきすぎ"],
   [/新しめ/g, "あたらしめ"], [/万件/g, "万けん"],
+  // batteryswap（10/25・ずんだもん）: 「1つ上」を「ヒトツジョウ」と読む
+  [/1つ上/g, "ひとつうえ"],
 ];
 
 /** 読み上げ用に直す（画面の文字は変えない）。読み違える語（READING_FIXES）・英字の機種名・容量・記号をカナに */
 export function speakable(text: string): string {
   const words: [RegExp, string][] = [
     ...READING_FIXES,
+    // ios27line（10/25）: 「iOS」を1字ずつ読まない・iPhone X／XS／XR は Apple の読み（テン）。longform/script.ts の forVoice と同じ
+    [/iOS/g, "アイオーエス"], [/\bXS\b/g, "テンエス"], [/\bXR\b/g, "テンアール"], [/\bX\b/g, "テン"],
     [/iPhone/g, "アイフォン"], [/iPad/g, "アイパッド"], [/MacBook/g, "マックブック"], [/Apple Watch/g, "アップルウォッチ"],
     // 「Galaxy A53 5G」は空白を詰めると「A535G」で「ゴヒャクサンジュウゴ」と読むので、5G を先にカナに（galaxybudget・10/24）
     [/Galaxy/g, "ギャラクシー"], [/\b5G\b/g, "ファイブジー"], [/\bUltra\b/g, "ウルトラ"], [/\bZ\s*(?=Fold|Flip)/g, "ゼット"], [/Fold/g, "フォールド"], [/Flip/g, "フリップ"], [/Pixel/g, "ピクセル"],

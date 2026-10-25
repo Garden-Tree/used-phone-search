@@ -17,8 +17,9 @@ import type { Script } from "./types";
 
 /** 見出しの帯の形。full＝左右いっぱい・card＝角丸の箱・pill＝丸い端・tab＝左寄せの札と左の線・leaf＝対角だけ丸い・underline＝塗らずに下線・frame＝塗らずに太い枠 */
 export type BandShape = "full" | "card" | "pill" | "tab" | "leaf" | "underline" | "frame";
-/** つかみ（1コマ目）の型。number＝1位の額を先に出す・chips＝予算の札・coins＝予算の丸い札（数字を大きく）・split＝2つを並べて vs・fold＝折りたたみの形・abc＝ランクの札・battery＝縦の電池の形 */
-export type HookKind = "number" | "chips" | "coins" | "split" | "fold" | "abc" | "battery";
+/** つかみ（1コマ目）の型。number＝1位の額を先に出す・chips＝予算の札・coins＝予算の丸い札（数字を大きく）・split＝2つを並べて vs・fold＝折りたたみの形・abc＝ランクの札・battery＝縦の電池の形
+ * phone＝スマホの形に「iOS 27」と「対応」の札（ios27line）・equation＝「古い方＋電池交換＝1つ上？」の式（batteryswap）・ratio＝新品と中古の2本の棒（overnew） */
+export type HookKind = "number" | "chips" | "coins" | "split" | "fold" | "abc" | "battery" | "phone" | "equation" | "ratio";
 
 export type Look = {
   /** 記録用の名前（README・SKILL の表と同じ） */
@@ -104,6 +105,10 @@ export const LOOKS: Record<Script["theme"], Look> = {
   battery: { ...CONDITION, hook: "battery" },
   gen: { ...VERSUS, hook: "split" },
   storage: { ...VERSUS, hook: "split" },
+  // 10/25〜 の3テーマ。公開順（galaxybudget ①→ ios27line ③→ batteryswap ④→ overnew ②）で前の回と同じ見た目が続かないように選んだ（見た目は5つまでなので新しく作らない）
+  ios27line: { ...VERSUS, hook: "phone" },
+  batteryswap: { ...CONDITION, hook: "equation" },
+  overnew: { ...BUDGET, hook: "ratio" },
 };
 
 export const lookOf = (s: Script): Look => LOOKS[s.theme];
