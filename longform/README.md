@@ -16,11 +16,11 @@ npx tsx longform/video.tsx      longform/2026-10-21-iphone-dore            # 動
 npx tsx longform/video.tsx      longform/2026-10-21-iphone-dore check      # 長さ・音量・同期3か所・見本6枚（stills/check-*.png）
 ```
 
-書き出す順: **voice-draft.ts（今の辞書で合成し直す）→ timeline.ts → video.tsx**。古い声（stale）や見積もりの行が残っていると video.tsx は止まる。
+書き出す順: **voice-draft.ts（今の辞書で合成し直す）→ timeline.ts → video.tsx**。新しい回は**終了画面前提**（下の「終了画面」）。古い声（stale）や見積もりの行が残っていると video.tsx は止まる。
 
 - video.tsx は絵が変わるところ（章・台詞・字幕のページ・項目が出る秒）だけ PNG にして（約10分で約110枚）、ffmpeg の concat（1枚ごとの長さ）で 30fps の H.264 にする。項目はふわっと出さず切り替え
 - PC が重い処理で落ちるので: 1つずつ順に・ffmpeg は1本ずつ `-threads 2`・優先度「低」。段だけやり直すときは `frames` / `encode` / `audio` / `mux` / `meta`。`--preset medium` で少し小さくなる
-- 音: 声（voice-draft/joined.wav）を -16 LUFS に → BGM（shorts/assets/bgm.mp3）をくり返して 0.07 倍・頭2秒で上げ最後4秒で下げる → loudnorm 2パスで -14 LUFS・真のピーク -1。最後の台詞のあと 1.5 秒残す。2章目からは章の頭に短いジングル（video.tsx の makeJingle がその場で合成する E5→G#5→B5 の3音・0.75秒・ピーク -18 dBFS。外の音源は使わない）
+- 音: 声（voice-draft/joined.wav）を -16 LUFS に → BGM（shorts/assets/bgm.mp3）をくり返して 0.07 倍・頭2秒で上げ最後4秒で下げる → loudnorm 2パスで -14 LUFS・真のピーク -1。最後の台詞のあと 1.5 秒残す（終了画面があれば、最後の章の絵が出てから 20 秒になるまで BGM だけで残す）。2章目からは章の頭に短いジングル（video.tsx の makeJingle がその場で合成する E5→G#5→B5 の3音・0.75秒・ピーク -18 dBFS。外の音源は使わない）
 - 説明文（youtube.txt）: タイトルは script.md の「タイトル案」の 1.、チャプターは実測、リンクは utm_campaign=long_20261021、クレジットは VOICEVOX の2人と BGM、立ち絵があれば「立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)」「ずんだもん立ち絵：坂本アヒル様」
 - `timeline.json`・`frames/`・`video.mp4`・`stills/check-*.png`・`longform/assets/` は Git に入れない（.gitignore）。`stills/`・chapters.txt・youtube.txt・thumbnail.png は残す
 
@@ -80,6 +80,7 @@ npx tsx longform/video.tsx      longform/2026-10-21-iphone-dore check      # 長
 | `pairs` | 2本ずつの棒と差（色は SITE のキー） | Proと無印・新品と中古 |
 | `table` | 表（emphasis の列を赤く） | 値下がり・電池の書き方・まとめ |
 | `checklist` | 番号つきの行を1つずつ出す | 買う前に見る3つのこと |
+| `endScreen` | 終了画面（最後の章だけ）。見出し・動画2枠（`videos` に lib/videos.ts の id と題）・チャンネル登録の丸 | 6本目「次におすすめの動画」 |
 
 - 各項目の `cue` は「この文字列を含む台詞が始まったら出す」。見つからなければ timeline.ts が警告して最初から出す
 - 数字は data.json だけに書く（台本の数字をそのまま写す。作る日に取り直したら両方直す）
@@ -89,3 +90,23 @@ npx tsx longform/video.tsx      longform/2026-10-21-iphone-dore check      # 長
 timeline.ts は `shorts/voice.ts` の `synthesize`（オフライン）で声の長さを読む。キャッシュの鍵に辞書（`shorts/voice-dict.json`）が入るため、
 ショートで辞書を足すと当たらなくなる。そのときは同じ文・話し手・速さの古いキャッシュで長さだけ測る（`stale: true`）。
 書き出す前に voice-draft.ts を回して、今の辞書で合成し直す。
+
+## 終了画面（10/25〜。新しい回は必ず）
+
+登録者が少ないうちは、横動画どうしを YouTube の**終了画面**でつなぐ。最後の章を `endScreen` にして、Studio で要素を重ねる場所を空けておく（5本目までは作り直さない）。
+
+- YouTube の決まり（ヘルプ support.google.com/youtube/answer/6388789・10/25 確認）: 動画の**最後の 5〜20 秒**に置ける・動画は **25 秒以上**・16:9 なら要素は **4つまで**（動画・再生リスト・チャンネル登録など）・位置はプレーヤーの上でドラッグ（グリッドに合わせられる）・**要素の大きさの決まりはヘルプにない**・子ども向けの動画やモバイルのウェブでは出ない・表示中はカードと透かしが消える。ヘルプのコツは「最後の 20 秒を考えて編集する」「要素を声で案内する」
+- 台本: 最後の章を「## m:ss 次におすすめの動画」にし、台詞は**20 秒以内**（約3行・90字）。「次はこちらの動画がおすすめ」＋その動画が何の回か＋チャンネル登録。**左・右とは言わない**（YouTube は要素の出し方を変えることがある）。高評価・コメントのお願いは まとめ の章に
+- data.json: 最後の章の scene を `{"type": "endScreen", "heading": "次はこちらの動画がおすすめ", "videos": [{"id", "title"}, {"id", "title"}], "note"}`。動画は lib/videos.ts から、テーマが近い順に2本（題は公開時の題）
+- 画面の決まり（scenes.tsx の `END_SCREEN`。字幕・立ち絵・章の帯には重ねない）:
+
+| 要素 | 画面の位置（1920x1080） | 割合 |
+| --- | --- | --- |
+| 動画1 | x342 y324・600x338（16:9） | 左 17.8%・上 30.0%・幅 31.3% |
+| 動画2 | x978 y324・600x338 | 左 50.9%・上 30.0%・幅 31.3% |
+| チャンネル登録（丸） | x1446 y168・132x132 | 左 75.3%・上 15.6% |
+
+- 枠の中には動画の題を描いておく（終了画面が出ない環境でも何の回かわかる）。Studio で要素をこの点線の枠に重ねる
+- 時間: `tailOf`（scenes.tsx）が、最後の章の絵が出てから動画の終わりまでを **20 秒**にそろえる（台詞のあとは BGM だけ）。台詞が 20 秒を超えると timeline.ts が警告する
+- 書き出すと `endscreen.txt`（開始秒・各要素の動画の URL と位置）ができる。`video.tsx check` は `stills/check-endscreen.png` も作る
+- Studio: 動画 → 編集 → 終了画面 → 要素「動画」を2つ（「特定の動画を選択」で endscreen.txt の URL）と「登録」を足し、3つとも endscreen.txt の開始秒から終わりまで。枠に合わせて大きさと位置を直し、プレビューで確かめて保存

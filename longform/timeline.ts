@@ -14,7 +14,7 @@ import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { synthesize } from "../shorts/voice";
 import { CHAPTER_GAP, DEFAULT_LONG_SPEED, LINE_GAP, LONG_PAUSE, SPEAKERS, forVoice, scriptChapters } from "./script";
-import { FPS, H, W, wrapSubtitle } from "./scenes";
+import { END_SCREEN, FPS, H, W, chapterShownAt, tailOf, wrapSubtitle } from "./scenes";
 import type { LongData, SceneData, SubPage, Timeline, TimelineChapter, TimelineLine } from "./types";
 
 /** キャッシュにない台詞の秒／文字（voice-draft の実測 約575秒・約3,600字・速さ 1.15 から） */
@@ -161,6 +161,9 @@ function resolveReveal(scene: SceneData, lines: TimelineLine[], chStart: number,
     case "table":
       scene.rows.forEach((r, i) => find(`item:${i}`, r.cue));
       break;
+    case "endScreen":
+      // 項目は出し分けない（YouTube の要素を重ねる枠。章の絵と一緒に全部出す）
+      break;
   }
   return { reveal, lastLine };
 }
@@ -202,7 +205,18 @@ export async function buildTimeline(dir: string, speed = DEFAULT_LONG_SPEED): Pr
     const stillAt = round(Math.max(p0.start + 0.6, Math.min(p0.end - 0.1, (p0.start + p0.end) / 2)));
     out.push({ index: ci + 1, title: ch.title, start: round(chStart), end: round(t), cues: ch.cues, scene: { ...d.scene, reveal }, lines, stillAt });
   }
-  return { timeline: { date: data.date, shops: data.shops, width: W, height: H, fps: FPS, speed, total: round(t), chapters: out }, warnings, missing, staleCount };
+  const timeline: Timeline = { date: data.date, shops: data.shops, width: W, height: H, fps: FPS, speed, total: round(t), chapters: out };
+  // 終了画面: 最後の章だけ・絵が出てから最後の台詞の終わりまでが END_SCREEN.sec 秒以内（超えると要素が出る前に台詞が始まる）
+  out.forEach((c, i) => {
+    if (c.scene.type === "endScreen" && i !== out.length - 1) warnings.push(`「${c.title}」（終了画面）は最後の章にしてください`);
+  });
+  const last = out[out.length - 1];
+  if (last?.scene.type === "endScreen") {
+    const spoken = round(timeline.total - chapterShownAt(last));
+    if (spoken > END_SCREEN.sec) warnings.push(`終了画面の章の台詞が ${spoken} 秒あります（${END_SCREEN.sec} 秒以内に。終了画面は最後の ${END_SCREEN.sec} 秒しか置けない）`);
+    else console.log(`終了画面: 台詞 ${spoken} 秒＋BGM だけ ${round(tailOf(timeline))} 秒＝${END_SCREEN.sec} 秒`);
+  }
+  return { timeline, warnings, missing, staleCount };
 }
 
 const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, "0")}`;

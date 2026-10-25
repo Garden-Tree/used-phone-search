@@ -39,6 +39,8 @@ export function forVoice(text: string): string {
     [/eSIM/g, "イーシム"], [/SIM/g, "シム"],
     // 「LiDAR」を1字ずつ読まないように（Pro と無印・10/25）
     [/LiDAR/g, "ライダー"],
+    // 何世代まで（10/25）: 「iOS」を1字ずつ読まない・iPhone X／XS／XR は Apple の読み（テン）・「Intelligence」をカナに。X（旧 Twitter）は台本に「エックス」と書く（X はテンになる）
+    [/iOS/g, "アイオーエス"], [/\bXS\b/g, "テンエス"], [/\bXR\b/g, "テンアール"], [/\bX\b/g, "テン"], [/Intelligence/g, "インテリジェンス"],
   ];
   return words.reduce((t, [re, to]) => t.replace(re, to), text);
 }

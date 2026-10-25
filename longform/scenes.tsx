@@ -8,13 +8,14 @@
  *                立ち絵は画面の端まで使う（x0〜280 / x1640〜1920・y116〜792）
  *   下   y812〜1012  字幕（話し手の名前と色・2行まで）
  *   最下 y1024〜     データの日付と「大手中古ショップ17店の在庫から」
+ *   終了画面（最後の章が endScreen のとき）: カードの中に YouTube の終了画面の要素を置く枠（下の END_SCREEN）。最後の 20 秒
  * 色は lib/brandColors.ts だけ（白いカードの上は SITE、紺の地の上は ON_DARK）
  */
 import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { CHAPTER_LEAD, type Who } from "./script";
-import type { BarsScene, BigNumberScene, ChecklistScene, PairsScene, TableScene, Timeline, TimelineChapter } from "./types";
+import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, PairsScene, TableScene, Timeline, TimelineChapter } from "./types";
 
 export const W = 1920;
 export const H = 1080;
@@ -27,6 +28,42 @@ const SLOT = { y: 116, w: 226, h: 676, left: 40, right: W - 40 - 226 };
 const ART = { w: 280, h: SLOT.h, imgH: 560, left: 0, right: W - 280 };
 const SUB = { x: 40, y: 812, w: W - 80, h: 200, tag: 210, padX: 36, gap: 30, font: 50, lineHeight: 1.4 };
 const FOOT_Y = 1024;
+
+/**
+ * 終了画面（YouTube Studio の「終了画面」で要素を重ねる場所。画面の座標・1920x1080）。
+ * YouTube の決まり（support.google.com/youtube/answer/6388789・10/25 確認）: 動画の最後の 5〜20 秒・動画は 25 秒以上・
+ * 16:9 なら要素は4つまで・位置はプレーヤーの上でドラッグ（グリッドに合わせられる）。要素の大きさの決まりは書かれていない。
+ * ここでは「動画2枠（16:9）＋チャンネル登録（丸）」をカードの中に置く。字幕・立ち絵・章の帯には重ねない
+ */
+export const END_SCREEN = {
+  /** 終了画面の長さ（秒。YouTube の上限）。最後の章の絵が出てから動画の終わりまでをこの秒数にする（足りなければ最後に BGM だけの間を足す） */
+  sec: 20,
+  videos: [
+    { x: CARD.x + CARD.pad, y: CARD.y + CARD.pad + 156, w: 600, h: 338 },
+    { x: CARD.x + CARD.w - CARD.pad - 600, y: CARD.y + CARD.pad + 156, w: 600, h: 338 },
+  ],
+  subscribe: { x: CARD.x + CARD.w - CARD.pad - 132, y: CARD.y + CARD.pad, size: 132 },
+} as const;
+
+/** 最後の台詞のあとに残す秒（BGM が下がりきる） */
+export const TAIL = 1.5;
+/** 最後の章が終了画面か */
+export const hasEndScreen = (tl: Timeline) => tl.chapters[tl.chapters.length - 1]?.scene.type === "endScreen";
+/**
+ * 最後の台詞のあとに残す秒。終了画面があるときは、終了画面の章の絵が出てから動画の終わりまでが END_SCREEN.sec になるよう伸ばす
+ * （台詞が 20 秒より長いと伸ばさない。timeline.ts が警告する）
+ */
+export function tailOf(tl: Timeline): number {
+  if (!hasEndScreen(tl)) return TAIL;
+  const last = tl.chapters[tl.chapters.length - 1];
+  return Math.max(TAIL, Math.round((END_SCREEN.sec - (tl.total - chapterShownAt(last))) * 1000) / 1000);
+}
+/** 終了画面を置く秒（動画の頭から。start〜end）。終了画面がなければ null */
+export function endScreenWindow(tl: Timeline): { start: number; end: number } | null {
+  if (!hasEndScreen(tl)) return null;
+  const end = tl.total + tailOf(tl);
+  return { start: Math.max(0, end - END_SCREEN.sec), end };
+}
 
 /** 字幕の文字の幅（px）と1行に入れる量（em。太字の英数字の幅の揺れを見込んで 0.95） */
 const SUB_TEXT_W = SUB.w - SUB.tag - SUB.padX * 2 - SUB.gap;
@@ -323,6 +360,36 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
   );
 }
 
+/**
+ * 終了画面。YouTube の要素が重なる枠（END_SCREEN）に、動画の題とチャンネル登録の丸を描いておく
+ * （要素は枠の上に重ねて置く。終了画面が出ない環境でも何の動画かわかる）
+ */
+function EndScreen({ s }: { s: EndScreenScene }) {
+  const ox = CARD.x + CARD.pad;
+  const oy = CARD.y + CARD.pad;
+  const sub = END_SCREEN.subscribe;
+  const label = "チャンネル登録はこちら";
+  return (
+    <div style={{ display: "flex", position: "relative", width: INNER_W, height: CARD.h - CARD.pad * 2 }}>
+      <div style={{ display: "flex", position: "absolute", left: 0, top: 10, width: INNER_W - sub.size - 480, fontSize: fitFontSize(s.heading, INNER_W - sub.size - 480, 52), fontWeight: 900, color: C.ink }}>{s.heading}</div>
+      <div style={{ display: "flex", position: "absolute", left: sub.x - ox - 440, top: sub.y - oy + sub.size / 2 - 24, width: 420, justifyContent: "flex-end", fontSize: 34, fontWeight: 900, color: C.red }}>{`${label} →`}</div>
+      <div style={{ display: "flex", position: "absolute", left: sub.x - ox, top: sub.y - oy, width: sub.size, height: sub.size, borderRadius: 999, background: C.barFill, border: `6px dashed ${C.line}`, alignItems: "center", justifyContent: "center", color: C.white, fontSize: 34, fontWeight: 900 }}>登録</div>
+      {s.videos.map((v, i) => {
+        const b = END_SCREEN.videos[i];
+        return (
+          <div key={i} style={{ ...col, position: "absolute", left: b.x - ox, top: b.y - oy, width: b.w, height: b.h, padding: "26px 30px", background: C.bg, borderRadius: 16, border: `4px dashed ${C.url}` }}>
+            <div style={{ display: "flex", fontSize: 28, fontWeight: 900, color: C.url }}>{i === 0 ? "次におすすめ" : "こちらもどうぞ"}</div>
+            <div style={{ display: "flex", marginTop: 14, width: b.w - 68, fontSize: 38, lineHeight: 1.35, fontWeight: 900, color: C.white }}>{v.title}</div>
+          </div>
+        );
+      })}
+      {s.note ? (
+        <div style={{ display: "flex", position: "absolute", left: 0, top: END_SCREEN.videos[0].y - oy + END_SCREEN.videos[0].h + 22, width: INNER_W, fontSize: fitFontSize(s.note, INNER_W, 28, 22), fontWeight: 500, color: C.sub }}>{s.note}</div>
+      ) : null}
+    </div>
+  );
+}
+
 function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
   const s = ch.scene;
   const reveal = s.reveal;
@@ -337,6 +404,8 @@ function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
       return <Table s={s} t={t} reveal={reveal} />;
     case "checklist":
       return <Checklist s={s} t={t} reveal={reveal} />;
+    case "endScreen":
+      return <EndScreen s={s} />;
   }
 }
 

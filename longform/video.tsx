@@ -26,12 +26,11 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
-import { FPS, H, W, chapterShownAt, frameAt, localAt, revealedAt, stateAt, type CharaArt } from "./scenes";
+import { END_SCREEN, FPS, H, W, chapterShownAt, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, ThumbnailData, Timeline } from "./types";
 
-/** 最後の台詞のあとに残す秒（BGM が下がりきる） */
-const TAIL = 1.5;
+// 最後の台詞のあとに残す秒は scenes.tsx の tailOf（ふだん 1.5 秒。終了画面があれば最後の 20 秒をそろえる）
 const BGM_VOLUME = 0.07;
 const VOICE_LUFS = -16;
 /** 口の開閉（秒） */
@@ -59,6 +58,8 @@ try {
 
 const fmtClock = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, "0")}`;
 const now = () => performance.now() / 1000;
+/** 9:41.2 のように 0.1 秒まで（終了画面の開始秒。Studio の入力に使う） */
+const fmtSec = (sec: number) => `${Math.floor(sec / 60)}:${(sec % 60).toFixed(1).padStart(4, "0")}`;
 
 /** ffmpeg を1本だけ・優先度「低」で動かして終わるのを待つ */
 function ffmpeg(args: string[], label: string): Promise<string> {
@@ -98,7 +99,7 @@ type Segment = { frame: number; t: number; key: string; flap: boolean };
  * 秒はコマ（1/30 秒）に丸め、同じコマに2つ来たら後のほうを使う
  */
 function segments(tl: Timeline, art: CharaArt): { segs: Segment[]; totalFrames: number } {
-  const total = tl.total + TAIL;
+  const total = tl.total + tailOf(tl);
   const points = new Set<number>([0]);
   for (const ch of tl.chapters) {
     points.add(chapterShownAt(ch));
@@ -214,7 +215,7 @@ async function audio(dir: string, tl: Timeline, work: string) {
   const vd = probe(voice);
   if (Math.abs(vd - tl.total) > 0.1) throw new Error(`声の長さ（${vd.toFixed(2)} 秒）と時間割（${tl.total} 秒）が合いません。voice-draft.ts → timeline.ts をやり直す`);
   if (!existsSync(BGM)) throw new Error(`BGM がありません: ${BGM}`);
-  const total = tl.total + TAIL;
+  const total = tl.total + tailOf(tl);
   const vm = await measure(voice);
   const gain = VOICE_LUFS - Number(vm.input_i);
   console.log(`  声 ${Number(vm.input_i).toFixed(1)} LUFS → ${gain >= 0 ? "+" : ""}${gain.toFixed(1)} dB で ${VOICE_LUFS} LUFS に`);
@@ -299,6 +300,27 @@ function youtubeText(dir: string, tl: Timeline, artFiles: string[]): string {
   ].join("\n") + "\n";
 }
 
+/**
+ * 終了画面の置き方（YouTube Studio → 動画 → 終了画面 で使う）。開始秒・各要素の動画と位置（画面の % と 1920x1080 の px）
+ */
+function endScreenText(tl: Timeline): string | null {
+  const w = endScreenWindow(tl);
+  const last = tl.chapters[tl.chapters.length - 1];
+  if (!w || last.scene.type !== "endScreen") return null;
+  const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(1)}%`;
+  const box = (b: { x: number; y: number; w: number; h: number }) =>
+    `左 ${pct(b.x, W)}・上 ${pct(b.y, H)}・幅 ${pct(b.w, W)}（px: x${b.x} y${b.y} ${b.w}x${b.h}）`;
+  const sub = END_SCREEN.subscribe;
+  return [
+    `終了画面: ${fmtSec(w.start)}〜${fmtSec(w.end)}（動画の最後の ${END_SCREEN.sec} 秒。3つとも同じ時間）`,
+    "",
+    ...last.scene.videos.map((v, i) => `動画${i + 1}（特定の動画）: ${v.title}  https://youtu.be/${v.id}\n  ${box(END_SCREEN.videos[i])}`),
+    `チャンネル登録: ${box({ x: sub.x, y: sub.y, w: sub.size, h: sub.size })}`,
+    "",
+    "置き方: Studio のプレビューで、画面に描いた点線の枠に要素の端を合わせる（グリッドに合わせる を使う）。大きさの決まりは YouTube のヘルプにない",
+  ].join("\n") + "\n";
+}
+
 /** 1本目のサムネ（data.json に thumbnail がないとき） */
 const DEFAULT_THUMB: ThumbnailData = {
   lines: ["中古iPhone", "予算別の正解"],
@@ -339,11 +361,13 @@ function Thumbnail({ art, thumb }: { art: CharaArt; thumb: ThumbnailData }) {
 async function meta(dir: string, tl: Timeline, art: CharaArt, artFiles: string[]) {
   writeFileSync(join(dir, "chapters.txt"), chaptersText(tl));
   writeFileSync(join(dir, "youtube.txt"), youtubeText(dir, tl, artFiles));
+  const es = endScreenText(tl);
+  if (es) writeFileSync(join(dir, "endscreen.txt"), es);
   const thumb = (JSON.parse(readFileSync(join(dir, "data.json"), "utf8")) as LongData).thumbnail ?? DEFAULT_THUMB;
   const fonts = await longFonts(tl, thumbText(thumb));
   const res = new ImageResponse(<Thumbnail art={art} thumb={thumb} />, { width: 1280, height: 720, fonts });
   writeFileSync(join(dir, "thumbnail.png"), Buffer.from(await res.arrayBuffer()));
-  console.log(`  chapters.txt・youtube.txt・thumbnail.png → ${dir}`);
+  console.log(`  chapters.txt・youtube.txt・${es ? "endscreen.txt・" : ""}thumbnail.png → ${dir}`);
 }
 
 // ───────── 確かめる ─────────
@@ -358,7 +382,7 @@ async function check(dir: string, tl: Timeline) {
   const video = join(dir, "video.mp4");
   const dur = probe(video);
   const size = statSync(video).size / 1024 / 1024;
-  console.log(`長さ ${dur.toFixed(2)} 秒（声 ${tl.total.toFixed(2)} 秒＋余白 ${TAIL} 秒＝${(tl.total + TAIL).toFixed(2)}）・${size.toFixed(1)} MB`);
+  console.log(`長さ ${dur.toFixed(2)} 秒（声 ${tl.total.toFixed(2)} 秒＋余白 ${tailOf(tl)} 秒＝${(tl.total + tailOf(tl)).toFixed(2)}）・${size.toFixed(1)} MB`);
   const m = await measure(video, "");
   console.log(`音量 ${m.input_i} LUFS・真のピーク ${m.input_tp} dBTP・LRA ${m.input_lra}`);
   const stills = join(dir, "stills");
@@ -367,6 +391,12 @@ async function check(dir: string, tl: Timeline) {
     const r = spawnSync("ffmpeg", ["-loglevel", "error", "-threads", "1", "-y", "-ss", t.toFixed(3), "-i", video, "-frames:v", "1", join(stills, file)]);
     if (r.status !== 0) throw new Error(`コマを取り出せませんでした（${t} 秒）`);
   };
+  const esw = endScreenWindow(tl);
+  if (esw) {
+    console.log(`終了画面 ${fmtSec(esw.start)}〜${fmtSec(esw.end)}（動画の長さとの差 ${(dur - esw.end).toFixed(2)} 秒）`);
+    grab(Math.min(dur - 0.2, esw.start + 1), "check-endscreen.png");
+    console.log("  見本 check-endscreen.png（点線の枠に Studio で要素を重ねる）");
+  }
   // 同期: 前の台詞と話し手が違う行の始まり3つ（2割・5割・8割のところ）。始まる直前は静か、直後に声、字幕はその行
   const lines = tl.chapters.flatMap((c) => c.lines);
   const picks = [0.2, 0.5, 0.8].map((q) => {
@@ -413,7 +443,9 @@ async function check(dir: string, tl: Timeline) {
   const { segs, totalFrames } = segments(tl, art);
   const pngs = segs.length + segs.filter((s) => s.flap).length;
   const who = (Object.keys(art) as Who[]).map((w) => `${w}${art[w]?.talk ? "（口あり）" : ""}`).join("・") || "なし（名前の札）";
-  console.log(`長さ ${fmtClock(tl.total + TAIL)}（${totalFrames} コマ）・区切り ${segs.length}・PNG ${pngs} 枚・立ち絵 ${who}`);
+  const es = endScreenWindow(tl);
+  if (es) console.log(`終了画面 ${fmtSec(es.start)}〜${fmtSec(es.end)}（最後の ${END_SCREEN.sec} 秒。BGM だけの間 ${tailOf(tl)} 秒）`);
+  console.log(`長さ ${fmtClock(tl.total + tailOf(tl))}（${totalFrames} コマ）・区切り ${segs.length}・PNG ${pngs} 枚・立ち絵 ${who}`);
   console.log(`見積もり: PNG 1枚 0.5〜1.5 秒 → ${Math.round((pngs * 0.5) / 60)}〜${Math.round((pngs * 1.5) / 60)} 分、映像 3〜8 分、音 1〜2 分`);
   if (mode === "plan") return;
 

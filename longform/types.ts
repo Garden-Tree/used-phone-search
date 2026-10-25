@@ -54,7 +54,20 @@ export type ChecklistScene = {
   note?: string;
 };
 
-export type SceneData = BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene;
+/**
+ * 終了画面（最後の章・10/25〜）。YouTube Studio の終了画面の要素（動画2枠・チャンネル登録）を重ねる場所を空けた画面。
+ * 枠の中には動画の題を描いておく（終了画面が出ない環境・要素を置く前でも何の動画かわかるように）。位置は scenes.tsx の END_SCREEN
+ */
+export type EndScreenScene = {
+  type: "endScreen";
+  heading: string;
+  /** 次に出す横動画（lib/videos.ts の id と題。左・右の順） */
+  videos: [EndScreenVideo, EndScreenVideo];
+  note?: string;
+};
+export type EndScreenVideo = { id: string; title: string };
+
+export type SceneData = BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | EndScreenScene;
 
 export type LongData = {
   date: string;
