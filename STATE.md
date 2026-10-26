@@ -32,6 +32,7 @@
 - **Yahoo! 7店**: もしも経由（VC 審査後に VC）
 - **収益の枠**: 回線（`SimTile`：機種・検索・予算別・店選び・比較。色のボタン＋月額・楽天は楽天アフィ・横動画の説明欄にも）・買取・iPhone の修理（`lib/buyback.ts`）
 - **値動きの速報**: `scripts/price-alerts.ts`（X の型④）
+- **広告のショート**: `rakutenmobile`（楽天アフィ・PR を声・左上・説明欄1行目に。楽天モバイルのリンクは横動画の説明欄だけ）
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch は storage＝mm）
 

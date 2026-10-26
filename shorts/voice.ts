@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { RELATED_LONG_THEMES, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type Script, type VoiceConfig } from "./types";
+import { RELATED_LONG_THEMES, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -61,7 +61,27 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
     : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s)
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
-    : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s) : dropsNarration(s);
+    : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s)
+    : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : dropsNarration(s);
+}
+
+/**
+ * rakutenmobile の既定（広告の回・shorts-ideas.md の案2。口調は つむぎ の「〜よ・〜ね」）: hook 最初に PR を言う（楽天アフィの決まり）/
+ * ranking 段ごとに1文（「3GBまでなら、月1,078円。」。文頭の段の名前で行を出す・render.ts の rowOf）と「段は使った量で決まる」/
+ * reveal 端末の相場と各段の2年の合計・上と下の段の差 / comment ひと言の本文だけ / outro 料金は公式で・相場はプロフィールから・問い。
+ * 言わないこと: ポイント・キャンペーン・特典・「最安」「実質0円」「必ず安い」「無料」「お得」・ほかの会社の料金・すぐの解約や乗り換え
+ */
+function rakutenMobileNarration(s: RakutenMobileScript): Partial<Record<NarrationKey, string>> {
+  const rows = s.scenes.tiers.rows;
+  const d = s.scenes.device;
+  return {
+    hook: "この動画は、楽天モバイルの紹介、PRを含みます。",
+    ranking: `楽天モバイルの料金は、使った量で${rows.length}段階。${rows.map((r, i) => `${r.label}なら、${i ? "" : "月"}${yen(r.monthly)}。`).join("")}段は先に選ぶんじゃなくて、その月に使った量で決まるよ。`,
+    reveal: `中古の${d.model}、相場${yen(d.median)}と合わせると、2年で${rows.map((r) => yen(r.total)).join("、")}。いちばん上と下の段で、2年で${yen(s.scenes.diff)}の差。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    // 画面の問いは「何GB」。声は「何ギガ」（speakable は数字の付いた GB だけをギガに直す）
+    outro: "料金は申し込む日に、公式で確かめてね。中古の相場は、プロフィールのリンクから見られるよ。あなたは、月に何ギガ使う？",
+  };
 }
 
 /**

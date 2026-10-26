@@ -5,7 +5,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 
 # YouTube ショートの作り方（@used_gadelog）
 
-週1本。テーマを回す: **drops**（今週いちばん値下がりした中古iPhone のランキング）・**budget**（予算ぴったりで買える中古iPhone。10/21〜）・**newused**（新品より中古でいくら安い？ 10/21〜）・**provs**（Proと無印、同じ容量でいくら違う？ 10/22〜）・**fold**（折りたたみスマホ、1世代前にするといくら安い？ 10/22〜）・**pixelbudget**（予算ぴったりで買える中古Pixel 10/22〜）・**ipadbudget**（予算ぴったりで買える中古iPad 10/23〜）・**rank**（状態ランクでいくら違う？中古iPhone 10/22〜）・**battery**（電池90%台だといくら高い？中古iPhone 10/23〜）・**gen**（iPhone、1世代前にするといくら安い？ 10/23〜・ずんだもん）・**storage**（容量を1つ上げるといくら高い？中古iPhone 10/23〜・つむぎ）・**promax**（Pro MaxとPro、同じ容量でいくら違う？ 10/23〜・青山龍星）・**macbudget**（予算ぴったりで買える中古MacBook 10/23〜・つむぎ）・**probudget**（予算ぴったりで買える中古iPhone Pro 10/24〜・つむぎ）・**foldbudget**（予算ぴったりで買える中古折りたたみスマホ 10/24〜・青山龍星）・**ios27line**（iOS 27 に対応する、いちばん安い中古iPhoneは？ 10/25〜・ずんだもん）・**batteryswap**（電池交換を足すと、1つ上の世代と同じ値段？ 10/25〜・ずんだもん）・**overnew**（中古なのに新品より高い？新品との差がいちばん小さい中古iPhone 10/25〜・ずんだもん）・**plusvs**（Plusと無印、同じ容量でいくら違う？ 10/25〜・青山龍星）・**minie**（無印より安い“弟分”（mini・e）、いくら安い？ 10/26〜・青山龍星）・**unused**（未使用品（ランクS）は、中古（ランクA）よりいくら高い？ 10/26〜・青山龍星）・**plusmax**（大画面はPlusとPro Max、同じ容量でいくら違う？ 10/26〜・春日部つむぎ）・**oldpro**（1世代前のProと最新の無印、どっちが安い？ 10/26〜・ずんだもん）・**bigbudget**（予算ぴったりで買える 大きい画面の中古iPhone 10/26〜・つむぎ）。
+週1本。テーマを回す: **drops**（今週いちばん値下がりした中古iPhone のランキング）・**budget**（予算ぴったりで買える中古iPhone。10/21〜）・**newused**（新品より中古でいくら安い？ 10/21〜）・**provs**（Proと無印、同じ容量でいくら違う？ 10/22〜）・**fold**（折りたたみスマホ、1世代前にするといくら安い？ 10/22〜）・**pixelbudget**（予算ぴったりで買える中古Pixel 10/22〜）・**ipadbudget**（予算ぴったりで買える中古iPad 10/23〜）・**rank**（状態ランクでいくら違う？中古iPhone 10/22〜）・**battery**（電池90%台だといくら高い？中古iPhone 10/23〜）・**gen**（iPhone、1世代前にするといくら安い？ 10/23〜・ずんだもん）・**storage**（容量を1つ上げるといくら高い？中古iPhone 10/23〜・つむぎ）・**promax**（Pro MaxとPro、同じ容量でいくら違う？ 10/23〜・青山龍星）・**macbudget**（予算ぴったりで買える中古MacBook 10/23〜・つむぎ）・**probudget**（予算ぴったりで買える中古iPhone Pro 10/24〜・つむぎ）・**foldbudget**（予算ぴったりで買える中古折りたたみスマホ 10/24〜・青山龍星）・**ios27line**（iOS 27 に対応する、いちばん安い中古iPhoneは？ 10/25〜・ずんだもん）・**batteryswap**（電池交換を足すと、1つ上の世代と同じ値段？ 10/25〜・ずんだもん）・**overnew**（中古なのに新品より高い？新品との差がいちばん小さい中古iPhone 10/25〜・ずんだもん）・**plusvs**（Plusと無印、同じ容量でいくら違う？ 10/25〜・青山龍星）・**minie**（無印より安い“弟分”（mini・e）、いくら安い？ 10/26〜・青山龍星）・**unused**（未使用品（ランクS）は、中古（ランクA）よりいくら高い？ 10/26〜・青山龍星）・**plusmax**（大画面はPlusとPro Max、同じ容量でいくら違う？ 10/26〜・春日部つむぎ）・**oldpro**（1世代前のProと最新の無印、どっちが安い？ 10/26〜・ずんだもん）・**bigbudget**（予算ぴったりで買える 大きい画面の中古iPhone 10/26〜・つむぎ）・**rakutenmobile**（楽天モバイルは使った量で3段階｜中古iPhone 14と2年でいくら？ **広告の回・PR** 10/26〜・つむぎ）。
 チャンネルの説明「値下がりランキングや予算別のおすすめ」に合わせる。
 仕組みの説明は `shorts/README.md` と `docs/youtube-shorts.md`。記録は `ideas/YYYY-MM-DD.md`。報告は日本語。
 このスキルの「決まっていること」は、10/21 にユーザーと何度も作り直して決めたもの。**勝手に元に戻さない**。
@@ -15,7 +15,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 1. **準備**
    - VOICEVOX アプリが起動しているか確かめる: `curl -s http://127.0.0.1:50021/version`。起動していなければ、ユーザーに起動を頼む。声なしで作らない。
    - BGM `shorts/assets/bgm.mp3` があるか確かめる。git には入らないので、別の PC では置き直す。
-2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew> plan`
+2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile> plan`
    - `shorts/out/<日付>-<テーマ>/script.json` ができる（すでにあれば止まる。上書きは `--force`）。
    - drops: 1〜3位。budget: 予算（3万・5万・7万・10万円）ごとの機種と相場、注目（5万円の行）の最安・在庫数。newused: 新品と中古の相場の差の1〜3位（候補の全機種も出る）。provs: 無印と Pro の相場の差の1〜3位（候補の全組と、1位の無印の容量を上げたときの差も出る）。fold: 折りたたみの新しい方と1世代前の相場の差の1〜3位（候補の全組も出る）。
    - 検品担当のひと言（`comment.lines`）、ナレーション、説明文を確かめる。
@@ -25,7 +25,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 3. **読みを確かめる**: `npx tsx shorts/make-short.tsx --voice-dump script`（最後に書いた台本・その台本の話者で）
    - アクセント句の直す前と後が出る。機種名・数字が細切れになっていないかを見る。
    - 直らない場面は、script.json の `narrationKana` に読みを書く。
-4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew> render`
+4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile> render`
    - drops は A・B・C の3本、ほかは A の1本と、`youtube.txt` ができる。
    - **`--no-bgm`**: BGM なし（声と効果音だけ・音量の決め方は同じ）の `short-A-nobgm.mp4` と `youtube-nobgm.txt`（BGM のクレジットなし）。ユーザーが YouTube のスマホアプリで投稿し、「音源を追加」で流行りの曲を付けるとき用。BGM 入りの版とは別のファイル。重い処理なので、render は1本ずつ（同時に走らせない。この PC は負荷で落ちる）。
    - 長さ（60秒以内。今は30〜35秒）、音量（-11 LUFS 前後）、タイムライン（場面・行・声の秒）を確かめる。
@@ -116,6 +116,10 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 - batteryswap: 場面は newused と同じ並び（`shorts/themes/batteryswap.ts`・約39秒）。組は古い方→1つ上の世代（無印・mini・Plus・Pro・Pro Max・e・SE。古い方に Apple 公式の電池交換の料金があるものだけ）、容量は gen と同じ。合計＝古い方の相場＋電池交換、差＝1つ上の相場−合計の**絶対値の小さい順**。つかみは「中古 ＋ 電池交換 ＝ 1つ上」の札3つ。reveal は積み上げの棒（相場＋電池交換）と1つ上の棒。見た目は CONDITION。「1つ上」は READING_FIXES で「ひとつうえ」（ずんだもんが「ヒトツジョウ」と読んだ）。utm の末尾 `_batteryswap`
 - overnew: newused の裏返し（`shorts/themes/overnew.ts`・約38秒）。対象と容量は newused と同じで、**中古の相場÷新品の高い順**（中古が新品以上の機種も入れる）。つかみは新品 100% と中古の割合の2本の棒。1位が新品以上なら「新品より +○円」。見た目は BUDGET。公式価格のある機種は6つなので、作る前に newused の回と並びが重ならないか確かめる。utm の末尾 `_overnew`
 - 3テーマとも声は ずんだもん（ノーマル・です・ます）。公開順 ios27line ③ → batteryswap ④ → overnew ② で、直前の galaxybudget ①と続けて同じ見た目にならないように選んだ。関連動画の締めあり
+- rakutenmobile（**広告の回・楽天アフィリエイト**。`shorts/themes/rakutenmobile.ts`・10/26〜）: 横動画11本目の案2。hook（題・料金の階段・2年で差）→ ranking（料金の3段を声に合わせて上から）→ reveal（中古 iPhone 14 128GB の相場＋月額×24 の3本と上と下の段の差）→ comment → outro。料金は Rakuten最強プラン（税込・割引なし）の公式の値だけ（TIERS・`lib/simPlans.ts` の SIM_PRICES_CHECKED。作る日に公式で開き直す）
+  - **PR**: 最初の声「この動画は、楽天モバイルの紹介、PRを含みます。」・左上に小さく「PR」（全場面）・説明欄の1行目「【PR】この動画は楽天アフィリエイトの広告を含みます。」・タイトルの頭に【PR】
+  - **楽天モバイルのリンクはショートの説明欄・固定コメント・返信に貼らない**（横動画の説明欄だけ）。ポイント・キャンペーン・特典・「最安」「実質0円」「必ず安い」「無料」「お得」・ほかの会社の料金・すぐの解約や乗り換えは、声・画面・説明欄・コメントのどこにも出さない
+  - 見た目は ⑥ AD（5つの例外。明るい地・ピンク #D9005B の下線と札）。声は 春日部つむぎ。utm の末尾 `_rakutenmobile`。関連動画の締めは横動画11本目の ID が分かってから（`relatedLong.ts` の RAKUTEN_MOBILE に ID → `types.ts` の RELATED_LONG_THEMES に足す）
 - **ランキングは3位・2位・1位（伏せ字）の3行だけ。** 4位・5位は出さない。空いた分、行と文字を大きくする（行の高さ 260px、機種名は最大80px で、幅に合わせて縮める）。
 - **ランキングの行は、声に合わせて出す。** 声は文ごとに合成し、各行は「○位は」の0.15秒前に出す。決まった間隔では出さない。
 - **上部の見出しの帯は大きく**（上の行は最大52px、題は2行で最大104px）。
@@ -220,6 +224,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 | ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・plusvs・plusmax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
 | ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形）・batteryswap（「中古＋電池交換＝1つ上」の札）・unused（「ランクA vs 未使用品」） |
 | ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札）・oldpro（「前のPro vs 無印」＋差 最大） |
+| ⑥ 広告の回 AD（5つの例外） | 明るい ground | 塗らない（墨の文字）・ピンク #D9005B の下線 | 灰の縁＋影 | ピンク #D9005B（札も） | rakutenmobile（料金の3段の階段＋2年で差）。左上に「PR」 |
 
 ### 色
 - **サイトの色にそろえる。** すべて `lib/brandColors.ts` から取る（`app/globals.css` と同じ値）。

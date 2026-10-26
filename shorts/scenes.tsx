@@ -8,7 +8,7 @@ import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
 import { relatedThumb } from "./relatedLong";
-import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type Script } from "./types";
+import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -18,7 +18,8 @@ const CW = W - MARGIN * 2; // 920
 const HEADER = { top: 250, height: 320 };
 const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
-const HEAD_SUB = (s: Script) => `${s.theme === "drops" && s.period ? "毎日集計" : "毎週更新"}・大手中古ショップ${s.shopCount}店の相場`;
+const HEAD_SUB = (s: Script) => s.theme === "rakutenmobile" ? `料金は公式・中古は大手中古ショップ${s.shopCount}店の相場`
+  : `${s.theme === "drops" && s.period ? "毎日集計" : "毎週更新"}・大手中古ショップ${s.shopCount}店の相場`;
 const HEAD_TITLE = (s: Script) =>
   s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"] : s.theme === "probudget" ? ["予算ぴったりで買える", "中古iPhone Pro"] : s.theme === "foldbudget" ? ["予算ぴったりで買える", "中古折りたたみスマホ"] : s.theme === "galaxybudget" ? ["予算ぴったりで買える", "中古Galaxy"] : s.theme === "bigbudget" ? ["予算ぴったりで買える", "大きい画面の中古iPhone"]
     : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? ["電池90%台だと", "いくら高い？中古iPhone"]
@@ -26,10 +27,12 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "ios27line" ? ["iOS 27対応で", "いちばん安い中古iPhone"] : s.theme === "batteryswap" ? ["電池交換を足すと", "1つ上の世代と同じ値段？"] : s.theme === "overnew" ? ["中古なのに", "新品より高い？中古iPhone"]
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"] : s.theme === "plusmax" ? ["大画面はPlusとPro Max", "同じ容量でいくら違う？"]
     : s.theme === "oldpro" ? ["1世代前のProと最新の無印", "どっちが安い？中古iPhone"]
+    : s.theme === "rakutenmobile" ? ["楽天モバイルは使った量で3段階", `中古${s.scenes.device.model}と2年でいくら？`]
     : s.theme === "minie" ? ["無印より安い“弟分”", "いくら安い？中古iPhone"] : s.theme === "unused" ? ["未使用品（ランクS）は", "中古よりいくら高い？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : [`${periodOf(s as DropsScript).name}の中古iPhone`, "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
   s.theme === "rank" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
+    : s.theme === "rakutenmobile" ? `${s.date.replace(/-/g, "/")}・料金は楽天モバイル公式（税込・割引なし）・中古は${s.scenes.device.storage}の中央値`
     : s.theme === "unused" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記（S＝未使用品）・同じ容量の中央値`
     : s.theme === "minie" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値`
     : s.theme === "battery" ? `${s.date.replace(/-/g, "/")}・電池の%を数字で出す店・同じ容量の中央値`
@@ -133,6 +136,10 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   if (isBudget(s)) return [
     { id: "hook", dur: 2.5, anim: 2 }, budgetRows(), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
+  // rakutenmobile（声なし約25秒）: 題と PR（声は PR の1文）→ 料金の3段（声に合わせて上から出す）→ 端末の相場と2年の合計・上と下の差 → ひと言 → 締め
+  if (s.theme === "rakutenmobile") return [
+    { id: "hook", dur: 2.5, anim: 2 }, budgetRows([0.3, 1.9, 3.5]), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
+  ];
   // newused（声なし約25秒）: 問い → 3位・2位・伏せた1位（声に合わせて出す）→ 1位の新品と中古の相場 → ひと言 → 締め。推移グラフはなし
   // provs・fold も newused と同じ（問い → 3位・2位・伏せた1位 → 1位の2本の棒 → ひと言 → 締め）
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
@@ -195,10 +202,21 @@ function Band({ s, L }: { s: Script; L: Look }) {
   );
 }
 
+/**
+ * 広告の回（rakutenmobile）の「PR」の札。どの場面にも、見出しの帯のすぐ上の左に小さく出す（最初から最後まで。楽天アフィの決まり・shorts-ideas.md）。
+ * 色は地の上の文字（fg）の枠と文字なので、コントラストは地の文字と同じ
+ */
+function PrMark({ L }: { L: Look }) {
+  return (
+    <div style={{ position: "absolute", left: MARGIN, top: HEADER.top - 66, display: "flex", fontSize: 36, fontWeight: 900, lineHeight: 1.2, color: L.fg, border: `3px solid ${L.fg}`, borderRadius: 10, padding: "2px 16px", background: L.bg }}>PR</div>
+  );
+}
+
 function Frame({ s, children, header = true, footer = true, body = BODY }: { s: Script; children: ReactNode; header?: boolean; footer?: boolean; body?: { top: number; height: number } }) {
   const L = lookOf(s);
   return (
     <div style={{ width: W, height: H, display: "flex", position: "relative", background: L.bg, fontFamily: "Noto Sans JP", color: L.fg }}>
+      {s.theme === "rakutenmobile" && <PrMark L={L} />}
       {header && <Band s={s} L={L} />}
       <div style={{ position: "absolute", left: MARGIN, top: body.top, width: CW, height: body.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>{children}</div>
       {footer && (
@@ -1514,7 +1532,118 @@ function OldProReveal({ s, t }: { s: OldProScript; t: number }) {
   );
 }
 
+/** rakutenmobile: 題＋料金の3段の階段（高さは月額の比。額は伏せる）＋2年の上と下の差 */
+function TiersHook({ s, t }: { s: RakutenMobileScript; t: number }) {
+  const L = lookOf(s);
+  const rows = s.scenes.tiers.rows;
+  const max = Math.max(...rows.map((r) => r.monthly));
+  const STEP = 220;
+  const COL = 240;
+  return (
+    <Frame s={s}>
+      <Question lines={["楽天モバイルの料金は", "使った量で3段階"]} max={88} />
+      <div style={{ ...card(L), width: CW, padding: "30px 30px 26px", marginTop: 36, transform: `scale(${pulseOf(t)})` }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", width: CW - 60, height: STEP + 60 }}>
+          {rows.map((r, i) => (
+            <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: COL, marginLeft: i ? 30 : 0 }}>
+              <div style={{ ...row, fontSize: 48, fontWeight: 900, color: L.accent }}>？円</div>
+              <div style={{ display: "flex", width: COL, height: Math.round((STEP * r.monthly) / max), background: L.chip, borderRadius: "16px 16px 0 0", marginTop: 6 }} />
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", width: CW - 60, borderTop: `3px solid ${C.line}`, paddingTop: 10 }}>
+          {rows.map((r, i) => (
+            <div key={i} style={{ ...row, width: COL, marginLeft: i ? 30 : 0, fontSize: FIT(r.label, COL, 44), fontWeight: 900, color: C.navy }}>{r.label}</div>
+          ))}
+        </div>
+      </div>
+      <Teaser s={s} label="2年で差" value={`${n(s.scenes.diff)}円`} mt={24} />
+    </Frame>
+  );
+}
+
+/** rakutenmobile の料金の3段（3行・1行 170px）。左に段の札、右に月額（税込）。上から順に、声に合わせて出す。上に「税込・割引なし」、下に「使った量で決まる」 */
+function TierRows({ s, t, o }: { s: RakutenMobileScript; t: number; o: Scene["o"] }) {
+  const L = lookOf(s);
+  const rows = s.scenes.tiers.rows;
+  const RH = 170;
+  const RIGHT = 600;
+  const head = `${s.scenes.tiers.plan}の月額（税込・割引なし）`;
+  const foot = "段は、その月に使った量で決まる";
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: FIT(head, CW, 48), fontWeight: 900, marginBottom: 24 }}>{head}</div>
+      <div style={{ ...card(L), width: CW, padding: "4px 24px" }}>
+        {rows.map((r, i) => {
+          const p = prog(t, o?.at?.[i] ?? 0.3 + 1.6 * i, ROW_FADE);
+          const price = `月 ${n(r.monthly)}円`;
+          return (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: "100%", height: RH, borderBottom: i < rows.length - 1 ? `3px solid ${C.line}` : "none", opacity: p, transform: `translateX(${Math.round((1 - p) * 80)}px)` }}>
+              <div style={{ display: "flex", justifyContent: "center", width: 250, flexShrink: 0, fontSize: FIT(r.label, 230, 56), fontWeight: 900, color: C.white, background: L.chip, borderRadius: 22, padding: "14px 0" }}>{r.label}</div>
+              <div style={{ ...row, width: RIGHT, flexShrink: 0, marginLeft: 22, fontSize: FIT(price, RIGHT, 92), fontWeight: 900, color: C.navy }}>{price}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ ...row, fontSize: FIT(foot, CW, 56), fontWeight: 900, color: L.accentOnBg, marginTop: 30 }}>{foot}</div>
+    </Frame>
+  );
+}
+
+/**
+ * rakutenmobile の2年の合計: 中古の端末（容量・相場）、段ごとの「相場＋月額×24」の棒（いちばん上の段を幅いっぱいにした比）、上と下の段の差（大）。
+ * 棒は 0.8 秒から伸び、差は数え上げる。下に「ずっと同じ段の場合・各種手数料等別」
+ */
+function TierTotals({ s, t }: { s: RakutenMobileScript; t: number }) {
+  const L = lookOf(s);
+  const d = s.scenes.device;
+  const rows = s.scenes.tiers.rows;
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const grow = prog(t, 0.8, 0.7);
+  const name = `中古${d.model} ${d.storage}`;
+  const median = `相場 ${n(d.median)}円 ＋ 月額×${s.scenes.tiers.months}`;
+  const note = `${s.scenes.tiers.months}か月ずっと同じ段の場合・各種手数料等別`;
+  const LABEL = 210;
+  const BAR = CW - 60 - LABEL - 20;
+  const max = Math.max(...rows.map((r) => r.total));
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: 52, fontWeight: 900, marginBottom: 10, opacity: prog(t, 0, 0.25) }}>2年でいくら？</div>
+      <div style={{ ...card(L), width: CW, padding: "22px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(name, CW - 60, 72), fontWeight: 900 }}>{name}</div>
+        <div style={{ ...row, fontSize: FIT(median, CW - 60, 40), fontWeight: 900, color: C.muted, marginTop: 4 }}>{median}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 12 }}>
+          {rows.map((r, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 10 : 0 }}>
+              <div style={{ ...row, justifyContent: "flex-end", width: LABEL, fontSize: FIT(r.label, LABEL, 44), fontWeight: 900, color: C.muted }}>{r.label}</div>
+              <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
+                <div style={{ ...row, justifyContent: "flex-start", fontSize: FIT(`${n(r.total)}円`, BAR, 48), fontWeight: 900, color: C.navy }}>{`${n(r.total)}円`}</div>
+                <div style={{ display: "flex", width: Math.max(8, Math.round(((BAR * r.total) / max) * grow)), height: 24, background: L.chip, borderRadius: 10, marginTop: 4 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 14 }}>
+          <div style={{ ...row, fontSize: 48, fontWeight: 900, color: C.navy, marginRight: 16 }}>上と下の差</div>
+          <div style={{ ...row, fontSize: FIT(`${n(s.scenes.diff)}円`, 520, 96), fontWeight: 900, color: L.accent }}>{`${n(Math.round(s.scenes.diff * prog(t, 1.0, 0.9)))}円`}</div>
+        </div>
+        <div style={{ ...row, fontSize: FIT(note, CW - 60, 34, 24), fontWeight: 700, color: C.muted, marginTop: 4 }}>{note}</div>
+      </div>
+    </Frame>
+  );
+}
+
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
+  if (s.theme === "rakutenmobile") {
+    switch (sc.id) {
+      case "hook": return <TiersHook s={s} t={t} />;
+      case "ranking": return <TierRows s={s} t={t} o={sc.o} />;
+      case "reveal": return <TierTotals s={s} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`${s.theme} に場面 ${sc.id} はありません`);
+    }
+  }
   if (s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew") {
     if (sc.id === "comment") return <Comment s={s} t={t} o={sc.o} />;
     if (sc.id === "outro") return <Outro s={s} t={t} o={sc.o} />;
