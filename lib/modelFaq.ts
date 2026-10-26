@@ -147,9 +147,11 @@ export function buildSummary(p: {
   const { model } = p;
   const nv = p.newVsUsed ?? [];
   const main = nv.find((r) => r.storage === p.medianStorage) ?? nv[0];
-  const minPart = `最安${yen(p.minPrice)}${p.minStorage ? `（${p.minStorage}）` : ""}`;
+  const medLabel = p.medianStorage ? storageLabel(p.medianStorage, model) : null;
+  // 最安と相場が同じ容量なら、容量は相場の側に1回だけ書く
+  const minPart = `最安${yen(p.minPrice)}${p.minStorage && p.minStorage !== medLabel ? `（${p.minStorage}）` : ""}`;
   // 相場の定義は書かない（10/27〜 文字を減らす。定義は「集計の方法」のページ）
-  const med = p.medianPrice !== null ? `、相場${yen(p.medianPrice)}${p.medianStorage ? `（${storageLabel(p.medianStorage, model)}）` : ""}` : "";
+  const med = p.medianPrice !== null ? `、相場${yen(p.medianPrice)}${medLabel ? `（${medLabel}）` : ""}` : "";
   const shops = `。大手中古ショップ${p.shopCount}店の${p.count.toLocaleString()}件を集計`;
   const tail = main
     ? (main.diff > 0
