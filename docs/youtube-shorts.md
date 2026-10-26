@@ -31,6 +31,13 @@ npx tsx shorts/make-short.tsx <テーマ> render --no-bgm   # BGM なしの shor
 - 対象は iOS 27 対応の iPhone だけ（`ALL_CATALOG_MODELS`）。
 - 推移は、在庫件数がふだんの半分未満の日を除く。縦軸は最高値の20%以上の幅をとる。
 
+## TikTok（10/26〜）
+
+- アカウント @used_gadelog（個人・PC の TikTok Studio にログイン済み）。調べた経緯は `ideas/2026-10-26-tiktok.md`、運用の手順と決まりは `.claude/skills/tiktok-ops/SKILL.md`。
+- YouTube ショートの回を **BGM なしで書き出し直して**（`render --no-bgm` → `short-A-nobgm.mp4`）、TikTok Studio から1本ずつ手で上げる。自動化ツール・投稿のスクリプトは使わない（TikTok の禁止事項）。
+- キャプション: `npx tsx shorts/tiktok-caption.ts shorts/out/<日付>-<テーマ>` → 同じフォルダの `tiktok.txt`（つかみ・数字・「相場は used.gadelog.com で検索」・VOICEVOX のクレジット・ハッシュタグ。BGM のクレジットと utm は入れない。広告の回は先頭に #PR）。
+- フォロワー1,000人までは PR・アフィリエイトの回を出さない（プロフィールのリンクも置けない）。
+
 ## ナレーション（VOICEVOX）
 
 1. VOICEVOX アプリを入れる（公式 https://voicevox.hiroshiba.jp/ から Windows 版。インストールはユーザー）。
