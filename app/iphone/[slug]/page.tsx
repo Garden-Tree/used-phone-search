@@ -22,7 +22,7 @@ import {
   siblingModels,
   slugToModel,
 } from "@/lib/catalog";
-import { getBatteryRows, getMemorySsdRankMatrix, getModelStats, getStorageMedians, getStorageRankMatrix, macCellKey, type MemorySsdRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
+import { getBatteryRows, getMedianAt, getMemorySsdRankMatrix, getModelStats, getStorageMedians, getStorageRankMatrix, macCellKey, type MemorySsdRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
 import { MAC_INFO } from "@/lib/macCatalog";
 import { WATCH_INFO, WATCHOS27_IPHONE, isWatchOS27 } from "@/lib/watchCatalog";
 import { SPEC_ROWS, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
@@ -64,6 +64,7 @@ import { buyFacts, buyVerdict, dailyRows, monthlyRows, seriesFor, trendOf, trend
 import { sameBudgetModels } from "@/lib/sameBudget";
 import { SIM_PLANS } from "@/lib/simPlans";
 import SimTile from "@/app/components/SimTile";
+import { nextGeneration } from "@/lib/nextGeneration";
 
 // スクレイパーの後にビルドするので、在庫はその時点のもの
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -493,6 +494,10 @@ export default async function ModelPage({ params }: Props) {
   const showSim = hasStock && (device === "iphone" || device === "pixel" || device === "galaxy" || device === "xperia" || device === "aquos");
   const showBuyback = hasStock && !mac && !watch;
   const showRepair = hasStock && device === "iphone";
+  // 「直す？買い替える？」の1つ上の世代の相場（この機種の相場と同じ容量。在庫3件以上のときだけ。DB は件数と中央値の1行）
+  const nextModel = showRepair ? nextGeneration(model) : null;
+  const nextAt = nextModel && stats.medianStorage !== null ? await getMedianAt(nextModel, stats.medianStorage) : null;
+  const nextGen = nextModel && nextAt && nextAt.count >= 3 && nextAt.median !== null ? { model: nextModel, median: nextAt.median } : null;
   const PR_BADGE = <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1 py-px leading-none">PR</span>;
   // 買取のタイル（10/25〜 切り出し）。スマホは要約カードの直下に出す（買取は1件あたりの報酬が高いのに3週で15クリックだった）。
   // 相場の1行は事実だけ（相場＝中古の販売価格の中央値。買取価格は載せない）
@@ -524,34 +529,13 @@ export default async function ModelPage({ params }: Props) {
   ) : null;
   // 回線のタイル（app/components/SimTile.tsx）。スマホは要約の下・買取の上に出す（ページの下の方では回線のクリックが3週で2件だった）。
   const simTile = showSim ? <SimTile model={model} /> : null;
-  // withBuyback=false はスマホ用（買取・回線は上に出したので、ここでは修理だけ）
+  // withBuyback=false はスマホ用（買取・回線は上に出したので、ここでは「直す？買い替える？」＋修理だけ）
   const prTiles = (extra: string, withBuyback = true) =>
     (showSim && withBuyback) || (showBuyback && withBuyback) || showRepair ? (
       <div className={`grid gap-2 items-start grid-cols-1 ${extra}`}>
         {withBuyback && simTile}
         {withBuyback && buybackTile}
-        {showRepair && (
-          <div className="bg-white border border-line rounded-xl p-3 flex flex-col gap-1">
-            <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">修理で済ませるなら {PR_BADGE}</span>
-            {REPAIR_PROGRAMS.map((p) => (
-              <a
-                key={p.name}
-                href={p.href}
-                target="_blank"
-                rel="sponsored nofollow noopener"
-                data-shop-click=""
-                data-shop={`${p.name}（修理）`}
-                data-model={model}
-                data-link-type="a8"
-                className="flex flex-col py-1 hover:bg-ground rounded"
-              >
-                <span className="text-[13px] font-bold text-ink">{p.name} <span className="text-ink-mute" aria-hidden="true">›</span></span>
-                <span className="text-[10px] text-ink-mute leading-snug">{p.text}</span>
-              </a>
-            ))}
-            <span className="text-[10px] text-ink-mute leading-snug">修理代は、このページの中古の相場と比べて決めるのがおすすめです。</span>
-          </div>
-        )}
+        {showRepair && <RepairOrReplace model={model} medianPrice={stats.medianPrice} medianStorage={stats.medianStorage} next={nextGen} />}
       </div>
     ) : null;
 
@@ -921,18 +905,13 @@ export default async function ModelPage({ params }: Props) {
                 </div>
               </div>
 
-              {/* 修理か買い替えか（iPhone・Apple 公式の料金を確かめた機種だけ。広告ではない）／iPad の選ぶときの目安 */}
-              {isIphone && (
-                <div className="md:order-6 min-[1360px]:col-span-2 empty:hidden">
-                  <RepairOrReplace model={model} minPrice={stats.minPrice} medianPrice={stats.medianPrice} medianStorage={stats.medianStorage} />
-                </div>
-              )}
               {/* Proと無印を比べた横動画（iPhone 13〜17 の無印・Pro・Pro Max。lib/videos.ts） */}
               {video && (
                 <div className="md:order-6 min-[1360px]:col-span-2">
                   <VideoEmbed video={video} heading={video.heading} />
                 </div>
               )}
+              {/* iPad の選ぶときの目安 */}
               {device === "ipad" && (
                 <div className="md:order-6 min-[1360px]:col-span-2">
                   <IpadGuide model={model} byStorage={stats.byStorage} />
