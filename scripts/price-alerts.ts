@@ -23,6 +23,7 @@ import { applePrice } from "@/lib/applePrices";
 import { officialPrice } from "@/lib/officialPrices";
 import { storageLabel, yen } from "@/lib/format";
 import { matchesModel } from "@/lib/modelMatch";
+import { canonicalIpadModel } from "@/lib/ipadCatalog";
 
 // ── しきい値 ─────────────────────────────────────────────
 const MOVE_PCT = 3; // 7日の相場の変化（%）
@@ -279,7 +280,9 @@ async function main() {
     queries++;
     rowsRead += groups.length;
     unknownNames = groups
+      // iPad は取り込みの直後だけ店の表記のまま（「iPad (第 8 世代)」）。normalize:ipad が正式名にそろえるので、そろう名前は数えない（10/27）
       .filter((g) => g._count._all >= UNKNOWN_MIN_COUNT && !ALL_DEVICE_PAGE_MODELS.some((m) => matchesModel(m, g.modelName)))
+      .filter((g) => !(g.modelName.startsWith("iPad") && canonicalIpadModel(g.modelName)))
       .map((g) => ({ modelName: g.modelName, count: g._count._all }))
       .sort((a, b) => b.count - a.count)
       .slice(0, UNKNOWN_TOP);
