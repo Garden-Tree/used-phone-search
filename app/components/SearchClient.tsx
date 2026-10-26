@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SlidersHorizontal, X } from 'lucide-react';
 import DeviceCard, { DeviceList, type Device } from '@/app/components/DeviceCard';
 import SortSelect from '@/app/components/SortSelect';
 import FilterPanel, { useUpdateParams } from '@/app/components/FilterPanel';
 import AdDisclosure from '@/app/components/AdDisclosure';
+import SimTile from '@/app/components/SimTile';
 import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from '@/lib/catalog';
 import { SEARCH_DEVICES, findSearchDevice, matchesModel, splitModelQuery } from '@/lib/modelMatch';
 import type { InventoryFile, InventoryIndex } from '@/lib/searchData';
@@ -124,6 +125,10 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
   const pageModel = models.length === 1
     ? ALL_DEVICE_PAGE_MODELS.find((m) => m.toLowerCase() === models[0].toLowerCase())
     : undefined;
+
+  // 回線のタイル（PR）を出すのはスマホの絞り込みのときだけ（iPad・MacBook・Apple Watch には出さない）
+  const PHONE_KEYS = ['iphone', 'pixel', 'galaxy', 'xperia', 'aquos'];
+  const phoneView = models.length > 0 ? models.every((q) => PHONE_KEYS.includes(deviceKeyOf(q))) : PHONE_KEYS.includes(device.key);
 
   // 読み込んだ結果は「どの条件の分か」と一緒に持つ（条件が変わったら、読み終わるまでは読み込み中として扱う）
   const loadKey = `${models.join(',')}|${models.length ? '' : device.key}`;
@@ -377,7 +382,8 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
                 </section>
               )}
               {/* 検索条件が変わったら作り直して、表示件数を最初に戻す */}
-              <ClientDeviceList key={params.toString()} devices={devices} showModel={models.length !== 1} />
+              <ClientDeviceList key={params.toString()} devices={devices} showModel={models.length !== 1}
+                sim={phoneView ? <SimTile model={pageModel ?? (models.length === 1 ? models[0] : undefined)} className="my-2 md:max-w-md" /> : null} />
             </>
           )}
         </div>
@@ -425,7 +431,10 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
 }
 
 /** 絞り込んだ在庫を 20 件ずつ表示する（スクロールで続きを出す） */
-function ClientDeviceList({ devices, showModel }: { devices: Device[]; showModel: boolean }) {
+// 回線のタイルは結果の5件目の下に1回だけ（5件未満なら一覧の下）
+const SIM_AFTER = 5;
+
+function ClientDeviceList({ devices, showModel, sim }: { devices: Device[]; showModel: boolean; sim?: ReactNode }) {
   const [shown, setShown] = useState(PAGE_SIZE);
   const target = useRef<HTMLDivElement>(null);
   const hasMore = shown < devices.length;
@@ -444,10 +453,18 @@ function ClientDeviceList({ devices, showModel }: { devices: Device[]; showModel
   return (
     <div>
       <DeviceList>
-        {devices.slice(0, shown).map((device) => (
+        {devices.slice(0, sim ? Math.min(shown, SIM_AFTER) : shown).map((device) => (
           <DeviceCard key={device.id} device={device} showModel={showModel} />
         ))}
       </DeviceList>
+      {sim}
+      {sim && shown > SIM_AFTER && devices.length > SIM_AFTER && (
+        <DeviceList>
+          {devices.slice(SIM_AFTER, shown).map((device) => (
+            <DeviceCard key={device.id} device={device} showModel={showModel} />
+          ))}
+        </DeviceList>
+      )}
 
       {hasMore ? (
         <div ref={target} className="flex justify-center py-6">

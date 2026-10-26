@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import VideoEmbed from "@/app/components/VideoEmbed";
+import SimTile from "@/app/components/SimTile";
 import { VIDEOS } from "@/lib/videos";
 import { modelPagePath } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
@@ -110,6 +111,10 @@ export default async function WhereToBuyPage() {
           <h1 className="text-2xl md:text-3xl font-bold mb-3">中古iPhoneはどこで買う？</h1>
           <p className="text-sm text-ink-sub">
             大手中古ショップ{n}店の iPhone の在庫（{w.total.toLocaleString()}件・{today}時点）を、店ごとに数字で比べました。特定の店はおすすめしません。目的に合う店を選んでください。
+          </p>
+          <p className="text-[11px] md:text-xs text-ink-mute leading-relaxed mt-2">
+            <span className="inline-block mr-1 px-1 py-px rounded border border-line font-bold">PR</span>
+            本ページはアフィリエイト広告を利用しています
           </p>
           {n > 0 && (
             <div className="grid grid-cols-3 gap-2 mt-3">
@@ -269,6 +274,9 @@ export default async function WhereToBuyPage() {
 
         {/* 同じテーマの横動画（10/24 公開） */}
         <VideoEmbed video={VIDEOS.whereToBuy} />
+
+        {/* 回線のタイル（PR）。本文の終わり・出典の前 */}
+        {n > 0 && <SimTile className="md:max-w-md" />}
 
         <section className="flex flex-col gap-2 text-sm text-ink-sub">
           <h2 className="text-lg font-bold text-ink">データの出典</h2>
