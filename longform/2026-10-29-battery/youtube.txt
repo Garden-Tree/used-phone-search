@@ -1,0 +1,38 @@
+中古iPhoneのバッテリー、何%なら買っていい？85%以上が正解の理由を3.7万件の相場で
+
+中古iPhoneのバッテリー（最大容量）は何%なら買っていいのかを、大手中古ショップ16店・iPhone の在庫 37,273件の相場（2026/10/26時点・ジャンクを除く）と、Apple 公式の情報で確かめました。
+結論: 85%以上なら買っていい。80%台前半との相場の差は8機種で最大5,312円（12・128GB）で、Apple の電池交換（12,000〜17,200円）より小さい。
+
+・電池の%ごとの相場（iPhone 14・128GB）: 100% 64,980円／95〜99% 70,500円／90〜94% 68,400円／85〜89% 62,300円／80〜84% 62,980円。%の順に並ばない
+・85〜89%と80〜84%の相場の差（128GB・15 Pro は256GB）: 12 +5,312円・15 +4,120円・13 +2,179円・SE 第3世代 +600円・15 Pro 0円・14 −680円・13 Pro −320円・16 −2,280円
+・いちばん安い1台（90%以上と85%以上）: 14 は差80円・16 は0円。13 は+10,178円・15 Pro は+9,701円（90%以上の在庫が少ない）
+・電池100%の在庫 3,354件のうち、未使用品（ランクS）は537件（約16%）。ランクA・B・C の中古が多い
+・電池の書き方: %で表示する4店（じゃんぱら・ソフマップ・モバステ・にこスマ）で iPhone の在庫の62.7%。「80%以上」などざっくりが5店・8.0%
+・Apple: iPhone 14 以前は理想的な条件下でフル充電500回、15 は1,000回で本来の容量の80%を保つ設計（support.apple.com/ja-jp/101575）
+
+相場＝同じ機種・同じ容量の中央値。電池交換の料金（保証対象外・税込）と電池の説明は Apple 公式で確かめた値です。相場は毎日動くので、最新はサイトで確かめてください。
+
+0:00 結論：85%以上なら買っていい
+0:45 どうやって調べた？
+1:28 %で相場はいくら違う？
+2:58 90%と85%、どっちが得？
+4:34 100%は未使用品？
+5:58 店ごとの書き方の違い
+7:16 電池交換と比べると
+8:32 機種ごとの選び方
+10:00 まとめ
+10:42 次におすすめの動画
+
+iPhone 15 を電池85%以上で探す: https://used.gadelog.com/search?model=iPhone+15&minBattery=85&utm_source=youtube&utm_medium=social&utm_campaign=long_20261029
+iPhone 14 を電池85%以上で探す: https://used.gadelog.com/search?model=iPhone+14&minBattery=85&utm_source=youtube&utm_medium=social&utm_campaign=long_20261029
+中古iPhoneはどこで買う？店の電池表記・保証の比較: https://used.gadelog.com/iphone/where-to-buy?utm_source=youtube&utm_medium=social&utm_campaign=long_20261029
+全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261029
+
+VOICEVOX:春日部つむぎ
+VOICEVOX:ずんだもん
+BGM: Cyber Society by のる（OpenTracks）
+効果音：効果音ラボ
+立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)
+ずんだもん立ち絵：坂本アヒル様
+
+#中古iPhone #iPhone #中古スマホ
