@@ -94,7 +94,7 @@ export async function buildRakutenMobileScript(date: string): Promise<RakutenMob
       outro: {
         lines: ["料金は申し込む日に公式で", "中古の相場はプロフィールから"],
         url: "used.gadelog.com",
-        note: `料金は${checked}の楽天モバイル公式・相場は大手中古ショップ${shopCount}店から`,
+        note: `料金は${checked}の楽天モバイル公式\n相場は大手中古ショップ${shopCount}店から`,
         question: "あなたは月に何GB使う？",
       },
     },

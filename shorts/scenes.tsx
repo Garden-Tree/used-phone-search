@@ -795,7 +795,7 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.6 * k, 0.4) }}>
             <div style={{ ...row, fontSize: FIT(out.url, CW, 68), fontWeight: 900, color: L.url, marginTop: 24 }}>{out.url}</div>
-            <div style={{ ...row, fontSize: FIT(out.note, CW, 30, 24), fontWeight: 500, color: L.sub, marginTop: 14 }}>{out.note}</div>
+            {out.note.split("\n").map((l, i) => <div key={i} style={{ ...row, fontSize: FIT(l, CW, 30, 24), fontWeight: 500, color: L.sub, marginTop: i ? 4 : 14 }}>{l}</div>)}
           </div>
           <div style={{ ...row, fontSize: FIT(question, CW, 50), fontWeight: 900, marginTop: 34, opacity: prog(t, 1.2 * k, 0.4) }}>{question}</div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 40, opacity: p, transform: `translateY(${Math.round((1 - p) * 40)}px)` }}>
@@ -820,7 +820,8 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.6 * k, 0.4) }}>
           <div style={{ ...row, fontSize: FIT(out.url, CW, 80), fontWeight: 900, color: L.url, marginTop: 56 }}>{out.url}</div>
-          <div style={{ ...row, fontSize: 34, fontWeight: 500, color: L.sub, marginTop: 40 }}>{out.note}</div>
+          {/* 「\n」で行を分ける（長い注記が幅に入らないとき。rakutenmobile）。幅に入らない行は縮める */}
+          {out.note.split("\n").map((l, i) => <div key={i} style={{ ...row, fontSize: FIT(l, CW, 34, 24), fontWeight: 500, color: L.sub, marginTop: i ? 6 : 40 }}>{l}</div>)}
         </div>
         <div style={{ ...row, fontSize: 52, fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>{question}</div>
         {/* 関連動画（横動画）への誘導。サムネのファイルがないとき（relatedLong.ts）は文字の札だけ。画面の下の関連動画のリンクを指す */}
