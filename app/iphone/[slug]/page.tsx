@@ -528,7 +528,7 @@ export default async function ModelPage({ params }: Props) {
     </div>
   ) : null;
   // 回線のタイル（app/components/SimTile.tsx）。スマホは要約の下・買取の上に出す（ページの下の方では回線のクリックが3週で2件だった）。
-  const simTile = showSim ? <SimTile model={model} median={stats.medianPrice} medianLabel={mLabel} /> : null;
+  const simTile = showSim ? <SimTile model={model} /> : null;
   // withBuyback=false はスマホ用（買取・回線は上に出したので、ここでは「直す？買い替える？」＋修理だけ）
   const prTiles = (extra: string, withBuyback = true) =>
     (showSim && withBuyback) || (showBuyback && withBuyback) || showRepair ? (
