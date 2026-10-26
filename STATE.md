@@ -30,7 +30,7 @@
   - 同じ会社の別の売り場は公式のカードにまとめる（イオシス⇔楽天・エムモバ⇔エムコム）
 - **Amazon 整備済み品**: 停止中
 - **Yahoo! 7店**: VC 本体（2025875・2%・10/26〜。ideas/10-26）。もしもはメディア否認
-- **収益の枠**: 回線（`SimTile`。機種ページは「2年いくら」＝相場＋20GB前後×24・href のある社だけ最大3社）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
+- **収益の枠**: 回線（`SimTile`＝各社「月○円〜」・href のある社だけ。2年の総額は `/sim`（10/27〜））・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **値動きの速報**: `scripts/price-alerts.ts`
 - **広告のショート** `rakutenmobile`: PR は左上・説明欄。リンクは横動画だけ
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
