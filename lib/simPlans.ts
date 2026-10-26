@@ -132,24 +132,7 @@ export const ALL_SIM_PLANS: SimPlan[] = [
     priceSource: "https://xmobile.ne.jp/plan/",
     checked: "2026-10-26",
   }),
-  plan({
-    // A8「UQ mobile」（s00000014884001。オンラインショップからの申込だけ。提携待ち）
-    name: "UQ mobile",
-    text: "au の回線のオンライン申込",
-    href: "",
-    linkType: "a8",
-    // 色は仮（出す前にユーザーに見せる）
-    style: { background: "#C7004C", color: "#FFFFFF", border: "3px solid #C7004C" },
-    // トクトクプラン2 基本使用料（割引前）5GB まで・30GB まで とも 4,048円（https://www.uqwimax.jp/mobile/plan/tokutoku2/）、
-    // コミコミプランバリュー 35GB 基本使用料（割引前）3,828円（https://www.uqwimax.jp/mobile/plan/komikomi-pv/）（10/26 公式・税込）
-    tiers: [
-      { label: "5GB", gb: 5, monthly: 4048, plan: "トクトクプラン2" },
-      { label: "30GB", gb: 30, monthly: 4048, plan: "トクトクプラン2" },
-      { label: "35GB", gb: 35, monthly: 3828, plan: "コミコミプランバリュー" },
-    ],
-    priceSource: "https://www.uqwimax.jp/mobile/plan/",
-    checked: "2026-10-26",
-  }),
+  // UQ mobile は入れない（A8 で過去に否認。ユーザー 10/26「連携しても通らない」）
   plan({
     // A8「Y!mobile（Yステーション）」（s00000018938002。MNP。**ソフトバンク認定中古品の契約は否認**。提携待ち）
     name: "Y!mobile",

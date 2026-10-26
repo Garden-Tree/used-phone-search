@@ -3,7 +3,7 @@ import { SIM_PLANS, SIM_PRICES_CHECKED, repTier, type SimPlan } from "@/lib/simP
 // 回線のタイル「回線も見直す [PR]」（10/26〜 機種ページから切り出し。スマホの文脈だけに出す。iPad・Mac・Watch には出さない）。
 // 各社の色のボタン（lib/simPlans.ts の style。ロゴは描かない）。出すのは href のある社だけ（lib/simPlans.ts の SIM_PLANS）。
 // ポイント・値引きは書かない・「最安」と書かない（アフィリエイトの決まり。ideas/2026-10-26.md）
-// 機種ページ（median あり・10/26〜）: 「この機種＋回線で2年いくら？」の行（最大3社）。2年の目安＝中古の相場＋代表の段（20GB 前後・repTier）の月額×24
+// 機種ページ（median あり・10/26〜）: ボタンの中を「2年 約○万円」に（最大3社）。2年の目安＝中古の相場＋代表の段（20GB 前後・repTier）の月額×24
 // それ以外のページ: 今までどおりボタンの中に「月○円〜」
 // GA4: data-shop-click の shop_name は「<name>（回線）」。model は data-model（機種が決まらないページでは付けない）
 
@@ -45,27 +45,21 @@ export default function SimTile({ model, median, medianLabel = "相場", classNa
   if (median && median > 0 && SIM_PLANS.length > 0) {
     const rows = SIM_PLANS.slice(0, MAX_ROWS).map((p) => {
       const t = repTier(p);
-      return { p, t, total: median + t.monthly * 24 };
+      return { p, total: median + t.monthly * 24 };
     });
+    // 文字は少なく（ユーザー 10/26「文字多い」）: 形は「月○円〜」のボタンと同じで、中の数字を2年の目安にする
     return (
       <div className={box}>
-        <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">この機種＋回線で2年いくら？ {PR}</span>
-        <div className="flex flex-col gap-1.5">
-          {rows.map(({ p, t, total }) => (
-            <div key={p.name} className="flex items-center gap-3">
-              <SimButton p={p} model={model} className="h-11 w-[42%] shrink-0">
-                <span className="text-[14px] font-bold">{p.name}</span>
-              </SimButton>
-              <div className="flex flex-col leading-tight min-w-0">
-                <span className="text-[15px] font-bold text-ink tabular-nums">2年 約{(Math.round(total / 1000) / 10).toLocaleString("ja-JP")}万円</span>
-                <span className="text-[10px] text-ink-mute tabular-nums">{t.label} 月{t.monthly.toLocaleString("ja-JP")}円×24</span>
-              </div>
-            </div>
+        <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">回線も見直す {PR}</span>
+        <div className="grid grid-cols-2 gap-2">
+          {rows.map(({ p, total }) => (
+            <SimButton key={p.name} p={p} model={model} className="h-14">
+              <span className="text-[15px] font-bold">{p.name}</span>
+              <span className="text-[11px] tabular-nums">2年 約{(Math.round(total / 1000) / 10).toLocaleString("ja-JP")}万円</span>
+            </SimButton>
           ))}
         </div>
-        <span className="text-[10px] text-ink-mute leading-snug">
-          中古の{medianLabel}{median.toLocaleString("ja-JP")}円＋20GB前後の月額×24・税込・割引なし・各種手数料等別（各社公式 {md(SIM_PRICES_CHECKED)}）
-        </span>
+        <span className="text-[10px] text-ink-mute leading-snug">中古の{medianLabel}＋20GB前後の月額×24（税込・{md(SIM_PRICES_CHECKED)} 各社公式）</span>
       </div>
     );
   }
