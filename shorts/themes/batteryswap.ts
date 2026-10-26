@@ -13,35 +13,12 @@ import { storageLabel } from "@/lib/format";
 import { groupMinPrice, medianPrice, modelWhere } from "@/lib/modelInventory";
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
+import { NEXT_GENERATION_PAIRS } from "@/lib/nextGeneration";
 import { APPLE_REPAIR_CHECKED, APPLE_REPAIR_SOURCE, appleRepair } from "@/lib/appleRepairPrices";
 import type { BatterySwapRow, BatterySwapScript } from "../types";
 
-/** 比べる組（古い方・1つ上の世代） */
-const PAIRS: [string, string][] = [
-  ["iPhone 11", "iPhone 12"],
-  ["iPhone 12", "iPhone 13"],
-  ["iPhone 13", "iPhone 14"],
-  ["iPhone 14", "iPhone 15"],
-  ["iPhone 15", "iPhone 16"],
-  ["iPhone 16", "iPhone 17"],
-  ["iPhone 12 mini", "iPhone 13 mini"],
-  ["iPhone 14 Plus", "iPhone 15 Plus"],
-  ["iPhone 15 Plus", "iPhone 16 Plus"],
-  ["iPhone 12 Pro", "iPhone 13 Pro"],
-  ["iPhone 13 Pro", "iPhone 14 Pro"],
-  ["iPhone 14 Pro", "iPhone 15 Pro"],
-  ["iPhone 15 Pro", "iPhone 16 Pro"],
-  ["iPhone 16 Pro", "iPhone 17 Pro"],
-  ["iPhone 17 Pro", "iPhone 18 Pro"],
-  ["iPhone 12 Pro Max", "iPhone 13 Pro Max"],
-  ["iPhone 13 Pro Max", "iPhone 14 Pro Max"],
-  ["iPhone 14 Pro Max", "iPhone 15 Pro Max"],
-  ["iPhone 15 Pro Max", "iPhone 16 Pro Max"],
-  ["iPhone 16 Pro Max", "iPhone 17 Pro Max"],
-  ["iPhone 17 Pro Max", "iPhone 18 Pro Max"],
-  ["iPhone 16e", "iPhone 17e"],
-  ["iPhone SE (第2世代)", "iPhone SE (第3世代)"],
-];
+/** 比べる組（古い方・1つ上の世代）。lib/nextGeneration.ts（機種ページの「直す？買い替える？」と共有） */
+const PAIRS = NEXT_GENERATION_PAIRS;
 const MIN_COUNT = 5;
 const SHOWN = 3;
 

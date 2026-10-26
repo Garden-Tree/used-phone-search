@@ -4,7 +4,8 @@ import { ALL_DEVICE_PAGE_MODELS, modelToSlug } from "@/lib/catalog";
 import { ALL_STORAGE } from "@/lib/priceHistory";
 import { getModelStats } from "@/lib/modelStats";
 import { getModelMarket } from "@/lib/marketStats";
-import { medianLabel, storageLabel, yen } from "@/lib/format";
+import { yen } from "@/lib/format";
+import { moveOf } from "@/lib/modelGuide";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 
 /**
@@ -62,7 +63,7 @@ const getMedianTrend = cache(async (model: string, storage: number | null) => {
   return { now: latest.medianPrice, before: past.medianPrice, days };
 });
 
-/** 文章（getBuyNowNotes）と数字タイル（getBuyNowStats）が共有する、今日のデータから言える事実。DB の読みは1回分 */
+/** 数字タイル（getBuyNowStats）の元になる、今日のデータから言える事実。DB の読みは1回分 */
 type BuyNowFacts = {
   min: number;
   median: number;
@@ -97,59 +98,13 @@ const getBuyNowFacts = cache(async (model: string): Promise<BuyNowFacts | null> 
   };
 });
 
-export const getBuyNowNotes = cache(async (model: string): Promise<string[]> => {
-  const notes: string[] = [];
-  try {
-    const f = await getBuyNowFacts(model);
-    if (!f) return [];
-
-    // 1. 相場と最安値の差
-    const gap = f.median - f.min;
-    if (gap > 0) {
-      notes.push(`最安値は相場（${f.medianStorage ? `${storageLabel(f.medianStorage, model)}の` : ""}中央値 ${yen(f.median)}）より${yen(gap)}低く、${yen(f.min)}です。この差は、1台だけの特価やバッテリーの弱い個体が最安値になっているときに大きくなります。`);
-    }
-
-    // 2. 30日の値動き
-    const trend = f.trend;
-    if (trend && trend.days >= 7 && trend.before > 0) {
-      const span = trend.days >= 30 ? "この30日" : `記録のある過去${trend.days}日`;
-      const diff = trend.now - trend.before;
-      const rate = diff / trend.before;
-      if (Math.abs(rate) <= 0.02) notes.push(`${span}で、相場はほぼ横ばいです（${yen(trend.before)}から${yen(trend.now)}。変化は2%以内）。`);
-      else if (diff < 0) notes.push(`${span}で、相場は${yen(-diff)}下がりました（${yen(trend.before)}から${yen(trend.now)}）。`);
-      else notes.push(`${span}で、相場は${yen(diff)}上がりました（${yen(trend.before)}から${yen(trend.now)}）。`);
-    }
-
-    // 3. 未使用品（ランクS）との差
-    if (f.rankS) {
-      let s = `未使用品（ランクS）は${yen(f.rankS.minPrice)}からです。`;
-      if (f.rankA && f.rankS.minPrice > f.rankA.minPrice) {
-        s += `中古のランクA（最安${yen(f.rankA.minPrice)}）との差は${yen(f.rankS.minPrice - f.rankA.minPrice)}です。`;
-      }
-      notes.push(s);
-    }
-
-    // 4. 1つ前の世代との差
-    if (f.prev) {
-      const d = f.median - f.prev.median;
-      const rel = d > 0 ? `${model}より${yen(d)}低く` : d < 0 ? `${model}より${yen(-d)}高く` : `${model}と同じで`;
-      notes.push(`1世代前の${f.prev.name}の相場${f.prev.storage ? `（${storageLabel(f.prev.storage, f.prev.name)}）` : ""}は${yen(f.prev.median)}で、${rel}${d === 0 ? "す" : "なっています"}。`);
-    }
-  } catch (error) {
-    rethrowDuringBuild(error);
-    console.error("buy-now notes failed:", error);
-    return [];
-  }
-  return notes;
-});
-
 /** 機種ページの数字タイル1枚分。tone: up=上昇（赤）・down=下落／お得（緑青）・flat=色なし */
 export type StatTile = { label: string; value: string; sub?: string; tone: "up" | "down" | "flat" };
 
 const signedYen = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : "±"}${Math.abs(n).toLocaleString()}円`;
 
 /**
- * 数字タイル（最大4枚）。getBuyNowNotes と同じ事実から作る。データが無い項目は出さない（推測は書かない）
+ * 数字タイル（最大4枚）。データが無い項目は出さない（推測は書かない）。10/27〜 値動きは矢印と金額だけ（「↘ −2,300円」）、注記は最小限
  */
 export const getBuyNowStats = cache(async (model: string): Promise<StatTile[]> => {
   const tiles: StatTile[] = [];
@@ -157,30 +112,26 @@ export const getBuyNowStats = cache(async (model: string): Promise<StatTile[]> =
     const f = await getBuyNowFacts(model);
     if (!f) return [];
 
-    // 1. 相場の変化（記録が7日分以上あるとき）
+    // 1. 相場の変化（記録が7日分以上あるとき）。容量は要約カードの「相場（128GB）」に1回だけ書く
     const t = f.trend;
     if (t && t.days >= 7 && t.before > 0) {
-      const diff = t.now - t.before;
-      const label = `${t.days >= 30 ? "30日" : `${t.days}日`}の${medianLabel(f.medianStorage, model)}`;
-      const sub = `${t.before.toLocaleString()} → ${t.now.toLocaleString()}`;
-      if (Math.abs(diff / t.before) <= 0.02) tiles.push({ label, value: "ほぼ横ばい", sub, tone: "flat" });
-      else if (diff > 0) tiles.push({ label, value: `↑ ${diff.toLocaleString()}円`, sub, tone: "up" });
-      else tiles.push({ label, value: `↓ ${(-diff).toLocaleString()}円`, sub, tone: "down" });
+      const m = moveOf(t.now - t.before, t.before);
+      tiles.push({ label: `${t.days >= 30 ? "30日" : `${t.days}日`}の相場`, value: m.text, tone: m.tone });
     }
 
     // 2. 最安値と相場の差
     const gap = f.median - f.min;
-    if (gap > 0) tiles.push({ label: "最安値と相場の差", value: yen(gap), sub: "最安は1台だけのことも", tone: "down" });
+    if (gap > 0) tiles.push({ label: "最安値と相場の差", value: yen(gap), tone: "down" });
 
     // 3. 未使用品（ランクS）
     if (f.rankS) {
       const d = f.rankA && f.rankS.minPrice > f.rankA.minPrice ? f.rankS.minPrice - f.rankA.minPrice : null;
-      tiles.push({ label: "未使用品（ランクS）", value: `${yen(f.rankS.minPrice)}〜`, sub: d !== null ? `中古Aより +${d.toLocaleString()}円` : undefined, tone: "flat" });
+      tiles.push({ label: "未使用品（ランクS）", value: `${yen(f.rankS.minPrice)}〜`, sub: d !== null ? `Aより +${d.toLocaleString()}円` : undefined, tone: "flat" });
     }
 
     // 4. 1世代前の相場（このモデルとの差は、1世代前から見た値）
     if (f.prev) {
-      tiles.push({ label: `1世代前 ${f.prev.name}`, value: `相場 ${yen(f.prev.median)}`, sub: `${model}より ${signedYen(f.prev.median - f.median)}`, tone: "flat" });
+      tiles.push({ label: `1世代前 ${f.prev.name}`, value: yen(f.prev.median), sub: `差 ${signedYen(f.prev.median - f.median)}`, tone: "flat" });
     }
   } catch (error) {
     rethrowDuringBuild(error);

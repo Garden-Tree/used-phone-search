@@ -28,11 +28,11 @@
 - **新品価格は公式で確かめた値だけ**（`lib/applePrices.ts`・`lib/officialPrices.ts`・毎月1日に見直し）
 - **楽天の店**: ゲオ・じゃんぱら・ソフマップ・ニューズド・キタムラ・イオシス・MTM
   - 同じ会社の別の売り場は公式のカードにまとめる（イオシス⇔楽天・エムモバ⇔エムコム）
-- **Amazon 整備済み品**: 10/11〜停止中
-- **Yahoo! 7店**: VC 本体（2025875・2%。Secrets VC_SID 3784061・VC_PID 892733773・10/26〜）。もしもはメディア否認
-- **収益の枠**: 回線（`SimTile`：機種・検索・予算別・店選び・比較。色のボタン＋月額・楽天は楽天アフィ・横動画の説明欄にも）・買取・iPhone の修理（`lib/buyback.ts`）
+- **Amazon 整備済み品**: 停止中
+- **Yahoo! 7店**: VC 本体（2025875・2%・10/26〜。ideas/10-26）。もしもはメディア否認
+- **収益の枠**: 回線（`SimTile`＝各社「月○円〜」・href のある社だけ。2年の総額は `/sim`（10/27〜））・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **値動きの速報**: `scripts/price-alerts.ts`
-- **広告のショート** `rakutenmobile`: PR は声・左上・説明欄。楽天モバイルのリンクは横動画だけ
+- **広告のショート** `rakutenmobile`: PR は左上・説明欄。リンクは横動画だけ
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch は storage＝mm）
 

@@ -16,17 +16,17 @@ export default function NewVsUsedSection({ model, rows, source, checkedJa }: {
         {rows.map((r) => (
           <li key={r.storage} className="py-2 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-[13px]">
             <span className="font-bold w-14">{storageLabel(r.storage, model)}</span>
-            <span className="text-ink-sub">新品 {yen(r.newPrice)} <span aria-hidden="true">→</span> 中古の最安 <span className="text-price font-bold">{yen(r.usedMin)}</span></span>
+            <span className="text-ink-sub">新品 {yen(r.newPrice)} <span aria-hidden="true">→</span> 中古 <span className="text-price font-bold">{yen(r.usedMin)}</span></span>
             {r.diff > 0 ? (
               <span className="ml-auto text-safe font-bold">−{(r.diff / 10000).toFixed(1)}万円（−{r.pct}%）</span>
             ) : (
-              <span className="ml-auto text-ink-mute">中古の最安が新品以上</span>
+              <span className="ml-auto text-ink-mute">新品以上</span>
             )}
           </li>
         ))}
       </ul>
       <p className="text-[10px] text-ink-mute">
-        新品価格は <a href={source.url} target="_blank" rel="noopener" className="text-brand-600 underline underline-offset-2">{source.name}</a>（{checkedJa}時点・税込）。中古は在庫のある容量だけ、状態ランクをすべて含む最安値です。
+        新品: <a href={source.url} target="_blank" rel="noopener" className="text-brand-600 underline underline-offset-2">{source.name}</a>・税込・{checkedJa}
       </p>
     </section>
   );

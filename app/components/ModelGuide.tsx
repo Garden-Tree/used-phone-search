@@ -6,7 +6,8 @@ import type { SameBudgetRow } from "@/lib/sameBudget";
 
 /**
  * 機種ページの「今買うのはあり？」「中古相場の推移」「同じ予算で買える他の機種」「データの出典」（2026-10-23〜）。
- * 折りたたまずに文字と表で出す（検索・AI の概要が読めるように。数字の作り方は lib/modelGuide.ts・lib/sameBudget.ts）
+ * 折りたたまずに文字と表で出す（検索・AI の概要が読めるように。数字の作り方は lib/modelGuide.ts・lib/sameBudget.ts）。
+ * 10/27〜 根拠の文・値動きの文・表の注記は出さない（数字は要約カードと表にある）
  */
 
 const CARD = "bg-white border border-line rounded-xl";
@@ -23,10 +24,6 @@ export default function ModelGuide(p: {
   model: string;
   /** 結論（1つ目を太字で大きく、2つ目からは小さく） */
   verdict: string[];
-  /** 根拠の文（たたんで出す。ページの文字としては残す） */
-  notes: string[];
-  trendText: { head: string; move: string; range: string } | null;
-  medianLabel: string;
   daily: DailyRow[];
   monthly: MonthlyRow[];
   same: SameBudgetRow[];
@@ -58,7 +55,7 @@ export default function ModelGuide(p: {
         <tr>
           <th className="text-left font-normal">日付</th>
           <th className="text-right font-normal">最安値</th>
-          <th className="text-right font-normal">{p.medianLabel}</th>
+          <th className="text-right font-normal">相場</th>
           <th className="text-right font-normal">前日比</th>
           <th className="text-right font-normal">件数</th>
         </tr>
@@ -68,19 +65,8 @@ export default function ModelGuide(p: {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 今買うのはあり？ */}
-      <section className={`${CARD} p-3.5 flex flex-col gap-1.5`}>
-        <h2 className={H2}><span className="text-brand-600 mr-1">Q.</span>{p.model}は今買うのはあり？</h2>
-        {p.verdict[0] && <p className="text-[15px] font-bold leading-[1.6]"><span className="text-price mr-1">A.</span>{p.verdict[0]}</p>}
-        {p.verdict.length > 1 && <p className="text-[13px] text-ink-sub leading-[1.6]">{p.verdict.slice(1).join("")}</p>}
-        {p.notes.length > 0 && (
-          <details className="group">
-            <summary className={`text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden ${LINK}`}>根拠を見る</summary>
-            <ul className="mt-1.5 flex flex-col gap-1 list-disc pl-5">
-              {p.notes.map((t) => <li key={t} className="text-[12px] text-ink-sub leading-[1.7]">{t}</li>)}
-            </ul>
-          </details>
-        )}
+      {/* 「今買うのはあり？」の Q/A は 10/27 に「よくある質問」の「今買うべき？」へまとめた（同じ答えが2か所に出ていた）。値段の違いのページへの入口だけ残す */}
+      <section className={`${CARD} p-3.5 flex flex-col gap-1.5 ${p.factorsHref ? "" : "hidden"}`}>
         {p.factorsHref && (
           <Link href={p.factorsHref} className={`text-[13px] font-bold ${LINK}`}>電池・状態ランク・容量・世代で、値段はいくら違う？ ›</Link>
         )}
@@ -90,12 +76,6 @@ export default function ModelGuide(p: {
       {p.daily.length > 0 && (
         <section className={`${CARD} p-3.5 flex flex-col gap-2`}>
           <h2 className={H2}>{p.model}の中古相場の推移</h2>
-          {p.trendText && (
-            <p className="text-[13px] text-ink-sub leading-[1.7]">
-              {p.trendText.head}<strong className="text-ink">{p.trendText.move}</strong>
-              <span className="text-[12px] text-ink-mute">（{p.trendText.range}）</span>
-            </p>
-          )}
           <div className="flex flex-col">
             {dayHead}
             {dayTable(head)}
@@ -108,7 +88,7 @@ export default function ModelGuide(p: {
           )}
           {p.monthly.length > 1 && (
             <div className="flex flex-col mt-1">
-              <h3 className="text-[13px] font-bold">月ごとの{p.medianLabel}</h3>
+              <h3 className="text-[13px] font-bold">月ごとの相場</h3>
               <table className="w-full text-[13px] tabular-nums">
                 <thead>
                   <tr className="text-[11px] text-ink-mute">
@@ -129,7 +109,6 @@ export default function ModelGuide(p: {
               </table>
             </div>
           )}
-          <p className="text-[11px] text-ink-mute">毎日の記録。前日比は在庫5件以上の日だけ。</p>
         </section>
       )}
 
@@ -164,9 +143,7 @@ export default function ModelGuide(p: {
             </div>
           ))}
         </dl>
-        <p className="text-[12px] text-ink-mute">
-          集め方の詳しい説明は<Link href="/about#data" className={`${LINK} underline underline-offset-2`}>「このサイトについて」</Link>にあります。
-        </p>
+        <Link href="/about#data" className={`self-start text-[12px] ${LINK} underline underline-offset-2`}>集計の方法</Link>
         </div>
       </details>
     </div>

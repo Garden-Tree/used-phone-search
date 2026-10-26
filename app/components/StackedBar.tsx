@@ -111,12 +111,6 @@ export default function StackedBar({ breakdown, rankMin, rankHref }: {
               </span>
             ))}
           </div>
-          {(battery.over80 > 0 || battery.unknown > 0) && (
-            <p className="text-[10px] text-ink-mute leading-relaxed">
-              {battery.over80 > 0 && "「80%以上（店の表記）」は、正確な数字ではなく「80%以上」とだけ書く店の在庫です。検索の「80%以上」には含まれます。"}
-              {battery.unknown > 0 && "「不明」は最大容量を書かない店の在庫です。"}
-            </p>
-          )}
         </div>
       )}
     </section>

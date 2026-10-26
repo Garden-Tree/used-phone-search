@@ -23,8 +23,6 @@ export type Trend = { from: PricePoint; to: PricePoint; days: number; diff: numb
 export const seriesFor = (history: PriceHistory, storage: number | null): PricePoint[] =>
   (storage !== null && history[storage]?.length ? history[storage] : history[0]) ?? [];
 
-const md = (iso: string) => `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}`;
-
 /** 直近 days 日の値動き（記録が7日分以上あり、最初と最後の日の在庫が MIN_COUNT_FOR_TREND 件以上のときだけ） */
 export function trendOf(points: PricePoint[], days = 30): Trend | null {
   if (points.length < 7) return null;
@@ -43,19 +41,11 @@ export function trendOf(points: PricePoint[], days = 30): Trend | null {
   };
 }
 
-/**
- * 値動きの文を3つの部品で（画面では move を太字にする。つなげると1文: 「直近27日（9/26→10/23）の相場（128GB）は 63,700円→65,980円で、2,280円（3.6%）上がりました。」）。
- * range は最安値の動き（画面では小さく）
- */
-export function trendSentence(t: Trend, label: string): { head: string; move: string; range: string } {
-  const head = `直近${t.days}日（${md(t.from.date)}→${md(t.to.date)}）の${label}は${yen(t.from.medianPrice)}→${yen(t.to.medianPrice)}で、`;
-  const move = Math.abs(t.rate) <= FLAT
-    ? "ほぼ横ばいです。"
-    : t.diff < 0
-      ? `${yen(-t.diff)}（${(Math.abs(t.rate) * 100).toFixed(1)}%）下がりました。`
-      : `${yen(t.diff)}（${(t.rate * 100).toFixed(1)}%）上がりました。`;
-  const range = t.minLow === t.minHigh ? `最安値は${yen(t.minLow)}` : `最安値は${yen(t.minLow)}〜${yen(t.minHigh)}`;
-  return { head, move, range };
+/** 値動きを矢印と金額で（「↘ −2,300円」）。2% 以内は横ばい（→） */
+export function moveOf(diff: number, base: number): { text: string; tone: "up" | "down" | "flat" } {
+  const flat = base > 0 ? Math.abs(diff / base) <= FLAT : diff === 0;
+  const signed = `${diff > 0 ? "+" : diff < 0 ? "−" : "±"}${Math.abs(diff).toLocaleString()}円`;
+  return flat ? { text: `→ ${signed}`, tone: "flat" } : diff < 0 ? { text: `↘ ${signed}`, tone: "down" } : { text: `↗ ${signed}`, tone: "up" };
 }
 
 /** 日ごとの表（新しい順・n 日分）。前日比は、その日と前の日の件数が MIN_COUNT_FOR_DIFF 以上のときだけ */
@@ -96,74 +86,39 @@ export function weeklyRows(points: PricePoint[], weeks = 8): WeeklyRow[] {
 }
 
 /**
- * 週ごとの表の上の1文（「直近7週（9/6→10/25）で、相場（128GB）は3,000円（5.4%）下がりました（55,800円 → 52,800円）。」）。
- * 30日の文（trendSentence）はページの別の節に出しているので、ここは表の期間（最大8週）で言う。両端の件数が MIN_COUNT_FOR_TREND 未満なら null
+ * 週ごとの表の見出しに添える値動き（最古の行→最新の行。表の期間は最大8週）。両端の件数が MIN_COUNT_FOR_TREND 未満なら null
  */
-export function weeklySentence(rows: WeeklyRow[], label: string): string | null {
+export function weeklyMove(rows: WeeklyRow[]): { weeks: number; diff: number; base: number } | null {
   if (rows.length < 2) return null;
   const to = rows[0];
   const from = rows[rows.length - 1];
   if (from.count < MIN_COUNT_FOR_TREND || to.count < MIN_COUNT_FOR_TREND || from.medianPrice <= 0) return null;
-  const diff = to.medianPrice - from.medianPrice;
-  const rate = diff / from.medianPrice;
-  const head = `直近${rows.length - 1}週（${md(from.date)}→${md(to.date)}）で、${label}は`;
-  const range = `${yen(from.medianPrice)} → ${yen(to.medianPrice)}`;
-  if (Math.abs(rate) <= FLAT) return `${head}ほぼ横ばいです（${range}・変化は2%以内）。`;
-  return `${head}${yen(Math.abs(diff))}（${(Math.abs(rate) * 100).toFixed(1)}%）${diff < 0 ? "下がりました" : "上がりました"}（${range}）。`;
+  return { weeks: rows.length - 1, diff: to.medianPrice - from.medianPrice, base: from.medianPrice };
 }
 
-/** 「今買うべき？（データで見る）」の1項目。label は太字の見出し、text はその事実 */
-export type BuyFact = { label: string; text: string };
+/** 「今買うべき？」の1行。label は左の見出し、value は数字・記号だけ */
+export type BuyFact = { label: string; value: string; tone?: "up" | "down" | "flat" };
 
 /**
- * 「<機種>の中古、今買うべき？（データで見る）」の項目（10/25〜）。意見は書かず、ページにすでにある数字と公式で確かめた値だけを並べる。
- * データがない項目は出さない（値動きは trendOf と同じ条件・新品は公式価格のある容量・OS は確かめた種類だけ・電池85%以上は在庫があるとき）
+ * 「<機種>の中古、今買うべき？」の行（10/25〜。10/27〜 文ではなく数字と記号だけ）。最安値・相場・件数は要約カードにあるので出さない。
+ * データがない行は出さない（値動きは trendOf と同じ条件・OS は確かめた種類だけ・電池85%以上は在庫があるとき）
  */
 export function buyFacts(p: {
-  model: string;
-  /** 相場の見出し（「相場（128GB）」） */
-  label: string;
-  minPrice: number;
-  medianPrice: number;
-  count: number;
-  shopCount: number;
   trend: Trend | null;
-  /** 新品（公式）との差。公式価格のある容量のうち、いちばん小さい容量の行 */
-  newRow: { storage: number; newPrice: number; usedMin: number; diff: number; pct: number } | null;
-  newSourceName?: string;
-  /** 容量の表示（Apple Watch は mm） */
-  storageText?: (storage: number) => string;
-  /** 最新 OS・アップデート保証の文（確かめた種類だけ。なければ null） */
-  supportText: string | null;
+  /** 最新 OS・アップデート（「iOS 27」「○」など。確かめた種類だけ） */
+  os: BuyFact[];
   /** バッテリー85%以上の在庫の最安と件数 */
   battery85: { minPrice: number; count: number } | null;
 }): BuyFact[] {
   const facts: BuyFact[] = [];
-  facts.push({
-    label: "いまの値段",
-    text: `${p.label}は${yen(p.medianPrice)}、最安値は${yen(p.minPrice)}です（在庫${p.count.toLocaleString()}件・${p.shopCount}店）。`,
-  });
   const t = p.trend;
   if (t && t.from.medianPrice > 0) {
-    const move = Math.abs(t.rate) <= FLAT
-      ? "ほぼ横ばいです（変化は2%以内）"
-      : `${yen(Math.abs(t.diff))}（${(Math.abs(t.rate) * 100).toFixed(1)}%）${t.diff < 0 ? "下がりました" : "上がりました"}`;
-    facts.push({ label: `値動き（直近${t.days}日）`, text: `${p.label}は${yen(t.from.medianPrice)}から${yen(t.to.medianPrice)}へ、${move}。` });
+    const m = moveOf(t.diff, t.from.medianPrice);
+    facts.push({ label: `${t.days}日の相場`, value: m.text, tone: m.tone });
   }
-  if (p.newRow) {
-    const r = p.newRow;
-    const st = p.storageText ? p.storageText(r.storage) : `${r.storage}GB`;
-    const src = p.newSourceName ? `${p.newSourceName}・` : "";
-    facts.push({
-      label: "新品との差",
-      text: r.diff > 0
-        ? `新品（${src}${st}）${yen(r.newPrice)}に対し、中古の最安は${yen(r.usedMin)}で、${yen(r.diff)}（${r.pct}%）安いです。`
-        : `新品（${src}${st}）${yen(r.newPrice)}に対し、中古の最安は${yen(r.usedMin)}で、新品以上です。`,
-    });
-  }
-  if (p.supportText) facts.push({ label: "OS・アップデート", text: p.supportText });
+  facts.push(...p.os);
   if (p.battery85 && p.battery85.count > 0) {
-    facts.push({ label: "バッテリー85%以上（状態ランクは問わず）", text: `${p.battery85.count.toLocaleString()}件あり、最安は${yen(p.battery85.minPrice)}です。` });
+    facts.push({ label: "電池85%以上", value: `${yen(p.battery85.minPrice)}〜（${p.battery85.count.toLocaleString()}件）` });
   }
   return facts;
 }

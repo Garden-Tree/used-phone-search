@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SIM_PLANS, SIM_PRICES_CHECKED } from "@/lib/simPlans";
 
 // 回線のタイル「回線も見直す [PR]」（10/26〜 機種ページから切り出し。スマホの文脈だけに出す。iPad・Mac・Watch には出さない）。
@@ -28,7 +29,10 @@ export default function SimTile({ model, className = "" }: { model?: string; cla
           </a>
         ))}
       </div>
-      <span className="text-[10px] text-ink-mute leading-snug">月額は税込・割引なし（{Number(SIM_PRICES_CHECKED.slice(5, 7))}/{Number(SIM_PRICES_CHECKED.slice(8, 10))} 各社の公式ページ）</span>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[10px] text-ink-mute leading-snug">税込・{Number(SIM_PRICES_CHECKED.slice(5, 7))}/{Number(SIM_PRICES_CHECKED.slice(8, 10))} 公式</span>
+        <Link href="/sim" className="text-[12px] text-brand-600 underline underline-offset-2 hover:text-brand-800">2年でいくら？</Link>
+      </div>
     </div>
   );
 }
