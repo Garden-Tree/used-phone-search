@@ -29,19 +29,19 @@
             "label": "無印をPlusにすると",
             "value": "+1.0〜1.6",
             "unit": "万円",
-            "cue": "無印をPlusにすると、1万円から"
+            "cue": "結論から"
           },
           {
             "label": "PlusをPro Maxにすると",
             "value": "+3.2〜3.4",
             "unit": "万円",
-            "cue": "PlusをPro Maxにすると"
+            "cue": "結論から"
           },
           {
             "label": "Air（256GB）は16 Plusより",
             "value": "8,519",
             "unit": "円安い",
-            "cue": "意外なのがAir"
+            "cue": "結論から"
           }
         ],
         "note": "結論: 大きい画面は Plus・Air・Pro Max の3本立て。差額で何が増えるかで選ぶ（相場＝同じ容量の中央値）"
