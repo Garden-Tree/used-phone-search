@@ -16,8 +16,8 @@
 ## 決定事項
 
 - **GA4**: 556047315（docs/measurement.md）
-- **ホスティング**: Cloudflare Pages（10/6〜。`docs/cloudflare-pages.md`）
-- **DB**: Neon（Launch。ideas/10-04）
+- **ホスティング**: Cloudflare Pages（`docs/cloudflare-pages.md`）
+- **DB**: Neon（Launch）
 - **IndexNow**: 毎日全件・Bing 登録済み
 - **デザイン**: `docs/design.md`
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
@@ -31,7 +31,7 @@
 - **Amazon 整備済み品**: 10/11〜停止中
 - **Yahoo! 7店**: VC 本体（2025875・2%。Secrets VC_SID 3784061・VC_PID 892733773・10/26〜）。もしもはメディア否認
 - **収益の枠**: 回線（`SimTile`：機種・検索・予算別・店選び・比較。色のボタン＋月額・楽天は楽天アフィ・横動画の説明欄にも）・買取・iPhone の修理（`lib/buyback.ts`）
-- **値動きの速報**: `scripts/price-alerts.ts`（X の型④）
+- **値動きの速報**: `scripts/price-alerts.ts`
 - **広告のショート** `rakutenmobile`: PR は声・左上・説明欄。楽天モバイルのリンクは横動画だけ
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch は storage＝mm）
@@ -51,6 +51,7 @@
 ## 進行中・外部条件待ち
 
 - **A8 審査中**: バックマーケット・LINXAS・保険（楽天モバイル 10/26 提携）
+- **TikTok**: 10/26 アカウント作成（個人）。BGM なし版を手で投稿・PR の回はまだ（ideas/10-26-tiktok）
 - **Vercel の後片付け（ユーザー）**: Vercel を止める → Neon を Free に
 
 ## 次にやる（順序）
