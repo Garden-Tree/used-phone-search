@@ -60,8 +60,8 @@ const RANK_VOICE_AT = 0.3;
 const RANK_LEAD = 0.15;
 
 async function renderOne(dir: string, script: Script, variant: Variant, fonts: Awaited<ReturnType<typeof notoSansJp>>, keepFrames: boolean, voices: Voices, useBgm = true) {
-  // BGM なし（--no-bgm）は別の名前（short-A-nobgm.mp4）。BGM 入りの版を上書きしない
-  const suffix = useBgm ? "" : "-nobgm";
+  // BGM なし（--no-bgm）・TikTok 用（--tiktok・BGM なしで締めが違う）は別の名前（short-A-nobgm.mp4・short-A-tiktok.mp4）。BGM 入りの版を上書きしない
+  const suffix = script.tiktok ? "-tiktok" : useBgm ? "" : "-nobgm";
   const framesDir = join(dir, `frames-${variant}${suffix}`);
   rmSync(framesDir, { recursive: true, force: true });
   // 声のある場面は、声の長さ＋間より短ければ延ばす（延びた分は最後のコマを止める）。声は場面の頭から。

@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { RELATED_LONG_THEMES, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type Script, type VoiceConfig } from "./types";
+import { hasRelatedLong, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -49,8 +49,26 @@ export function commentSentence(lines: string[]): string {
 export function defaultNarration(s: Script): Partial<Record<NarrationKey, string>> {
   const n = baseNarration(s);
   // 関連動画（横動画）につながるテーマは、締めの最後に本編への誘導（types.ts の RELATED_LONG_THEMES）
-  if (RELATED_LONG_THEMES.has(s.theme) && n.outro) n.outro += "くわしい解説は、下の関連動画からどうぞ。";
+  if (hasRelatedLong(s) && n.outro) n.outro += RELATED_LONG_VOICE;
   return n;
+}
+const RELATED_LONG_VOICE = "くわしい解説は、下の関連動画からどうぞ。";
+
+/**
+ * TikTok 用の台本（render --tiktok）。TikTok はプロフィールのリンクがフォロワー1,000人からで、関連動画もない。
+ * 締めの「プロフィールのリンクから見られます」を「used.gadelog.com で見られます」に、画面は「全機種の相場は／URL／で検索」にし、
+ * 関連動画の声と札を外す。問いの文はそのまま。読みは speakable（「ユーズド・ガデログ・ドットコム」）
+ */
+export function forTikTok(s: Script): Script {
+  const out = s.scenes.outro;
+  const outro = narrationOf(s).outro?.replace("プロフィールのリンクから", `${out.url} で`).replace(RELATED_LONG_VOICE, "");
+  return {
+    ...s,
+    tiktok: true,
+    narration: { ...s.narration, outro },
+    narrationKana: { ...s.narrationKana, outro: undefined },
+    scenes: { ...s.scenes, outro: { ...out, lines: out.lines.filter((l) => !l.includes("プロフィール")), urlTail: "で検索" } },
+  } as Script;
 }
 
 // provs・promax・plusvs・plusmax は同じ台本の型（ProVsScript）
@@ -441,6 +459,8 @@ export const READING_FIXES: [RegExp, string][] = [
 export function speakable(text: string): string {
   const words: [RegExp, string][] = [
     ...READING_FIXES,
+    // TikTok の締め（forTikTok）: 区切りの「・」で短い間を入れる。ガデログのアクセントは voice-dict.json（ガ'デログ）
+    [/used\.gadelog\.com/g, "ユーズド・ガデログ・ドットコム"],
     // ios27line（10/25）: 「iOS」を1字ずつ読まない・iPhone X／XS／XR は Apple の読み（テン）。longform/script.ts の forVoice と同じ
     [/iOS/g, "アイオーエス"], [/\bXS\b/g, "テンエス"], [/\bXR\b/g, "テンアール"], [/\bX\b/g, "テン"],
     [/iPhone/g, "アイフォン"], [/iPad/g, "アイパッド"], [/MacBook/g, "マックブック"], [/Apple Watch/g, "アップルウォッチ"],

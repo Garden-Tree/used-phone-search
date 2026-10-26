@@ -1,9 +1,10 @@
 /**
  * YouTube ショート（縦 1080x1920・約40秒）を、サイトの相場と同じ数字で作る
  *   npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile> plan [--force]                     … 台本 JSON を作る（shorts/out/<日付>-<テーマ>/script.json）
- *   npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile> render [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm]  … 台本から short-*.mp4 と youtube.txt を作る
+ *   npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile> render [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm] [--tiktok]  … 台本から short-*.mp4 と youtube.txt を作る
  * テーマ: drops＝今週いちばん値下がりした中古iPhone（型 A・B・C）/ budget＝予算ぴったりで買える中古iPhone / newused＝新品より中古でいくら安い？ / provs＝Proと無印、同じ容量でいくら違う？ / fold＝折りたたみスマホ、1世代前にするといくら安い？ / pixelbudget＝予算ぴったりで買える中古Pixel / ipadbudget＝予算ぴったりで買える中古iPad / macbudget＝予算ぴったりで買える中古MacBook / probudget＝予算ぴったりで買える中古iPhone Pro / foldbudget＝予算ぴったりで買える中古折りたたみスマホ / bigbudget＝予算ぴったりで買える 大きい画面の中古iPhone / promax＝Pro MaxとPro、同じ容量でいくら違う？ / plusvs＝Plusと無印、同じ容量でいくら違う？ / plusmax＝大画面はPlusとPro Max、同じ容量でいくら違う？ / oldpro＝1世代前のProと最新の無印、どっちが安い？ / minie＝無印より安い“弟分”（mini・e）、いくら安い？ / unused＝未使用品（ランクS）は、中古（ランクA）よりいくら高い？ / rank＝状態ランクでいくら違う？中古iPhone / battery＝電池90%台だといくら高い？中古iPhone / gen＝iPhone、1世代前にするといくら安い？ / storage＝容量を1つ上げるといくら高い？中古iPhone / ios27line＝iOS 27 に対応する、いちばん安い中古iPhoneは？ / batteryswap＝電池交換を足すと、1つ上の世代と同じ値段？ / overnew＝中古なのに新品より高い？新品との差がいちばん小さい中古iPhone / rakutenmobile＝楽天モバイルは使った量で3段階｜中古iPhone 14と2年でいくら？（広告の回・PR）（drops 以外は型 A だけ）
  * --no-bgm: BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）。YouTube アプリの「音源を追加」で流行りの曲を付けて投稿する用
+ * --tiktok: TikTok 用の short-A-tiktok.mp4（BGM なし・締めは「全機種の相場は used.gadelog.com で検索」。プロフィールのリンクと関連動画の誘導なし）と youtube-nobgm.txt
  *   npx tsx shorts/make-short.tsx --voice-test "テキスト" [--speaker 8|春日部つむぎ/ノーマル] [--speed 1.25]  … VOICEVOX の声だけ試す（shorts/out/voice-test.wav）
  *   npx tsx shorts/make-short.tsx --voice-dump "テキスト"|script [--dir <フォルダ>] [--speaker …]  … 読み（アクセント句）の直す前と後を出す（script は最後に作った台本）
  * 声（VOICEVOX）は任意。アプリが起動していなければ声なしで書き出す（shorts/voice.ts）
@@ -41,7 +42,7 @@ import { buildOverNewScript } from "./themes/overnew";
 import { buildRakutenMobileScript } from "./themes/rakutenmobile";
 import { renderShort } from "./render";
 import { isBudget, isProVs, type Script } from "./types";
-import { DEFAULT_SPEAKER, DEFAULT_SPEED, VOICEVOX_URL, defaultNarration, engineAvailable, narrationOf, resolveSpeaker, speakable, synthesize, tunedQuery, voiceCredit } from "./voice";
+import { DEFAULT_SPEAKER, DEFAULT_SPEED, VOICEVOX_URL, defaultNarration, engineAvailable, forTikTok, narrationOf, resolveSpeaker, speakable, synthesize, tunedQuery, voiceCredit } from "./voice";
 
 const args = process.argv.slice(2);
 const [theme, step] = args;
@@ -149,7 +150,9 @@ async function render() {
   const t0 = Date.now();
   const v = (opt("variant") ?? "all").toUpperCase();
   if (!["A", "B", "C", "ALL"].includes(v)) throw new Error("--variant は A・B・C・all のどれか");
-  const outs = await renderShort(dir, script, flag("keep-frames"), v === "ALL" ? "all" : (v as "A" | "B" | "C"), !flag("no-voice"), !flag("no-bgm"));
+  // --tiktok は BGM なし（--no-bgm と同じ）で、締めだけ TikTok 用に（voice.ts の forTikTok）
+  const tiktok = flag("tiktok");
+  const outs = await renderShort(dir, tiktok ? forTikTok(script) : script, flag("keep-frames"), v === "ALL" ? "all" : (v as "A" | "B" | "C"), !flag("no-voice"), !flag("no-bgm") && !tiktok);
   console.log(`書き出し: ${outs.join(", ")}（${Math.round((Date.now() - t0) / 1000)} 秒）`);
 }
 
@@ -211,7 +214,7 @@ async function main() {
   const vt = opt("voice-test");
   if (vt !== undefined) return voiceTest(vt);
   if (!THEMES.includes(theme as (typeof THEMES)[number]) || (step !== "plan" && step !== "render")) {
-    throw new Error("使い方: npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile> <plan|render> [--force] [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm]\n      npx tsx shorts/make-short.tsx --voice-test \"テキスト\" [--speaker 3] [--speed 1.25]\n      npx tsx shorts/make-short.tsx --voice-dump \"テキスト\"|script [--dir <フォルダ>]");
+    throw new Error("使い方: npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile> <plan|render> [--force] [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm] [--tiktok]\n      npx tsx shorts/make-short.tsx --voice-test \"テキスト\" [--speaker 3] [--speed 1.25]\n      npx tsx shorts/make-short.tsx --voice-dump \"テキスト\"|script [--dir <フォルダ>]");
   }
   await (step === "plan" ? plan() : render());
 }

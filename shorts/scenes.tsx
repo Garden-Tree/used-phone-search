@@ -8,7 +8,7 @@ import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
 import { relatedThumb } from "./relatedLong";
-import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type Script } from "./types";
+import { RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -124,7 +124,7 @@ const comment = (dur: number, start: number, gap: number, n: number): Scene => (
  */
 export const TIMELINE = (s: Script, v: Variant): Scene[] =>
   baseTimeline(s, v).map((sc) => {
-    if (sc.id !== "outro" || !RELATED_LONG_THEMES.has(s.theme)) return sc;
+    if (sc.id !== "outro" || !hasRelatedLong(s)) return sc;
     const k = sc.o?.k ?? 1.5;
     const anim = Math.max(sc.anim, 2.2 * k + 0.4);
     return { ...sc, anim, dur: Math.max(sc.dur, anim + 0.8), o: { ...sc.o, rel: 2.2 * k } };
@@ -779,7 +779,7 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   const k = o?.k ?? 1.5;
   const L = lookOf(s);
   const question = out.question ?? `${s.theme === "drops" ? periodOf(s).next : "来週"}の1位は…？`;
-  const related = RELATED_LONG_THEMES.has(s.theme);
+  const related = hasRelatedLong(s);
   const thumb = related ? relatedThumb(s) : null;
   if (thumb) {
     // 関連動画（横動画）のサムネを、声の「くわしい解説は…」に合わせて出す（relatedLong.ts）。上の文字は小さくして詰め、重ならないようにする
@@ -820,6 +820,8 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.6 * k, 0.4) }}>
           <div style={{ ...row, fontSize: FIT(out.url, CW, 80), fontWeight: 900, color: L.url, marginTop: 56 }}>{out.url}</div>
+          {/* TikTok（--tiktok）は「全機種の相場は／URL／で検索」。プロフィールのリンクも関連動画もないので、URL を打って探してもらう */}
+          {out.urlTail && <div style={{ ...row, fontSize: FIT(out.urlTail, CW, 72), fontWeight: 900, marginTop: 14 }}>{out.urlTail}</div>}
           {/* 「\n」で行を分ける（長い注記が幅に入らないとき。rakutenmobile）。幅に入らない行は縮める */}
           {out.note.split("\n").map((l, i) => <div key={i} style={{ ...row, fontSize: FIT(l, CW, 34, 24), fontWeight: 500, color: L.sub, marginTop: i ? 6 : 40 }}>{l}</div>)}
         </div>

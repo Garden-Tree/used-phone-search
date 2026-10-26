@@ -10,7 +10,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { VIDEOS } from "@/lib/videos";
-import { RELATED_LONG_THEMES, type Script } from "./types";
+import { hasRelatedLong, type Script } from "./types";
 
 /** id は YouTube の動画 ID（まだ公開前なら空）。title は公開時の題（lib/videos.ts にあればそこから） */
 export type RelatedLong = { id: string; title: string; folder: string };
@@ -37,7 +37,7 @@ export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
 };
 
 /** 締めに札を出す横動画（声で誘導するテーマだけ） */
-export const relatedLongOf = (s: Script): RelatedLong | null => (RELATED_LONG_THEMES.has(s.theme) ? RELATED_LONG[s.theme] ?? null : null);
+export const relatedLongOf = (s: Script): RelatedLong | null => (hasRelatedLong(s) ? RELATED_LONG[s.theme] ?? null : null);
 
 const THUMB_W = 720;
 const cache = new Map<string, string | null>();

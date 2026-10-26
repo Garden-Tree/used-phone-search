@@ -20,6 +20,7 @@ npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|pro
 npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|fold|rank|battery|gen|storage|rakutenmobile> render   # drops は short-A/B/C.mp4（--variant A|B|C で1つだけ）、ほかは short-A.mp4
 - drops は plan に `--days N` で比べる期間を変えられる（既定7＝「今週」。7以外は「この1か月」「約1か月で」「来月」・帯の上の行は「毎日集計」。推移グラフはどちらも比べた期間だけ。10/24〜）。記録は iPhone 9/26・iPad 9/27・Galaxy／Pixel 9/30・MacBook 10/15・Apple Watch 10/16 から
 npx tsx shorts/make-short.tsx <テーマ> render --no-bgm   # BGM なしの short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）。YouTube アプリの「音源を追加」で流行りの曲を付ける用
+npx tsx shorts/make-short.tsx <テーマ> render --tiktok   # TikTok 用の short-A-tiktok.mp4（BGM なし・締めは「used.gadelog.com で検索」・関連動画の誘導なし）
 ```
 
 - 声は drops・budget が 春日部つむぎ（ノーマル・1.25倍。10/21〜。1本目の drops だけ ずんだもん）、newused・provs・fold は 青山龍星（ノーマル・1.25倍・10/21〜・provs・fold は 10/22〜）。pixelbudget は 春日部つむぎ、ipadbudget は 青山龍星（10/23〜）、rank は ずんだもん（ノーマル・1.25倍・10/22〜。口調は です・ます）。promax は 青山龍星、macbudget は 春日部つむぎ（10/23〜）。probudget は 春日部つむぎ、foldbudget は 青山龍星（10/24〜）。plusvs は 青山龍星（10/25〜）。minie・unused は 青山龍星（10/26〜）。bigbudget は 春日部つむぎ（10/26〜）。rakutenmobile（広告の回）は 春日部つむぎ（10/26〜）。読点・句点の間はエンジンの半分（pauseLengthScale 0.5。10/24〜。場面の切り替わりの間は変えない）。
@@ -34,7 +35,7 @@ npx tsx shorts/make-short.tsx <テーマ> render --no-bgm   # BGM なしの shor
 ## TikTok（10/26〜）
 
 - アカウント @used_gadelog（個人・PC の TikTok Studio にログイン済み）。調べた経緯は `ideas/2026-10-26-tiktok.md`、運用の手順と決まりは `.claude/skills/tiktok-ops/SKILL.md`。
-- YouTube ショートの回を **BGM なしで書き出し直して**（`render --no-bgm` → `short-A-nobgm.mp4`）、TikTok Studio から1本ずつ手で上げる。自動化ツール・投稿のスクリプトは使わない（TikTok の禁止事項）。
+- YouTube ショートの回を **TikTok 用に書き出し直して**（`render --tiktok` → `short-A-tiktok.mp4`。BGM なしで、締めの「プロフィールのリンクから」「下の関連動画から」を「全機種の相場は used.gadelog.com で検索」に。10/27〜）、TikTok Studio から1本ずつ手で上げる。自動化ツール・投稿のスクリプトは使わない（TikTok の禁止事項）。
 - キャプション: `npx tsx shorts/tiktok-caption.ts shorts/out/<日付>-<テーマ>` → 同じフォルダの `tiktok.txt`（つかみ・数字・「相場は used.gadelog.com で検索」・VOICEVOX のクレジット・ハッシュタグ。BGM のクレジットと utm は入れない。広告の回は先頭に #PR）。
 - フォロワー1,000人までは PR・アフィリエイトの回を出さない（プロフィールのリンクも置けない）。
 

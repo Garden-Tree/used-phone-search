@@ -1,7 +1,7 @@
 // TikTok のキャプション（tiktok.txt）を作る。script.json と youtube.txt（あれば youtube-nobgm.txt）から組み立てる
 //   npx tsx shorts/tiktok-caption.ts shorts/out/<日付>-<テーマ>
 // 中身: つかみ（タイトル）→ 数字（説明欄の一覧の行・4行まで）→ データの出どころ → 「相場は used.gadelog.com で検索」（リンクにしない・utm なし）
-//       → VOICEVOX のクレジット → ハッシュタグ3〜4個。BGM のクレジットは入れない（TikTok は --no-bgm の版を上げる）
+//       → VOICEVOX のクレジット → ハッシュタグ3〜4個。BGM のクレジットは入れない（TikTok は --tiktok の版 short-A-tiktok.mp4 を上げる）
 // 広告の回（rakutenmobile・タイトルが【PR】）は先頭に「#PR」。商用コンテンツの表示はコンソールに注意を出すだけ（キャプションには書かない）
 // 決まりは .claude/skills/tiktok-ops/SKILL.md・経緯は ideas/2026-10-26-tiktok.md
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -105,6 +105,9 @@ console.log(`最初の ${VISIBLE} 字: ${caption.slice(0, VISIBLE).replace(/\n/g
 if (isAd) {
   console.warn("★広告の回: 投稿の前に「コンテンツの開示（商用コンテンツ）」をオンにする（ブランドコンテンツポリシー）。フォロワー1,000人までは PR の回を出さない（.claude/skills/tiktok-ops/SKILL.md）");
 }
-if (!existsSync(`${dir}/short-A-nobgm.mp4`)) {
-  console.warn(`★注意: ${dir}/short-A-nobgm.mp4 がない。TikTok には BGM なし版を上げる（npx tsx shorts/make-short.tsx ${script.theme} render --no-bgm --dir ${dir}）`);
-}
+// 上げるのは TikTok 用の書き出し（BGM なし・締めが「used.gadelog.com で検索」）。なければ BGM なし版（締めが「プロフィールのリンクから」）
+const tiktokHint = `npx tsx shorts/make-short.tsx ${script.theme} render --tiktok --dir ${dir}`;
+if (existsSync(`${dir}/short-A-tiktok.mp4`)) console.log(`上げる動画: ${dir}/short-A-tiktok.mp4`);
+else if (existsSync(`${dir}/short-A-nobgm.mp4`)) {
+  console.warn(`★注意: ${dir}/short-A-tiktok.mp4 がない。short-A-nobgm.mp4 は締めが「プロフィールのリンクから」・関連動画の誘導つき。TikTok 用に書き出す（${tiktokHint}）`);
+} else console.warn(`★注意: ${dir}/short-A-tiktok.mp4 がない。TikTok には TikTok 用の書き出しを上げる（${tiktokHint}）`);

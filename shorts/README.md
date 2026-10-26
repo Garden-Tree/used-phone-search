@@ -36,6 +36,7 @@ npx tsx shorts/make-short.tsx batteryswap plan      # 電池交換を足すと�
 npx tsx shorts/make-short.tsx overnew plan          # 中古なのに新品より高い？新品との差がいちばん小さい中古iPhone（shorts/out/<日付>-overnew/。型 A だけ・10/25〜）
 npx tsx shorts/make-short.tsx rakutenmobile plan    # 楽天モバイルは使った量で3段階｜中古iPhone 14と2年でいくら？（広告の回・PR。型 A だけ・10/26〜・つむぎ）
 npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）
+npx tsx shorts/make-short.tsx fold render --tiktok  # TikTok 用の short-A-tiktok.mp4（BGM なし・締めは「used.gadelog.com で検索」）
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
 npx tsx shorts/make-short.tsx drops render --no-voice  # VOICEVOX の声を入れない
 npx tsx shorts/make-short.tsx --voice-test "今週いちばん値下がりした中古iPhoneは？"   # 声だけ試す（shorts/out/voice-test.wav）。--speaker 3 / --speaker ずんだもん/ノーマル・--speed 1.25
@@ -168,6 +169,11 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
   - ひと言の下書きは、中古が新品以上なら「発売直後の中古は／新品の値段と／比べてから買いましょう」、ほかは「差が小さいなら／保証のある新品も／考えましょう」。utm の末尾 `_overnew`。関連動画の締めあり
 
 `--no-bgm`（どのテーマでも）: BGM を入れずに書き出す（声と効果音だけ。声のコンプレッサー・効果音の下げ方・-11 LUFS の2パスは同じ）。出力は `short-<型>-nobgm.mp4` と `youtube-nobgm.txt`（BGM のクレジットなし）で、BGM 入りの版は上書きしない。YouTube のスマホアプリで投稿し、「音源を追加」で流行りの曲を付けるとき用（曲の音量はアプリで下げる）。
+
+`--tiktok`（TikTok 用・10/27〜）: `--no-bgm` と同じ音で、締めだけ変えた `short-<型>-tiktok.mp4`（と `youtube-nobgm.txt`）。TikTok はプロフィールのリンクがフォロワー1,000人からで、関連動画もないため（`voice.ts` の `forTikTok`）:
+  - 画面: 「プロフィールのリンクから」の行を外し、「全機種の相場は／used.gadelog.com（大きいまま）／で検索」。関連動画のサムネ・「▼ 下の関連動画から ▼」の札は出さない。問いの行はそのまま
+  - 声: 「プロフィールのリンクから見られます」→「used.gadelog.com で見られます」（読みは「ユーズド・ガデログ・ドットコム」。`speakable` と `voice-dict.json` のガデログ）。「くわしい解説は、下の関連動画からどうぞ。」は外す。テーマごとの問いの文はそのまま
+  - `tiktok-caption.ts` は `short-A-tiktok.mp4` があるかを見る（なければ書き出しのコマンドを出す）。運用は `.claude/skills/tiktok-ops/SKILL.md`
 
 テーマを足すときは、`types.ts` に台本の型、`themes/` に「データ → 台本」、`voice.ts` に既定のナレーション、`scenes.tsx` に場面、`make-short.tsx` の `THEMES`・`THEME_SPEAKER` を足す。
 同じテーマ・同じデータのショートを同じ日に2本出さない（ほぼ同じ内容は勧められにくい）。

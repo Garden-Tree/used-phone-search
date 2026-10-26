@@ -26,11 +26,13 @@ type Common = {
    * いまは minie だけが絵を切り替える。声は narration.hook に答えの文を書く
    */
   hookStyle?: "question" | "answer";
+  /** TikTok 用の書き出し（render --tiktok・voice.ts の forTikTok が付ける。script.json には書かない）。締めに関連動画・プロフィールのリンクを出さない */
+  tiktok?: boolean;
 };
 /** 検品担当のひと言。人が書き換える（1行16字以内・3行まで） */
 type CommentScene = { speaker: string; lines: string[] };
-/** question: 締めの最後の問い（なければ「来週の1位は…？」） */
-type OutroScene = { lines: string[]; url: string; note: string; question?: string };
+/** question: 締めの最後の問い（なければ「来週の1位は…？」）/ urlTail: URL の下の文（TikTok の「で検索」） */
+type OutroScene = { lines: string[]; url: string; note: string; question?: string; urlTail?: string };
 
 /** drops の比べる期間の言い方。なければ1週間（10/24〜 約1か月も。make-short の plan --days） */
 export type DropsPeriod = { days: number; lead: string; name: string; span: string; ago: string; next: string };
@@ -336,6 +338,8 @@ export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | 
  */
 export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew"]);
 export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";
+/** 締めに関連動画の誘導を出すか。TikTok（--tiktok）には関連動画がないので出さない */
+export const hasRelatedLong = (s: Script) => !s.tiktok && RELATED_LONG_THEMES.has(s.theme);
 
 /** budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget（予算の4行・注目の1機種の場面を共有） */
 export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget" || s.theme === "macbudget" || s.theme === "probudget" || s.theme === "foldbudget" || s.theme === "galaxybudget" || s.theme === "bigbudget";

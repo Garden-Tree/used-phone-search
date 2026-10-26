@@ -24,6 +24,7 @@
     { "surface": "エムモバ", "pronunciation": "エムモバ", "accent_type": 0, "word_type": "PROPER_NOUN", "priority": 8 },
     { "surface": "ニューズドテック", "pronunciation": "ニュウズドテック", "accent_type": 5, "word_type": "PROPER_NOUN", "priority": 8 },
     { "surface": "リユスマ", "pronunciation": "リユスマ", "accent_type": 0, "word_type": "PROPER_NOUN", "priority": 8 },
-    { "surface": "赤ロム", "pronunciation": "アカロム", "accent_type": 0, "word_type": "PROPER_NOUN", "priority": 8 }
+    { "surface": "赤ロム", "pronunciation": "アカロム", "accent_type": 0, "word_type": "PROPER_NOUN", "priority": 8 },
+    { "surface": "ガデログ", "pronunciation": "ガデログ", "accent_type": 1, "word_type": "PROPER_NOUN", "priority": 8 }
   ]
 }
