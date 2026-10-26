@@ -79,7 +79,17 @@ export const getModelStats = cache(async (model: string): Promise<ModelStats> =>
   };
 });
 
-export type StorageMedianRow = { storage: number; minPrice: number; medianPrice: number | null; count: number };
+/**
+ * 1機種・1容量の中央値と件数（iPhone の機種ページで「1つ上の世代」の相場を出す。10/27〜）。
+ * 件数（count）と中央値の1行だけを取る（在庫の行は取らない）
+ */
+export const getMedianAt = cache(async (model: string, storage: number): Promise<{ count: number; median: number | null }> => {
+  const where = { AND: [await modelWhere(model), { storage }] };
+  const count = await prisma.deviceInventory.count({ where });
+  return { count, median: await medianPrice(where, count) };
+});
+
+export type StorageMedianRow ={ storage: number; minPrice: number; medianPrice: number | null; count: number };
 
 /**
  * 容量（Apple Watch はサイズ・MacBook は SSD）ごとの最安値・中央値・件数（機種ページの「容量別の相場」。10/25〜）。
