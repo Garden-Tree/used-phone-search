@@ -42,6 +42,8 @@ export function forVoice(text: string): string {
     // 何世代まで（10/25）: 「iOS」を1字ずつ読まない・iPhone X／XS／XR は Apple の読み（テン）・「Intelligence」をカナに。X（旧 Twitter）は台本に「エックス」と書く（X はテンになる）
     // 大きい画面（10/26）: 「39時間」を「サンジュウ／クジカン」と2つに切って読む（30と9時間に聞こえる）
     [/39時間/g, "サンジュウクジカン"], [/29時間/g, "ニジュウクジカン"],
+    // 楽天モバイル（10/26）: 「iOS 14.4」がジュウ／ヨンテンヨンに切れる → 1つの数に
+    [/iOS 14\.4/g, "アイオーエス ジュウヨンテンヨン"],
     [/iOS/g, "アイオーエス"], [/\bXS\b/g, "テンエス"], [/\bXR\b/g, "テンアール"], [/\bX\b/g, "テン"], [/Intelligence/g, "インテリジェンス"],
   ];
   return words.reduce((t, [re, to]) => t.replace(re, to), text);
