@@ -18,7 +18,7 @@
 - **GA4**: 556047315（docs/measurement.md）
 - **ホスティング**: Cloudflare Pages（`docs/cloudflare-pages.md`）
 - **DB**: Neon（Launch）
-- **IndexNow**: 毎日全件・Bing 登録済み
+- **IndexNow**: 毎日全件
 - **デザイン**: `docs/design.md`
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
 - **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。検索の既定は全件・安い順（電池85%以上は切り替え）。店の比較 `/iphone/where-to-buy`（10/24〜）。横動画は同テーマのページに埋め込み（`lib/videos.ts`）
@@ -51,9 +51,9 @@
 
 ## 進行中・外部条件待ち
 
-- **A8 審査中**: バックマーケット・LINXAS・保険・回線（J:COM・X-mobile・UQ・LIBMO・Y!mobile 10/26 申請）
+- **審査中**: A8 バックマーケット・LINXAS・保険・J:COM・X-mobile・LIBMO・Y!mobile／VC IIJmio・LINEMO・ワイモバイル（回線は 10/26〜27 申請）
 - **TikTok**: 10/26〜（個人）。`render --tiktok`（BGM なし・締めは URL）を手で・PR はまだ
-- **Vercel の後片付け（ユーザー）**: Vercel を止める → Neon を Free に
+- **Vercel を止めて Neon を Free に（ユーザー）**
 
 ## 次にやる（順序）
 
