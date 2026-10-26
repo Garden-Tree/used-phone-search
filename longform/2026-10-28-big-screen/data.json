@@ -1,0 +1,509 @@
+{
+  "date": "2026-10-26",
+  "shops": 15,
+  "source": "script.md の数字そのまま（2026/10/26 の集計・longform/2026-10-28-big-screen/data-query.ts → data-query.log。相場＝同じ機種・同じ容量の中央値。画面・チップ・端子は lib/iphoneSpecs.ts、120Hz・望遠・ビデオ再生・重さは Apple の技術仕様、修理の料金は lib/appleRepairPrices.ts、新品は lib/applePrices.ts）",
+  "thumbnail": {
+    "lines": [
+      "中古iPhone",
+      "大きい画面ならどれ？"
+    ],
+    "badge": [
+      {
+        "text": "Plus・Air・"
+      },
+      {
+        "text": "Pro Max",
+        "red": true
+      }
+    ],
+    "footer": "大画面12機種・7,189件の相場 ｜ used.gadelog.com"
+  },
+  "chapters": [
+    {
+      "title": "結論：大きい画面は3本立て",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "大きい画面の中古iPhone どれを買う？",
+        "items": [
+          {
+            "label": "無印をPlusにすると",
+            "value": "+1.0〜1.6",
+            "unit": "万円",
+            "cue": "無印をPlusにすると、1万円から"
+          },
+          {
+            "label": "PlusをPro Maxにすると",
+            "value": "+3.2〜3.4",
+            "unit": "万円",
+            "cue": "PlusをPro Maxにすると"
+          },
+          {
+            "label": "Air（256GB）は16 Plusより",
+            "value": "8,519",
+            "unit": "円安い",
+            "cue": "意外なのがAir"
+          }
+        ],
+        "note": "結論: 大きい画面は Plus・Air・Pro Max の3本立て。差額で何が増えるかで選ぶ（相場＝同じ容量の中央値）"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "どうやって調べた？",
+        "items": [
+          {
+            "label": "大手中古ショップ",
+            "value": "15",
+            "unit": "店",
+            "cue": "大手の中古ショップ15店"
+          },
+          {
+            "label": "iPhone の在庫",
+            "value": "37,330",
+            "unit": "件",
+            "cue": "大手の中古ショップ15店"
+          },
+          {
+            "label": "大きい画面（6.5インチ以上）12機種",
+            "value": "7,189",
+            "unit": "件",
+            "cue": "6.5インチ以上の12機種"
+          }
+        ],
+        "note": "相場＝同じ機種・同じ容量の中央値。画面・電池の持ち・修理の料金は Apple 公式"
+      }
+    },
+    {
+      "title": "大きい画面のiPhoneは12機種",
+      "scene": {
+        "type": "bars",
+        "heading": "大きい画面の中古iPhone（相場）",
+        "unit": "万円",
+        "rows": [
+          {
+            "label": "12 Pro Max",
+            "sub": "6.7インチ・128GB",
+            "median": 6.028,
+            "cue": "いちばん安いのは12 Pro Max"
+          },
+          {
+            "label": "14 Plus",
+            "sub": "6.7インチ・128GB",
+            "median": 7.5939,
+            "cue": "いちばん安いのは12 Pro Max"
+          },
+          {
+            "label": "15 Plus",
+            "sub": "6.7インチ・128GB",
+            "median": 10.498,
+            "cue": "いちばん安いのは12 Pro Max"
+          },
+          {
+            "label": "16 Plus",
+            "sub": "6.7インチ・128GB",
+            "median": 13.728,
+            "cue": "Airは256GBで"
+          },
+          {
+            "label": "Air",
+            "sub": "6.5インチ・256GB",
+            "median": 14.2681,
+            "cue": "Airは256GBで"
+          },
+          {
+            "label": "17 Pro Max",
+            "sub": "6.9インチ・256GB",
+            "median": 20.878,
+            "cue": "Airは256GBで"
+          }
+        ],
+        "note": "相場＝同じ容量の中央値。ほかに 11・13・14・15・16・18 の Pro Max。画面の大きさは Apple 公式"
+      }
+    },
+    {
+      "title": "無印をPlusにすると、いくら？",
+      "scene": {
+        "type": "pairs",
+        "heading": "無印とPlus（128GBの相場）",
+        "unit": "万円",
+        "legend": [
+          "無印 6.1インチ",
+          "Plus 6.7インチ"
+        ],
+        "colors": [
+          "inkMute",
+          "brand600"
+        ],
+        "rows": [
+          {
+            "label": "14",
+            "a": 6.598,
+            "b": 7.5939,
+            "diffLabel": "+9,959円",
+            "cue": "128GBどうしで、14とPlus"
+          },
+          {
+            "label": "15",
+            "a": 9.01,
+            "b": 10.498,
+            "diffLabel": "+14,880円",
+            "cue": "128GBどうしで、14とPlus"
+          },
+          {
+            "label": "16",
+            "a": 12.12,
+            "b": 13.728,
+            "diffLabel": "+16,080円",
+            "cue": "128GBどうしで、14とPlus"
+          }
+        ],
+        "note": "チップは同じ。ビデオ再生（Apple 公式・最大）: 14 20→Plus 26時間・15 20→26時間・16 22→27時間"
+      }
+    },
+    {
+      "title": "PlusとPro Max、何が違う？",
+      "scene": {
+        "type": "pairs",
+        "heading": "PlusとPro Max（同じ容量の相場）",
+        "unit": "万円",
+        "legend": [
+          "Plus",
+          "Pro Max"
+        ],
+        "colors": [
+          "inkMute",
+          "brand600"
+        ],
+        "rows": [
+          {
+            "label": "14",
+            "a": 7.5939,
+            "b": 10.978,
+            "diffLabel": "+33,841円",
+            "cue": "同じ容量どうしで、14は"
+          },
+          {
+            "label": "15",
+            "a": 11.4741,
+            "b": 14.668,
+            "diffLabel": "+31,939円",
+            "cue": "同じ容量どうしで、14は"
+          },
+          {
+            "label": "16",
+            "a": 15.12,
+            "b": 18.328,
+            "diffLabel": "+32,080円",
+            "cue": "同じ容量どうしで、14は"
+          }
+        ],
+        "note": "14 は128GB、15・16 は256GB（15・16 の Pro Max は256GBから）"
+      }
+    },
+    {
+      "title": "Pro Maxで何が増える？",
+      "scene": {
+        "type": "table",
+        "heading": "Pro Maxで何が増える？（Apple 公式の技術仕様）",
+        "columns": [
+          "世代",
+          "120Hz（Plus／Pro Max）",
+          "望遠（Plus／Pro Max）",
+          "ビデオ再生（最大）"
+        ],
+        "emphasis": [
+          1,
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "14",
+              "なし／あり",
+              "なし／3倍",
+              "26／29時間"
+            ],
+            "cue": "14 Pro Maxは3倍"
+          },
+          {
+            "cells": [
+              "15",
+              "なし／あり",
+              "なし／5倍",
+              "26／29時間"
+            ],
+            "cue": "14 Pro Maxは3倍"
+          },
+          {
+            "cells": [
+              "16",
+              "なし／あり",
+              "なし／5倍",
+              "27／33時間"
+            ],
+            "cue": "14 Pro Maxは3倍"
+          }
+        ],
+        "note": "重さ: 16 Plus 199g・16 Pro Max 227g。Plus の「2倍望遠」はメインカメラの中央を使う撮影"
+      }
+    },
+    {
+      "title": "iPhone Airはどう？",
+      "scene": {
+        "type": "bars",
+        "heading": "256GBの相場（大きい画面）",
+        "unit": "万円",
+        "rows": [
+          {
+            "label": "Air",
+            "sub": "6.5インチ・A19 Pro・165g",
+            "median": 14.2681,
+            "stock": "在庫 580件",
+            "pick": true,
+            "cue": "256GBどうしで、Airは"
+          },
+          {
+            "label": "15 Pro Max",
+            "sub": "6.7インチ・A17 Pro",
+            "median": 14.668,
+            "cue": "15 Pro Maxの14万6,680円"
+          },
+          {
+            "label": "16 Plus",
+            "sub": "6.7インチ・A18",
+            "median": 15.12,
+            "cue": "256GBどうしで、Airは"
+          },
+          {
+            "label": "16 Pro Max",
+            "sub": "6.9インチ・A18 Pro",
+            "median": 18.328,
+            "cue": "15 Pro Maxの14万6,680円"
+          },
+          {
+            "label": "17 Pro Max",
+            "sub": "6.9インチ・A19 Pro",
+            "median": 20.878,
+            "cue": "15 Pro Maxの14万6,680円"
+          }
+        ],
+        "note": "Air の新品は256GBで189,800円（Apple 公式）。Air は120Hzあり・望遠のカメラなし・ビデオ再生 最大27時間"
+      }
+    },
+    {
+      "title": "1世代前のPro Maxと、次のPlus",
+      "scene": {
+        "type": "table",
+        "heading": "1世代前のPro Maxと次のPlus（同じ容量の相場）",
+        "columns": [
+          "Pro Max",
+          "相場",
+          "Plus",
+          "相場",
+          "安いほう"
+        ],
+        "emphasis": [
+          4
+        ],
+        "rows": [
+          {
+            "cells": [
+              "13 Pro Max",
+              "82,280円",
+              "14 Plus",
+              "75,939円",
+              "Plus −6,341円"
+            ],
+            "cue": "128GBで、13 Pro Maxは"
+          },
+          {
+            "cells": [
+              "14 Pro Max",
+              "109,780円",
+              "15 Plus",
+              "104,980円",
+              "Plus −4,800円"
+            ],
+            "cue": "14 Pro Maxは10万9,780円"
+          },
+          {
+            "cells": [
+              "15 Pro Max",
+              "146,680円",
+              "16 Plus",
+              "151,200円",
+              "Pro Max −4,520円"
+            ],
+            "cue": "15 Pro Maxと16 Plusは"
+          }
+        ],
+        "note": "13・14 の組は128GB、15 と 16 の組は256GB。Pro Max は120Hzと望遠あり。14 Pro Max は Lightning、15 Plus は USB-C"
+      }
+    },
+    {
+      "title": "大きい画面の注意点",
+      "scene": {
+        "type": "table",
+        "heading": "Apple の修理の料金（保証対象外・税込）",
+        "columns": [
+          "種類",
+          "画面の修理",
+          "電池の交換"
+        ],
+        "emphasis": [
+          1
+        ],
+        "rows": [
+          {
+            "cells": [
+              "無印（14〜16）",
+              "45,800円",
+              "17,200円"
+            ],
+            "cue": "まず、画面の修理代"
+          },
+          {
+            "cells": [
+              "Plus（14〜16）",
+              "57,800円",
+              "17,200円"
+            ],
+            "cue": "PlusとAirは5万7,800円"
+          },
+          {
+            "cells": [
+              "Air",
+              "57,800円",
+              "21,000円"
+            ],
+            "cue": "PlusとAirは5万7,800円"
+          },
+          {
+            "cells": [
+              "Pro Max（14・15）",
+              "64,800円",
+              "17,200円"
+            ],
+            "cue": "PlusとAirは5万7,800円"
+          },
+          {
+            "cells": [
+              "Pro Max（16・17）",
+              "64,800円",
+              "21,000円"
+            ],
+            "cue": "PlusとAirは5万7,800円"
+          }
+        ],
+        "note": "電池85%以上の在庫（128GB）: 14 Plus 317件のうち41件・16 Plus 263件のうち163件"
+      }
+    },
+    {
+      "title": "予算別、大きい画面を買うなら",
+      "scene": {
+        "type": "bars",
+        "heading": "予算で買える大きい画面の中古iPhone（相場）",
+        "unit": "万円",
+        "rows": [
+          {
+            "label": "11 Pro Max",
+            "sub": "5万円まで・256GB",
+            "median": 4.9799,
+            "cue": "5万円までなら"
+          },
+          {
+            "label": "14 Plus",
+            "sub": "8万円まで・128GB",
+            "median": 7.5939,
+            "cue": "14 Plusの128GBで"
+          },
+          {
+            "label": "15 Plus",
+            "sub": "11万円まで・128GB",
+            "median": 10.498,
+            "cue": "15 Plusの128GBで"
+          },
+          {
+            "label": "Air",
+            "sub": "15万円まで・256GB",
+            "median": 14.2681,
+            "pick": true,
+            "cue": "Airの256GBで"
+          },
+          {
+            "label": "17 Pro Max",
+            "sub": "21万円まで・256GB",
+            "median": 20.878,
+            "cue": "17 Pro Maxの256GBで"
+          }
+        ],
+        "note": "相場＝同じ容量の中央値。11 Pro Max は2019年（iOS 27 対応）・電池85%以上は83件のうち19件"
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "table",
+        "heading": "大きい画面の中古iPhone、選び方",
+        "columns": [
+          "選び方",
+          "おすすめ"
+        ],
+        "emphasis": [
+          1
+        ],
+        "rows": [
+          {
+            "cells": [
+              "電池の持ちと安さ",
+              "14 Plus・15 Plus"
+            ],
+            "cue": "まとめると"
+          },
+          {
+            "cells": [
+              "軽さと新しさ",
+              "Air"
+            ],
+            "cue": "軽くて新しいのがいいなら"
+          },
+          {
+            "cells": [
+              "120Hzと望遠を安く",
+              "1世代前のPro Max"
+            ],
+            "cue": "120Hzと望遠を安くなら"
+          },
+          {
+            "cells": [
+              "全部ほしい",
+              "17 Pro Max"
+            ],
+            "cue": "120Hzと望遠を安くなら"
+          }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com"
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          {
+            "id": "Bmp5EgeiqW0",
+            "title": "中古iPhone、Proの差額で何が増える？120Hz・望遠カメラ・容量を相場で比較"
+          },
+          {
+            "id": "amx5UxG6wpI",
+            "title": "中古iPhone、買ってはいけない5つの条件｜検品担当が3.7万件の在庫で確かめた"
+          }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com"
+      }
+    }
+  ]
+}

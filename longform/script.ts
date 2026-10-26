@@ -40,6 +40,8 @@ export function forVoice(text: string): string {
     // 「LiDAR」を1字ずつ読まないように（Pro と無印・10/25）
     [/LiDAR/g, "ライダー"],
     // 何世代まで（10/25）: 「iOS」を1字ずつ読まない・iPhone X／XS／XR は Apple の読み（テン）・「Intelligence」をカナに。X（旧 Twitter）は台本に「エックス」と書く（X はテンになる）
+    // 大きい画面（10/26）: 「39時間」を「サンジュウ／クジカン」と2つに切って読む（30と9時間に聞こえる）
+    [/39時間/g, "サンジュウクジカン"], [/29時間/g, "ニジュウクジカン"],
     [/iOS/g, "アイオーエス"], [/\bXS\b/g, "テンエス"], [/\bXR\b/g, "テンアール"], [/\bX\b/g, "テン"], [/Intelligence/g, "インテリジェンス"],
   ];
   return words.reduce((t, [re, to]) => t.replace(re, to), text);
