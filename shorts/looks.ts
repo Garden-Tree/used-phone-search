@@ -95,6 +95,9 @@ export const LOOKS: Record<Script["theme"], Look> = {
   // Galaxy の予算別（10/25〜）: 見た目は5つまでなので新しく作らない。1コマ目が直前の予算別（明るい地の BUDGET・Pro の PRO・折りたたみの VERSUS）と
   // 続けて同じにならないよう、紺の地・赤い帯の DROPS を使う（つかみは予算の札）
   galaxybudget: { ...DROPS, hook: "chips" },
+  // 大きい画面の予算別（10/26〜）: 見た目は5つまでなので新しく作らない。galaxybudget（① DROPS）・probudget（⑤ PRO）と違い、直前に公開する plusmax（③ VERSUS）・oldpro（⑤ PRO）とも
+  // 続かない ② BUDGET（明るい地・藍の帯。予算の札）
+  bigbudget: { ...BUDGET, hook: "chips" },
   // iPad は予算の丸い札（淡い金・数字を大きく）
   ipadbudget: { ...BUDGET, coin: { fill: SITE.inspectLine, text: SITE.brand900 }, hook: "coins" },
   newused: { ...VERSUS, hook: "split" },

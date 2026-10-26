@@ -225,12 +225,19 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
 中身の型ごとに地・見出しの帯・カード・強調色を変え、テーマごとにつかみ（1コマ目）を変える（10/22〜・10/23 に5つへ。テンプレートの一括加工と見られないように・1コマ目でスワイプされないように）。色は `lib/brandColors.ts` だけ、文字のコントラストは 4.5 以上（比は looks.ts の頭）。場面の長さ・声・音・順位の札の色は全テーマ同じ。
 
 **見た目は5つ**（10/23 ユーザーの指示「多くても5種類」。`LOOKS`）。テーマごとに変えるのは**つかみ（1コマ目）だけ**。
+- `bigbudget`: 予算ぴったりで買える 大きい画面の中古iPhone（型 A だけ。10/26〜）
+  - budget と同じ選び方・同じ場面（`pickBudgetModels` を共有・BudgetScript で theme が "bigbudget"）。対象は画面6.5インチ以上の iPhone（`themes/bigbudget.ts` の BIG_MODELS＝`lib/iphoneSpecs.ts` の display。11 Pro Max・Pro Max・Plus・Air。iOS 27 非対応の XS Max は除く・在庫5件以上）
+  - **予算は 5万・8万・11万・15万円**（`BIG_SHORT_BUDGETS`）。注目は8万円の行（`BIG_PICK_BUDGET`）。plan が帯ごとの候補を出す
+  - 切り口: 各行と注目に画面の大きさ（`spec`「画面6.7インチ」・Apple 公式）と発売年。見出しの帯「予算ぴったりで買える／大きい画面の中古iPhone」・注記「画面はApple公式」。ひと言の下書きは「大きい画面は／画面の修理代が／高めです」（Apple の保証外の画面修理 Plus・Air 57,800円・Pro Max 64,800円＞無印。`lib/appleRepairPrices.ts`。ひと言に数字は出さない）
+  - 説明欄のリンクは注目の機種ページ・/iphone。utm の末尾は `_bigbudget`。ハッシュタグ #中古iPhone #iPhone。関連動画の締めあり（RELATED_LONG_THEMES）
+  - 見た目は ② BUDGET（直前の plusmax ③・oldpro ⑤ と続かない）。つかみは予算の札（chips）。声は 春日部つむぎ
+
 **続けて公開するショートは、前の回と違う見た目（①〜⑤）にする**（10/24 15:00 の値下がり1か月 → 10/25 8:00 の galaxybudget が同じ①で続いた）。
 
 | 見た目 | 地 | 見出しの帯 | カード | 強調 | 使うテーマ（つかみ） |
 | --- | --- | --- | --- | --- | --- |
 | ① 値下がり DROPS | 紺 brand900 | 赤 price・左右いっぱい | 角丸28・縁なし | price | drops（1位の下がった額）・galaxybudget（予算の札） |
-| ② 予算別 BUDGET | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | budget・pixelbudget・macbudget（予算の札）・ipadbudget（予算の丸い札・淡い金）・overnew（新品と中古の割合の2本の棒）・minie（「無印 vs mini・e」。右の札は price） |
+| ② 予算別 BUDGET | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | budget・pixelbudget・macbudget・bigbudget（予算の札）・ipadbudget（予算の丸い札・淡い金）・overnew（新品と中古の割合の2本の棒）・minie（「無印 vs mini・e」。右の札は price） |
 | ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・plusvs・plusmax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
 | ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形）・batteryswap（「中古＋電池交換＝1つ上」の札）・unused（「ランクA vs 未使用品」） |
 | ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札）・oldpro（「前のPro vs 無印」＋差 最大） |
