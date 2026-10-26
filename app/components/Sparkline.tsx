@@ -43,7 +43,7 @@ export default function Sparkline({ points: pts, title = "最安値の推移（3
       <div className="flex items-baseline justify-between gap-2">
         <h2 className="text-[15px] md:text-base font-bold">{title}</h2>
         <span className={`text-xs md:text-[13px] font-bold ${diff > 0 ? "text-warn" : diff < 0 ? "text-safe" : "text-ink-mute"}`}>
-          {diff > 0 ? `↑${diff.toLocaleString()}円` : diff < 0 ? `↓${(-diff).toLocaleString()}円` : "変化なし"}
+          {diff > 0 ? `↗ +${diff.toLocaleString()}円` : diff < 0 ? `↘ −${(-diff).toLocaleString()}円` : "→ ±0円"}
         </span>
       </div>
       <div className="relative h-16 md:h-[120px] mx-1">

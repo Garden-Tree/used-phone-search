@@ -30,7 +30,7 @@ export default function SimTile({ model, className = "" }: { model?: string; cla
         ))}
       </div>
       <Link href="/sim" className="self-start text-[12px] text-brand-600 underline underline-offset-2 hover:text-brand-800">2年でいくら？</Link>
-      <span className="text-[10px] text-ink-mute leading-snug">月額は税込・割引なし（{Number(SIM_PRICES_CHECKED.slice(5, 7))}/{Number(SIM_PRICES_CHECKED.slice(8, 10))} 各社の公式ページ）</span>
+      <span className="text-[10px] text-ink-mute leading-snug">税込・{Number(SIM_PRICES_CHECKED.slice(5, 7))}/{Number(SIM_PRICES_CHECKED.slice(8, 10))} 公式</span>
     </div>
   );
 }

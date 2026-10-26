@@ -30,7 +30,7 @@ export default function HeatCells({ title, ranks, rows, labelWidth = 52 }: { tit
         <h2 className="text-[15px] md:text-base font-bold">{title}</h2>
         <span className="text-[10px] text-ink-mute whitespace-nowrap">濃い＝安い</span>
       </div>
-      <div className="grid gap-1 px-2.5 md:px-3 pb-2.5" style={{ gridTemplateColumns: `${labelWidth}px repeat(${ranks.length}, minmax(0, 1fr))` }}>
+      <div className="grid gap-1 px-2.5 md:px-3 pb-3" style={{ gridTemplateColumns: `${labelWidth}px repeat(${ranks.length}, minmax(0, 1fr))` }}>
         <div />
         {ranks.map((r) => (
           <div key={r} className="text-center text-[10px] md:text-[11px] text-ink-mute leading-tight">
@@ -54,7 +54,6 @@ export default function HeatCells({ title, ranks, rows, labelWidth = 52 }: { tit
           </div>
         ))}
       </div>
-      <p className="px-3.5 md:px-4 pb-3 text-[10px] text-ink-mute leading-relaxed">金額（円）は最安値。押すとその条件の在庫一覧へ。ランクの意味は目安で、基準は店ごとに違います。</p>
     </section>
   );
 }

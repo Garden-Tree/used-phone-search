@@ -64,10 +64,8 @@ export default function RepairOrReplace({ model, medianPrice, medianStorage, nex
       {hint && <p className="text-[12px] text-ink leading-snug">{hint}</p>}
       {repair && (
         <span className="text-[10px] text-ink-mute leading-snug">
-          Apple 公式の保証対象外の料金（税込・{Number(APPLE_REPAIR_CHECKED.slice(5, 7))}/{Number(APPLE_REPAIR_CHECKED.slice(8, 10))} 確認・
-          <a href={APPLE_REPAIR_SOURCE.battery} target="_blank" rel="noopener" className={SRC}>電池</a>・
-          <a href={APPLE_REPAIR_SOURCE.screen} target="_blank" rel="noopener" className={SRC}>画面</a>
-          ）。AppleCare+ や診断の結果で変わります。相場は中古の販売価格の中央値（状態ランクをすべて含む）。
+          Apple 公式（<a href={APPLE_REPAIR_SOURCE.battery} target="_blank" rel="noopener" className={SRC}>電池</a>・
+          <a href={APPLE_REPAIR_SOURCE.screen} target="_blank" rel="noopener" className={SRC}>画面</a>）・税込・{Number(APPLE_REPAIR_CHECKED.slice(5, 7))}/{Number(APPLE_REPAIR_CHECKED.slice(8, 10))}
         </span>
       )}
       <div className="mt-1 pt-1.5 border-t border-line-soft flex flex-col gap-1">
@@ -82,13 +80,11 @@ export default function RepairOrReplace({ model, medianPrice, medianStorage, nex
             data-shop={`${p.name}（修理）`}
             data-model={model}
             data-link-type="a8"
-            className="flex flex-col py-1 hover:bg-ground rounded"
+            className="block py-1 hover:bg-ground rounded"
           >
             <span className="text-[13px] font-bold text-ink">{p.name} <span className="text-ink-mute" aria-hidden="true">›</span></span>
-            <span className="text-[10px] text-ink-mute leading-snug">{p.text}</span>
           </a>
         ))}
-        <span className="text-[10px] text-ink-mute leading-snug">修理店の料金・内容は各店のページで確かめてください{repair && "（上の修理代は Apple 公式の修理のものです）"}。</span>
       </div>
     </div>
   );

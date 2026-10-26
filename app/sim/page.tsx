@@ -119,7 +119,7 @@ export default async function SimPage() {
         )}
 
         <p className="text-[11px] text-ink-mute leading-relaxed">
-          中古は{SIM_TOTAL_STORAGE}GB・ジャンクを除く中央値（{today}）＋月額×{SIM_TOTAL_MONTHS}。月額は税込・割引なし・各種手数料等別（
+          中古{SIM_TOTAL_STORAGE}GBの相場（{today}）＋月額×{SIM_TOTAL_MONTHS}。税込・手数料別（
           {SIM_PLANS.map((p, i) => (
             <span key={p.name}>
               {i > 0 && "・"}

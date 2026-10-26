@@ -43,7 +43,7 @@ import StackedBar from "@/app/components/StackedBar";
 import Sparkline, { recentPoints } from "@/app/components/Sparkline";
 import InspectionTips, { inspectionTips } from "@/app/components/InspectionTips";
 import { getGoodDevice } from "@/lib/modelBest";
-import { getBuyNowNotes, getBuyNowStats } from "@/lib/buyNow";
+import { getBuyNowStats } from "@/lib/buyNow";
 import { getBreakdown, getRankSMax, getShopBars, type Breakdown, type ShopBarRow } from "@/lib/modelBreakdown";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { medianLabel, yen, storageLabel } from "@/lib/format";
@@ -60,7 +60,7 @@ import ModelGuide, { type SourceItem } from "@/app/components/ModelGuide";
 import BuyNowFacts from "@/app/components/BuyNowFacts";
 import PriceWeeklyTable from "@/app/components/PriceWeeklyTable";
 import StorageMedianTable from "@/app/components/StorageMedianTable";
-import { buyFacts, buyVerdict, dailyRows, monthlyRows, seriesFor, trendOf, trendSentence, weeklyRows, weeklySentence } from "@/lib/modelGuide";
+import { buyFacts, buyVerdict, type BuyFact, dailyRows, monthlyRows, seriesFor, trendOf, weeklyRows } from "@/lib/modelGuide";
 import { sameBudgetModels } from "@/lib/sameBudget";
 import { SIM_PLANS } from "@/lib/simPlans";
 import SimTile from "@/app/components/SimTile";
@@ -193,14 +193,14 @@ function memorySsdHeat(model: string, matrix: MemorySsdRankMatrix): HeatRow[] {
 }
 
 
-// 店によってバッテリーの表記が違うので、表の数え方を書いておく（lib/shops.ts の battery）
+// 店によってバッテリーの表記が違うので、表の数え方を短く書いておく（lib/shops.ts の battery）
 // 注記に出すのは、その機種を扱っている店だけ（Pixel は3店など）
 function batteryNote(model: string): string {
   const shops = shopsFor(model);
   const labelsWith = (battery: string) => shops.filter((s) => s.battery === battery).map((s) => s.label).join("・");
   const over80 = labelsWith("over80");
   const none = labelsWith("none");
-  return `未使用品（ランクS）を含みます。${over80 ? `${over80}は「80%以上」表記のため80%の行だけに` : ""}${over80 && none ? "、" : over80 ? "入れています。" : ""}${none ? `${none}はバッテリーの記載を取り込めていないため未使用品以外は含みません。` : ""}`;
+  return `未使用品を含む。${over80 ? `${over80}は80%の行だけ。` : ""}${none ? `${none}は未使用品だけ。` : ""}`;
 }
 
 /** 最安の個体を一言で（「ランクC・バッテリー80%未満」など）。電池の表記は在庫の行（DeviceCard）と同じ考え方 */
@@ -228,7 +228,7 @@ export default async function ModelPage({ params }: Props) {
   // Xperia・AQUOS・Apple Watch（2026-10-15〜）も予算別ページはまだない
   const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || device === "watch" ? null : device;
   const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
-  const [stats, history, batteryRows, storageRows, matrix, macMatrix, budget, goodDevice, buyNowNotes, statTiles] = await Promise.all([
+  const [stats, history, batteryRows, storageRows, matrix, macMatrix, budget, goodDevice, statTiles] = await Promise.all([
     getModelStats(model),
     getPriceHistory(slug),
     getBatteryRows(model),
@@ -237,7 +237,6 @@ export default async function ModelPage({ params }: Props) {
     mac ? getMemorySsdRankMatrix(model) : Promise.resolve(null),
     budgetDevice ? smallestBudgetFor(model, budgetDevice) : Promise.resolve(null),
     getGoodDevice(model, !(mac || watch)),
-    getBuyNowNotes(model),
     getBuyNowStats(model),
   ]);
   const goodMin = goodDevice?.price ?? null;
@@ -336,7 +335,6 @@ export default async function ModelPage({ params }: Props) {
   // 「今買うのはあり？」「中古相場の推移」「同じ予算の他機種」「データの出典」（2026-10-23〜。lib/modelGuide.ts・components/ModelGuide.tsx）
   const medianSeries = seriesFor(history, stats.medianStorage);
   const trend = trendOf(medianSeries);
-  const mLabel = medianLabel(stats.medianStorage, model);
   // 最新 OS への対応（確かめた情報がある種類だけ。なければ結論に入れない）
   const supported: boolean | undefined = isIphone ? ALL_CATALOG_MODELS.includes(model)
     : isIpad(model) ? IPADOS27_MODELS.has(model)
@@ -346,24 +344,24 @@ export default async function ModelPage({ params }: Props) {
   const osName = isIphone ? "iOS 27" : isIpad(model) ? "iPadOS 27" : watch ? "watchOS 27" : pixel ? "Google のアップデート保証" : undefined;
   const newMin = newRows[0];
   const verdict = hasStock ? buyVerdict({ model, trend, supported, osName, newDiff: newMin ? newMin.diff : null }) : [];
-  // 「今買うべき？（データで見る）」（10/25〜。lib/modelGuide.ts の buyFacts）: 上の数字をそのまま箇条書きに。意見は ModelGuide の結論に任せる
+  // 「今買うべき？」（10/25〜。10/27〜 数字と記号だけ。lib/modelGuide.ts の buyFacts）: 最安値・相場・件数は要約カードにあるので出さない
   const battery85 = !(mac || watch) ? (() => { const b = batteryRows.find((r) => r.key === "85"); return b ? { minPrice: b.minPrice, count: b.count } : null; })() : null;
-  const facts = hasStock && stats.minPrice !== null && stats.medianPrice !== null
-    ? buyFacts({
-        model, label: mLabel, minPrice: stats.minPrice, medianPrice: stats.medianPrice, count: stats.count, shopCount: stats.shopCount, trend,
-        newRow: newMin ?? null, newSourceName: newSource?.name, storageText: (st) => storageLabel(st, model), supportText: supportAnswer, battery85,
-      })
+  // 最新 OS・アップデートは「iOS 27: ○」の形で（確かめた種類だけ）
+  const osFacts: BuyFact[] =
+    pixel && pixelUntil && pixelLeft !== undefined ? [{ label: "アップデート保証", value: pixelLeft > 0 ? `${jaMonth(pixelUntil)}まで` : "終了", tone: pixelLeft > 0 ? "flat" : "up" }]
+    : isAndroidJp(model) ? androidUpdates
+    : mac ? [{ label: "macOS 27", value: "○", tone: "down" }]
+    : osName && supported !== undefined ? [{ label: osName, value: supported ? "○" : "×", tone: supported ? "down" : "up" }]
     : [];
+  const facts = hasStock ? buyFacts({ trend, os: osFacts, battery85 }) : [];
   // 週ごとの相場の表（10/25〜。グラフの下。相場の容量の記録、なければ全容量）
   const weekly = weeklyRows(medianSeries);
-  const weeklyText = weeklySentence(weekly, mLabel);
   const storageKind = watch ? "サイズ" : mac ? "SSD" : "容量";
   const same = hasStock && stats.medianPrice !== null ? await sameBudgetModels(model, stats.medianPrice) : [];
   const guideSources: SourceItem[] = [
-    { label: "在庫", text: `大手中古ショップ${shopNum}店の販売中の在庫${hasStock ? `（いま${stats.shopCount}店・${stats.count.toLocaleString()}件${updatedText ? `・${updatedText}時点` : ""}）` : ""}。1日4回取得` },
-    { label: "相場", text: "在庫がいちばん多い容量の中央値（真ん中の値段）。最安値にはジャンク品を含むことがあります" },
-    { label: "推移", text: "相場と最安値を毎日記録（Amazon 整備済み品は含めない）" },
-    ...(newSource && newRows.length > 0 ? [{ label: "新品価格", text: `${newSource.name}（税込・${newCheckedJa}確認）`, href: newSource.url }] : []),
+    { label: "在庫", text: `中古ショップ${shopNum}店・1日4回` },
+    { label: "推移", text: "毎日記録" },
+    ...(newSource && newRows.length > 0 ? [{ label: "新品価格", text: `${newSource.name}・税込・${newCheckedJa}`, href: newSource.url }] : []),
     ...(spec ? [{ label: "スペック", text: specSourceName(spec, model), href: specUrl(spec) }] : []),
   ];
 
@@ -500,15 +498,10 @@ export default async function ModelPage({ params }: Props) {
   const nextGen = nextModel && nextAt && nextAt.count >= 3 && nextAt.median !== null ? { model: nextModel, median: nextAt.median } : null;
   const PR_BADGE = <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1 py-px leading-none">PR</span>;
   // 買取のタイル（10/25〜 切り出し）。スマホは要約カードの直下に出す（買取は1件あたりの報酬が高いのに3週で15クリックだった）。
-  // 相場の1行は事実だけ（相場＝中古の販売価格の中央値。買取価格は載せない）
+  // 10/27〜 相場の1行と各社の説明文は出さない（文字を減らす）
   const buybackTile = showBuyback ? (
     <div className="bg-white border border-line rounded-xl p-3 flex flex-col gap-1">
       <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">今のスマホを売る {PR_BADGE}</span>
-      {stats.medianPrice !== null && (
-        <p className="text-[12px] text-ink-sub leading-snug">
-          {model}の中古販売の{medianLabel(stats.medianStorage, model)}は{yen(stats.medianPrice)}。買取価格はこれより下になるのが普通です。
-        </p>
-      )}
       {BUYBACK_PROGRAMS.map((p) => (
         <a
           key={p.name}
@@ -519,10 +512,9 @@ export default async function ModelPage({ params }: Props) {
           data-shop={`${p.name}（買取）`}
           data-model={model}
           data-link-type="a8"
-          className="flex flex-col py-1 hover:bg-ground rounded"
+          className="block py-1 hover:bg-ground rounded"
         >
           <span className="text-[13px] font-bold text-ink">{p.name} <span className="text-ink-mute" aria-hidden="true">›</span></span>
-          <span className="text-[10px] text-ink-mute leading-snug">{p.text}</span>
         </a>
       ))}
     </div>
@@ -556,7 +548,7 @@ export default async function ModelPage({ params }: Props) {
         </Accordion>
       )}
       <Accordion title="状態ランク別の最安値" hint={stats.byRank.map((r) => r.key).join("・")}>
-        <PriceList rows={stats.byRank} labelOf={(k) => `ランク ${k}${RANK_HINT[k] ? `（${RANK_HINT[k]}の目安）` : ""}`}
+        <PriceList rows={stats.byRank} labelOf={(k) => `ランク ${k}${RANK_HINT[k] ? ` ${RANK_HINT[k]}` : ""}`}
           hrefOf={(k) => searchHref(model, { rank: k })} />
       </Accordion>
     </>
@@ -584,18 +576,12 @@ export default async function ModelPage({ params }: Props) {
 
             <h1 className="text-[22px] md:text-[28px] leading-[1.3] font-bold">{model} 中古の相場・最安値</h1>
 
-            {summary && (
-              <p className="text-[13px] md:text-sm text-ink-mute leading-relaxed">
-                {summary}
-                <Link href="/about#data" className={`${LINK} ml-1 whitespace-nowrap`}>集計の方法</Link>
-              </p>
-            )}
-
+            {/* 冒頭の要約文（summary）は JSON-LD だけに入れる。最安値・相場・件数は要約カードに1回だけ（10/27〜 画面の文字を減らす） */}
             <p className="text-[11px] md:text-xs text-ink-mute leading-relaxed">
               {updatedText && stats.lastUpdated && <>更新 <time dateTime={stats.lastUpdated.toISOString()}>{updatedText}</time> ・ </>}
-              {shopNum}店を比較{hasStock && <> ・ 在庫あり{stats.shopCount}店・{stats.count.toLocaleString()}件</>} ・ 運営: 中古スマホ店の検品担当 ・{" "}
+              {hasStock && <span className="md:hidden">{stats.shopCount}店・{stats.count.toLocaleString()}件 ・ </span>}
               <span className="inline-block mr-1 px-1 py-px rounded border border-line font-bold">PR</span>
-              本ページはアフィリエイト広告を利用しています
+              広告を含みます
             </p>
 
             {chipModels.length > 1 && (
@@ -630,12 +616,12 @@ export default async function ModelPage({ params }: Props) {
               {/* 今買うべき？（データで見る）と容量別の相場。文字だけの節（検索・AI が数字を読めるように。10/25〜）。1360px〜は2列に並べる */}
               {facts.length > 0 && (
                 <div className={storageRows.length >= 2 ? "" : "min-[1360px]:col-span-2"}>
-                  <BuyNowFacts model={model} facts={facts} asOf={updatedText} />
+                  <BuyNowFacts model={model} facts={facts} />
                 </div>
               )}
               {storageRows.length >= 2 && (
                 <div className={facts.length > 0 ? "" : "min-[1360px]:col-span-2"}>
-                  <StorageMedianTable model={model} rows={storageRows} kind={storageKind} medianStorage={stats.medianStorage}
+                  <StorageMedianTable model={model} rows={storageRows} kind={storageKind}
                     hrefOf={(st) => searchHref(model, { storage: String(st) })} />
                 </div>
               )}
@@ -691,7 +677,7 @@ export default async function ModelPage({ params }: Props) {
 
               {hasStock && (
                 <div className="md:order-5 min-[1360px]:col-span-2">
-                  <ModelGuide model={model} verdict={verdict} notes={buyNowNotes} trendText={trend ? trendSentence(trend, mLabel) : null} medianLabel={mLabel}
+                  <ModelGuide model={model} verdict={verdict}
                     daily={dailyRows(medianSeries)} monthly={monthlyRows(medianSeries)} same={same} sources={guideSources} factorsHref={isIphone ? "/iphone/price-factors" : undefined} />
                 </div>
               )}
@@ -717,7 +703,7 @@ export default async function ModelPage({ params }: Props) {
                 )}
                 {/* 週ごとの相場（文字の表。グラフは絵なので、同じ記録を表でも出す。10/25〜） */}
                 {weekly.length >= 2 && (
-                  <PriceWeeklyTable model={model} rows={weekly} medianLabel={mLabel} sentence={weeklyText} asOf={weekly[0].date} />
+                  <PriceWeeklyTable model={model} rows={weekly} />
                 )}
               </div>
 
@@ -752,9 +738,8 @@ export default async function ModelPage({ params }: Props) {
                         );
                       })}
                       <p className="pt-2 border-t border-line-soft text-[11px] text-ink-mute leading-relaxed">
-                        保証は各店の公式ページで確認した内容です（詳しくは
-                        <Link href="/about" className={`${LINK} underline underline-offset-2`}>「このサイトについて」</Link>）。
-                        {isIphone && <> 店ごとの在庫数・電池の書き方の比較は<Link href="/iphone/where-to-buy" className={`${LINK} underline underline-offset-2`}>「中古iPhoneはどこで買う？」</Link></>}
+                        各店の公式ページで確認
+                        {isIphone && <> ・ <Link href="/iphone/where-to-buy" className={`${LINK} underline underline-offset-2`}>どこで買う？</Link></>}
                       </p>
                     </div>
                   </Accordion>
@@ -824,8 +809,7 @@ export default async function ModelPage({ params }: Props) {
                     </dl>
                     <p className="mt-3 text-[11px] text-ink-mute leading-relaxed">
                       出典: Apple <a href="https://support.apple.com/ja-jp/108056" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">サポート（Apple Watch を識別する）</a>
-                      ・<a href="https://www.apple.com/jp/watchos/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">watchOS の対応機種</a>。
-                      バンドの有無は載せていません（商品ごとに違います）。
+                      ・<a href="https://www.apple.com/jp/watchos/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">watchOS の対応機種</a>
                     </p>
                   </Accordion>
                 )}
@@ -960,13 +944,9 @@ export default async function ModelPage({ params }: Props) {
               </div>
               {/* この機種が買える予算（予算別ページへの導線。lib/budgetStats.ts の smallestBudgetFor） */}
               {budget && budgetDevice && (
-                <p className="mt-2.5 text-[13px] text-ink-sub leading-[1.7]">
-                  {model}はジャンク品を除いて{yen(budget.minPrice)}から買えます。同じ予算のほかの機種は{" "}
-                  <Link href={budgetPath(budget.max, budgetDevice)} className={`font-bold ${LINK} hover:underline underline-offset-2`}>
-                    {budgetLabel(budget.max)}以下で買える{BUDGET_NAMES[budgetDevice]}
-                  </Link>
-                  で比べられます。
-                </p>
+                <Link href={budgetPath(budget.max, budgetDevice)} className={`mt-2.5 inline-block text-[13px] font-bold ${LINK} hover:underline underline-offset-2`}>
+                  {budgetLabel(budget.max)}以下で買える{BUDGET_NAMES[budgetDevice]} ›
+                </Link>
               )}
             </section>
           </div>

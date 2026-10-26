@@ -1,31 +1,27 @@
 import type { BuyFact } from "@/lib/modelGuide";
 
 /**
- * 機種ページの「<機種>の中古、今買うべき？（データで見る）」（2026-10-25〜）。
- * 「<機種> 中古 今買うべき」の検索に、意見ではなく数字で答える節。項目は lib/modelGuide.ts の buyFacts（データがない項目は出ない）。
- * 結論（「今買うのはあり？」）は下の ModelGuide にあるので、ここは事実だけを箇条書きにする
+ * 機種ページの「<機種>の中古、今買うべき？」（2026-10-25〜）。
+ * 10/27〜 文ではなく「見出し ／ 数字・記号」の行だけ（lib/modelGuide.ts の buyFacts。データがない行は出ない）。
+ * 最安値・相場・件数は要約カードにあるので、ここには出さない。結論（「今買うのはあり？」）は下の ModelGuide
  */
 
 const CARD = "bg-white border border-line rounded-xl";
+const TONE: Record<NonNullable<BuyFact["tone"]>, string> = { up: "text-warn", down: "text-safe", flat: "text-ink" };
 
-export default function BuyNowFacts({ model, facts, asOf }: {
-  model: string;
-  facts: BuyFact[];
-  /** 在庫の更新時刻（「10/25 14:40」）。なければ注記を出さない */
-  asOf: string | null;
-}) {
+export default function BuyNowFacts({ model, facts }: { model: string; facts: BuyFact[] }) {
   if (facts.length === 0) return null;
   return (
-    <section className={`${CARD} p-3.5 flex flex-col gap-2`}>
-      <h2 className="text-[15px] font-bold">{model}の中古、今買うべき？（データで見る）</h2>
-      <ul className="flex flex-col gap-1.5 list-disc pl-5">
+    <section className={`${CARD} p-3.5 flex flex-col gap-1`}>
+      <h2 className="text-[15px] font-bold">{model}の中古、今買うべき？</h2>
+      <dl className="flex flex-col divide-y divide-line-soft text-[13px] tabular-nums">
         {facts.map((f) => (
-          <li key={f.label} className="text-[13px] leading-[1.7] text-ink-sub">
-            <strong className="text-ink">{f.label}：</strong>{f.text}
-          </li>
+          <div key={f.label} className="py-2 flex items-baseline justify-between gap-3">
+            <dt className="text-ink-sub">{f.label}</dt>
+            <dd className={`font-bold text-right ${f.tone ? TONE[f.tone] : "text-ink"}`}>{f.value}</dd>
+          </div>
         ))}
-      </ul>
-      {asOf && <p className="text-[11px] text-ink-mute">{asOf}時点の在庫と、毎日の価格の記録から。判断の材料として数字だけを並べています。</p>}
+      </dl>
     </section>
   );
 }
