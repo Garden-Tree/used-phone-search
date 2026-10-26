@@ -21,7 +21,7 @@
 - **IndexNow**: 毎日全件・Bing 登録済み
 - **デザイン**: `docs/design.md`
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える。10/16〜）
-- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。検索の既定は全件・安い順（電池85%以上は切り替え）。店の比較 `/iphone/where-to-buy`（10/24〜）。横動画は同テーマのページに埋め込み（`lib/videos.ts`。11・12・SE・X系は何世代まで）。機種ページに今買うべき？・週ごとの表・容量別の中央値（10/25〜）
+- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。検索の既定は全件・安い順（電池85%以上は切り替え）。店の比較 `/iphone/where-to-buy`（10/24〜）。横動画は同テーマのページに埋め込み（`lib/videos.ts`）
 - **画面の店数は在庫がある店だけ**（`lib/activeShops.ts`）。スクレイパー4店は12時間止まると在庫を隠す
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**（保証は各店の公式で確認）
 - **スペック・保証期限・発売年月・Apple 修理料金・Pencil 対応は公式で確かめた値だけ**（`lib/*Specs.ts`・`*Catalog.ts`・`appleRepairPrices.ts`・`ipadPencil.ts`）
@@ -30,7 +30,7 @@
   - 同じ会社の別の売り場は公式のカードにまとめる（イオシス⇔楽天・エムモバ⇔エムコム）
 - **Amazon 整備済み品**: 10/11〜停止中
 - **Yahoo! 7店**: もしも経由（VC 審査後に VC）
-- **収益の枠**: 機種ページの回線（`lib/simPlans.ts`）・買取・iPhone の修理（`lib/buyback.ts`）。修理料金・iPad 目安は非広告
+- **収益の枠**: 機種ページの回線（`lib/simPlans.ts`・要約の下に色のボタン＋月額・楽天は楽天アフィ）・買取・iPhone の修理（`lib/buyback.ts`）
 - **値動きの速報**: `scripts/price-alerts.ts`（X の型④）
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch は storage＝mm）
@@ -44,6 +44,7 @@
 | **11/1** | 横動画9本目（月次おすすめ・`longform/2026-11-01-monthly`）を取り直して公開 | 毎月作り直す |
 | **10/31・11/16** | X 有料: 返信の表示（前は中央値6）・流入 | 返信 平均50 か 流入 週5。届かねば解約 |
 | **10/27** | iPhone Duo の中古在庫 | 出たら catalog 等へ |
+| **12/1** | ahamo が段階制（40GB 3,135円〜）に → `lib/simPlans.ts` の月額 | |
 | **毎月1日** | 出典の開き直し・相場レポートが出たか | 出ていなければビルドのログ |
 
 ## 進行中・外部条件待ち
