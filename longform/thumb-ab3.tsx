@@ -1,6 +1,7 @@
 /**
  * 横動画のサムネ・第3弾（2026-10-26〜）。Studio の「テストと比較」の B・C 案（A は今の thumbnail.png）
  *   npx tsx longform/thumb-ab3.tsx            # 4本ぶん（下の PLANS）と一覧 longform/thumb-ab3-contact.png
+ *   npx tsx longform/thumb-ab3.tsx set2       # 10/26 に足した2本（iPad・大きい画面）と一覧 longform/thumb-ab3-contact2.png
  *   npx tsx longform/thumb-ab3.tsx <フォルダ> # 1本だけ
  * 出力: <フォルダ>/thumb-B.png・thumb-C.png（1280x720）
  *
@@ -70,11 +71,11 @@ const Mark = ({ ok, size, style }: { ok: boolean; size: number; style: Record<st
 );
 
 /** 端末の絵（前面・ロゴなし）。dim で色を落とす（✕ の側） */
-function Phone({ w, h, screen, dim, style }: { w: number; h: number; screen: [string, string]; dim?: boolean; style?: Record<string, unknown> }) {
+function Phone({ w, h, screen, dim, bare, style }: { w: number; h: number; screen: [string, string]; dim?: boolean; bare?: boolean; style?: Record<string, unknown> }) {
   return (
     <div style={{ display: "flex", width: w, height: h, borderRadius: w * 0.16, background: "#1F2937", padding: w * 0.05, border: `${Math.max(3, Math.round(w * 0.025))}px solid #9CA3AF`, boxShadow: "0 16px 36px rgba(0,0,0,0.4)", ...style }}>
       <div style={{ display: "flex", flexGrow: 1, borderRadius: w * 0.11, background: dim ? "linear-gradient(160deg, #6B7280, #374151)" : `linear-gradient(160deg, ${screen[0]}, ${screen[1]})`, justifyContent: "center" }}>
-        <div style={{ display: "flex", width: w * 0.3, height: w * 0.085, marginTop: w * 0.05, borderRadius: 99, background: "#111827" }} />
+        {!bare && <div style={{ display: "flex", width: w * 0.3, height: w * 0.085, marginTop: w * 0.05, borderRadius: 99, background: "#111827" }} />}
       </div>
     </div>
   );
@@ -104,11 +105,11 @@ const Bands = ({ bands, left = 0, top = 24, gap = 14 }: { bands: Band[]; left?: 
 );
 
 /** 端末＋上の札＋✓／✕（B の右側に並べる） */
-const Labeled = ({ x, y, w, h, label, ok, screen, labelSize = 64 }: { x: number; y: number; w: number; h: number; label: string; ok: boolean; screen: [string, string]; labelSize?: number }) => (
+const Labeled = ({ x, y, w, h, label, ok, screen, labelSize = 64, bare }: { x: number; y: number; w: number; h: number; label: string; ok: boolean; screen: [string, string]; labelSize?: number; bare?: boolean }) => (
   <div style={{ position: "absolute", left: x, top: y, display: "flex", flexDirection: "column", alignItems: "center", width: w + 40 }}>
     <div style={{ display: "flex", padding: "0 14px", marginBottom: 8, background: ok ? WHITE : "#D1D5DB", color: BLACK, fontSize: labelSize, fontWeight: 900, lineHeight: 1.15, letterSpacing: -2, whiteSpace: "nowrap" }}>{label}</div>
-    <Phone w={w} h={h} screen={screen} dim={!ok} />
-    <Mark ok={ok} size={Math.round(w * 0.95)} style={{ left: 20 + w * 0.025, top: labelSize * 1.15 + 8 + h * 0.5 - w * 0.47 }} />
+    <Phone w={w} h={h} screen={screen} dim={!ok} bare={bare} />
+    <Mark ok={ok} size={Math.round(Math.min(w, h) * 0.95)} style={{ left: 20 + w * 0.025, top: labelSize * 1.15 + 8 + h * 0.5 - w * 0.47 }} />
   </div>
 );
 
@@ -246,10 +247,83 @@ const PLANS: Record<string, Plan> = {
       </Frame>
     ),
   },
+  // 3本目 SHyQRQ8wAic。A＝紺の地「中古iPad／使い方で選ぶ正解」＋「7万円→Air 第5世代」＋つむぎ
+  "2026-10-23-ipad-dore": {
+    id: "SHyQRQ8wAic",
+    // B: 色帯＋✕／✓ の iPad（「1:30」: 第8世代 32GB 25,916円は iPadOS 27 非対応・「2:40」: 第9世代 64GB 43,670円）
+    B: () => (
+      <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>
+        <Bands bands={[{ text: "中古iPad", bg: WHITE, color: BLACK, size: 116 }, { text: "第8世代は", bg: RED, color: WHITE, size: 130 }, { text: "買っちゃダメ", bg: YELLOW, color: BLACK, size: 136 }]} />
+        <Labeled x={850} y={20} w={150} h={210} label="第8" ok={false} screen={SCREENS[2]} bare />
+        <Labeled x={1060} y={20} w={150} h={210} label="第9" ok screen={SCREENS[0]} bare />
+        {[{ x: 850, t: "2.6万円", bg: "#4B5563" }, { x: 1060, t: "4.4万円", bg: RED }].map((p) => (
+          <div key={p.t} style={{ position: "absolute", left: p.x, top: 330, width: 190, display: "flex", justifyContent: "center" }}>
+            <div style={{ display: "flex", padding: "0 12px", background: p.bg, color: WHITE, fontSize: 52, fontWeight: 900, letterSpacing: -2, whiteSpace: "nowrap" }}>{p.t}</div>
+          </div>
+        ))}
+        <div style={{ position: "absolute", left: 34, top: 560, display: "flex", fontSize: 70, fontWeight: 900, color: WHITE, letterSpacing: -2 }}>iPadOS 27 非対応</div>
+      </Frame>
+    ),
+    // C: 驚くずんだもん＋「Proが10万以下!?」（「0:00」「6:40」: Pro 11インチ 第3世代 128GB 98,532円）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("zundamon-surprised", { left: -40, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 76, fontWeight: 900, letterSpacing: -2 }}>中古iPad 16店の相場</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="iPad Proが" size={150} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="10万以下!?" size={fit("10万以下!?", 800, 196)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-10} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 490, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 70, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>Pro 第3世代 9.9万円</div>
+        <Bubble text={"Proも\n買えるのだ!?"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
+  // 8本目（未公開）。A＝紺の地「中古iPhone／大きい画面ならどれ？」＋「Plus・Air・Pro Max」＋つむぎ
+  "2026-10-28-big-screen": {
+    id: "未公開",
+    // B: 色帯＋Plus と Pro Max の絵（「3:20」: 同じ容量で Pro Max は Plus より +31,939〜33,841円・「4:00」: Pro Max で増えるのは 120Hz と望遠）
+    B: () => (
+      <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>
+        <Bands bands={[{ text: "中古iPhone", bg: WHITE, color: BLACK, size: 100 }, { text: "Plus→Pro Max", bg: RED, color: WHITE, size: 104 }, { text: "3万円差", bg: YELLOW, color: BLACK, size: 196 }]} />
+        {[{ x: 820, w: 160, h: 290, label: "Plus", s: SCREENS[1] }, { x: 1030, w: 180, h: 330, label: "Pro Max", s: ["#312E81", "#A78BFA"] as [string, string] }].map((p) => (
+          <div key={p.label} style={{ position: "absolute", left: p.x, top: 24, display: "flex", flexDirection: "column", alignItems: "center", width: p.w + 40 }}>
+            <div style={{ display: "flex", padding: "0 12px", marginBottom: 10, background: WHITE, color: BLACK, fontSize: 52, fontWeight: 900, lineHeight: 1.15, letterSpacing: -2, whiteSpace: "nowrap" }}>{p.label}</div>
+            <Phone w={p.w} h={p.h} screen={p.s} />
+          </div>
+        ))}
+        {["120Hz", "望遠"].map((t, i) => (
+          <div key={t} style={{ position: "absolute", left: 1040, top: 455 + i * 66, display: "flex", alignItems: "center" }}>
+            <Mark ok size={54} style={{ position: "relative" }} />
+            <div style={{ display: "flex", marginLeft: 10, fontSize: 50, fontWeight: 900, color: WHITE, letterSpacing: -1 }}>{t}</div>
+          </div>
+        ))}
+        <div style={{ position: "absolute", left: 34, top: 560, display: "flex", fontSize: 66, fontWeight: 900, color: WHITE, letterSpacing: -2 }}>14〜16 同じ容量どうし</div>
+      </Frame>
+    ),
+    // C: 驚くずんだもん＋「Airのほうが安い!?」（「0:00」「4:40」: 256GB で Air 142,681円・16 Plus 151,200円＝8,519円安い）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("zundamon-surprised", { left: -40, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 68, fontWeight: 900, letterSpacing: -2 }}>大きい画面の中古iPhone</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="Airのほうが" size={140} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="安い!?" size={220} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-10} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 490, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 64, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>16 Plusより8,519円安い</div>
+        <Bubble text={"新しいのに\n安いのだ!?"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
+};
+
+/** 一覧のまとまり（引数なし＝第3弾の4本、set2＝10/26 に足した2本） */
+const GROUPS: Record<string, { keys: string[]; out: string }> = {
+  "": { keys: ["2026-10-24-where-to-buy", "2026-10-25-pro-or-standard", "2026-10-26-how-old", "2026-10-27-dont-buy"], out: "thumb-ab3-contact.png" },
+  set2: { keys: ["2026-10-23-ipad-dore", "2026-10-28-big-screen"], out: "thumb-ab3-contact2.png" },
 };
 
 /** 一覧: 動画ごとに A・B・C を 400x225 と、スマホの関連動画の大きさ 168x94 で並べる */
-async function contact(dirs: string[], fonts: Awaited<ReturnType<typeof notoSansJp>>) {
+async function contact(dirs: string[], out: string, fonts: Awaited<ReturnType<typeof notoSansJp>>) {
   const BW = 400, BH = 225, SW = 168, SH = 94, rowH = 44 + BH + 10 + SH + 26;
   const src = (p: string) => `data:image/png;base64,${b64(p)}`;
   const el = (
@@ -279,12 +353,13 @@ async function contact(dirs: string[], fonts: Awaited<ReturnType<typeof notoSans
     </div>
   );
   const res = new ImageResponse(el, { width: 40 + 3 * (BW + 20), height: 20 + dirs.length * rowH, fonts });
-  writeFileSync(join(__dirname, "thumb-ab3-contact.png"), Buffer.from(await res.arrayBuffer()));
+  writeFileSync(join(__dirname, out), Buffer.from(await res.arrayBuffer()));
 }
 
 (async () => {
   const arg = process.argv[2];
-  const keys = arg ? [arg.replace(/\\/g, "/").split("/").filter(Boolean).pop()!] : Object.keys(PLANS);
+  const group = GROUPS[arg ?? ""];
+  const keys = group ? group.keys : [arg.replace(/\\/g, "/").split("/").filter(Boolean).pop()!];
   const fonts = await notoSansJp(readFileSync(__filename, "utf8"));
   for (const key of keys) {
     const plan = PLANS[key];
@@ -296,8 +371,8 @@ async function contact(dirs: string[], fonts: Awaited<ReturnType<typeof notoSans
     }
     console.log(`B・C → ${dir}`);
   }
-  if (!arg) {
-    await contact(Object.keys(PLANS).map((k) => join(__dirname, k).replace(/\\/g, "/")), fonts);
-    console.log("一覧 → longform/thumb-ab3-contact.png");
+  if (group) {
+    await contact(group.keys.map((k) => join(__dirname, k).replace(/\\/g, "/")), group.out, fonts);
+    console.log(`一覧 → longform/${group.out}`);
   }
 })();
