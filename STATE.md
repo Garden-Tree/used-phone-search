@@ -30,7 +30,7 @@
   - 同じ会社の別の売り場は公式のカードにまとめる（イオシス⇔楽天・エムモバ⇔エムコム）
 - **Amazon 整備済み品**: 10/11〜停止中
 - **Yahoo! 7店**: もしも経由（VC 審査後に VC）
-- **収益の枠**: 機種ページの回線（`lib/simPlans.ts`・要約の下に色のボタン＋月額・楽天は楽天アフィ）・買取・iPhone の修理（`lib/buyback.ts`）
+- **収益の枠**: 回線（`SimTile`：機種・検索・予算別・店選び・比較。色のボタン＋月額・楽天は楽天アフィ・横動画の説明欄にも）・買取・iPhone の修理（`lib/buyback.ts`）
 - **値動きの速報**: `scripts/price-alerts.ts`（X の型④）
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch は storage＝mm）
