@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
 import { FPS, H, RANK_SHOWN, TIMELINE, W, budgetRows, countdown, sceneFrame, variantsOf, type Variant } from "./scenes";
+import { relatedLineStart } from "./relatedLong";
 import { isBudget, type Script } from "./types";
 import { VOICEVOX_URL, cachedCharacter, engineAvailable, narrationKey, narrationOf, resolveSpeaker, synthesize, voiceCredit, type Clip, type NarrationKey } from "./voice";
 
@@ -100,6 +101,16 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
       return out;
     }
     const clip = sc.id === "comment" && voices.manual ? voices.manual : key ? voices.clips[key] : undefined;
+    // 締めの関連動画の札（横動画のサムネ）は、声の「くわしい解説は…」の始まりに出す（読みのモーラ数から目安。relatedLong.ts）。動きもそこまで延ばす
+    if (sc.id === "outro" && clip && sc.o?.rel !== undefined) {
+      const start = relatedLineStart(clip);
+      if (start !== null) {
+        const k = sc.o.k ?? 1.5;
+        const rel = Math.max(1.2 * k + 0.4, start - 0.1);
+        sc = { ...sc, anim: Math.max(1.2 * k + 0.4, rel + 0.4), o: { ...sc.o, rel } };
+        log.push(`  締めの関連動画の札: 声の「くわしい解説は…」の始まり（目安）${start.toFixed(2)} 秒 → ${rel.toFixed(2)} 秒に出す`);
+      }
+    }
     // 声のある場面は「声＋VOICE_PAD」に合わせて延ばす／縮める（声の後に動かない絵が長く残らないように）。動きの途中では切らない
     const out = clip ? { ...sc, dur: Math.max(Math.ceil((sc.anim + 0.3) * 10) / 10, Math.ceil((clip.dur + VOICE_PAD) * 10) / 10) } : sc;
     if (clip) segVoices.push({ file: clip.file, at, dur: clip.dur, label: sc.id });

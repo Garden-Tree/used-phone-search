@@ -3,6 +3,8 @@
  *   npx tsx shorts/stills.tsx [テーマ…]
  * テーマごとに shorts/out の最新の台本（<日付>-<テーマ>/script.json）から、型 A の つかみ（t=0）・ランキング（全行が出たところ）・1位の発表（動きの終わり）の3枚を
  * shorts/out/looks/<テーマ>-<場面>.png に1枚ずつ順に書き、全部を縮めて並べた shorts/out/looks-contact.png（テーマ×3枚）を作る。声は使わない（場面の長さは声なしの値）
+ *   npx tsx shorts/stills.tsx --outro [テーマ…]
+ * 締め（outro）の最後のコマだけを shorts/out/looks/<テーマ>-outro.png に書く（関連動画の札・横動画のサムネの確かめ。一覧は looks-contact-outro.png）
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -14,7 +16,8 @@ import type { Script } from "./types";
 
 const OUT = resolve(__dirname, "out");
 const THEMES = ["drops", "budget", "pixelbudget", "ipadbudget", "macbudget", "probudget", "foldbudget", "galaxybudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "fold", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew"] as const;
-const SHOTS: { id: SceneId; at: "start" | "end" }[] = [{ id: "hook", at: "start" }, { id: "ranking", at: "end" }, { id: "reveal", at: "end" }];
+const OUTRO = process.argv.includes("--outro");
+const SHOTS: { id: SceneId; at: "start" | "end" }[] = OUTRO ? [{ id: "outro", at: "end" }] : [{ id: "hook", at: "start" }, { id: "ranking", at: "end" }, { id: "reveal", at: "end" }];
 /** 一覧の1枚の大きさ（1080x1920 の 1/4） */
 const TW = 270;
 const TH = 480;
@@ -59,10 +62,11 @@ async function main() {
   rmSync(seq, { recursive: true, force: true });
   mkdirSync(seq);
   files.forEach((f, i) => writeFileSync(join(seq, `${String(i).padStart(3, "0")}.png`), readFileSync(f)));
-  const rows = Math.ceil(files.length / SHOTS.length);
-  const sheet = join(OUT, "looks-contact.png");
+  const cols = OUTRO ? Math.min(files.length, 4) : SHOTS.length;
+  const rows = Math.ceil(files.length / cols);
+  const sheet = join(OUT, OUTRO ? "looks-contact-outro.png" : "looks-contact.png");
   const r = spawnSync("ffmpeg", ["-y", "-loglevel", "error", "-framerate", "1", "-i", join(seq, "%03d.png"),
-    "-vf", `scale=${TW}:${TH},tile=${SHOTS.length}x${rows}:padding=12:margin=12:color=white`, "-frames:v", "1", sheet], { encoding: "utf8" });
+    "-vf", `scale=${TW}:${TH},tile=${cols}x${rows}:padding=12:margin=12:color=white`, "-frames:v", "1", sheet], { encoding: "utf8" });
   if (r.status !== 0) throw new Error(r.stderr);
   rmSync(seq, { recursive: true, force: true });
   console.log(`一覧: ${sheet}`);

@@ -7,6 +7,7 @@ import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
+import { relatedThumb } from "./relatedLong";
 import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type Script } from "./types";
 
 export const W = 1080;
@@ -76,7 +77,8 @@ export const variantsOf = (s: Script): Variant[] => (s.theme === "drops" ? VARIA
 export type Se = { t: number; kind: "pop" | "ta" };
 /** dur: 場面の長さ（秒）、anim: 動きのある秒数（以降は最後のコマを止める）、o: 場面ごとの動きの設定（開始・間隔・拡大率） */
 /** o.at: ランキングの行ごとの出る秒（items の添字。1 = 2位・2 = 3位）。声があるときは声の始まりから決める（render.ts） */
-export type Scene = { id: SceneId; dur: number; anim: number; se?: Se[]; o?: { start?: number; gap?: number; k?: number; at?: number[] } };
+/** o.rel: 締めの関連動画の札（横動画のサムネ）が出る秒。声があれば「くわしい解説は…」の声の始まり（render.ts・relatedLong.ts）、なければ 2.2k 秒 */
+export type Scene = { id: SceneId; dur: number; anim: number; se?: Se[]; o?: { start?: number; gap?: number; k?: number; at?: number[]; rel?: number } };
 
 /** ランキングに出す数（1位は伏せた枠・2位・3位）。4位・5位は出さない（声が 3位から読むため） */
 export const RANK_SHOWN = 3;
@@ -121,7 +123,7 @@ export const TIMELINE = (s: Script, v: Variant): Scene[] =>
     if (sc.id !== "outro" || !RELATED_LONG_THEMES.has(s.theme)) return sc;
     const k = sc.o?.k ?? 1.5;
     const anim = Math.max(sc.anim, 2.2 * k + 0.4);
-    return { ...sc, anim, dur: Math.max(sc.dur, anim + 0.8) };
+    return { ...sc, anim, dur: Math.max(sc.dur, anim + 0.8), o: { ...sc.o, rel: 2.2 * k } };
   });
 
 /** 声なしの長さ: A「標準」約29秒 / B「速い」約19秒（数字先出し・グラフなし）/ C「グラフ先」約24秒（最初に推移グラフ）。声があると場面が延びる（render.ts） */
@@ -193,12 +195,12 @@ function Band({ s, L }: { s: Script; L: Look }) {
   );
 }
 
-function Frame({ s, children, header = true, footer = true }: { s: Script; children: ReactNode; header?: boolean; footer?: boolean }) {
+function Frame({ s, children, header = true, footer = true, body = BODY }: { s: Script; children: ReactNode; header?: boolean; footer?: boolean; body?: { top: number; height: number } }) {
   const L = lookOf(s);
   return (
     <div style={{ width: W, height: H, display: "flex", position: "relative", background: L.bg, fontFamily: "Noto Sans JP", color: L.fg }}>
       {header && <Band s={s} L={L} />}
-      <div style={{ position: "absolute", left: MARGIN, top: BODY.top, width: CW, height: BODY.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>{children}</div>
+      <div style={{ position: "absolute", left: MARGIN, top: body.top, width: CW, height: body.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>{children}</div>
       {footer && (
         <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", justifyContent: "center", fontSize: FIT(FOOT(s), CW, 30, 24), fontWeight: 500, color: L.sub, whiteSpace: "nowrap" }}>
           {FOOT(s)}
@@ -748,9 +750,46 @@ function Comment({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   );
 }
 
+/** 締めの関連動画の札: 横動画のサムネの幅（画面の約72%・16:9）と、札・サムネ・矢印を置く範囲（上 250px・下 440px の YouTube の表示を避ける） */
+const REL_THUMB = { w: 780, h: Math.round((780 * 9) / 16) };
+const REL_BODY = { top: 270, height: 1200 };
+
 function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   const out = s.scenes.outro;
   const k = o?.k ?? 1.5;
+  const L = lookOf(s);
+  const question = out.question ?? `${s.theme === "drops" ? periodOf(s).next : "来週"}の1位は…？`;
+  const related = RELATED_LONG_THEMES.has(s.theme);
+  const thumb = related ? relatedThumb(s) : null;
+  if (thumb) {
+    // 関連動画（横動画）のサムネを、声の「くわしい解説は…」に合わせて出す（relatedLong.ts）。上の文字は小さくして詰め、重ならないようにする
+    const relAt = o?.rel ?? 2.2 * k;
+    const p = prog(t, relAt, 0.4);
+    return (
+      <Frame s={s} header={false} footer={false} body={REL_BODY}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0, 0.25) }}>
+            {out.lines.map((l, i) => (
+              <div key={i} style={{ ...row, fontSize: FIT(l, CW, 72), fontWeight: 900, marginBottom: 10 }}>{l}</div>
+            ))}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.6 * k, 0.4) }}>
+            <div style={{ ...row, fontSize: FIT(out.url, CW, 68), fontWeight: 900, color: L.url, marginTop: 24 }}>{out.url}</div>
+            <div style={{ ...row, fontSize: FIT(out.note, CW, 30, 24), fontWeight: 500, color: L.sub, marginTop: 14 }}>{out.note}</div>
+          </div>
+          <div style={{ ...row, fontSize: FIT(question, CW, 50), fontWeight: 900, marginTop: 34, opacity: prog(t, 1.2 * k, 0.4) }}>{question}</div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 40, opacity: p, transform: `translateY(${Math.round((1 - p) * 40)}px)` }}>
+            <div style={{ ...row, fontSize: 40, fontWeight: 900, padding: "10px 32px", borderRadius: 999, background: L.chip, color: C.white }}>くわしい解説はこちら</div>
+            <div style={{ display: "flex", marginTop: 18, borderRadius: 18, overflow: "hidden", boxShadow: `0 0 0 4px ${L.dark ? C.white : C.line}` }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={thumb} width={REL_THUMB.w} height={REL_THUMB.h} style={{ width: REL_THUMB.w, height: REL_THUMB.h }} alt="" />
+            </div>
+            <div style={{ ...row, fontSize: 46, fontWeight: 900, color: L.accentOnBg, marginTop: 14 }}>{"▼ 下の関連動画から ▼"}</div>
+          </div>
+        </div>
+      </Frame>
+    );
+  }
   return (
     <Frame s={s} header={false} footer={false}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -760,13 +799,13 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
           ))}
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.6 * k, 0.4) }}>
-          <div style={{ ...row, fontSize: FIT(out.url, CW, 80), fontWeight: 900, color: lookOf(s).url, marginTop: 56 }}>{out.url}</div>
-          <div style={{ ...row, fontSize: 34, fontWeight: 500, color: lookOf(s).sub, marginTop: 40 }}>{out.note}</div>
+          <div style={{ ...row, fontSize: FIT(out.url, CW, 80), fontWeight: 900, color: L.url, marginTop: 56 }}>{out.url}</div>
+          <div style={{ ...row, fontSize: 34, fontWeight: 500, color: L.sub, marginTop: 40 }}>{out.note}</div>
         </div>
-        <div style={{ ...row, fontSize: 52, fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>{out.question ?? `${s.theme === "drops" ? periodOf(s).next : "来週"}の1位は…？`}</div>
-        {/* 関連動画（横動画）への誘導。画面の下の関連動画のリンクを指す（types.ts の RELATED_LONG_THEMES） */}
-        {RELATED_LONG_THEMES.has(s.theme) && (
-          <div style={{ ...row, fontSize: 46, fontWeight: 900, marginTop: 56, padding: "14px 30px", borderRadius: 999, background: lookOf(s).chip, color: C.white, opacity: prog(t, 2.2 * k, 0.4) }}>{`▼ ${RELATED_LONG_LINE}`}</div>
+        <div style={{ ...row, fontSize: 52, fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>{question}</div>
+        {/* 関連動画（横動画）への誘導。サムネのファイルがないとき（relatedLong.ts）は文字の札だけ。画面の下の関連動画のリンクを指す */}
+        {related && (
+          <div style={{ ...row, fontSize: 46, fontWeight: 900, marginTop: 56, padding: "14px 30px", borderRadius: 999, background: L.chip, color: C.white, opacity: prog(t, o?.rel ?? 2.2 * k, 0.4) }}>{`▼ ${RELATED_LONG_LINE}`}</div>
         )}
       </div>
     </Frame>
