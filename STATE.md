@@ -6,12 +6,12 @@
 
 | 対象 | 理由 |
 | --- | --- |
-| `app/layout.tsx` の `verification.google` | 消すと Search Console の所有権確認が外れる |
-| ゲオ公式EC（ec.geo-online.co.jp）へのスクレイピング | Akamai が拒否。**回避策は取らない**。ゲオは楽天API経由のみ |
+| `app/layout.tsx` の `verification.google` | Search Console の所有権確認 |
+| ゲオ公式ECへのスクレイピング | Akamai が拒否。**回避策は取らない**。ゲオは楽天API経由のみ |
 | 楽天APIで取った商品のリンク先 | 規約上、楽天市場（楽天アフィリエイト）以外へは張らない。A8 等を付けない |
 | `rakuten-sync/config.php`・`RAKUTEN_INGEST_SECRET` | 秘密情報。Git に入れない・Claude は扱わない（ユーザーが入力） |
-| 在庫の全件取得（`findMany` で機種の行を丸ごと） | Neon 無料枠の転送量（月5GB）を使い切る。集計は DB 側で（`docs/operations.md`） |
-| サーバーの cron（毎日 2:40/8:40/14:40/20:40・10:00） | 取り込みと監視。消すと停止に気づけない |
+| 在庫の全件取得（`findMany`） | Neon の転送量（月5GB）。集計は DB 側で |
+| サーバーの cron（2:40/8:40/14:40/20:40・10:00） | 取り込みと監視 |
 
 ## 決定事項
 
@@ -20,19 +20,19 @@
 - **DB**: Neon（Launch。ideas/10-04）
 - **IndexNow**: 毎日全件・Bing 登録済み
 - **デザイン**: `docs/design.md`
-- **相場**: 在庫がいちばん多い容量の中央値（容量を添える。10/16〜）
+- **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
 - **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。検索の既定は全件・安い順（電池85%以上は切り替え）。店の比較 `/iphone/where-to-buy`（10/24〜）。横動画は同テーマのページに埋め込み（`lib/videos.ts`）
 - **画面の店数は在庫がある店だけ**（`lib/activeShops.ts`）。スクレイパー4店は12時間止まると在庫を隠す
-- **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**（保証は各店の公式で確認）
+- **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**
 - **スペック・保証期限・発売年月・Apple 修理料金・Pencil 対応は公式で確かめた値だけ**（`lib/*Specs.ts`・`*Catalog.ts`・`appleRepairPrices.ts`・`ipadPencil.ts`）
 - **新品価格は公式で確かめた値だけ**（`lib/applePrices.ts`・`lib/officialPrices.ts`・毎月1日に見直し）
 - **楽天の店**: ゲオ・じゃんぱら・ソフマップ・ニューズド・キタムラ・イオシス・MTM
   - 同じ会社の別の売り場は公式のカードにまとめる（イオシス⇔楽天・エムモバ⇔エムコム）
 - **Amazon 整備済み品**: 10/11〜停止中
-- **Yahoo! 7店**: もしも経由（VC 審査後に VC）
+- **Yahoo! 7店**: もしもはメディア否認でリンク無効（10/26）→ VC 本体（2025875）へ
 - **収益の枠**: 回線（`SimTile`：機種・検索・予算別・店選び・比較。色のボタン＋月額・楽天は楽天アフィ・横動画の説明欄にも）・買取・iPhone の修理（`lib/buyback.ts`）
 - **値動きの速報**: `scripts/price-alerts.ts`（X の型④）
-- **広告のショート**: `rakutenmobile`（楽天アフィ・PR を声・左上・説明欄1行目に。楽天モバイルのリンクは横動画の説明欄だけ）
+- **広告のショート** `rakutenmobile`: PR は声・左上・説明欄。楽天モバイルのリンクは横動画だけ
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch は storage＝mm）
 
