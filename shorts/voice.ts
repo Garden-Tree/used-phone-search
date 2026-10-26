@@ -66,7 +66,7 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
 }
 
 /**
- * rakutenmobile の既定（広告の回・shorts-ideas.md の案2。口調は つむぎ の「〜よ・〜ね」）: hook 最初に PR を言う（楽天アフィの決まり）/
+ * rakutenmobile の既定（広告の回・shorts-ideas.md の案2。口調は つむぎ の「〜よ・〜ね」）: hook 問いかけ（PR は画面の左上の札で出し、声では読まない。楽天アフィの指針は動画内の表示）/
  * ranking 段ごとに1文（「3GBまでなら、月1,078円。」。文頭の段の名前で行を出す・render.ts の rowOf）と「段は使った量で決まる」/
  * reveal 端末の相場と各段の2年の合計・上と下の段の差 / comment ひと言の本文だけ / outro 料金は公式で・相場はプロフィールから・問い。
  * 言わないこと: ポイント・キャンペーン・特典・「最安」「実質0円」「必ず安い」「無料」「お得」・ほかの会社の料金・すぐの解約や乗り換え
@@ -75,7 +75,8 @@ function rakutenMobileNarration(s: RakutenMobileScript): Partial<Record<Narratio
   const rows = s.scenes.tiers.rows;
   const d = s.scenes.device;
   return {
-    hook: "この動画は、楽天モバイルの紹介、PRを含みます。",
+    // PR は画面（左上の札）・タイトル・説明欄で示し、声では読まない（ユーザー 10/26）
+    hook: `楽天モバイルと中古の${d.model}、2年でいくらかかる？`,
     ranking: `楽天モバイルの料金は、使った量で${rows.length}段階。${rows.map((r, i) => `${r.label}なら、${i ? "" : "月"}${yen(r.monthly)}。`).join("")}段は先に選ぶんじゃなくて、その月に使った量で決まるよ。`,
     reveal: `中古の${d.model}、相場${yen(d.median)}と合わせると、2年で${rows.map((r) => yen(r.total)).join("、")}。いちばん上と下の段で、2年で${yen(s.scenes.diff)}の差。`,
     comment: commentSentence(s.scenes.comment.lines),

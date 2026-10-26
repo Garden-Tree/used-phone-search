@@ -32,7 +32,8 @@ const HEAD_TITLE = (s: Script) =>
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
   s.theme === "rank" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
-    : s.theme === "rakutenmobile" ? `${s.date.replace(/-/g, "/")}・料金は楽天モバイル公式（税込・割引なし）・中古は${s.scenes.device.storage}の中央値`
+    : s.theme === "rakutenmobile" ? `${s.date.replace(/-/g, "/")}・料金は楽天モバイル公式（税込・割引なし）
+中古は${s.scenes.device.storage}の中央値`
     : s.theme === "unused" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記（S＝未使用品）・同じ容量の中央値`
     : s.theme === "minie" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値`
     : s.theme === "battery" ? `${s.date.replace(/-/g, "/")}・電池の%を数字で出す店・同じ容量の中央値`
@@ -220,8 +221,9 @@ function Frame({ s, children, header = true, footer = true, body = BODY }: { s: 
       {header && <Band s={s} L={L} />}
       <div style={{ position: "absolute", left: MARGIN, top: body.top, width: CW, height: body.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>{children}</div>
       {footer && (
-        <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", justifyContent: "center", fontSize: FIT(FOOT(s), CW, 30, 24), fontWeight: 500, color: L.sub, whiteSpace: "nowrap" }}>
-          {FOOT(s)}
+        // 「\n」で行を分ける（長い注記が 24px でも幅に入らないとき。rakutenmobile）。大きさはいちばん長い行で決める
+        <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.4, fontSize: Math.min(...FOOT(s).split("\n").map((l) => FIT(l, CW, 30, 24))), fontWeight: 500, color: L.sub, whiteSpace: "nowrap" }}>
+          {FOOT(s).split("\n").map((l) => <div key={l} style={{ display: "flex" }}>{l}</div>)}
         </div>
       )}
     </div>
