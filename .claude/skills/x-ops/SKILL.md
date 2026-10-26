@@ -74,6 +74,7 @@ description: used.gadelog.com の X（@used_gadelog）の日々の運用。通�
   1. `navigate` で相手の投稿の URL へ（`location.href` で動かすと JS の変数が消える）。
   2. `location.pathname` が相手の投稿か、`[role=dialog]` が開いていないかを JS で確かめる。
   3. 返信欄を**座標でクリック**（ref のクリックは新規投稿のダイアログを開くことがある）→ `type` で本文。
+     座標はクリックの直前に取り直し、打つ前に `document.activeElement.closest('[data-testid=tweetTextarea_0]')` で返信欄にフォーカスがあるかを確かめる（10/26: スレッドの親が後から読み込まれて欄がずれ、打った文字が X のショートカット（l＝いいね など）になった）。
   4. スクショで本文と返信先を確かめてから「返信」を押す。
   5. 数秒待ち、`https://x.com/used_gadelog/with_replies` で出ているか・文面が正しいかを確かめる。出ていなくてもすぐ打ち直さない（表示が遅れるだけのことがある。返信欄が空になったかで判断）。
 - 画像を添えるのは相手が機種名を出したときだけ（その機種の OG 画像 `https://used.gadelog.com/iphone/<slug>/opengraph-image`、返信の半分まで）。
