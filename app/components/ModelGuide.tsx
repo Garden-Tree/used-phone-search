@@ -65,11 +65,8 @@ export default function ModelGuide(p: {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 今買うのはあり？ */}
-      <section className={`${CARD} p-3.5 flex flex-col gap-1.5`}>
-        <h2 className={H2}><span className="text-brand-600 mr-1">Q.</span>{p.model}は今買うのはあり？</h2>
-        {p.verdict[0] && <p className="text-[15px] font-bold leading-[1.6]"><span className="text-price mr-1">A.</span>{p.verdict[0]}</p>}
-        {p.verdict.length > 1 && <p className="text-[13px] text-ink-sub leading-[1.6]">{p.verdict.slice(1).join("")}</p>}
+      {/* 「今買うのはあり？」の Q/A は 10/27 に「よくある質問」の「今買うべき？」へまとめた（同じ答えが2か所に出ていた）。値段の違いのページへの入口だけ残す */}
+      <section className={`${CARD} p-3.5 flex flex-col gap-1.5 ${p.factorsHref ? "" : "hidden"}`}>
         {p.factorsHref && (
           <Link href={p.factorsHref} className={`text-[13px] font-bold ${LINK}`}>電池・状態ランク・容量・世代で、値段はいくら違う？ ›</Link>
         )}

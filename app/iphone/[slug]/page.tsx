@@ -57,10 +57,9 @@ import IpadGuide from "@/app/components/IpadGuide";
 import { buildFaq, buildSummary, modelDescription } from "@/lib/modelFaq";
 import { BUYBACK_PROGRAMS, REPAIR_PROGRAMS } from "@/lib/buyback";
 import ModelGuide, { type SourceItem } from "@/app/components/ModelGuide";
-import BuyNowFacts from "@/app/components/BuyNowFacts";
 import PriceWeeklyTable from "@/app/components/PriceWeeklyTable";
 import StorageMedianTable from "@/app/components/StorageMedianTable";
-import { buyFacts, buyVerdict, type BuyFact, dailyRows, monthlyRows, seriesFor, trendOf, weeklyRows } from "@/lib/modelGuide";
+import { buyFacts, buyVerdict, type BuyFact, dailyRows, monthlyRows, moveOf, seriesFor, trendOf, weeklyRows } from "@/lib/modelGuide";
 import { sameBudgetModels } from "@/lib/sameBudget";
 import { SIM_PLANS } from "@/lib/simPlans";
 import SimTile from "@/app/components/SimTile";
@@ -354,6 +353,17 @@ export default async function ModelPage({ params }: Props) {
     : osName && supported !== undefined ? [{ label: osName, value: supported ? "○" : "×", tone: supported ? "down" : "up" }]
     : [];
   const facts = hasStock ? buyFacts({ trend, os: osFacts, battery85 }) : [];
+  // 「今買うべき？」は枠をやめて「よくある質問」の1問にする（10/27〜。画面の文字を減らし、検索・AI 向けの問いと答えは FAQ と JSON-LD に残す）
+  if (faqs.length > 0 && (verdict.length > 0 || facts.length > 0)) {
+    const t = trend && trend.from.medianPrice > 0 ? trend : null;
+    const parts = [
+      ...verdict,
+      t ? `直近${t.days}日の相場の変化は${moveOf(t.diff, t.from.medianPrice).text.replace(/^[→↘↗] /, "")}。` : "",
+      ...osFacts.map((f) => `${f.label}: ${f.value}。`),
+      battery85 && battery85.count > 0 ? `電池85%以上は${battery85.count.toLocaleString()}件・${yen(battery85.minPrice)}から。` : "",
+    ].filter(Boolean);
+    faqs.splice(1, 0, { q: `${model}の中古は今買うべき？`, a: parts.join("") });
+  }
   // 週ごとの相場の表（10/25〜。グラフの下。相場の容量の記録、なければ全容量）
   const weekly = weeklyRows(medianSeries);
   const storageKind = watch ? "サイズ" : mac ? "SSD" : "容量";
@@ -619,14 +629,9 @@ export default async function ModelPage({ params }: Props) {
           ) : (
             <>
               {newRows.length > 0 && newSource && <NewVsUsedSection model={model} rows={newRows} source={newSource} checkedJa={newCheckedJa} />}
-              {/* 今買うべき？（データで見る）と容量別の相場。文字だけの節（検索・AI が数字を読めるように。10/25〜）。1360px〜は2列に並べる */}
-              {facts.length > 0 && (
-                <div className={storageRows.length >= 2 ? "" : "min-[1360px]:col-span-2"}>
-                  <BuyNowFacts model={model} facts={facts} />
-                </div>
-              )}
+              {/* 容量別の相場（文字だけの節。検索・AI が数字を読めるように。10/25〜）。「今買うべき？」の枠は 10/27 によくある質問へ移した */}
               {storageRows.length >= 2 && (
-                <div className={facts.length > 0 ? "" : "min-[1360px]:col-span-2"}>
+                <div className="min-[1360px]:col-span-2">
                   <StorageMedianTable model={model} rows={storageRows} kind={storageKind}
                     hrefOf={(st) => searchHref(model, { storage: String(st) })} />
                 </div>
