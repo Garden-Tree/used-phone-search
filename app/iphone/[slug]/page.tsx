@@ -62,7 +62,8 @@ import PriceWeeklyTable from "@/app/components/PriceWeeklyTable";
 import StorageMedianTable from "@/app/components/StorageMedianTable";
 import { buyFacts, buyVerdict, dailyRows, monthlyRows, seriesFor, trendOf, trendSentence, weeklyRows, weeklySentence } from "@/lib/modelGuide";
 import { sameBudgetModels } from "@/lib/sameBudget";
-import { SIM_PLANS, SIM_PRICES_CHECKED } from "@/lib/simPlans";
+import { SIM_PLANS } from "@/lib/simPlans";
+import SimTile from "@/app/components/SimTile";
 
 // スクレイパーの後にビルドするので、在庫はその時点のもの
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -521,33 +522,8 @@ export default async function ModelPage({ params }: Props) {
       ))}
     </div>
   ) : null;
-  // 回線のタイル（10/26〜 切り出し）。スマホは要約の下・買取の上に出す（ページの下の方では回線のクリックが3週で2件だった）。
-  // 各社の色のボタン（lib/simPlans.ts の style。ロゴは描かない）。ボタンの中に各社とも「月○円〜」（公平に同じ形で）。ポイント・値引きは書かない（アフィリエイトの決まり）
-  const simTile = showSim ? (
-    <div className="bg-white border border-line rounded-xl p-3 flex flex-col gap-2">
-      <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">回線も見直す {PR_BADGE}</span>
-      <div className="grid grid-cols-2 gap-2">
-        {SIM_PLANS.map((p) => (
-          <a
-            key={p.name}
-            href={p.href}
-            target="_blank"
-            rel="sponsored nofollow noopener"
-            data-shop-click=""
-            data-shop={`${p.name}（回線）`}
-            data-model={model}
-            data-link-type={p.linkType}
-            style={p.style}
-            className="h-14 rounded-lg flex flex-col items-center justify-center gap-0.5 text-center leading-none hover:opacity-90"
-          >
-            <span className="text-[15px] font-bold">{p.name}</span>
-            <span className="text-[11px]">月{p.monthlyFrom.toLocaleString()}円〜</span>
-          </a>
-        ))}
-      </div>
-      <span className="text-[10px] text-ink-mute leading-snug">月額は税込・割引なし（{Number(SIM_PRICES_CHECKED.slice(5, 7))}/{Number(SIM_PRICES_CHECKED.slice(8, 10))} 各社の公式ページ）</span>
-    </div>
-  ) : null;
+  // 回線のタイル（app/components/SimTile.tsx）。スマホは要約の下・買取の上に出す（ページの下の方では回線のクリックが3週で2件だった）。
+  const simTile = showSim ? <SimTile model={model} /> : null;
   // withBuyback=false はスマホ用（買取・回線は上に出したので、ここでは修理だけ）
   const prTiles = (extra: string, withBuyback = true) =>
     (showSim && withBuyback) || (showBuyback && withBuyback) || showRepair ? (

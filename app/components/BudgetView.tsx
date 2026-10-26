@@ -4,6 +4,7 @@ import DeviceCard, { DeviceList } from "@/app/components/DeviceCard";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
+import SimTile from "@/app/components/SimTile";
 import { modelPagePath } from "@/lib/catalog";
 import { BUDGET_NAMES, budgetLabel, SUMAHO_BUDGETS, budgetPath, budgetsOf, sumahoBudgetPath, type BudgetDevice } from "@/lib/budgets";
 import { cheapestUnder, getBudgetModels } from "@/lib/budgetStats";
@@ -215,6 +216,9 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
             </DeviceList>
           </section>
         )}
+
+        {/* 回線のタイル（PR）。スマホの予算ページだけ（iPad には出さない） */}
+        {device !== "ipad" && (supported.length > 0 || picks.length > 0) && <SimTile className="mb-10 md:max-w-md" />}
 
         {legacy.length > 0 && (
           <section className="mb-10">

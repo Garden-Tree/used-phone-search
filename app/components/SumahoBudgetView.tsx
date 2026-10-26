@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
+import SimTile from "@/app/components/SimTile";
 import { modelPagePath } from "@/lib/catalog";
 import { BUDGET_NAMES, SUMAHO_BUDGETS, budgetLabel, budgetPath, budgetsOf, sumahoBudgetPath, type BudgetDevice } from "@/lib/budgets";
 import { SUMAHO_MIN_MODELS, getSumahoBudgetModels, type SumahoRow } from "@/lib/budgetStats";
@@ -102,6 +103,9 @@ export async function SumahoBudgetView({ max }: { max: number }) {
             <ModelTable rows={main} />
           </section>
         )}
+
+        {/* 回線のタイル（PR） */}
+        {(main.length > 0 || sub.length > 0) && <SimTile className="mb-10 md:max-w-md" />}
 
         {sub.length > 0 && (
           <section className="mb-10">

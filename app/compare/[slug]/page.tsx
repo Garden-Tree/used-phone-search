@@ -5,6 +5,7 @@ import DeviceCard, { DeviceList } from "@/app/components/DeviceCard";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
+import SimTile from "@/app/components/SimTile";
 import { badgesOf, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath, compareSlug, comparesFor, slugToPair } from "@/lib/compare";
 import { getModelStats, type ModelStats, type PriceRow } from "@/lib/modelStats";
@@ -306,6 +307,9 @@ export default async function ComparePage({ params }: Props) {
   const updated = [sa.lastUpdated, sb.lastUpdated].filter((d): d is Date => d !== null).sort((x, y) => y.getTime() - x.getTime())[0] ?? null;
   const updatedDate = updated?.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
 
+  // 回線のタイル（PR）は2機種ともスマホのときだけ（iPad・MacBook・Apple Watch の比較には出さない）
+  const bothPhones = [a, b].every((m) => !/^\s*(ipad|macbook|apple\s*watch)/i.test(m));
+
   const models = [
     { name: a, stats: sa },
     { name: b, stats: sb },
@@ -361,6 +365,8 @@ export default async function ComparePage({ params }: Props) {
             </div>
           ))}
         </section>
+
+        {bothPhones && <SimTile className="mb-6 md:max-w-md" />}
 
         <CompareTable title="容量別の最安値" rows={storageRows} labelOf={storageLabel} a={a} b={b} />
         <CompareTable title="状態ランク別の最安値" rows={rankRows} labelOf={(k) => `ランク ${k}`} a={a} b={b} />
