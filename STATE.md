@@ -51,7 +51,7 @@
 
 ## 進行中・外部条件待ち
 
-- **A8 審査中**: バックマーケット・LINXAS・保険（楽天モバイル 10/26 提携）
+- **A8 審査中**: バックマーケット・LINXAS・保険・回線（J:COM・X-mobile・UQ・LIBMO・Y!mobile 10/26 申請）
 - **TikTok**: 10/26〜（個人）。`render --tiktok`（BGM なし・締めは URL）を手で・PR はまだ
 - **Vercel の後片付け（ユーザー）**: Vercel を止める → Neon を Free に
 
