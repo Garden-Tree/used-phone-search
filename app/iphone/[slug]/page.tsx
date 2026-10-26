@@ -918,8 +918,15 @@ export default async function ModelPage({ params }: Props) {
                 </div>
               )}
 
-              {/* スマホ: 修理のタイル（買取・回線は要約の下）。PC は右の固定サマリーの下に出す */}
+              {/* スマホ: 修理のタイル（買取・回線は要約の下） */}
               {prTiles("md:hidden", false)}
+              {/* PC: 買取と「直す？買い替える？」は本文に置く（右の固定サマリーは回線まで。下が画面からはみ出して見えなかった・ユーザー 10/27） */}
+              {(showBuyback || showRepair) && (
+                <div className="hidden md:grid md:order-6 min-[1360px]:col-span-2 grid-cols-2 gap-3 items-start">
+                  {showRepair && <RepairOrReplace model={model} medianPrice={stats.medianPrice} medianStorage={stats.medianStorage} next={nextGen} />}
+                  {buybackTile}
+                </div>
+              )}
             </>
           )}
 
@@ -993,7 +1000,7 @@ export default async function ModelPage({ params }: Props) {
               {statBlock(true)}
             </div>
           )}
-          {prTiles("")}
+          {simTile}
         </aside>
       </main>
 
