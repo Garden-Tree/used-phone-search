@@ -24,7 +24,7 @@ const IPAD_DORE: RelatedLong = { id: VIDEOS.ipadDore.id, title: VIDEOS.ipadDore.
 const BIG_SCREEN: RelatedLong = { id: "q9g7h5KLyfk", title: "大きい画面の中古iPhone、どれを買う？Plus・Pro Max・Airを7千件の相場で比較", folder: "2026-10-28-big-screen" };
 // 横動画11本目（広告の回・楽天モバイル）。まだ公開前なので ID は空。公開したら ID を入れ、types.ts の RELATED_LONG_THEMES に rakutenmobile を足す
 // （それまでは RELATED_LONG_THEMES にないので、締めは関連動画の声・札なしのいつもの形）
-const RAKUTEN_MOBILE: RelatedLong = { id: "", title: "【PR】中古iPhone＋楽天モバイル、2年でいくら？", folder: "2026-10-31-rakuten-mobile" };
+const RAKUTEN_MOBILE: RelatedLong = { id: "Ua3ZRui2G4w", title: "【PR】中古iPhone＋楽天モバイル、2年でいくら？", folder: "2026-10-31-rakuten-mobile" };
 
 export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   provs: PRO_OR_STANDARD, promax: PRO_OR_STANDARD, probudget: PRO_OR_STANDARD, plusvs: PRO_OR_STANDARD, minie: PRO_OR_STANDARD, plusmax: PRO_OR_STANDARD,
