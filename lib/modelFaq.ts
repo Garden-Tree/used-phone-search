@@ -148,7 +148,8 @@ export function buildSummary(p: {
   const nv = p.newVsUsed ?? [];
   const main = nv.find((r) => r.storage === p.medianStorage) ?? nv[0];
   const minPart = `最安${yen(p.minPrice)}${p.minStorage ? `（${p.minStorage}）` : ""}`;
-  const med = p.medianPrice !== null ? `、相場（在庫がいちばん多い${p.medianStorage ? storageLabel(p.medianStorage, model) : "容量"}の中央値）は${yen(p.medianPrice)}` : "";
+  // 相場の定義は書かない（10/27〜 文字を減らす。定義は「集計の方法」のページ）
+  const med = p.medianPrice !== null ? `、相場${yen(p.medianPrice)}${p.medianStorage ? `（${storageLabel(p.medianStorage, model)}）` : ""}` : "";
   const shops = `。大手中古ショップ${p.shopCount}店の${p.count.toLocaleString()}件を集計`;
   const tail = main
     ? (main.diff > 0

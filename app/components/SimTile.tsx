@@ -29,8 +29,10 @@ export default function SimTile({ model, className = "" }: { model?: string; cla
           </a>
         ))}
       </div>
-      <Link href="/sim" className="self-start text-[12px] text-brand-600 underline underline-offset-2 hover:text-brand-800">2年でいくら？</Link>
-      <span className="text-[10px] text-ink-mute leading-snug">税込・{Number(SIM_PRICES_CHECKED.slice(5, 7))}/{Number(SIM_PRICES_CHECKED.slice(8, 10))} 公式</span>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[10px] text-ink-mute leading-snug">税込・{Number(SIM_PRICES_CHECKED.slice(5, 7))}/{Number(SIM_PRICES_CHECKED.slice(8, 10))} 公式</span>
+        <Link href="/sim" className="text-[12px] text-brand-600 underline underline-offset-2 hover:text-brand-800">2年でいくら？</Link>
+      </div>
     </div>
   );
 }

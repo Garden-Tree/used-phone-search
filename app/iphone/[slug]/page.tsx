@@ -576,10 +576,16 @@ export default async function ModelPage({ params }: Props) {
 
             <h1 className="text-[22px] md:text-[28px] leading-[1.3] font-bold">{model} 中古の相場・最安値</h1>
 
-            {/* 冒頭の要約文（summary）は JSON-LD だけに入れる。最安値・相場・件数は要約カードに1回だけ（10/27〜 画面の文字を減らす） */}
+            {/* 冒頭の要約文: AI 検索と検索エンジンが引用しやすいよう、h1 の直後の最初の段落に1文だけ置く（日付・最安・相場・店数・件数。ideas/2026-10-19・10-23）。
+                ほかの場所では同じ数字を文で繰り返さない（10/27〜 画面の文字を減らす） */}
+            {summary && (
+              <p className="text-[13px] md:text-sm text-ink-sub leading-relaxed">
+                {summary}
+                <Link href="/about#data" className={`${LINK} ml-1 whitespace-nowrap`}>集計の方法</Link>
+              </p>
+            )}
             <p className="text-[11px] md:text-xs text-ink-mute leading-relaxed">
               {updatedText && stats.lastUpdated && <>更新 <time dateTime={stats.lastUpdated.toISOString()}>{updatedText}</time> ・ </>}
-              {hasStock && <span className="md:hidden">{stats.shopCount}店・{stats.count.toLocaleString()}件 ・ </span>}
               <span className="inline-block mr-1 px-1 py-px rounded border border-line font-bold">PR</span>
               広告を含みます
             </p>
