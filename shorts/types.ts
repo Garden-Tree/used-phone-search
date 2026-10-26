@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・newused・provs・promax・plusvs・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -106,9 +106,9 @@ export type ProVsRow = {
 /** 1位の無印を1つ上の容量にしたときの相場の差（同じ中央値の決め方。在庫が足りなければ台本に入れない） */
 export type ProVsUpgrade = { model: string; from: string; to: string; fromMedian: number; toMedian: number; diff: number };
 
-/** テーマ provs「Proと無印、同じ容量でいくら違う？」・promax「Pro MaxとPro、同じ容量でいくら違う？」（base＝Pro・pro＝Pro Max。shorts/themes/promax.ts）・plusvs「Plusと無印、同じ容量でいくら違う？」（base＝無印・pro＝Plus。shorts/themes/plusvs.ts） */
+/** テーマ provs「Proと無印、同じ容量でいくら違う？」・promax「Pro MaxとPro、同じ容量でいくら違う？」（base＝Pro・pro＝Pro Max。shorts/themes/promax.ts）・plusvs「Plusと無印、同じ容量でいくら違う？」（base＝無印・pro＝Plus。shorts/themes/plusvs.ts）・plusmax「大画面はPlusとPro Max、同じ容量でいくら違う？」（base＝Plus・pro＝Pro Max。shorts/themes/plusmax.ts） */
 export type ProVsScript = Common & {
-  theme: "provs" | "promax" | "plusvs";
+  theme: "provs" | "promax" | "plusvs" | "plusmax";
   scenes: {
     /** 場面 ranking（3位・2位・伏せた1位）と reveal（1位）。差額の大きい順（items[0] が1位） */
     ranking: { items: ProVsRow[] };
@@ -282,16 +282,35 @@ export type UnusedScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript;
+/**
+ * oldpro の1行: 1世代前の Pro（older）と次の世代の無印（newer）を、同じ容量の中古の相場（中央値）で比べる（shorts/themes/oldpro.ts）。
+ * diff = 無印の相場 − Pro の相場（向きつき。正なら Pro の方が安い）、pct = |diff| / 高い方の相場（%・小数1桁）
+ */
+export type OldProRow = {
+  older: string; newer: string; storage: string; storageGb: number;
+  olderMedian: number; newerMedian: number; olderCount: number; newerCount: number; diff: number; pct: number;
+};
+
+/** テーマ oldpro「1世代前のProと最新の無印、どっちが安い？」（差の大きさの大きい順） */
+export type OldProScript = Common & {
+  theme: "oldpro";
+  scenes: {
+    ranking: { items: OldProRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | OldProScript;
 
 /**
  * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。
  * YouTube 公式ブログ 2026/7「最後の5秒で声と画面の両方で誘導」）。いまの横動画は iPhone なので、Pixel・iPad・折りたたみは外す
  */
-export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "newused", "provs", "promax", "plusvs", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew"]);
+export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew"]);
 export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";
 
 /** budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget（予算の4行・注目の1機種の場面を共有） */
 export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget" || s.theme === "macbudget" || s.theme === "probudget" || s.theme === "foldbudget" || s.theme === "galaxybudget";
-/** provs・promax・plusvs（2機種の差のランキング・場面を共有） */
-export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs";
+/** provs・promax・plusvs・plusmax（2機種の差のランキング・場面を共有） */
+export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax";

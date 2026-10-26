@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { RELATED_LONG_THEMES, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type Script, type VoiceConfig } from "./types";
+import { RELATED_LONG_THEMES, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -53,15 +53,15 @@ export function defaultNarration(s: Script): Partial<Record<NarrationKey, string
   return n;
 }
 
-// provs・promax・plusvs は同じ台本の型（ProVsScript）
-const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs";
+// provs・promax・plusvs・plusmax は同じ台本の型（ProVsScript）
+const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax";
 
 function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
-  return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : isProVs(s) ? (s.theme === "promax" ? proMaxNarration(s) : s.theme === "plusvs" ? plusVsNarration(s) : proVsNarration(s))
+  return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : isProVs(s) ? (s.theme === "promax" ? proMaxNarration(s) : s.theme === "plusvs" ? plusVsNarration(s) : s.theme === "plusmax" ? plusMaxNarration(s) : proVsNarration(s))
     : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s)
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
-    : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : dropsNarration(s);
+    : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s) : dropsNarration(s);
 }
 
 /**
@@ -250,6 +250,39 @@ function plusVsNarration(s: ProVsScript): Partial<Record<NarrationKey, string>> 
     reveal: `1位は${top.base}と${shortName(top.pro)}。Plusにすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%高くなります。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、大きい画面のPlus派？無印派？",
+  };
+}
+
+/**
+ * plusmax の既定（plusvs と同じ形。base＝Plus・pro＝Pro Max）: ranking「3位は<Plus>と<番号 Pro Max>、<容量>。差は<額>です。」/ reveal「Pro Maxにすると、約○.○万円、およそ○%高くなります。」
+ */
+function plusMaxNarration(s: ProVsScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  return {
+    hook: "PlusとPro Max、同じ容量だと、いくら違う？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].base}と${shortName(items[i].pro)}、${items[i].storage}。差は${yen(items[i].diff)}です。`).join(""),
+    reveal: `1位は${top.base}と${shortName(top.pro)}。Pro Maxにすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%高くなります。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、Plus派？Pro Max派？",
+  };
+}
+
+/** oldpro の安い方（diff ＝ 無印 − Pro が正なら Pro が安い） */
+const oldProCheaper = (r: OldProRow) => (r.diff > 0 ? r.older : r.newer);
+
+/**
+ * oldpro の既定（ずんだもん・口調は「です・ます」）: ranking「3位は<Pro>と<番号 無印>、<容量>。<安い方>が<額>安いです。」/ reveal「<安い方>が、約○.○万円、およそ○%安くなります。」
+ */
+function oldProNarration(s: OldProScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  return {
+    hook: "1世代前のProと、最新の無印、どっちが安い？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].older}と${shortName(items[i].newer)}、${items[i].storage}。${shortName(oldProCheaper(items[i]))}が${yen(Math.abs(items[i].diff))}安いです。`).join(""),
+    reveal: `1位は${top.older}と${shortName(top.newer)}。${shortName(oldProCheaper(top))}が、約${(Math.round(Math.abs(top.diff) / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、1世代前のPro？最新の無印？",
   };
 }
 

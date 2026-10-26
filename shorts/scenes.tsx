@@ -7,7 +7,7 @@ import type { ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
-import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type Script } from "./types";
+import { RELATED_LONG_LINE, RELATED_LONG_THEMES, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -23,7 +23,8 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? ["電池90%台だと", "いくら高い？中古iPhone"]
     : s.theme === "gen" ? ["iPhone", "1世代前でいくら安い？"] : s.theme === "storage" ? ["容量を1つ上げると", "いくら高い？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
     : s.theme === "ios27line" ? ["iOS 27対応で", "いちばん安い中古iPhone"] : s.theme === "batteryswap" ? ["電池交換を足すと", "1つ上の世代と同じ値段？"] : s.theme === "overnew" ? ["中古なのに", "新品より高い？中古iPhone"]
-    : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"]
+    : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"] : s.theme === "plusmax" ? ["大画面はPlusとPro Max", "同じ容量でいくら違う？"]
+    : s.theme === "oldpro" ? ["1世代前のProと最新の無印", "どっちが安い？中古iPhone"]
     : s.theme === "minie" ? ["無印より安い“弟分”", "いくら安い？中古iPhone"] : s.theme === "unused" ? ["未使用品（ランクS）は", "中古よりいくら高い？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : [`${periodOf(s as DropsScript).name}の中古iPhone`, "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
@@ -41,7 +42,7 @@ const FOOT = (s: Script) =>
     : s.theme === "newused" || s.theme === "overnew" ? `${s.date.replace(/-/g, "/")}・新品はApple公式・中古は同じ容量の中央値`
     : s.theme === "ios27line" ? `${s.date.replace(/-/g, "/")}・iOS 27対応はApple公式・在庫がいちばん多い容量の中央値`
     : s.theme === "batteryswap" ? `${s.date.replace(/-/g, "/")}・電池交換はApple公式・中古は同じ容量の中央値`
-    : s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "fold" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値` : `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`;
+    : s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "fold" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値` : `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`;
 
 /**
  * 色はサイトと同じ（lib/brandColors.ts = app/globals.css の @theme）。白いカードの上は SITE、紺の地の上は ON_DARK
@@ -133,7 +134,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // provs・fold も newused と同じ（問い → 3位・2位・伏せた1位 → 1位の2本の棒 → ひと言 → 締め）
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
-  if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
+  if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
     || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
@@ -333,7 +334,7 @@ function SplitHook({ s, t, lines, left, right, teaser, label = "最大" }: { s: 
       <div style={{ display: "flex", position: "relative", justifyContent: "space-between", width: CW, height: TH, marginTop: 40, transform: `scale(${pulseOf(t)})` }}>
         {tile(left)}
         {tile(right)}
-        <div style={{ position: "absolute", left: (CW - VS) / 2, top: (TH - VS) / 2, width: VS, height: VS, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: VS / 2, background: L.bg, boxShadow: `0 0 0 6px ${L.fg}`, fontSize: 60, fontWeight: 900, color: L.fg }}>vs</div>
+        <div style={{ position: "absolute", left: (CW - VS) / 2, top: (TH - VS) / 2, width: VS, height: VS, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: VS / 2, background: L.bg, boxShadow: `0 0 0 6px ${L.fg}`, fontSize: 56, fontWeight: 900, lineHeight: 1, color: L.fg }}>VS</div>
       </div>
       <Teaser s={s} label={label} value={teaser} />
     </Frame>
@@ -404,7 +405,7 @@ function BatteryHook({ s, t }: { s: BatteryScript; t: number }) {
       <Question lines={["電池が90%台だと、", "中古iPhoneは", "いくら高い？"]} max={74} />
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", width: CW, marginTop: 40, transform: `scale(${pulseOf(t)})` }}>
         {cell("90%台", 0.95, SITE.safe)}
-        <div style={{ ...row, width: 150, fontSize: 60, fontWeight: 900, color: L.fg, paddingBottom: 110 }}>vs</div>
+        <div style={{ ...row, width: 150, fontSize: 56, fontWeight: 900, lineHeight: 1, color: L.fg, paddingBottom: 110 }}>VS</div>
         {cell("80%台", 0.85, C.budget)}
       </div>
       <Teaser s={s} label="最大" value={`+${n(r.diff)}円`} mt={36} />
@@ -886,9 +887,10 @@ function ProVsReveal({ s, t }: { s: ProVsScript; t: number }) {
   const diffText = `+${n(r.diff)}円`;
   const sub = `${r.storage}・中古の相場`;
   // promax は base＝Pro・pro＝Pro Max、plusvs は base＝無印・pro＝Plus（棒の札と容量の注記の呼び方だけ変える）
-  const [baseLabel, proLabel] = s.theme === "promax" ? ["Pro", "Pro Max"] : s.theme === "plusvs" ? ["無印", "Plus"] : ["無印", "Pro"];
+  // plusmax は base＝Plus・pro＝Pro Max
+  const [baseLabel, proLabel] = s.theme === "promax" ? ["Pro", "Pro Max"] : s.theme === "plusvs" ? ["無印", "Plus"] : s.theme === "plusmax" ? ["Plus", "Pro Max"] : ["無印", "Pro"];
   const note = u ? `${baseLabel}を${u.to}にするなら +${n(u.diff)}円` : "";
-  const LABEL = s.theme === "promax" ? 210 : 150;
+  const LABEL = s.theme === "promax" || s.theme === "plusmax" ? 210 : 150;
   const BAR = CW - 60 - LABEL - 20;
   const bars = [
     { label: baseLabel, price: r.baseMedian, color: C.budget, w: Math.round((BAR * r.baseMedian) / r.proMedian) },
@@ -1408,6 +1410,70 @@ function UnusedReveal({ s, t }: { s: UnusedScript; t: number }) {
   );
 }
 
+/** oldpro の安い方の短い名前（"iPhone 15 Pro" → "15 Pro"。diff ＝ 無印 − Pro が正なら Pro が安い） */
+const oldProCheaper = (r: OldProRow) => foldShort(r.diff > 0 ? r.older : r.newer);
+
+/** oldpro のランキング: 機種名は「1世代前の Pro／次の無印」、下段は 容量・差（額・大）・どちらが安いか（batteryswap と同じ形） */
+function OldProRanking({ s, t, o }: { s: OldProScript; t: number; o: Scene["o"] }) {
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
+    model: pairName(it.older, it.newer),
+    cells: [
+      { text: it.storage, w: 150, max: 44, color: C.muted },
+      { text: `差 ${n(Math.abs(it.diff))}円`, w: 300, max: 70, color: lookOf(s).accent },
+      { text: `${oldProCheaper(it)}が安い`, w: 230, max: 44, color: C.muted },
+    ],
+  }));
+  return <RankRows s={s} t={t} o={o} items={items} />;
+}
+
+/**
+ * oldpro の1位: 「1世代前の Pro／次の無印」・容量、2機種の相場の2本の棒（高い方を幅いっぱい）、差（大）とどちらが安いか・率（高い方に対して）。
+ * 棒は 0.8 秒から伸び、差は数え上げる（provs の1位と同じ形）
+ */
+function OldProReveal({ s, t }: { s: OldProScript; t: number }) {
+  const r = s.scenes.ranking.items[0];
+  const L = lookOf(s);
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const grow = prog(t, 0.8, 0.7);
+  const name = pairName(r.older, r.newer);
+  const sub = `${r.storage}・中古の相場`;
+  const LABEL = 190;
+  const BAR = CW - 60 - LABEL - 20;
+  const max = Math.max(r.olderMedian, r.newerMedian);
+  const bars = [
+    { label: foldShort(r.older), price: r.olderMedian, color: L.chip, w: Math.round((BAR * r.olderMedian) / max) },
+    { label: foldShort(r.newer), price: r.newerMedian, color: C.budget, w: Math.round((BAR * r.newerMedian) / max) },
+  ];
+  const labelSize = Math.min(...bars.map((b) => FIT(b.label, LABEL, 48)));
+  const gapText = `差 ${n(Math.abs(r.diff))}円`;
+  const side = `${oldProCheaper(r)}が安い`;
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: 60, fontWeight: 900, marginBottom: 14, opacity: prog(t, 0, 0.25) }}>1位は…</div>
+      <div style={{ ...card(L), width: CW, padding: "26px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(name, CW - 60, 100), fontWeight: 900 }}>{name}</div>
+        <div style={{ ...row, fontSize: FIT(sub, CW - 60, 44), fontWeight: 900, color: C.muted, marginTop: 4 }}>{sub}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 18 }}>
+          {bars.map((b, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 18 : 0 }}>
+              <div style={{ ...row, justifyContent: "flex-end", width: LABEL, fontSize: labelSize, fontWeight: 900, color: b.color }}>{b.label}</div>
+              <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
+                <div style={{ ...row, justifyContent: "flex-start", fontSize: FIT(`${n(b.price)}円`, BAR, 56), fontWeight: 900, color: b.color }}>{`${n(b.price)}円`}</div>
+                <div style={{ display: "flex", width: Math.max(8, Math.round(b.w * grow)), height: 34, background: b.color, borderRadius: 12, marginTop: 4 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 14 }}>
+          <div style={{ ...row, fontSize: FIT(gapText, 600, 120), fontWeight: 900, color: L.accent }}>{`差 ${n(Math.round(Math.abs(r.diff) * prog(t, 1.0, 0.9)))}円`}</div>
+          <div style={{ ...row, fontSize: 64, fontWeight: 900, color: L.accent, marginLeft: 16 }}>{`−${rate(r.pct)}%`}</div>
+        </div>
+        <div style={{ ...row, fontSize: FIT(side, CW - 60, 56), fontWeight: 900, color: C.navy, marginTop: 8, opacity: prog(t, 1.4, 0.3) }}>{side}</div>
+      </div>
+    </Frame>
+  );
+}
+
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
   if (s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew") {
     if (sc.id === "comment") return <Comment s={s} t={t} o={sc.o} />;
@@ -1445,6 +1511,20 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       case "comment": return <Comment s={s} t={t} o={sc.o} />;
       case "outro": return <Outro s={s} t={t} o={sc.o} />;
       default: throw new Error(`minie に場面 ${sc.id} はありません`);
+    }
+  }
+  if (s.theme === "oldpro") {
+    switch (sc.id) {
+      case "hook": {
+        const r = s.scenes.ranking.items[0];
+        return <SplitHook s={s} t={t} lines={["1世代前のProと、", "最新の無印、", "どっちが安い？"]} teaser={`${n(Math.abs(r.diff))}円`} label="差 最大"
+          left={{ label: "前のPro", sub: "1世代前", fill: lookOf(s).chip }} right={{ label: "無印", sub: "次の世代", fill: C.budget }} />;
+      }
+      case "ranking": return <OldProRanking s={s} t={t} o={sc.o} />;
+      case "reveal": return <OldProReveal s={s} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`oldpro に場面 ${sc.id} はありません`);
     }
   }
   if (s.theme === "unused") {
@@ -1524,11 +1604,12 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
   if (isProVs(s)) {
     const pm = s.theme === "promax";
     const pl = s.theme === "plusvs";
-    const [baseLabel, proLabel] = pm ? ["Pro", "Pro Max"] : pl ? ["無印", "Plus"] : ["無印", "Pro"];
+    const px = s.theme === "plusmax";
+    const [baseLabel, proLabel] = pm ? ["Pro", "Pro Max"] : pl ? ["無印", "Plus"] : px ? ["Plus", "Pro Max"] : ["無印", "Pro"];
     switch (sc.id) {
       case "hook": {
         const r = s.scenes.ranking.items[0];
-        return <SplitHook s={s} t={t} lines={[pm ? "Pro MaxとPro、" : `${proLabel}と無印、`, "同じ容量だと", "いくら違う？"]} teaser={`+${n(r.diff)}円`}
+        return <SplitHook s={s} t={t} lines={[pm ? "Pro MaxとPro、" : px ? "PlusとPro Max、" : `${proLabel}と無印、`, "同じ容量だと", "いくら違う？"]} teaser={`+${n(r.diff)}円`}
           left={{ label: baseLabel, sub: r.storage, fill: C.budget }} right={{ label: proLabel, sub: r.storage, fill: lookOf(s).chip }} />;
       }
       case "ranking": return <ProVsRanking s={s} t={t} o={sc.o} />;

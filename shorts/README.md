@@ -24,6 +24,8 @@ npx tsx shorts/make-short.tsx promax plan           # Pro MaxとProの差のテ�
 npx tsx shorts/make-short.tsx plusvs plan           # Plusと無印の差のテーマ（shorts/out/<日付>-plusvs/。型 A だけ・10/25〜）
 npx tsx shorts/make-short.tsx minie plan            # 無印と弟分（mini・e）の差のテーマ（型 A だけ・10/26〜）
 npx tsx shorts/make-short.tsx unused plan           # 未使用品（ランクS）とランクAの差のテーマ（型 A だけ・10/26〜）
+npx tsx shorts/make-short.tsx plusmax plan          # PlusとPro Maxの差のテーマ（型 A だけ・10/26〜・つむぎ）
+npx tsx shorts/make-short.tsx oldpro plan           # 1世代前のProと次の無印、どっちが安い？（型 A だけ・10/26〜・ずんだもん）
 npx tsx shorts/make-short.tsx macbudget plan        # 予算ぴったりで買える中古MacBook（shorts/out/<日付>-macbudget/。型 A だけ）
 npx tsx shorts/make-short.tsx probudget plan        # 予算ぴったりで買える中古iPhone Pro（shorts/out/<日付>-probudget/。型 A だけ）
 npx tsx shorts/make-short.tsx foldbudget plan       # 予算ぴったりで買える中古折りたたみスマホ（shorts/out/<日付>-foldbudget/。型 A だけ）
@@ -73,6 +75,15 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
   - `themes/minie.ts`（plusvs を写したもの）。台本の型は MinieScript で、行は FoldRow（newer＝無印・older＝弟分）。行と1位の部品は fold・gen と共有（機種名だけ弟分を先に「iPhone 17e／17」）
   - 組は iPhone 12／12 mini・13／13 mini・16／16e・17／17e。容量は両方に在庫5件以上の最小の容量、差（無印 − 弟分）の大きい順、率は無印に対して。弟分の方が高い（差0以下）組は外して plan のログに「★注意」。3組未満なら止まる
   - ナレーション: ranking「3位は<弟分>と<番号>、<容量>。差は<額>です。」・reveal「1位は<弟分>と<番号>。弟分にすると、約<X.X>万円、およそ<Y>%安くなります。」・outro「…あなたは、安い弟分派？無印派？」（3組がすべて mini なら「小さい・安い弟分派？」）＋関連動画の誘導。説明欄のリンクは1位の弟分の機種ページと /iphone。utm の末尾 `_minie`
+
+- `plusmax`: 大画面はPlusとPro Max、同じ容量でいくら違う？（型 A だけ・約37秒。10/26〜・春日部つむぎ）
+  - `themes/plusmax.ts`（plusvs を写したもの。ProVsScript で base＝Plus・pro＝Pro Max）。組は 14・15・16 の Plus／Pro Max。容量は両方に在庫20件以上の最小の容量、差（Pro Max − Plus）の大きい順、率は Plus に対して。差0以下は外して「★注意」
+  - ナレーション: reveal「1位は<Plus>と<番号 Pro Max>。Pro Maxにすると、約<X.X>万円、およそ<Y>%高くなります。」・outro「…あなたは、Plus派？Pro Max派？」。utm の末尾 `_plusmax`。見た目 ③ VERSUS
+
+- `oldpro`: 1世代前のProと最新の無印、どっちが安い？（型 A だけ・約40秒。10/26〜・ずんだもん・です・ます）
+  - `themes/oldpro.ts`。台本の型は OldProScript（行は OldProRow。older＝1世代前の Pro・newer＝次の世代の無印・diff＝無印 − Pro の向きつき）。組は 13 Pro／14・14 Pro／15・15 Pro／16・16 Pro／17。容量は両方に在庫20件以上の最小の容量。差の大きさの大きい順で、Pro の方が高い組も落とさず「○○が安い」を出す。率は高い方に対して
+  - ひと言は1位の組のチップ・端子（lib/iphoneSpecs.ts）が同じか違うかだけ。ナレーション: ranking「3位は<Pro>と<番号>、<容量>。<安い方>が<額>安いです。」・reveal「…<安い方>が、約<X.X>万円、およそ<Y>%安くなります。」。utm の末尾 `_oldpro`（リンクは1位の安い方）。見た目 ⑤ PRO
+- plusmax・oldpro は**声の実験**（10/26）: 伸びた比べる型を 青山龍星 以外の声（つむぎ・ずんだもん）で出す
 
 - `unused`: 未使用品（ランクS）は、中古（ランクA）よりいくら高い？（型 A だけ・約34秒。10/26〜）
   - `themes/unused.ts`（rank を写したもの）。iPhone 13〜17 の無印と Pro で、在庫がいちばん多い容量のランクS（未使用品）と A の相場（中央値）を比べ、差（S − A）の大きい順。率は A に対して。S・A どちらかの在庫が20件未満の機種は出さない（10/26: 5件だと iPhone 13 のランクS 6件・2店で1位になった）。S の方が安い（差0以下）機種は外して「★注意」。3機種未満なら止まる
@@ -161,7 +172,7 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 
 ## 予算を変える・前の回と同じ中身にしない（10/25〜）
 
-- ランキング型（provs・plusvs・minie・unused・battery・rank・gen・storage・newused・fold・ios27line・batteryswap・overnew）は数日では1位が変わらない（10/25 に作り直すと 10/22〜23 とほぼ同じだった）。plan の1位とタイトルを前の回と比べ、ほぼ同じなら作らない
+- ランキング型（provs・plusvs・plusmax・oldpro・minie・unused・battery・rank・gen・storage・newused・fold・ios27line・batteryswap・overnew）は数日では1位が変わらない（10/25 に作り直すと 10/22〜23 とほぼ同じだった）。plan の1位とタイトルを前の回と比べ、ほぼ同じなら作らない
 - **予算と相場は1万円以内**（10/25 ユーザーの指示）: 各行は帯 (max(前の予算, 予算−1万円), 予算] の機種だけ。帯に機種がなければ plan がエラーになるので予算を変える（`themes/budget.ts` の BUDGET_GAP）
 - 予算別（budget・ipadbudget・pixelbudget・foldbudget）は `--budgets 40000,60000,80000,120000 --pick 40000` で予算の並びと注目を変えられる（`themes/budget.ts` の BudgetOpts）。注目の予算は予算別ページ（`lib/budgets.ts`）がある額にする（説明欄のリンク先）
 - 声の実験は script.json の `voice.speaker` を書き換えて render する
@@ -220,9 +231,9 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
 | --- | --- | --- | --- | --- | --- |
 | ① 値下がり DROPS | 紺 brand900 | 赤 price・左右いっぱい | 角丸28・縁なし | price | drops（1位の下がった額）・galaxybudget（予算の札） |
 | ② 予算別 BUDGET | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | budget・pixelbudget・macbudget（予算の札）・ipadbudget（予算の丸い札・淡い金）・overnew（新品と中古の割合の2本の棒）・minie（「無印 vs mini・e」。右の札は price） |
-| ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・plusvs・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
+| ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・plusvs・plusmax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
 | ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形）・batteryswap（「中古＋電池交換＝1つ上」の札）・unused（「ランクA vs 未使用品」） |
-| ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札） |
+| ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札）・oldpro（「前のPro vs 無印」＋差 最大） |
 
 関連動画につながるテーマ（`types.ts` の RELATED_LONG_THEMES）は、締めの「▼ くわしい解説は 下の関連動画で」の札が出るまで締めの動きを延ばす（`scenes.tsx` の TIMELINE。10/23 まで札が動画に出ていなかった）。
 

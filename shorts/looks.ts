@@ -106,6 +106,10 @@ export const LOOKS: Record<Script["theme"], Look> = {
   // つかみの「無印 vs mini・e」の右の札は price の赤＝白い文字 5.66。BUDGET の chip は左の札と同じ brand600 なので使わない）、unused は rank と同じ ④ CONDITION
   minie: { ...BUDGET, hook: "split" },
   unused: { ...CONDITION, hook: "split" },
+  // plusmax・oldpro（10/26〜・声の実験。強い「2つを比べて差を言う」型を つむぎ・ずんだもん で）: 直前の unused（④ CONDITION）と続かないよう、
+  // plusmax は比べる型の ③ VERSUS、oldpro は ⑤ PRO（墨の地・金の帯。左の「前のPro」の札は chip の inspect700＝白い文字 5.02、右の無印は budget）
+  plusmax: { ...VERSUS, hook: "split" },
+  oldpro: { ...PRO, hook: "split" },
   fold: { ...VERSUS, hook: "fold" },
   rank: { ...CONDITION, hook: "abc" },
   battery: { ...CONDITION, hook: "battery" },
