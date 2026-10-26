@@ -4,19 +4,19 @@
   "source": "script.md の数字そのまま（2026/10/26 の集計・longform/2026-10-31-rakuten-mobile/data-query.ts → data-query.log。ジャンクを除く。相場＝同じ機種の128GBの中央値。回線は楽天モバイル公式 Rakuten最強プラン（税込・割引なし・network.mobile.rakuten.co.jp/fee/saikyo-plan/・10/26 確認）。2年＝相場＋月額×24。iPhone の条件は network.mobile.rakuten.co.jp/guide/iphone/ と /product/byod/（10/26 確認））",
   "thumbnail": {
     "lines": [
-      "中古iPhone＋楽天モバイル",
-      "2年でいくら？"
+      "中古iPhone＋",
+      "楽天モバイル"
     ],
     "badge": [
       {
-        "text": "14＋20GB →"
+        "text": "2年で"
       },
       {
         "text": "11.8万円",
         "red": true
       }
     ],
-    "footer": "PR ｜ 端末の相場＋公式の料金×24か月 ｜ used.gadelog.com"
+    "footer": "PR ｜ iPhone 14＋20GBまで・端末の相場＋公式の料金×24か月"
   },
   "chapters": [
     {
