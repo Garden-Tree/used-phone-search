@@ -209,6 +209,11 @@ function rowOf(script: Script, sentence: string): number | null {
     const i = script.scenes.tiers.rows.findIndex((r) => sentence.startsWith(r.label));
     return i >= 0 ? i : null;
   }
+  if (script.theme === "ipadmini") {
+    // 文頭の旧型の名前（「第5世代は」）→ その行。items[0]（伏せた A17 Pro）は読まない
+    const i = script.scenes.ranking.items.findIndex((r) => sentence.startsWith(`${r.short}は`));
+    return i >= 1 ? i : null;
+  }
   if (isBudget(script)) {
     const m = sentence.match(/^(\d+)万円なら/);
     const i = m ? script.scenes.budgets.rows.findIndex((r) => r.budget === Number(m[1]) * 10000) : -1;

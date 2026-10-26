@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { hasRelatedLong, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type Script, type VoiceConfig } from "./types";
+import { hasRelatedLong, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -80,7 +80,7 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
     : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s)
-    : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : dropsNarration(s);
+    : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : s.theme === "ipadmini" ? ipadMiniNarration(s) : dropsNarration(s);
 }
 
 /**
@@ -370,6 +370,31 @@ function newUsedNarration(s: NewUsedScript): Partial<Record<NarrationKey, string
     reveal: `1位は${top.model}、${top.storage}。中古の相場は、新品より約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、新品と中古、どちらにしますか？",
+  };
+}
+
+/**
+ * ipadmini の既定（10/27・新型 iPad mini の発表の回）: hook 問い / ranking 旧型の2機種を古い順に1文ずつ（文頭の「第5世代は」で行を出す・render.ts の rowOf）。
+ * 新型に同じ容量がなければ「新型の128GBより」と比べた容量を言う / reveal 伏せた A17 Pro の相場と新型との差（約○.○万円・およそ○%）と、公式の仕様の違い3つ /
+ * comment ひと言の本文だけ / outro サイトへの誘導と問い（iPad の横動画はまだ関連動画にしない）
+ */
+function ipadMiniNarration(s: IpadMiniScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const vs = (r: (typeof items)[number]) => (r.newStorageGb === r.storageGb ? "新型より" : `新型の${r.newStorageGb}GBより`);
+  const c = (label: string) => s.scenes.compare.find((x) => x.label === label);
+  const screen = c("画面")?.a20.replace(/\s+/g, "の");
+  const water = c("防水・防塵")?.a20;
+  const g20 = Number(c("重さ（Wi-Fi）")?.a20.replace(/g$/, ""));
+  const g17 = Number(c("重さ（Wi-Fi）")?.a17.replace(/g$/, ""));
+  const lighter = g17 > g20 ? `${g17 - g20}グラム軽く、` : "";
+  return {
+    hook: "新型iPad mini、中古の旧型なら、いくら安い？",
+    ranking: [...items.keys()].slice(1).reverse()
+      .map((i) => `${items[i].short}は、${items[i].storage}で相場${yen(items[i].median)}。${vs(items[i])}${yen(items[i].diff)}安いです。`).join(""),
+    reveal: `いちばん新しい旧型、${top.short}は、相場${yen(top.median)}。${vs(top)}約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。新型は${screen}で、${lighter}${water}の防水防塵です。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、新型と中古の旧型、どちらにしますか？",
   };
 }
 

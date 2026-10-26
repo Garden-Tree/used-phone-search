@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -329,7 +329,31 @@ export type RakutenMobileScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | OldProScript | RakutenMobileScript;
+/**
+ * ipadmini の1行: 中古の旧型 iPad mini の相場（在庫がいちばん多い容量の中央値・サイトと同じ）と、新型 iPad mini (A20 Pro) の Apple 公式の価格（Wi-Fi）の差（shorts/themes/ipadmini.ts）。
+ * newStorageGb: 比べた新型の容量（同じ容量の公式価格があればその容量、なければ 128GB＝最安の始まり）。diff = 新型 − 中古の相場、pct = diff / 新型（%・小数1桁）
+ * short: 機種名の括弧の中（「第5世代」「A17 Pro」。行の声の頭）・year: 発売年（行の札）
+ */
+export type IpadMiniRow = { model: string; short: string; year: string; storage: string; storageGb: number; median: number; count: number; newStorageGb: number; newPrice: number; diff: number; pct: number };
+
+/** テーマ ipadmini「新型iPad mini、中古の旧型ならいくら安い？」（10/27〜・新型の発表に合わせた回。items は発売の新しい順で items[0]＝A17 Pro を最後まで伏せる） */
+export type IpadMiniScript = Common & {
+  theme: "ipadmini";
+  /** 新型の価格・仕様を Apple 公式で確かめた日（lib/ipadMiniA20.ts の IPAD_MINI_A20_CHECKED） */
+  appleChecked: string;
+  scenes: {
+    /** 新型（lib/ipadMiniA20.ts）。price は 128GB（最安の始まり） */
+    newModel: { name: string; release: string; price: number };
+    /** 場面 ranking（旧型3機種・発売の新しい順。items[0] は伏せて reveal へ） */
+    ranking: { items: IpadMiniRow[] };
+    /** 場面 reveal: 新型と items[0]（A17 Pro）の公式の仕様の違い（lib/ipadMiniA20.ts の IPAD_MINI_COMPARE から） */
+    compare: { label: string; a20: string; a17: string }[];
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | OldProScript | RakutenMobileScript | IpadMiniScript;
 
 /**
  * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。

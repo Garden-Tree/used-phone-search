@@ -8,7 +8,7 @@ import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
 import { relatedThumb } from "./relatedLong";
-import { RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type Script } from "./types";
+import { RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -27,11 +27,13 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "ios27line" ? ["iOS 27対応で", "いちばん安い中古iPhone"] : s.theme === "batteryswap" ? ["電池交換を足すと", "1つ上の世代と同じ値段？"] : s.theme === "overnew" ? ["中古なのに", "新品より高い？中古iPhone"]
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"] : s.theme === "plusmax" ? ["大画面はPlusとPro Max", "同じ容量でいくら違う？"]
     : s.theme === "oldpro" ? ["1世代前のProと最新の無印", "どっちが安い？中古iPhone"]
+    : s.theme === "ipadmini" ? ["新型iPad mini", "中古の旧型ならいくら安い？"]
     : s.theme === "rakutenmobile" ? ["楽天モバイルは使った量で3段階", `中古${s.scenes.device.model}と2年でいくら？`]
     : s.theme === "minie" ? ["無印より安い“弟分”", "いくら安い？中古iPhone"] : s.theme === "unused" ? ["未使用品（ランクS）は", "中古よりいくら高い？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : [`${periodOf(s as DropsScript).name}の中古iPhone`, "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
   s.theme === "rank" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
+    : s.theme === "ipadmini" ? ipadMiniFoot(s)
     : s.theme === "rakutenmobile" ? `${s.date.replace(/-/g, "/")}・料金は楽天モバイル公式（税込・割引なし）
 中古は${s.scenes.device.storage}の中央値`
     : s.theme === "unused" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記（S＝未使用品）・同じ容量の中央値`
@@ -146,7 +148,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
   if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
-    || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew") return [
+    || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew" || s.theme === "ipadmini") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -571,7 +573,7 @@ function FoldRanking({ s, t, o, nameOf = foldName }: { s: FoldScript; t: number;
 }
 
 /** 3位・2位・伏せた1位の行（drops・newused・provs・fold で共通）。items[0] が1位 */
-function RankRows({ s, t, o, items }: { s: Script; t: number; o: Scene["o"]; items: { model: string; cells: Cell[] }[] }) {
+function RankRows({ s, t, o, items, badges }: { s: Script; t: number; o: Scene["o"]; items: { model: string; cells: Cell[] }[]; badges?: string[] }) {
   // 1行 260px・3行。機種名は右の列の幅いっぱい、その下に下段の欄
   const RH = 260;
   const RIGHT = 680;
@@ -585,7 +587,7 @@ function RankRows({ s, t, o, items }: { s: Script; t: number; o: Scene["o"]; ite
           const secret = i === 0;
           return (
             <div key={i} style={{ display: "flex", alignItems: "center", width: "100%", height: RH, borderBottom: i < items.length - 1 ? `3px solid ${C.line}` : "none", opacity: p, transform: `translateX(${Math.round((1 - p) * 80)}px)` }}>
-              <div style={{ display: "flex", justifyContent: "center", width: 160, flexShrink: 0, fontSize: 68, fontWeight: 900, color: C.white, background: BADGE[i] ?? C.navy, borderRadius: 22, padding: "14px 0" }}>{`${i + 1}位`}</div>
+              <div style={{ display: "flex", justifyContent: "center", width: 160, flexShrink: 0, fontSize: badges ? FIT(badges[i], 140, 68) : 68, fontWeight: 900, color: C.white, background: BADGE[i] ?? C.navy, borderRadius: 22, padding: "14px 0" }}>{badges?.[i] ?? `${i + 1}位`}</div>
               {secret ? (
                 <div style={{ ...row, width: RIGHT, flexShrink: 0, marginLeft: 20, fontSize: 120, fontWeight: 900 }}>？？？</div>
               ) : (
@@ -931,6 +933,81 @@ function NewUsedReveal({ s, t }: { s: NewUsedScript; t: number }) {
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 14 }}>
           <div style={{ ...row, fontSize: FIT(diffText, 600, 130), fontWeight: 900, color: C.red }}>{`−${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
           <div style={{ ...row, fontSize: 64, fontWeight: 900, color: C.red, marginLeft: 16 }}>{`−${rate(r.pct)}%`}</div>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
+/** ipadmini の下の注記: 出どころと、新型に同じ容量がない旧型の比べ方（「64GBは新型の128GBと比べた差」） */
+function ipadMiniFoot(s: IpadMiniScript): string {
+  const d = s.date.replace(/-/g, "/");
+  const fb = s.scenes.ranking.items.filter((r) => r.newStorageGb !== r.storageGb);
+  const second = fb.length ? `
+${[...new Set(fb.map((r) => r.storage))].join("・")}は新型にないので新型の${fb[0].newStorageGb}GBと比べた差` : "";
+  return `${d}・新型はApple公式（Wi-Fi）・中古は在庫がいちばん多い容量の中央値${second}`;
+}
+
+/** ipadmini のランキング: 札は発売年（「2019年」）、機種名、下段は 容量・相場・新型との差（額・大）。items[0]（A17 Pro）は伏せる */
+function IpadMiniRanking({ s, t, o }: { s: IpadMiniScript; t: number; o: Scene["o"] }) {
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
+    model: it.model,
+    cells: [
+      { text: it.storage, w: 130, max: 44, color: C.muted },
+      { text: `相場${n(it.median)}円`, w: 250, max: 42, color: C.navy },
+      { text: `−${n(it.diff)}円`, w: 300, max: 72, color: C.red },
+    ],
+  }));
+  return <RankRows s={s} t={t} o={o} items={items} badges={s.scenes.ranking.items.slice(0, RANK_SHOWN).map((r) => r.year)} />;
+}
+
+/**
+ * ipadmini の1位（伏せた A17 Pro）: 新型（Apple 公式・同じ容量）と中古の相場の2本の棒（新型を幅いっぱいにした比）、差額（大）と率、
+ * 公式の仕様の違い3つ（画面・重さ・防水。lib/ipadMiniA20.ts の IPAD_MINI_COMPARE）。棒は 0.8 秒から伸び、差額は数え上げ、違いの表は 1.4 秒から出す
+ */
+function IpadMiniReveal({ s, t }: { s: IpadMiniScript; t: number }) {
+  const r = s.scenes.ranking.items[0];
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const grow = prog(t, 0.8, 0.7);
+  const diffText = `−${n(r.diff)}円`;
+  // 「いちばん新しい旧型は…」の見出しは置く高さがない（仕様の表を入れたため）ので、補足の行に入れる
+  const sub = `いちばん新しい旧型・${r.storage}・${r.year}発売`;
+  const LABEL = 230;
+  const BAR = CW - 60 - LABEL - 20;
+  const bars = [
+    { label: `新型 ${r.newStorageGb}GB`, price: r.newPrice, color: C.budget, w: BAR },
+    { label: "中古の相場", price: r.median, color: C.red, w: Math.round((BAR * r.median) / r.newPrice) },
+  ];
+  const COL = [250, 335, 275];
+  const cells = (xs: string[], head: boolean) => xs.map((x, k) => (
+    <div key={k} style={{ ...row, width: COL[k], fontSize: FIT(x, COL[k], head ? 30 : 38), fontWeight: head || k !== 2 ? 900 : 700,
+      color: head ? C.muted : k === 1 ? C.navy : C.muted }}>{x}</div>
+  ));
+  return (
+    <Frame s={s}>
+      <div style={{ ...card(lookOf(s)), width: CW, padding: "14px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 80), fontWeight: 900 }}>{r.model}</div>
+        <div style={{ ...row, fontSize: FIT(sub, CW - 60, 40), fontWeight: 900, color: C.muted, marginTop: 2 }}>{sub}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 10 }}>
+          {bars.map((b, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 10 : 0 }}>
+              <div style={{ ...row, justifyContent: "flex-end", width: LABEL, fontSize: FIT(b.label, LABEL, 40), fontWeight: 900, color: C.muted }}>{b.label}</div>
+              <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
+                <div style={{ ...row, justifyContent: "flex-start", fontSize: FIT(`${n(b.price)}円`, BAR, 44), fontWeight: 900, color: b.color }}>{`${n(b.price)}円`}</div>
+                <div style={{ display: "flex", width: Math.max(8, Math.round(b.w * grow)), height: 24, background: b.color, borderRadius: 12, marginTop: 2 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 6 }}>
+          <div style={{ ...row, fontSize: FIT(diffText, 560, 96), fontWeight: 900, color: C.red }}>{`−${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
+          <div style={{ ...row, fontSize: 60, fontWeight: 900, color: C.red, marginLeft: 16 }}>{`−${rate(r.pct)}%`}</div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 8, paddingTop: 8, borderTop: `3px solid ${C.line}`, opacity: prog(t, 1.4, 0.4) }}>
+          <div style={{ display: "flex" }}>{cells(["Apple公式", "新型", r.short], true)}</div>
+          {s.scenes.compare.map((c, i) => (
+            <div key={i} style={{ display: "flex", marginTop: 2 }}>{cells([c.label.replace(/（.+）$/, ""), c.a20, c.a17], false)}</div>
+          ))}
         </div>
       </div>
     </Frame>
@@ -1791,6 +1868,20 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       case "comment": return <Comment s={s} t={t} o={sc.o} />;
       case "outro": return <Outro s={s} t={t} o={sc.o} />;
       default: throw new Error(`${s.theme} に場面 ${sc.id} はありません`);
+    }
+  }
+  if (s.theme === "ipadmini") {
+    switch (sc.id) {
+      case "hook": {
+        const nm = s.scenes.newModel;
+        return <SplitHook s={s} t={t} lines={["新型iPad mini、", "中古の旧型なら", "いくら安い？"]} teaser={`${n(nm.price)}円〜`} label="新型"
+          left={{ label: "新型", sub: "A20 Pro", fill: C.budget }} right={{ label: "旧型", sub: "中古の相場", fill: lookOf(s).chip }} />;
+      }
+      case "ranking": return <IpadMiniRanking s={s} t={t} o={sc.o} />;
+      case "reveal": return <IpadMiniReveal s={s} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`ipadmini に場面 ${sc.id} はありません`);
     }
   }
   if (s.theme === "newused") {

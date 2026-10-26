@@ -136,6 +136,9 @@ export const LOOKS: Record<Script["theme"], Look> = {
   batteryswap: { ...CONDITION, hook: "equation" },
   overnew: { ...BUDGET, hook: "ratio" },
   rakutenmobile: { ...AD, hook: "tiers" },
+  // ipadmini（10/27〜・新型 iPad mini の回）: 新型と中古の旧型を比べる回なので newused と同じ ③ VERSUS（見た目は5つまでなので新しく作らない）。
+  // つかみは「新型 vs 旧型」の札と新型の公式価格
+  ipadmini: { ...VERSUS, hook: "split" },
 };
 
 export const lookOf = (s: Script): Look => LOOKS[s.theme];

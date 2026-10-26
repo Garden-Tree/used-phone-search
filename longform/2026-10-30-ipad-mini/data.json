@@ -1,0 +1,146 @@
+{
+  "date": "2026-10-27",
+  "shops": 14,
+  "source": "script.md の数字そのまま（2026/10/27 の集計・longform/2026-10-30-ipad-mini/data-query.ts → data-query.log。ジャンクを除く。相場＝在庫がいちばん多い容量の中央値。新型 iPad mini（A20 Pro）の値段・仕様は lib/ipadMiniA20.ts（Apple 公式 apple.com/jp/shop/buy-ipad/ipad-mini・apple.com/jp/ipad-mini/specs/・10/27 確認）。旧型のスペックは lib/ipadSpecs.ts、Pencil は lib/ipadPencil.ts（support.apple.com/ja-jp/108937）、iPadOS 27 は lib/ipadSpecs.ts の IPADOS27_MODELS）",
+  "thumbnail": {
+    "lines": ["新型iPad mini", "中古の旧型にする？"],
+    "badge": [
+      { "text": "差" },
+      { "text": "3.6万円", "red": true }
+    ],
+    "footer": "新型 A20 Pro 119,800円（Apple 公式）／中古の A17 Pro 83,800円（128GB の相場）"
+  },
+  "chapters": [
+    {
+      "title": "結論：新型11.98万円・中古のA17 Proは8.38万円",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "新型 iPad mini と中古の旧型（128GB）",
+        "items": [
+          { "label": "新型 A20 Pro（Apple 公式）", "value": "119,800", "unit": "円", "cue": "新型は128GBで11万9,800円" },
+          { "label": "中古の A17 Pro の相場", "value": "83,800", "unit": "円", "cue": "新型は128GBで11万9,800円" },
+          { "label": "差", "value": "36,000", "unit": "円", "cue": "3万6,000円も違うのだ" }
+        ],
+        "note": "新型は Wi-Fi・11/6 発売（Apple 公式・10/27 確認）。中古は 128GB の中央値（ジャンクを除く）。第6世代は 256GB で 72,930円"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "どうやって調べた？",
+        "items": [
+          { "label": "iPad を扱う中古ショップ", "value": "14", "unit": "店", "cue": "大手の中古ショップ14店" },
+          { "label": "iPad の在庫", "value": "11,436", "unit": "件", "cue": "大手の中古ショップ14店" },
+          { "label": "iPad mini 3機種", "value": "1,485", "unit": "件", "cue": "ジャンクを除いて1,485台" }
+        ],
+        "note": "相場＝在庫がいちばん多い容量の中央値。新型の値段・仕様は Apple 公式（10/27 確認）"
+      }
+    },
+    {
+      "title": "新型は何が変わった？",
+      "scene": {
+        "type": "table",
+        "heading": "新型と旧型の違い（Apple 公式の仕様）",
+        "columns": ["項目", "新型 A20 Pro", "旧型 A17 Pro"],
+        "emphasis": [1],
+        "rows": [
+          { "cells": ["画面", "8.5インチ 有機EL", "8.3インチ 液晶"], "cue": "いちばん大きいのは画面" },
+          { "cells": ["重さ（Wi-Fi）", "255g", "293g"], "cue": "重さも変わったよ" },
+          { "cells": ["厚さ", "5.4mm", "6.3mm"], "cue": "厚さは6.3ミリから" },
+          { "cells": ["防水・防塵", "IP67", "記載なし"], "cue": "厚さは6.3ミリから" },
+          { "cells": ["Apple Pencil", "Pro・USB-C", "Pro・USB-C"], "cue": "Apple Pencilは、どっちも" },
+          { "cells": ["電池（Wi-Fi・動画）", "最大10時間", "最大10時間"], "cue": "Apple Pencilは、どっちも" },
+          { "cells": ["チップ", "A20 Pro", "A17 Pro"], "cue": "チップは、A17 Proから" }
+        ],
+        "note": "apple.com/jp/ipad-mini/specs/・support.apple.com/ja-jp/121456（10/27 確認）"
+      }
+    },
+    {
+      "title": "新型か、中古のA17 Proか",
+      "scene": {
+        "type": "pairs",
+        "heading": "新型と中古の A17 Pro（同じ容量）",
+        "unit": "円",
+        "legend": ["新型（Apple 公式）", "中古の A17 Pro の相場"],
+        "colors": ["brand900", "price"],
+        "rows": [
+          { "label": "128GB", "a": 119800, "b": 83800, "diffLabel": "−36,000円", "cue": "128GBは、新型が" },
+          { "label": "256GB", "a": 136800, "b": 98780, "diffLabel": "−38,020円", "cue": "256GBは？" },
+          { "label": "512GB", "a": 171800, "b": 131780, "diffLabel": "−40,020円", "cue": "512GBは？" }
+        ],
+        "note": "新型は Wi-Fi・標準ガラス（Cellular +25,000円）。A17 Pro 128GB は在庫 532件・最安 72,800円。Apple の販売一覧に A17 Pro はもうない（10/27）"
+      }
+    },
+    {
+      "title": "読書と動画なら第6世代",
+      "scene": {
+        "type": "bars",
+        "heading": "中古の iPad mini（相場）",
+        "unit": "万円",
+        "rows": [
+          { "label": "第6世代", "sub": "64GB・2021年", "median": 6.1, "min": 4.4, "minLabel": "4.4万円", "cue": "64GBなら6万880円", "minCue": "いちばん安いのは、4万4,400円から" },
+          { "label": "第6世代", "sub": "256GB・2021年", "median": 7.3, "min": 5.7, "minLabel": "5.7万円", "pick": true, "cue": "在庫がいちばん多い256GBで" },
+          { "label": "A17 Pro", "sub": "128GB・2024年", "median": 8.4, "min": 7.3, "minLabel": "7.3万円", "cue": "A17 Proより、1万円以上安いのだ" }
+        ],
+        "note": "第6世代: A15 Bionic・8.3インチ 液晶・USB-C・Pencil は USB-C と第2世代（Pro は使えない）・iPadOS 27 対応"
+      }
+    },
+    {
+      "title": "第5世代は安いけど選ばない",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "iPad mini 第5世代（2019年）",
+        "items": [
+          { "label": "64GB の相場", "value": "28,800", "unit": "円", "cue": "64GBで2万8,800円" },
+          { "label": "iPadOS 27", "value": "非対応", "cue": "最新のiPadOS 27に対応してないの" },
+          { "label": "Apple Pencil", "value": "第1世代だけ", "cue": "Pencilは第1世代だけ" }
+        ],
+        "note": "最安 21,800円。7.9インチ・Lightning・ホームボタンの Touch ID"
+      }
+    },
+    {
+      "title": "中古で買う前に見ること",
+      "scene": {
+        "type": "checklist",
+        "heading": "中古の iPad mini、買う前に見る5つ",
+        "items": [
+          { "text": "iPadOS 27 に対応しているか", "sub": "第6世代・A17 Pro は対応／第5世代は非対応", "cue": "1つ目は、iPadOS 27" },
+          { "text": "使える Apple Pencil", "sub": "Pro は A17 Pro だけ（第6世代は USB-C と第2世代）", "cue": "使えるPencil" },
+          { "text": "バッテリーの表記", "sub": "A17 Pro 128GB は 532件中 222件に表記あり", "cue": "電池の状態が書いてある在庫は" },
+          { "text": "容量", "sub": "漫画・動画を入れるなら大きめ", "cue": "第6世代の64GBは安いけど" },
+          { "text": "Wi-Fi か Cellular か", "sub": "Cellular はネットワーク利用制限も見る", "cue": "Wi-FiモデルかCellularか" }
+        ],
+        "note": "電池の書き方は店によって違う（数字・「80%以上」・書いていない）"
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "table",
+        "heading": "新型 iPad mini、買う？中古の旧型にする？",
+        "columns": ["使い方", "選ぶ機種", "値段"],
+        "emphasis": [2],
+        "rows": [
+          { "cells": ["画面・軽さ・防水がほしい", "新型 A20 Pro（128GB）", "119,800円"], "cue": "画面と軽さと防水がほしいなら" },
+          { "cells": ["Pencil Pro で描く・4万円浮かせる", "A17 Pro（128GB）", "83,800円"], "cue": "Pencil Proで描きたくて" },
+          { "cells": ["読書と動画", "第6世代（256GB）", "72,930円"], "cue": "読書と動画なら、第6世代" },
+          { "cells": ["安いけど選ばない", "第5世代（64GB）", "28,800円・iPadOS 27 非対応"], "cue": "第5世代は安いけど" }
+        ],
+        "note": "新型は Apple 公式（Wi-Fi・10/27）・旧型は中古の相場（2026/10/27）。毎日更新: used.gadelog.com"
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          { "id": "SHyQRQ8wAic", "title": "【中古iPad】いま買うならどれ？ 16店の相場で「使い方別」に選んだ（無印・Air・mini・Pro）" },
+          { "id": "P78xAKBa274", "title": "中古iPhone、店選びの正解は？16店の保証・電池表記・赤ロムを比較" }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com"
+      }
+    }
+  ]
+}
