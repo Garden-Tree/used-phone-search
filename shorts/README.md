@@ -34,6 +34,7 @@ npx tsx shorts/make-short.tsx rank render
 npx tsx shorts/make-short.tsx ios27line plan        # iOS 27 に対応する、いちばん安い中古iPhone（shorts/out/<日付>-ios27line/。型 A だけ・10/25〜）
 npx tsx shorts/make-short.tsx batteryswap plan      # 電池交換を足すと、1つ上の世代と同じ値段？（shorts/out/<日付>-batteryswap/。型 A だけ・10/25〜）
 npx tsx shorts/make-short.tsx overnew plan          # 中古なのに新品より高い？新品との差がいちばん小さい中古iPhone（shorts/out/<日付>-overnew/。型 A だけ・10/25〜）
+npx tsx shorts/make-short.tsx rakutenmobile plan    # 楽天モバイルは使った量で3段階｜中古iPhone 14と2年でいくら？（広告の回・PR。型 A だけ・10/26〜・つむぎ）
 npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
 npx tsx shorts/make-short.tsx drops render --no-voice  # VOICEVOX の声を入れない
@@ -232,6 +233,13 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
   - 切り口: 各行と注目に画面の大きさ（`spec`「画面6.7インチ」・Apple 公式）と発売年。見出しの帯「予算ぴったりで買える／大きい画面の中古iPhone」・注記「画面はApple公式」。ひと言の下書きは「大きい画面は／画面の修理代が／高めです」（Apple の保証外の画面修理 Plus・Air 57,800円・Pro Max 64,800円＞無印。`lib/appleRepairPrices.ts`。ひと言に数字は出さない）
   - 説明欄のリンクは注目の機種ページ・/iphone。utm の末尾は `_bigbudget`。ハッシュタグ #中古iPhone #iPhone。関連動画の締めあり（RELATED_LONG_THEMES）
   - 見た目は ② BUDGET（直前の plusmax ③・oldpro ⑤ と続かない）。つかみは予算の札（chips）。声は 春日部つむぎ
+- `rakutenmobile`: 楽天モバイルは使った量で3段階｜中古iPhone 14と2年でいくら？（**広告の回・楽天アフィリエイト**。型 A だけ。10/26〜）
+  - 横動画11本目（`longform/2026-10-31-rakuten-mobile`）の案2（`shorts-ideas.md`）。場面は hook（題「楽天モバイルの料金は／使った量で3段階」・料金の階段・「2年で差」）→ ranking（料金の3段を声に合わせて上から）→ reveal（中古 iPhone 14 128GB の相場＋月額×24 の3本の棒・上と下の段の差）→ comment → outro
+  - 数字: 料金は Rakuten最強プラン（税込・割引なし）3GBまで 1,078円・20GBまで 2,178円・無制限 3,278円（`themes/rakutenmobile.ts` の TIERS。確かめた日は `lib/simPlans.ts` の SIM_PRICES_CHECKED。3GBまでが SIM_PLANS の monthlyFrom と違えば plan が止まる）。端末は iPhone 14 128GB・ジャンクを除く中央値（DB の groupBy と中央値の1行だけ）。2年＝相場＋月額×24（ずっと同じ段）、差＝上の段 − 下の段の2年
+  - **PR の表示**: 最初の声「この動画は、楽天モバイルの紹介、PRを含みます。」・画面の左上に小さく「PR」（全場面。`scenes.tsx` の PrMark）・説明欄の1行目「【PR】この動画は楽天アフィリエイトの広告を含みます。」・タイトルの頭に【PR】
+  - **言わない・書かないこと**: ポイント・キャンペーン・特典／「最安」「実質0円」「必ず安い」「無料」「お得」／ほかの会社の料金／すぐの解約・乗り換えの促し。**楽天モバイルのリンクはショートの説明欄・コメントに貼らない**（横動画の説明欄だけ）。説明欄のリンクは iPhone 14 の機種ページとトップだけ（utm の末尾 `_rakutenmobile`）。ハッシュタグ #中古iPhone #iPhone #楽天モバイル
+  - 見た目は ⑥ 広告の回 AD（5つの例外。明るい地・塗らない見出しにピンク #D9005B の下線・ピンクの札と強調。つかみは料金の階段 tiers）。声は 春日部つむぎ（口調は「〜よ・〜ね」）。ひと言の下書き「まず iPhoneの設定の／モバイル通信で／今の使った量を見てね」
+  - 関連動画の締めは、横動画11本目を公開して ID が分かるまで付けない（`relatedLong.ts` の RAKUTEN_MOBILE は ID が空・`types.ts` の RELATED_LONG_THEMES にまだ入れない）
 
 **続けて公開するショートは、前の回と違う見た目（①〜⑤）にする**（10/24 15:00 の値下がり1か月 → 10/25 8:00 の galaxybudget が同じ①で続いた）。
 
@@ -242,13 +250,14 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
 | ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・plusvs・plusmax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
 | ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形）・batteryswap（「中古＋電池交換＝1つ上」の札）・unused（「ランクA vs 未使用品」） |
 | ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札）・oldpro（「前のPro vs 無印」＋差 最大） |
+| ⑥ 広告の回 AD（5つの例外・10/26〜） | 明るい ground | 塗らない（墨の文字）・ピンク #D9005B の下線 | 灰の縁＋影 | ピンク #D9005B（札も） | rakutenmobile（料金の3段の階段＋2年で差）。左上に「PR」 |
 
 関連動画につながるテーマ（`types.ts` の RELATED_LONG_THEMES）は、締めの「▼ くわしい解説は 下の関連動画で」の札が出るまで締めの動きを延ばす（`scenes.tsx` の TIMELINE。10/23 まで札が動画に出ていなかった）。
 
 締めの横動画のサムネ（10/26〜）: 関連動画につながるテーマは、締めで声の「くわしい解説は、下の関連動画からどうぞ」に合わせて、札「くわしい解説はこちら」・横動画のサムネ（幅780px・16:9）・「▼ 下の関連動画から ▼」を出す。上の文字は小さくして詰める（y270〜1470）。
 
 - テーマ → 横動画（ID・題・`longform/<フォルダ>`）は `shorts/relatedLong.ts` の RELATED_LONG だけに書く。YouTube Studio の「関連動画」もこの表と同じにする。
-  - provs・promax・probudget・plusvs・minie・plusmax → Proと無印（Bmp5EgeiqW0）／budget・drops・newused・overnew → いま買うならどれ（R1Aki2b5mds）／battery・batteryswap・storage・rank・unused → 買ってはいけない（amx5UxG6wpI）／gen・ios27line・oldpro → 何世代まで（T7ltgSB-4XM）／bigbudget → 大きい画面（2026-10-28-big-screen・ID は公開後）／ipadbudget → iPad どれ（SHyQRQ8wAic。声の誘導がないので札は出ない）
+  - provs・promax・probudget・plusvs・minie・plusmax → Proと無印（Bmp5EgeiqW0）／budget・drops・newused・overnew → いま買うならどれ（R1Aki2b5mds）／battery・batteryswap・storage・rank・unused → 買ってはいけない（amx5UxG6wpI）／gen・ios27line・oldpro → 何世代まで（T7ltgSB-4XM）／bigbudget → 大きい画面（2026-10-28-big-screen・ID は公開後）／rakutenmobile → 楽天モバイル（2026-10-31-rakuten-mobile・ID は公開後。それまで RELATED_LONG_THEMES に入れない）／ipadbudget → iPad どれ（SHyQRQ8wAic。声の誘導がないので札は出ない）
 - サムネは `longform/<フォルダ>/thumbnail.png`（Git に入らない）を幅720px の JPEG にして埋め込む。ファイルがなければ文字の札だけ。
 - 出る時刻は声の「くわしい解説は…」の始まりの目安（読みのモーラ数の割合・`relatedLineStart`）。声がなければ 2.2k 秒。
 - 確かめ方: `npx tsx shorts/stills.tsx --outro plusmax bigbudget`（`shorts/out/looks/<テーマ>-outro.png`・一覧 `shorts/out/looks-contact-outro.png`）。

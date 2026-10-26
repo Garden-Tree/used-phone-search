@@ -11,6 +11,8 @@
  *   inspectLine の丸い札の上: brand900 12.32
  *   墨 ink の地（battery）: 白 17.74。ON_DARK.safe・ON_DARK.sub は brand900 の地より暗い地なので比は上がる
  *   墨 ink の地（probudget）: 白 17.74・ON_DARK.sub 11.89・ON_DARK.inspect 8.23・ON_DARK.safe 11.71。淡い金 inspectLine の帯の上の ink 13.68
+ *   楽天モバイルのピンク RAKUTEN_PINK #D9005B（rakutenmobile だけ・広告の回の強調）: 白い文字を載せて 5.12・白いカードの上 5.12・明るい地 ground の上 4.78
+ *   （ground の上の ink 16.55・inkSub 7.05・safe 5.11）。brand50 の地は 4.58 で余裕がないので使わない
  */
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import type { Script } from "./types";
@@ -18,8 +20,8 @@ import type { Script } from "./types";
 /** 見出しの帯の形。full＝左右いっぱい・card＝角丸の箱・pill＝丸い端・tab＝左寄せの札と左の線・leaf＝対角だけ丸い・underline＝塗らずに下線・frame＝塗らずに太い枠 */
 export type BandShape = "full" | "card" | "pill" | "tab" | "leaf" | "underline" | "frame";
 /** つかみ（1コマ目）の型。number＝1位の額を先に出す・chips＝予算の札・coins＝予算の丸い札（数字を大きく）・split＝2つを並べて vs・fold＝折りたたみの形・abc＝ランクの札・battery＝縦の電池の形
- * phone＝スマホの形に「iOS 27」と「対応」の札（ios27line）・equation＝「古い方＋電池交換＝1つ上？」の式（batteryswap）・ratio＝新品と中古の2本の棒（overnew） */
-export type HookKind = "number" | "chips" | "coins" | "split" | "fold" | "abc" | "battery" | "phone" | "equation" | "ratio";
+ * phone＝スマホの形に「iOS 27」と「対応」の札（ios27line）・equation＝「古い方＋電池交換＝1つ上？」の式（batteryswap）・ratio＝新品と中古の2本の棒（overnew）・tiers＝料金の3段の階段と2年の差（rakutenmobile） */
+export type HookKind = "number" | "chips" | "coins" | "split" | "fold" | "abc" | "battery" | "phone" | "equation" | "ratio" | "tiers";
 
 export type Look = {
   /** 記録用の名前（README・SKILL の表と同じ） */
@@ -83,6 +85,17 @@ const PRO: Omit<Look, "hook"> = {
   card: { radius: 20, shadow: ring(6, SITE.inspectLine) }, accent: SITE.price, chip: SITE.inspect700,
 };
 
+/** 楽天モバイルのショッキングピンク（lib/simPlans.ts のボタンの色と同じ）。rakutenmobile の強調だけに使う（サイトの色 lib/brandColors.ts の例外） */
+const RAKUTEN_PINK = "#D9005B";
+// ⑥ 広告の回（rakutenmobile・10/26〜）: 明るい地 ground・塗らない見出し（墨の文字）にピンクの下線・灰の縁と影のカード・ピンクの札と強調。
+//    見た目は5つまで（10/23 ユーザーの指示）の例外。広告の回だと1コマ目で分かるように、ふだんの回（①〜⑤）と同じにしない。
+//    ピンクは強調・札・下線だけ（地や帯の塗りには使わない）。左上の「PR」の札は scenes.tsx の PrMark
+const AD: Omit<Look, "hook"> = {
+  name: "広告の回（明るい地・ピンクの下線）", dark: false, bg: SITE.ground, fg: SITE.ink, sub: SITE.inkSub, accentOnBg: RAKUTEN_PINK, url: SITE.safe,
+  band: { shape: "underline", fill: SITE.ground, text: SITE.ink, sub: SITE.inkSub, stripe: RAKUTEN_PINK },
+  card: { radius: 24, shadow: `${ring(3, SITE.line)}, 0 12px 28px rgba(17,24,39,0.10)` }, accent: RAKUTEN_PINK, chip: RAKUTEN_PINK,
+};
+
 export const LOOKS: Record<Script["theme"], Look> = {
   drops: { ...DROPS, hook: "number" },
   budget: { ...BUDGET, hook: "chips" },
@@ -122,6 +135,7 @@ export const LOOKS: Record<Script["theme"], Look> = {
   ios27line: { ...VERSUS, hook: "phone" },
   batteryswap: { ...CONDITION, hook: "equation" },
   overnew: { ...BUDGET, hook: "ratio" },
+  rakutenmobile: { ...AD, hook: "tiers" },
 };
 
 export const lookOf = (s: Script): Look => LOOKS[s.theme];

@@ -52,7 +52,7 @@ const MAX_TOTAL = 60;
 
 /**
  * ranking は文ごとの声。row はその文で出す行（items・rows の添字）。なければ null（前の行の続きの文）
- * drops: 文頭の「○位」→ 添字 ○−1（2位・3位だけ）/ budget: 文頭の「○万円なら」→ その予算の行
+ * drops: 文頭の「○位」→ 添字 ○−1（2位・3位だけ）/ budget: 文頭の「○万円なら」→ その予算の行 / rakutenmobile: 文頭の段の名前（「3GBまで」）→ その段の行
  */
 type Voices = { clips: Partial<Record<NarrationKey, Clip>>; ranking?: { clip: Clip; row: number | null }[]; manual?: { file: string; dur: number } };
 /** ランキングの声を流し始める秒・行を声より先に出す秒（行は ROW_FADE で出きる） */
@@ -72,7 +72,8 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
   const timeline = TIMELINE(script, variant).map((sc) => {
     const key = narrationKey(sc.id);
     if (sc.id === "ranking" && voices.ranking?.length) {
-      const budget = isBudget(script);
+      // 上から順に行を出す型（budget の予算の行・rakutenmobile の料金の段）。ほかは 3位・2位のカウントダウン
+      const budget = isBudget(script) || script.theme === "rakutenmobile";
       const times = [...(sc.o?.at ?? [0, 2.1, 0.5])];
       let cur = RANK_VOICE_AT;
       let found = 0;
@@ -204,6 +205,10 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
 
 /** ランキングの文が出す行（Voices の row） */
 function rowOf(script: Script, sentence: string): number | null {
+  if (script.theme === "rakutenmobile") {
+    const i = script.scenes.tiers.rows.findIndex((r) => sentence.startsWith(r.label));
+    return i >= 0 ? i : null;
+  }
   if (isBudget(script)) {
     const m = sentence.match(/^(\d+)万円なら/);
     const i = m ? script.scenes.budgets.rows.findIndex((r) => r.budget === Number(m[1]) * 10000) : -1;

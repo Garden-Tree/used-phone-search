@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -301,11 +301,38 @@ export type OldProScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | OldProScript;
+/**
+ * rakutenmobile の料金の1段: Rakuten最強プランの段（"3GBまで"・"20GBまで"・"無制限"）と月額（税込・割引なし）、
+ * twoYears = 月額 × 24、total = 端末の相場 + twoYears（24か月ずっと同じ段の場合。shorts/themes/rakutenmobile.ts）
+ */
+export type SimTier = { label: string; monthly: number; twoYears: number; total: number };
+
+/**
+ * テーマ rakutenmobile「楽天モバイルの料金は使った量で3段階｜中古iPhone 14と2年でいくら？」（広告の回・楽天アフィリエイト。10/26〜）。
+ * 画面の左上に「PR」をずっと出し、最初の声で PR を言う（scenes.tsx の PrMark・voice.ts）
+ */
+export type RakutenMobileScript = Common & {
+  theme: "rakutenmobile";
+  /** 料金を公式で確かめた日（lib/simPlans.ts の SIM_PRICES_CHECKED） */
+  pricesChecked: string;
+  scenes: {
+    /** 場面 ranking: 料金の3段（安い順。声に合わせて上から出す） */
+    tiers: { plan: string; months: number; rows: SimTier[] };
+    /** 場面 reveal: 中古の端末（128GB・ジャンクを除く中央値）と、各段の2年の合計 */
+    device: { model: string; storage: string; storageGb: number; median: number; count: number };
+    /** いちばん上の段の2年 − いちばん下の段の2年 */
+    diff: number;
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | OldProScript | RakutenMobileScript;
 
 /**
  * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。
- * YouTube 公式ブログ 2026/7「最後の5秒で声と画面の両方で誘導」）。いまの横動画は iPhone なので、Pixel・iPad・折りたたみは外す
+ * YouTube 公式ブログ 2026/7「最後の5秒で声と画面の両方で誘導」）。いまの横動画は iPhone なので、Pixel・iPad・折りたたみは外す。
+ * TODO: rakutenmobile は横動画11本目（longform/2026-10-31-rakuten-mobile）を公開して ID が分かったら、relatedLong.ts の RAKUTEN_MOBILE に ID を入れてからここに足す
  */
 export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew"]);
 export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";

@@ -15,7 +15,7 @@ import { H, TIMELINE, W, sceneFrame, type SceneId } from "./scenes";
 import type { Script } from "./types";
 
 const OUT = resolve(__dirname, "out");
-const THEMES = ["drops", "budget", "pixelbudget", "ipadbudget", "macbudget", "probudget", "foldbudget", "galaxybudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "fold", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew"] as const;
+const THEMES = ["drops", "budget", "pixelbudget", "ipadbudget", "macbudget", "probudget", "foldbudget", "galaxybudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "fold", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "rakutenmobile"] as const;
 const OUTRO = process.argv.includes("--outro");
 const SHOTS: { id: SceneId; at: "start" | "end" }[] = OUTRO ? [{ id: "outro", at: "end" }] : [{ id: "hook", at: "start" }, { id: "ranking", at: "end" }, { id: "reveal", at: "end" }];
 /** 一覧の1枚の大きさ（1080x1920 の 1/4） */
