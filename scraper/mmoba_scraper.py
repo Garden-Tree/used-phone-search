@@ -88,14 +88,14 @@ def parse_mmoba_html(html_content, headers):
             
         # Model Name
         # Handle "iPhone14" -> "iPhone 14", "12mini" -> "12 mini"
-        m_model = re.search(r'(iPhone\s?(\d+e?|X[SR]?|SE|8|7)\s?(Pro\sMax|Pro|Plus|mini)?)', raw_name, re.IGNORECASE)
+        m_model = re.search(r'(iPhone\s?(\d+e?|X[SR]?|SE|Air|Duo|8|7)\s?(Pro\sMax|Pro|Plus|mini)?)', raw_name, re.IGNORECASE)
         if m_model:
             full_model = m_model.group(1).strip()
             # 正規化: iPhone[スペース]モデル番号[スペース]サフィックス
             # 1. iPhone[スペース]モデル番号
-            full_model = re.sub(r'iPhone\s?(\d+e?|X[SR]?|SE|8|7)', r'iPhone \1', full_model, flags=re.IGNORECASE)
+            full_model = re.sub(r'iPhone\s?(\d+e?|X[SR]?|SE|Air|Duo|8|7)', r'iPhone \1', full_model, flags=re.IGNORECASE)
             # 2. モデル番号[スペース]サフィックス
-            full_model = re.sub(r'(\d+e?|X[SR]?|SE|8|7)\s?(Pro\sMax|Pro|Plus|mini)', r'\1 \2', full_model, flags=re.IGNORECASE)
+            full_model = re.sub(r'(\d+e?|X[SR]?|SE|Air|Duo|8|7)\s?(Pro\sMax|Pro|Plus|mini)', r'\1 \2', full_model, flags=re.IGNORECASE)
             model_name = full_model
             
             # SE generation normalization
