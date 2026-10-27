@@ -2,6 +2,7 @@
  * 横動画のサムネ・第3弾（2026-10-26〜）。Studio の「テストと比較」の B・C 案（A は今の thumbnail.png）
  *   npx tsx longform/thumb-ab3.tsx            # 4本ぶん（下の PLANS）と一覧 longform/thumb-ab3-contact.png
  *   npx tsx longform/thumb-ab3.tsx set2       # 10/26 に足した2本（iPad・大きい画面）と一覧 longform/thumb-ab3-contact2.png
+ *   npx tsx longform/thumb-ab3.tsx set3       # 10/27 に足した3本（電池・新型 iPad mini・楽天モバイル）と一覧 longform/thumb-ab3-contact3.png
  *   npx tsx longform/thumb-ab3.tsx <フォルダ> # 1本だけ
  * 出力: <フォルダ>/thumb-B.png・thumb-C.png（1280x720）
  *
@@ -314,12 +315,101 @@ const PLANS: Record<string, Plan> = {
       </Frame>
     ),
   },
+  // 10本目 GcXIO15l6fU。A＝「中古iPhoneのバッテリー／何%なら買っていい？」＋「答えは 85%」
+  "2026-10-29-battery": {
+    id: "GcXIO15l6fU",
+    // B: 色帯＋電池の絵 2つ（「0:00」: 85%以上なら買っていい・80〜84%と85〜89%の相場の差は8機種で最大 5,312円）
+    B: () => (
+      <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>
+        <Bands bands={[{ text: "中古iPhone", bg: WHITE, color: BLACK, size: 100 }, { text: "電池は何%？", bg: RED, color: WHITE, size: 112 }, { text: "85%以上", bg: YELLOW, color: BLACK, size: 180 }]} />
+        <Mark ok size={110} style={{ left: 720, top: 75 }} />
+        <Battery w={380} label="85%以上" style={{ left: 840, top: 60 }} />
+        <Battery w={380} label="80%台前半" style={{ left: 840, top: 300 }} />
+        <div style={{ position: "absolute", left: 34, top: 560, display: "flex", fontSize: 66, fontWeight: 900, color: WHITE, letterSpacing: -2 }}>相場の差は最大5,312円</div>
+      </Frame>
+    ),
+    // C: 驚くずんだもん＋「100%にこだわるな」（「0:00」: 85%以上なら買っていい・100%は、いちばん高いとは限らない）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("zundamon-surprised", { left: -40, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 76, fontWeight: 900, letterSpacing: -2 }}>中古iPhoneの電池</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="100%に" size={170} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="こだわるな" size={fit("こだわるな", 800, 170)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-10} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 505, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 74, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>85%以上で十分</div>
+        <Bubble text={"100%が\nいいのだ!?"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
+  // 12本目 N2slZY_hJ9s。A＝「新型iPad mini／中古の旧型にする？」＋「差 3.6万円」
+  "2026-10-30-ipad-mini": {
+    id: "N2slZY_hJ9s",
+    // B: 左右に割った VS（「0:00」: 新型 128GB 119,800円・中古の A17 Pro 128GB の相場 83,800円・差 36,000円）
+    B: () => (
+      <Frame bg={`linear-gradient(100deg, ${NAVY} 0%, ${NAVY} 50%, #E5E7EB 50%, #F8FAFC 100%)`}>
+        <div style={{ position: "absolute", left: 0, top: 0, width: W, height: 150, display: "flex", alignItems: "center", justifyContent: "center", background: BLACK }}>
+          <Outlined text="iPad mini どっち買う？" size={112} color={WHITE} spacing={-6} />
+        </div>
+        <div style={{ position: "absolute", left: 50, top: 175, display: "flex" }}><Outlined text="新型" size={170} color={YELLOW} outer={{ w: 8, c: BLACK }} spacing={-6} /></div>
+        <Phone w={190} h={270} screen={["#312E81", "#A78BFA"]} bare style={{ position: "absolute", left: 360, top: 190 }} />
+        <div style={{ position: "absolute", left: 700, top: 175, display: "flex" }}><Outlined text="中古" size={170} color={BLACK} inner={{ w: 8, c: WHITE }} spacing={-6} /></div>
+        <Phone w={190} h={270} screen={SCREENS[1]} bare style={{ position: "absolute", left: 1030, top: 190 }} />
+        <div style={{ position: "absolute", left: 560, top: 250, display: "flex", width: 160, height: 160, borderRadius: 160, background: RED, border: `8px solid ${WHITE}`, alignItems: "center", justifyContent: "center", color: WHITE, fontSize: 84, fontWeight: 900, fontStyle: "italic" }}>VS</div>
+        <div style={{ position: "absolute", left: 0, top: 486, height: 200, display: "flex", alignItems: "center", padding: "0 30px 0 36px", background: YELLOW, boxShadow: "8px 8px 0 rgba(0,0,0,0.35)" }}>
+          <div style={{ display: "flex", fontSize: 100, fontWeight: 900, color: BLACK, letterSpacing: -4, marginRight: 8 }}>差は</div>
+          <Outlined text="3.6万円" size={170} color={RED} inner={{ w: 7, c: WHITE }} outer={{ w: 5, c: BLACK }} spacing={-8} />
+        </div>
+      </Frame>
+    ),
+    // C: 驚くずんだもん＋「旧型なら3.6万円安い!?」（「0:00」: 中古の A17 Pro 128GB の相場 83,800円）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("zundamon-surprised", { left: -40, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 76, fontWeight: 900, letterSpacing: -2 }}>新型iPad mini 発表</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="旧型なら" size={150} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="3.6万円安い" size={fit("3.6万円安い", 800, 180)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-10} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 490, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 70, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>中古A17 Pro 8.4万円</div>
+        <Bubble text={"新型を\n待つのだ!?"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
+  // 11本目 Ua3ZRui2G4w（広告の回）。A＝「中古iPhone＋楽天モバイル／2年でいくら？」＋「14＋20GB → 11.8万円」。B・C も「PR」を出す（楽天の指針）
+  "2026-10-31-rakuten-mobile": {
+    id: "Ua3ZRui2G4w",
+    // B: 色帯＋端末（「0:00」: 14 128GB の相場 65,980円＋20GBまでの料金2年 52,272円＝118,252円・月あたり約4,900円）
+    B: () => (
+      <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>
+        <Bands bands={[{ text: "中古iPhone＋楽天", bg: WHITE, color: BLACK, size: 92 }, { text: "2年でいくら？", bg: RED, color: WHITE, size: 112 }, { text: "11.8万円", bg: YELLOW, color: BLACK, size: 180 }]} />
+        <Labeled x={930} y={90} w={170} h={290} label="14" ok screen={SCREENS[1]} />
+        <div style={{ position: "absolute", left: 34, top: 560, display: "flex", fontSize: 66, fontWeight: 900, color: WHITE, letterSpacing: -2 }}>20GBまで・月あたり約4,900円</div>
+        <div style={{ position: "absolute", left: 1150, top: 20, display: "flex", padding: "0 14px", background: WHITE, color: BLACK, fontSize: 48, fontWeight: 900 }}>PR</div>
+      </Frame>
+    ),
+    // C: 驚くずんだもん＋「2年で11.8万円」（「0:00」: 端末の相場と料金、ぜんぶ込み）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("zundamon-surprised", { left: -40, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 68, fontWeight: 900, letterSpacing: -2 }}>中古iPhone＋楽天モバイル</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="2年で" size={150} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="11.8万円" size={fit("11.8万円", 800, 200)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-10} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 490, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 70, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>14＋20GBまで</div>
+        <Bubble text={"端末込み\nなのだ!?"} size={52} style={{ left: 20, top: 20 }} />
+        <div style={{ position: "absolute", left: 1150, top: 120, display: "flex", padding: "0 14px", background: BLACK, color: WHITE, fontSize: 48, fontWeight: 900 }}>PR</div>
+      </Frame>
+    ),
+  },
 };
 
-/** 一覧のまとまり（引数なし＝第3弾の4本、set2＝10/26 に足した2本） */
+/** 一覧のまとまり（引数なし＝第3弾の4本、set2＝10/26 に足した2本、set3＝10/27 に足した3本） */
 const GROUPS: Record<string, { keys: string[]; out: string }> = {
   "": { keys: ["2026-10-24-where-to-buy", "2026-10-25-pro-or-standard", "2026-10-26-how-old", "2026-10-27-dont-buy"], out: "thumb-ab3-contact.png" },
   set2: { keys: ["2026-10-23-ipad-dore", "2026-10-28-big-screen"], out: "thumb-ab3-contact2.png" },
+  set3: { keys: ["2026-10-29-battery", "2026-10-30-ipad-mini", "2026-10-31-rakuten-mobile"], out: "thumb-ab3-contact3.png" },
 };
 
 /** 一覧: 動画ごとに A・B・C を 400x225 と、スマホの関連動画の大きさ 168x94 で並べる */
