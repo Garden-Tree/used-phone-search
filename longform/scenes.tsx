@@ -319,9 +319,13 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
   // 列の幅は中身のいちばん長い文字に合わせて配る
   const ems = s.columns.map((c, j) => Math.max(textEm(c), ...s.rows.map((r) => textEm(r.cells[j] ?? "")), 3));
   const sum = ems.reduce((a, b) => a + b, 0);
-  const widths = ems.map((e) => Math.floor((INNER_W * e) / sum));
-  const rowH = Math.min(104, Math.floor(470 / (s.rows.length + 1)));
   const PADX = 28;
+  // 左の余白は列ごとに同じだけ取り、残りを文字の長さで分ける（幅だけを比で分けると、短い列ほど余白に食われて字が小さくなる）
+  const textW = INNER_W - PADX * 2 * s.columns.length;
+  const widths = ems.map((e) => PADX * 2 + Math.floor((textW * e) / sum));
+  const rowH = Math.min(104, Math.floor(470 / (s.rows.length + 1)));
+  // 文字の大きさは表の中でそろえる（いちばん窮屈なセルに合わせる。セルごとに縮めると大小がまざって読みにくい）
+  const cellFont = Math.min(...s.columns.flatMap((_, j) => s.rows.map((r) => fitFontSize(r.cells[j] || "　", widths[j] - PADX * 2, 44, 22))));
   return (
     <div style={{ ...col, width: INNER_W, height: "100%" }}>
       <Heading text={s.heading} />
@@ -338,7 +342,7 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
               const v = r.cells[j] ?? "";
               const em = (r.emphasis ?? s.emphasis)?.includes(j);
               return (
-                <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX, fontSize: fitFontSize(v || "　", widths[j] - PADX * 2, 44, 22), fontWeight: em ? 900 : 500, color: em ? C.red : C.ink }}>{v}</div>
+                <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX, fontSize: cellFont, fontWeight: em ? 900 : 500, color: em ? C.red : C.ink }}>{v}</div>
               );
             })}
           </div>
