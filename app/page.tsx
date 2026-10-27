@@ -254,7 +254,7 @@ export default async function Home() {
         {/* 中古パソコン（2026-10-27〜）。タイルは8つで固定なので、その下に1行で */}
         {pcCount >= PC_MIN_INDEX_ITEMS && (
           <Link href="/pc" className={`${card} mt-2 px-3.5 py-2.5 flex items-center justify-between text-sm hover:bg-ground`}>
-            <span className="font-bold text-ink">中古パソコン（Windows）の最安値・相場</span>
+            <span className="font-bold text-ink">中古パソコン（Windows・MacBook）の最安値・相場</span>
             <span className="text-xs text-ink-mute">{pcCount.toLocaleString()}件 ›</span>
           </Link>
         )}

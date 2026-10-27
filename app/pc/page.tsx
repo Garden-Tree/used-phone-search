@@ -10,13 +10,14 @@ import { bestWithin, cpuMemoryMatrix, getPcItems, pcBudgetPath, PC_BUDGETS, PC_M
 import PcItemRow, { type PcRowItem } from "@/app/components/PcItemRow";
 import PcItemList from "@/app/components/PcItemList";
 import PcPriceMatrix from "@/app/components/PcPriceMatrix";
+import { getMacMatrix } from "@/lib/pcMac";
 
 // 中古パソコン（Windows のノート・デスクトップ）の最安値・相場（2026-10-27〜）。在庫はビルド（1日4回）のたびに更新
 export const dynamic = "force-static";
 
-const TITLE = "中古パソコン（Windows）の最安値・相場を条件別に比較【毎日更新】";
+const TITLE = "中古パソコン（Windows・MacBook）の最安値・相場を条件別に比較【毎日更新】";
 const DESCRIPTION =
-  "中古のWindowsノートパソコン・デスクトップを、CPU・メモリ・SSD・状態ランクで比較。予算3万・5万・8万円で選べる条件と、条件別の相場（中央値）を専門店の在庫から毎日更新。";
+  "中古のWindowsノートパソコン・デスクトップとMacBookを、CPU（機種）・メモリ・SSD・状態ランクで比較。予算3万・5万・8万円で選べる条件と、条件別の相場（中央値）を毎日更新。";
 
 export async function generateMetadata(): Promise<Metadata> {
   const items = await getPcItems();
@@ -43,6 +44,8 @@ export default async function PcIndexPage() {
   const desktops = items.filter((p) => p.formFactor === "desktop");
   const noteMatrix = cpuMemoryMatrix(items, "note");
   const deskMatrix = cpuMemoryMatrix(items, "desktop");
+  const macMatrix = await getMacMatrix();
+  const macCount = macMatrix.rows.reduce((n, r) => n + r.count, 0);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -65,13 +68,14 @@ export default async function PcIndexPage() {
           <span className="text-ink-sub">中古パソコン</span>
         </nav>
 
-        <h1 className="text-2xl md:text-3xl font-bold mb-3">中古パソコン（Windows）の最安値・相場</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-3">中古パソコン（Windows・MacBook）の最安値・相場</h1>
         {items.length === 0 ? (
           <p className="text-ink-sub mb-4">在庫の取り込みを準備しています。</p>
         ) : (
           <p className="text-ink-sub mb-4 leading-relaxed">
             中古パソコン専門店（{PC_SHOPS.join("・")}）のWindowsパソコン <strong>{items.length.toLocaleString()}件</strong>
             （ノート {notes.length.toLocaleString()}件・デスクトップ {desktops.length.toLocaleString()}件）を、CPU・メモリ・SSD・状態で比べています。
+            {macCount > 0 && <>MacBook <strong>{macCount.toLocaleString()}件</strong> の相場も下にまとめています。</>}
           </p>
         )}
         <p className="text-sm text-ink-mute mb-4 leading-relaxed">
@@ -119,6 +123,17 @@ export default async function PcIndexPage() {
               <PcPriceMatrix m={m} />
             </section>
           ),
+        )}
+
+        {macMatrix.rows.length > 0 && (
+          <section className="my-8">
+            <div className="flex items-baseline justify-between mb-1">
+              <h2 className="text-xl font-bold">MacBook の相場（機種 × メモリ）</h2>
+              <Link href="/mac" className="text-xs text-brand-600 hover:text-brand-800">MacBook の一覧 ›</Link>
+            </div>
+            <p className="text-xs text-ink-mute mb-3">中古MacBook（Apple シリコン）の在庫から。機種名から、店ごとの在庫と最安値へ進めます。</p>
+            <PcPriceMatrix m={macMatrix} head="機種 ＼ メモリ" />
+          </section>
         )}
 
         {[

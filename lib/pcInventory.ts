@@ -81,7 +81,12 @@ export function bestWithin(items: PcItem[], formFactor: string, maxPrice: number
 }
 
 export type PcCell = { count: number; minPrice: number; medianPrice: number };
-export type PcMatrix = { memories: number[]; rows: { label: string; cells: Map<number, PcCell>; count: number }[] };
+export type PcMatrix = {
+  memories: number[];
+  rows: { label: string; cells: Map<number, PcCell>; count: number; href?: string }[];
+  /** 列の見出し（省略時は「8GB」）。MacBook はメモリを幅でまとめる（lib/pcMac.ts） */
+  memoryLabels?: Map<number, string>;
+};
 
 // 表の行の並び（系統ごとにまとめ、その中は世代の古い順）
 const FAMILY_ORDER = ["Celeron", "Pentium", "Core m3", "Core i3", "Core i5", "Core i7", "Core i9", "Core Ultra 5", "Core Ultra 7", "Core Ultra 9", "Ryzen 3", "Ryzen 5", "Ryzen 7", "Ryzen 9"];

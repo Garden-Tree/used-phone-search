@@ -1,23 +1,24 @@
+import Link from "next/link";
 import { yen } from "@/lib/format";
 import type { PcMatrix } from "@/lib/pcInventory";
 
 // 条件別の相場: 縦 CPU × 横 メモリ。マスは中央値（大）と最安値・件数（小）
-export default function PcPriceMatrix({ m }: { m: PcMatrix }) {
+export default function PcPriceMatrix({ m, head = "CPU ＼ メモリ" }: { m: PcMatrix; head?: string }) {
   return (
     <div className="bg-white rounded-xl border border-line overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead className="bg-ground text-xs text-ink-mute">
           <tr>
-            <th className="text-left px-3 py-2 font-normal sticky left-0 bg-ground">CPU ＼ メモリ</th>
+            <th className="text-left px-3 py-2 font-normal sticky left-0 bg-ground">{head}</th>
             {m.memories.map((mem) => (
-              <th key={mem} className="text-center px-2 md:px-3 py-2 font-bold text-ink-sub">{mem}GB</th>
+              <th key={mem} className="text-center px-2 md:px-3 py-2 font-bold text-ink-sub">{m.memoryLabels?.get(mem) ?? `${mem}GB`}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {m.rows.map((r) => (
             <tr key={r.label} className="border-t border-line-soft">
-              <th scope="row" className="text-left px-2 md:px-3 py-2 font-bold text-ink text-xs md:text-sm whitespace-nowrap sticky left-0 bg-white">{r.label}</th>
+              <th scope="row" className="text-left px-2 md:px-3 py-2 font-bold text-ink text-xs md:text-sm whitespace-nowrap sticky left-0 bg-white">{r.href ? <Link href={r.href} className="underline underline-offset-2 hover:text-brand-800">{r.label}</Link> : r.label}</th>
               {m.memories.map((mem) => {
                 const c = r.cells.get(mem);
                 return (

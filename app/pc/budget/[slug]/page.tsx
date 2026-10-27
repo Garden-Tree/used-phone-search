@@ -7,6 +7,7 @@ import AdDisclosure from "@/app/components/AdDisclosure";
 import PcItemRow, { type PcRowItem } from "@/app/components/PcItemRow";
 import PcItemList from "@/app/components/PcItemList";
 import PcPriceMatrix from "@/app/components/PcPriceMatrix";
+import { getMacMatrix } from "@/lib/pcMac";
 import { affiliateLinkType, affiliateUrl } from "@/lib/affiliate";
 import { yen } from "@/lib/format";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -59,6 +60,7 @@ export default async function PcBudgetPage({ params }: Props) {
   const best = bestWithin(items, "note", max, 5);
   const matrix = cpuMemoryMatrix(inBudget, "note", 2);
   const mem16 = inBudget.filter((p) => p.memoryGB >= 16).length;
+  const macMatrix = await getMacMatrix(max, 2);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -117,6 +119,14 @@ export default async function PcBudgetPage({ params }: Props) {
             <h2 className="text-xl font-bold mb-1">{man(max)}以内の相場（CPU × メモリ）</h2>
             <p className="text-xs text-ink-mute mb-3">縦が CPU、横がメモリ。マスの大きい数字は、この予算内の在庫の相場（中央値）です。</p>
             <PcPriceMatrix m={matrix} />
+          </section>
+        )}
+
+        {macMatrix.rows.length > 0 && (
+          <section className="my-8">
+            <h2 className="text-xl font-bold mb-1">{man(max)}以内で買える MacBook</h2>
+            <p className="text-xs text-ink-mute mb-3">中古MacBook のうち{yen(max)}以内の在庫の相場（機種 × メモリ）。機種名から、店ごとの在庫と最安値へ進めます。</p>
+            <PcPriceMatrix m={macMatrix} head="機種 ＼ メモリ" />
           </section>
         )}
 
