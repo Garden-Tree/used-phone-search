@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Breakdown } from "@/lib/modelBreakdown";
+import { searchRel } from "@/lib/searchRel";
 
 type Seg = { key: string; label: string; short: string; count: number; cls: string };
 
@@ -85,7 +86,7 @@ export default function StackedBar({ breakdown, rankMin, rankHref }: {
             const m = RANK_META[r.key];
             const price = rankMin.get(r.key);
             return (
-              <Link key={r.key} href={rankHref(r.key)} className="flex flex-col text-ink">
+              <Link key={r.key} href={rankHref(r.key)} rel={searchRel(rankHref(r.key))} className="flex flex-col text-ink">
                 <span className={`font-bold ${m.text}`}>{r.key} {m.hint}</span>
                 <span>{price ? `${price.toLocaleString()}円〜` : "-"}</span>
               </Link>

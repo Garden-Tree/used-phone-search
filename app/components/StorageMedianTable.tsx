@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { StorageMedianRow } from "@/lib/modelStats";
 import { storageLabel } from "@/lib/format";
+import { searchRel } from "@/lib/searchRel";
 
 /**
  * 機種ページの「容量別の相場（中央値）と最安値」（2026-10-25〜）。
@@ -38,7 +39,7 @@ export default function StorageMedianTable({ model, rows, kind, hrefOf }: {
           {rows.map((r) => (
             <tr key={r.storage} className="border-t border-line-soft">
               <th scope="row" className="py-2 text-left font-bold">
-                <Link href={hrefOf(r.storage)} className={`${LINK} underline-offset-2 hover:underline`}>{storageLabel(r.storage, model)}</Link>
+                <Link href={hrefOf(r.storage)} rel={searchRel(hrefOf(r.storage))} className={`${LINK} underline-offset-2 hover:underline`}>{storageLabel(r.storage, model)}</Link>
               </th>
               <td className="py-2 text-right font-bold">{r.medianPrice === null ? "—" : `${r.medianPrice.toLocaleString()}円`}</td>
               <td className="py-2 text-right text-price font-bold">{r.minPrice.toLocaleString()}円</td>

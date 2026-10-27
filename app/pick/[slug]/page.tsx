@@ -145,6 +145,7 @@ export default async function PickPage({ params }: Props) {
         <div className="text-center mb-10">
           <Link
             href={pickSearchHref(pick)}
+            rel="nofollow"
             className="inline-flex items-center px-8 h-12 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-800"
           >
             すべての在庫を見る（{totalCount.toLocaleString()}件）&rarr;

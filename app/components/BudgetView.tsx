@@ -279,6 +279,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
           {/* 検索ページは機種の指定がないと iPhone だけの一覧になるので、iPad・Pixel は機種一覧へ */}
           <Link
             href={t.hub ? t.hub.path : `/search?${new URLSearchParams({ maxPrice: String(max) }).toString()}`}
+            rel={t.hub ? undefined : "nofollow"}
             className="inline-flex items-center px-8 h-12 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-800"
           >
             {t.hub ? t.hub.cta : `${label}以下の在庫をすべて見る`} &rarr;

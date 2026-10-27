@@ -295,7 +295,7 @@ function ModelRows({ m }: { m: MiniUsedModel }) {
       {m.rows.map((r) => (
         <tr key={r.storage} className="border-t border-line-soft">
           <th scope="row" className="text-left font-bold pl-3.5 pr-2 py-2">
-            <Link href={`/search?${new URLSearchParams({ model: m.model, storage: String(r.storage) }).toString()}`} className="hover:text-brand-800">{storageLabel(r.storage)}</Link>
+            <Link href={`/search?${new URLSearchParams({ model: m.model, storage: String(r.storage) }).toString()}`} rel="nofollow" className="hover:text-brand-800">{storageLabel(r.storage)}</Link>
           </th>
           <td className={`${NUM} px-2 py-2 font-bold`}>{r.median !== null ? yen(r.median) : "—"}</td>
           <td className={`${NUM} px-2 py-2 text-price`}>{yen(r.minPrice)}</td>

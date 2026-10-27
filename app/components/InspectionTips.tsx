@@ -19,7 +19,7 @@ export function inspectionTips({ model, has64GB }: Props) {
       body: (
         <>
           多くの店で最大容量は値段に反映されていないので、同じ値段なら最大容量が高い個体を選ぶだけで得をします。
-          <Link href={searchWithBattery} className="text-brand-600 font-bold hover:underline ml-1">
+          <Link href={searchWithBattery} rel="nofollow" className="text-brand-600 font-bold hover:underline ml-1">
             {model}をバッテリー85%以上で絞り込む &rarr;
           </Link>
         </>

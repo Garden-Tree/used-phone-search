@@ -64,6 +64,7 @@ import { sameBudgetModels } from "@/lib/sameBudget";
 import { SIM_PLANS } from "@/lib/simPlans";
 import SimTile from "@/app/components/SimTile";
 import { nextGeneration } from "@/lib/nextGeneration";
+import { searchRel } from "@/lib/searchRel";
 
 // スクレイパーの後にビルドするので、在庫はその時点のもの
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -143,7 +144,7 @@ function PriceList({ rows, labelOf, hrefOf, baseline, note }: {
   return (
     <div>
       {rows.map((r) => (
-        <Link key={r.key} href={hrefOf(r.key)} className="flex items-center justify-between gap-3 py-2.5 border-t border-line-soft first:border-t-0 hover:bg-ground">
+        <Link key={r.key} href={hrefOf(r.key)} rel={searchRel(hrefOf(r.key))} className="flex items-center justify-between gap-3 py-2.5 border-t border-line-soft first:border-t-0 hover:bg-ground">
           <span className="flex flex-col min-w-0">
             <span className="text-[13px] font-bold">{labelOf(r.key)}</span>
             <span className="text-[11px] text-ink-mute">{r.count.toLocaleString()}件</span>
@@ -464,7 +465,7 @@ export default async function ModelPage({ params }: Props) {
         {!pc && <Check className="w-[22px] h-[22px] text-safe shrink-0" aria-hidden="true" />}
         <div className="flex flex-col">
           <span className="text-[11px] text-[#065F46]">{mac || watch ? "ランクB以上なら" : "ランクB以上・バッテリー85%以上なら"}</span>
-          <Link href={mac || watch ? searchHref(model, { minRank: "B" }) : searchHref(model, { minRank: "B", minBattery: "85" })} className="text-lg font-bold text-safe hover:underline underline-offset-2">
+          <Link href={mac || watch ? searchHref(model, { minRank: "B" }) : searchHref(model, { minRank: "B", minBattery: "85" })} rel="nofollow" className="text-lg font-bold text-safe hover:underline underline-offset-2">
             {yen(goodMin)}〜
           </Link>
         </div>
@@ -667,7 +668,7 @@ export default async function ModelPage({ params }: Props) {
                       : { label: "バッテリー85%以上", href: searchHref(model, { minBattery: "85" }) },
                     { label: "ランクA以上", href: searchHref(model, { minRank: "A" }) },
                   ].map((c) => (
-                    <Link key={c.label} href={c.href}
+                    <Link key={c.label} href={c.href} rel="nofollow"
                       className={`shrink-0 h-9 px-3.5 rounded-full border text-[13px] flex items-center ${
                         c.current ? "bg-brand-800 border-brand-800 text-white" : "bg-white border-gray-300 text-ink hover:border-brand-600"
                       }`}>
@@ -686,7 +687,7 @@ export default async function ModelPage({ params }: Props) {
                       <DeviceCard device={goodDevice} showModel={false} />
                     </>
                   )}
-                  <Link href={searchHref(model)} className={`flex items-center justify-center h-12 text-sm font-bold ${LINK}`}>
+                  <Link href={searchHref(model)} rel="nofollow" className={`flex items-center justify-center h-12 text-sm font-bold ${LINK}`}>
                     {stats.count.toLocaleString()}件すべて見る ›
                   </Link>
                 </DeviceList>
@@ -739,7 +740,7 @@ export default async function ModelPage({ params }: Props) {
                         const s = findShop(r.key);
                         return (
                           <div key={r.key} className="py-2.5 border-t border-line-soft first:border-t-0">
-                            <Link href={searchHref(model, { shop: r.key })} className="flex items-center justify-between gap-2 hover:bg-ground">
+                            <Link href={searchHref(model, { shop: r.key })} rel="nofollow" className="flex items-center justify-between gap-2 hover:bg-ground">
                               <span className="flex flex-col gap-0.5 min-w-0">
                                 <span className="text-[13px] font-bold">{r.key}</span>
                                 {s && (mac || watch

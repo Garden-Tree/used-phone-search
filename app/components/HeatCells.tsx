@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { searchRel } from "@/lib/searchRel";
 
 // 安い順に4段階（濃い＝安い）。文字色は背景とのコントラストで決める
 const TIERS = [
@@ -43,7 +44,7 @@ export default function HeatCells({ title, ranks, rows, labelWidth = 52 }: { tit
             <div className="flex items-center text-xs md:text-[13px] font-bold leading-tight">{row.label}</div>
             {row.cells.map((c, i) =>
               c ? (
-                <Link key={ranks[i]} href={c.href} className={`${TIERS[tierOf(c.minPrice)]} rounded-lg px-1 py-2 md:py-2.5 flex flex-col items-center hover:opacity-80`}>
+                <Link key={ranks[i]} href={c.href} rel={searchRel(c.href)} className={`${TIERS[tierOf(c.minPrice)]} rounded-lg px-1 py-2 md:py-2.5 flex flex-col items-center hover:opacity-80`}>
                   <span className={`${ranks.length > 4 ? "text-[11px]" : "text-xs"} md:text-[13px] font-bold`}>{c.minPrice.toLocaleString()}</span>
                   <span className="text-[9px] md:text-[10px]">{c.count.toLocaleString()}件</span>
                 </Link>

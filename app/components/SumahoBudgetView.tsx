@@ -141,6 +141,7 @@ export async function SumahoBudgetView({ max }: { max: number }) {
         <div className="text-center mb-4">
           <Link
             href={`/search?${new URLSearchParams({ maxPrice: String(max) }).toString()}`}
+            rel="nofollow"
             className="inline-flex items-center px-8 h-12 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-800"
           >
             {label}以下の在庫をすべて見る &rarr;

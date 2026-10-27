@@ -179,7 +179,7 @@ export default async function WhereToBuyPage() {
                   {w.shops.map((r) => (
                     <tr key={r.shop.name} className="border-t border-line-soft">
                       <td className="pl-4 pr-2 py-2.5">
-                        <Link href={shopSearch(r.shop)} className="font-bold text-ink hover:text-brand-800 whitespace-nowrap">{r.shop.label}</Link>
+                        <Link href={shopSearch(r.shop)} rel="nofollow" className="font-bold text-ink hover:text-brand-800 whitespace-nowrap">{r.shop.label}</Link>
                         <span className="block text-[10px] text-ink-mute whitespace-nowrap">{r.channels.join("・")}</span>
                       </td>
                       <td className={TD}>{r.count.toLocaleString()}件</td>
@@ -232,7 +232,7 @@ export default async function WhereToBuyPage() {
                         <tr key={s.shop.name} className="border-t border-line-soft">
                           <td className="pl-4 pr-2 py-2 text-ink-mute w-6">{i + 1}</td>
                           <td className="px-2 py-2">
-                            <Link href={shopSearch(s.shop, { model: p.model, storage: String(p.storage) })} className="text-brand-600 hover:text-brand-800 whitespace-nowrap">{s.shop.label}</Link>
+                            <Link href={shopSearch(s.shop, { model: p.model, storage: String(p.storage) })} rel="nofollow" className="text-brand-600 hover:text-brand-800 whitespace-nowrap">{s.shop.label}</Link>
                           </td>
                           <td className={`${TD} py-2 text-[11px] text-ink-mute`}>{s.count.toLocaleString()}件</td>
                           <td className={`${TD} py-2 pr-4 font-bold ${i === 0 ? "text-price" : ""}`}>{yen(s.minPrice)}</td>

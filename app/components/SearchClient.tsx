@@ -305,7 +305,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
               {SEARCH_DEVICES.map((d) => {
                 const qs = new URLSearchParams({ device: d.key, ...(hasShop ? { shop: shopQuery! } : {}) });
                 return (
-                  <Link key={d.key} href={`/search?${qs.toString()}`}
+                  <Link key={d.key} href={`/search?${qs.toString()}`} rel="nofollow"
                     aria-current={device.key === d.key ? 'page' : undefined}
                     className={`h-9 px-3.5 inline-flex items-center rounded-full text-[13px] font-medium border transition-colors ${
                       device.key === d.key ? 'bg-brand-800 text-white border-brand-800' : 'bg-white border-gray-300 text-gray-700 hover:border-brand-600 hover:text-brand-600'
