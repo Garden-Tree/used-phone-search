@@ -37,14 +37,11 @@ iPhone 18 Pro Max 新品（lib/applePrices.ts）: 256GB 239,800円 / 512GB 274,8
    512GB    3件 中央値 - 最安 269,800円 | ジャンク除く 3件 中央値 - | 電池85%以上 0件 最安 - | 新品 274,800円
   2048GB    5件 中央値 447,800円 最安 445,280円 | ジャンク除く 5件 中央値 447,800円 | 電池85%以上 3件 最安 447,800円 | 新品 449,800円
 
-== Duo 256GB 364,800円 と比べる組み合わせ（新型 mini は Wi-Fi 128GB 119,800円・中古は相場）
-  新型 mini 128GB ＋ 中古 iPhone 15 Pro Max 256GB: 266,780円（Duo との差 98,020円）
-  中古 mini A17 Pro 128GB ＋ 中古 iPhone 15 Pro Max 256GB: 230,960円（Duo との差 133,840円）
-  中古 mini 第6世代 256GB ＋ 中古 iPhone 15 Pro Max 256GB: 219,910円（Duo との差 144,890円）
-  新型 mini 128GB ＋ 中古 iPhone 16 Pro Max 256GB: 303,580円（Duo との差 61,220円）
-  中古 mini A17 Pro 128GB ＋ 中古 iPhone 16 Pro Max 256GB: 267,760円（Duo との差 97,040円）
-  中古 mini 第6世代 256GB ＋ 中古 iPhone 16 Pro Max 256GB: 256,710円（Duo との差 108,090円）
-  新型 mini 128GB ＋ 中古 iPhone 17 Pro Max 256GB: 328,580円（Duo との差 36,220円）
-  中古 mini A17 Pro 128GB ＋ 中古 iPhone 17 Pro Max 256GB: 292,760円（Duo との差 72,040円）
-  中古 mini 第6世代 256GB ＋ 中古 iPhone 17 Pro Max 256GB: 281,710円（Duo との差 83,090円）
-  新品 18 Pro Max 256GB ＋ 新型 mini 128GB: 359,600円（Duo との差 5,200円）
+== Duo 256GB 364,800円 と1台ずつ（Duo との差）
+  中古 iPhone 15 Pro Max 256GB（6.7インチ）: 146,980円（Duo より 217,820円 安い）
+  中古 iPhone 16 Pro Max 256GB（6.9インチ）: 183,780円（Duo より 181,020円 安い）
+  中古 iPhone 17 Pro Max 256GB（6.9インチ）: 208,780円（Duo より 156,020円 安い）
+  新品 新型 iPad mini 128GB Wi-Fi（8.5インチ）: 119,800円（Duo より 245,000円 安い）
+  中古 iPad mini (A17 Pro) 128GB（8.3インチ）: 83,980円（Duo より 280,820円 安い）
+  中古 iPad mini (第6世代) 256GB（8.3インチ）: 72,930円（Duo より 291,870円 安い）
+  （参考）中古 16 Pro Max ＋ 中古 mini A17 Pro: 267,760円（Duo より 97,040円 安い）

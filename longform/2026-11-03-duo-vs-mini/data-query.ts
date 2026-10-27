@@ -1,5 +1,5 @@
 /**
- * 横動画「iPhone Duo と新型 iPad mini、1台の値段で中古なら何が買える？」の数字（読むだけ。DB は groupBy・count・aggregate と、中央値の1行だけ。findMany で在庫の行は取らない）
+ * 横動画「大きい画面がほしいなら iPhone Duo でなくていい？中古の Pro Max・iPad mini と1台ずつ比べた」の数字（読むだけ。DB は groupBy・count・aggregate と、中央値の1行だけ。findMany で在庫の行は取らない）
  *
  * - 新品の値段は Apple 公式だけ: iPhone Duo は ideas/2026-10-27-iphone-duo.md（apple.com/jp/shop/buy-iphone/iphone-duo・10/27 確認。lib/applePrices.ts にはまだ入れていない）、
  *   新型 iPad mini（A20 Pro）は lib/ipadMiniA20.ts、iPhone 18 Pro Max は lib/applePrices.ts
@@ -81,23 +81,27 @@ async function main() {
     }
   }
 
-  // Duo 256GB の値段で買える組み合わせ（相場どうし）
+  // Duo 256GB と1台ずつ比べる（新型 mini は Wi-Fi 128GB の新品・ほかは中古の相場）
   const duo256 = DUO_PRICES[256];
   const mini = IPAD_MINI_A20_PRICES[128];
-  console.log(`\n== Duo 256GB ${yen(duo256)} と比べる組み合わせ（新型 mini は Wi-Fi 128GB ${yen(mini)}・中古は相場）`);
-  const combos: [string, number][] = [];
+  console.log(`
+== Duo 256GB ${yen(duo256)} と1台ずつ（Duo との差）`);
+  const one: [string, number][] = [];
   for (const p of IPHONES.slice(0, 3)) {
     const r = market.get(p);
-    if (!r) continue;
-    combos.push([`新型 mini 128GB ＋ 中古 ${p} ${r.medianStorage}GB`, mini + r.medianPrice]);
-    const a17 = market.get("iPad mini (A17 Pro)");
-    if (a17) combos.push([`中古 mini A17 Pro ${a17.medianStorage}GB ＋ 中古 ${p} ${r.medianStorage}GB`, a17.medianPrice + r.medianPrice]);
-    const m6 = market.get("iPad mini (第6世代)");
-    if (m6) combos.push([`中古 mini 第6世代 ${m6.medianStorage}GB ＋ 中古 ${p} ${r.medianStorage}GB`, m6.medianPrice + r.medianPrice]);
+    if (r) one.push([`中古 ${p} ${r.medianStorage}GB（${IPHONE_SPECS[p]?.display}インチ）`, r.medianPrice]);
   }
-  const p18 = applePrice("iPhone 18 Pro Max", 256);
-  if (p18) combos.push([`新品 18 Pro Max 256GB ＋ 新型 mini 128GB`, p18 + mini]);
-  for (const [label, sum] of combos) console.log(`  ${label}: ${yen(sum)}（Duo との差 ${yen(duo256 - sum)}）`);
+  one.push([`新品 新型 iPad mini 128GB Wi-Fi（8.5インチ）`, mini]);
+  for (const m of IPADS) {
+    const r = market.get(m);
+    if (r) one.push([`中古 ${m} ${r.medianStorage}GB（${IPAD_SPECS[m]?.display}インチ）`, r.medianPrice]);
+  }
+  for (const [label, price] of one) console.log(`  ${label}: ${yen(price)}（Duo より ${yen(duo256 - price)} 安い）`);
+
+  // 2台の合計は1行だけ（台本でも1行）
+  const pm16 = market.get("iPhone 16 Pro Max");
+  const a17 = market.get("iPad mini (A17 Pro)");
+  if (pm16 && a17) console.log(`  （参考）中古 16 Pro Max ＋ 中古 mini A17 Pro: ${yen(pm16.medianPrice + a17.medianPrice)}（Duo より ${yen(duo256 - pm16.medianPrice - a17.medianPrice)} 安い）`);
 
   await prisma.$disconnect();
   process.exit(0);

@@ -1,0 +1,168 @@
+{
+  "date": "2026-10-27",
+  "shops": 11,
+  "source": "script.md の数字そのまま（2026/10/27 の集計・longform/2026-11-04-foldables/data-query.ts → data-query.log。店は折りたたみの在庫がある11店。相場＝在庫がいちばん多い容量の中央値（getModelMarket）。対象は shorts/themes/foldbudget.ts の FOLD_MODELS。iPhone Duo の値段・画面・eSIM・修理料金は ideas/2026-10-27-iphone-duo.md（Apple 公式 apple.com/jp/shop/buy-iphone/iphone-duo・apple.com/jp/iphone-duo/specs/・support.apple.com/ja-jp/148588・10/27 確認）。画面の大きさは lib/galaxySpecs.ts（ドコモの製品仕様）・lib/pixelSpecs.ts（Google の技術仕様）、Pixel のアップデート保証は lib/pixelCatalog.ts（support.google.com/pixelphone/answer/4457705）。Pixel・Galaxy の新品の値段は公式で確かめられなかったので出さない）",
+  "thumbnail": {
+    "lines": ["折りたたみスマホ", "どれを買う？"],
+    "badge": [{ "text": "中古なら" }, { "text": "17.3万円", "red": true }],
+    "footer": "Duo の新品と Pixel・Galaxy の中古 1,537件の相場で ｜ used.gadelog.com"
+  },
+  "chapters": [
+    {
+      "title": "結論：Duoと中古の折りたたみ",
+      "scene": {
+        "type": "bars",
+        "heading": "iPhone Duo（新品）と、中古の折りたたみ",
+        "unit": "万円",
+        "rows": [
+          { "label": "iPhone Duo", "sub": "新品・256GB・Apple 公式", "median": 36.48, "stock": "中古 0件", "cue": "iPhone Duoは新品で36万4,800円" },
+          { "label": "Z Fold8 Ultra", "sub": "中古・256GB", "median": 27.478, "stock": "Duo より 9.0万円安い", "cue": "最新のPixel 11 Pro Foldでも" },
+          { "label": "Galaxy Z Fold8", "sub": "中古・256GB", "median": 26.38, "stock": "Duo より 10.1万円安い", "cue": "Galaxy Z Fold8が26万3,800円" },
+          { "label": "Pixel 11 Pro Fold", "sub": "中古・256GB", "median": 25.498, "stock": "Duo より 11.0万円安い", "cue": "最新のPixel 11 Pro Foldでも" },
+          { "label": "Galaxy Z Fold7", "sub": "中古・256GB", "median": 19.228, "stock": "Duo より 17.3万円安い", "cue": "1世代前のFold7なら" },
+          { "label": "Pixel 10 Pro Fold", "sub": "中古・256GB", "median": 17.28, "stock": "Duo より 19.2万円安い", "pick": true, "cue": "中古のPixel 10 Pro Foldが17万2,800円" }
+        ],
+        "note": "Duo は新品（税込・SIMフリー）。ほかは中古の相場（在庫がいちばん多い容量の中央値・2026/10/27）"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "どうやって調べた？",
+        "items": [
+          { "label": "折りたたみの在庫がある店", "value": "11", "unit": "店", "cue": "大手の中古ショップ11店から" },
+          { "label": "Galaxy Z Fold・Z Flip・Pixel の Fold", "value": "1,537", "unit": "件", "cue": "Galaxy Z Foldが697件" },
+          { "label": "iPhone Duo の中古", "value": "0", "unit": "件", "cue": "探したけど、0件" }
+        ],
+        "note": "15機種（Galaxy Z Fold4〜8・Fold8 Ultra・Z Flip4〜8・Pixel Fold・9〜11 Pro Fold）。相場＝在庫がいちばん多い容量の中央値"
+      }
+    },
+    {
+      "title": "iPhone Duo、新品はいくら？",
+      "scene": {
+        "type": "table",
+        "heading": "iPhone Duo の新品（Apple 公式・税込・SIMフリー）",
+        "columns": ["容量", "新品の値段"],
+        "emphasis": [1],
+        "rows": [
+          { "cells": ["256GB", "364,800円"], "cue": "256GBで36万4,800円" },
+          { "cells": ["512GB", "399,800円"], "cue": "512GBは39万9,800円" },
+          { "cells": ["1TB", "469,800円"], "cue": "1TBは46万9,800円" },
+          { "cells": ["2TB", "574,800円"], "cue": "1TBは46万9,800円" }
+        ],
+        "note": "外側5.4インチ・内側7.6インチ・A20 Pro・デュアル eSIM（物理 SIM 非対応）・10/23 発売。中古の在庫は0件"
+      }
+    },
+    {
+      "title": "最新のPixel・Galaxy、中古でいくら？",
+      "scene": {
+        "type": "table",
+        "heading": "2026年8月発売の折りたたみ（中古の相場・256GB）",
+        "columns": ["機種", "画面（外／内）", "相場", "在庫", "Duo の新品との差"],
+        "emphasis": [2],
+        "rows": [
+          { "cells": ["Galaxy Z Fold8 Ultra", "6.5／8.0インチ", "274,780円", "96件", "−90,020円"], "cue": "Galaxy Z Fold8 Ultraが27万4,780円" },
+          { "cells": ["Galaxy Z Fold8", "5.5／7.6インチ", "263,800円", "77件", "−101,000円"], "cue": "Galaxy Z Fold8 Ultraが27万4,780円" },
+          { "cells": ["Pixel 11 Pro Fold", "6.5／8.0インチ", "254,980円", "43件", "−109,820円"], "cue": "Pixel 11 Pro Foldが25万4,980円" },
+          { "cells": ["Galaxy Z Flip8", "4.1／6.9インチ", "184,569円", "40件", "−180,231円"], "cue": "Pixel 11 Pro Foldが25万4,980円" }
+        ],
+        "note": "iPhone Duo は外側5.4／内側7.6インチ・新品 256GB 364,800円。画面は Galaxy がドコモの製品仕様・Pixel が Google の技術仕様"
+      }
+    },
+    {
+      "title": "1世代前ならいくら安い？",
+      "scene": {
+        "type": "table",
+        "heading": "1世代前にすると（同じ256GBの相場）",
+        "columns": ["組", "新しい方", "1世代前", "差"],
+        "emphasis": [3],
+        "rows": [
+          { "cells": ["Pixel 11 Pro Fold→10 Pro Fold", "254,980円", "172,800円", "−82,180円"], "cue": "いちばん下がるのは、Pixel 11 Pro Foldから10 Pro Fold" },
+          { "cells": ["Galaxy Z Flip8→Flip7", "184,569円", "109,780円", "−74,789円"], "cue": "Galaxy Z Flip8からFlip7は" },
+          { "cells": ["Galaxy Z Fold8→Fold7", "263,800円", "192,280円", "−71,520円"], "cue": "Galaxy Z Flip8からFlip7は" },
+          { "cells": ["Galaxy Z Fold7→Fold6", "192,280円", "131,780円", "−60,500円"], "cue": "Fold7からFold6は6万500円" },
+          { "cells": ["Pixel 10 Pro Fold→9 Pro Fold", "172,800円", "140,980円", "−31,820円"], "cue": "Fold7からFold6は6万500円" }
+        ],
+        "note": "両方に在庫5件以上ある容量のうちいちばん小さい容量（今日はどの組も256GB）の中央値どうし"
+      }
+    },
+    {
+      "title": "予算別：10万・15万・20万円",
+      "scene": {
+        "type": "bars",
+        "heading": "予算別の中古の折りたたみ（相場・256GB）",
+        "unit": "万円",
+        "rows": [
+          { "label": "Pixel Fold", "sub": "10万円・Fold型", "median": 9.498, "stock": "在庫 16件・保証 2028年6月まで", "cue": "いちばん上はPixel Foldで9万4,980円" },
+          { "label": "Galaxy Z Fold5", "sub": "10万円・Fold型", "median": 9.328, "stock": "在庫 81件", "cue": "在庫が多いのはGalaxy Z Fold5" },
+          { "label": "Galaxy Z Flip6", "sub": "10万円・Flip型", "median": 7.678, "stock": "在庫 262件", "cue": "在庫が多いのはGalaxy Z Fold5" },
+          { "label": "Pixel 9 Pro Fold", "sub": "15万円・Fold型", "median": 14.098, "stock": "在庫 42件・保証 2031年9月まで", "cue": "Pixel 9 Pro Foldが14万980円" },
+          { "label": "Galaxy Z Fold6", "sub": "15万円・Fold型", "median": 13.178, "stock": "在庫 224件", "cue": "Galaxy Z Fold6は13万1,780円" },
+          { "label": "Galaxy Z Flip7", "sub": "15万円・Flip型", "median": 10.978, "stock": "在庫 173件", "cue": "Galaxy Z Fold6は13万1,780円" },
+          { "label": "Galaxy Z Fold7", "sub": "20万円・Fold型", "median": 19.228, "stock": "在庫 190件", "cue": "Galaxy Z Fold7が19万2,280円で190件" },
+          { "label": "Galaxy Z Flip8", "sub": "20万円・Flip型", "median": 18.457, "stock": "在庫 40件", "cue": "Galaxy Z Fold7が19万2,280円で190件" },
+          { "label": "Pixel 10 Pro Fold", "sub": "20万円・Fold型", "median": 17.28, "stock": "在庫 153件・保証 2032年10月まで", "pick": true, "cue": "Pixel 10 Pro Foldは17万2,800円で153件" }
+        ],
+        "note": "在庫5件以上で、相場がひとつ前の予算より上〜予算に入る機種（相場の高い順）。保証は Google のアップデート保証"
+      }
+    },
+    {
+      "title": "Flip（縦折り）とFold（横折り）",
+      "scene": {
+        "type": "table",
+        "heading": "Galaxy の Flip と Fold（同じ世代の相場・256GB）",
+        "columns": ["世代", "Flip（外／内）", "Fold（外／内）", "差"],
+        "emphasis": [3],
+        "rows": [
+          { "cells": ["7", "109,780円（4.1／6.9インチ）", "192,280円（6.5／8.0インチ）", "−82,500円"], "cue": "画面の大きさは、Flip7が" },
+          { "cells": ["8", "184,569円（4.1／6.9インチ）", "263,800円（5.5／7.6インチ）", "−79,231円"], "cue": "Flip8とFold8の差は" },
+          { "cells": ["6", "76,780円（3.4／6.7インチ）", "131,780円（6.3／7.6インチ）", "−55,000円"], "cue": "Flip8とFold8の差は" }
+        ],
+        "note": "Flip は縦に折る形・Fold は横に開く形。iPhone Duo は横に開く形（外側5.4／内側7.6インチ）。画面はドコモの製品仕様"
+      }
+    },
+    {
+      "title": "買う前の注意",
+      "scene": {
+        "type": "checklist",
+        "heading": "折りたたみの中古、買う前に見る3つのこと",
+        "items": [
+          { "text": "内側の画面の折り目・傷", "sub": "店の写真と説明で。状態のランクだけで決めない", "cue": "1つ目は内側の画面" },
+          { "text": "内側の画面の修理代", "sub": "iPhone Duo は 182,800円（Apple・保証対象外）。Pixel・Galaxy は各社の公式で", "cue": "2つ目は？" },
+          { "text": "アップデートの期限", "sub": "Pixel Fold 2028年6月・9 Pro Fold 2031年9月まで（Google）。Galaxy は機種ごとの期限が出ていない", "cue": "3つ目は？" }
+        ],
+        "note": "修理代は Apple の修理料金（保証対象外・税込）。Pixel の期限は Google「Pixel のアップデート保証期間」"
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "table",
+        "heading": "折りたたみスマホ まとめ",
+        "columns": ["予算", "機種", "値段（256GB）"],
+        "emphasis": [1],
+        "rows": [
+          { "cells": ["iPhone のまま", "iPhone Duo（新品）", "364,800円"], "cue": "iPhoneのまま折りたたみにしたいならDuo" },
+          { "cells": ["10万円", "Galaxy Z Fold5", "93,280円"], "cue": "Androidでいいなら" },
+          { "cells": ["15万円", "Pixel 9 Pro Fold", "140,980円"], "cue": "Androidでいいなら" },
+          { "cells": ["20万円", "Pixel 10 Pro Fold", "172,800円"], "cue": "Androidでいいなら" },
+          { "cells": ["20万円", "Galaxy Z Fold7", "192,280円"], "cue": "Androidでいいなら" }
+        ],
+        "note": "Duo は新品、ほかは中古の相場。相場は毎日変わる。今日の値段は used.gadelog.com"
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          { "id": "q9g7h5KLyfk", "title": "大きい画面の中古iPhone、どれを買う？Plus・Pro Max・Airを7千件の相場で比較" },
+          { "id": "amx5UxG6wpI", "title": "中古iPhone、買ってはいけない5つの条件｜検品担当が3.7万件の在庫で確かめた" }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com/galaxy・/pixel"
+      }
+    }
+  ]
+}
