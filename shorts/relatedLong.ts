@@ -27,6 +27,8 @@ const BIG_SCREEN: RelatedLong = { id: "q9g7h5KLyfk", title: "大きい画面の�
 // 横動画11本目（広告の回・楽天モバイル）。10/27 18:00 公開
 // （それまでは RELATED_LONG_THEMES にないので、締めは関連動画の声・札なしのいつもの形）
 const RAKUTEN_MOBILE: RelatedLong = { id: "Ua3ZRui2G4w", title: "【PR】中古iPhone＋楽天モバイル、2年でいくら？", folder: "2026-10-31-rakuten-mobile" };
+// 横動画12本目（新型 iPad mini）。10/27 夜にユーザーが予約（10/28 9:00）から前倒しで公開
+const IPAD_MINI: RelatedLong = { id: "N2slZY_hJ9s", title: "新型iPad mini（A20 Pro）買う？中古のA17 Proにする？差は3.6万円｜新旧の違いと中古の相場で比べた", folder: "2026-10-30-ipad-mini" };
 
 export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   provs: PRO_OR_STANDARD, promax: PRO_OR_STANDARD, probudget: PRO_OR_STANDARD, plusvs: PRO_OR_STANDARD, minie: PRO_OR_STANDARD, plusmax: PRO_OR_STANDARD,
@@ -38,6 +40,7 @@ export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   ipadbudget: IPAD_DORE,
   bigbudget: BIG_SCREEN,
   rakutenmobile: RAKUTEN_MOBILE,
+  ipadmini: IPAD_MINI,
 };
 
 /** 締めに札を出す横動画（声で誘導するテーマだけ） */
