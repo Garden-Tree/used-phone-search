@@ -6,19 +6,23 @@ iPhone Duoじゃなくていい？大きい画面がほしいだけなら、中�
 ・Duo（256GB 364,800円）との差: 中古の iPhone 17 Pro Max（6.9インチ・256GB 208,780円）−156,020円／16 Pro Max（6.9インチ・256GB 183,780円）−181,020円／15 Pro Max（6.7インチ・256GB 146,980円）−217,820円／新型 iPad mini（8.5インチ・新品 128GB 119,800円）−245,000円／中古の iPad mini A17 Pro（8.3インチ・128GB 83,980円）−280,820円
 ・iPhone Duo（Apple 公式・10/27 確認）: 画面 閉じて5.4インチ・開いて7.6インチ（有機EL）／254g／A20 Pro／IP68／デュアル eSIM（物理 SIM 非対応）／内側の画面の修理 182,800円（保証対象外・税込）。中古の在庫は 10/27 時点で0件
 ・新型 iPad mini（A20 Pro・Apple 公式・Wi-Fi）: 128GB 119,800円／8.5インチ 有機EL／255g／IP67／11/6 発売
+・Pro Max 3機種の違い（Apple の技術仕様）: チップ A19 Pro／A18 Pro／A17 Pro・画面 6.9／6.9／6.7インチ・望遠 4倍／5倍／5倍・ビデオ再生 最大39／33／29時間（17／16／15）。512GB の相場 243,780円／203,280円／161,980円
+・iPad mini 新型と A17 Pro の違い（Apple 公式）: 画面 8.5インチ 有機EL／8.3インチ 液晶・重さ 255g／293g・厚さ 5.4mm／6.3mm・防水・防塵 IP67／記載なし。Apple Pencil（Pro・USB-C）と電池（動画 最大10時間）は同じ。第6世代は 64GB 60,880円・256GB 72,930円
 
 相場＝同じ機種・同じ容量の中央値。インチは画面の対角の長さです。中古の Duo の値段は、在庫がないため扱っていません。
 
 0:00 結論：大きい画面だけならDuoでなくていい
 0:34 どうやって調べた？
-1:17 iPhone Duoはどんな機種？
-2:02 画面の大きさを比べる
-2:41 持ち歩くなら中古のPro Max
-4:09 家で読む・観るならiPad mini
-5:15 Duoにしかないところ
-6:03 買う前の注意
-6:44 まとめ
-7:20 次におすすめの動画
+1:14 iPhone Duoはどんな機種？
+1:54 画面の大きさを比べる
+2:33 持ち歩くなら中古のPro Max
+3:32 Pro Maxはどれを選ぶ？17・16・15の違い
+5:25 家で読む・観るならiPad mini
+6:05 iPad mini、新型と中古の旧型の違い
+7:31 Duoにしかないところ
+8:16 買う前の注意
+8:56 まとめ
+9:31 次におすすめの動画
 
 新型iPad miniと中古の旧型の比較: https://used.gadelog.com/ipad/ipad-mini-new-vs-used?utm_source=youtube&utm_medium=social&utm_campaign=long_20261103
 iPad mini（A17 Pro）: https://used.gadelog.com/ipad/ipad-mini-a17-pro?utm_source=youtube&utm_medium=social&utm_campaign=long_20261103
