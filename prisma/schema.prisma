@@ -89,3 +89,20 @@ model PcInventory {
   @@index([formFactor, price])
   @@index([cpuFamily])
 }
+
+// 中古パソコンの相場の推移（2026-10-27〜）。1日1行 / 形（note・desktop）× CPU（系統・世代）× メモリ。訳あり品は除く。
+// 記録は scripts/snapshot-pc-prices.ts（GitHub Actions で中古パソコンの取得の後）
+model PcPriceSnapshot {
+  id          String   @id @default(uuid())
+  date        DateTime @db.Date // JST の日付
+  formFactor  String   // note | desktop
+  cpuLabel    String   // 例: Core i5 第10世代, Core Ultra 5, Ryzen 5
+  memoryGB    Int
+  minPrice    Int
+  medianPrice Int
+  count       Int
+  updatedAt   DateTime @updatedAt
+
+  @@unique([date, formFactor, cpuLabel, memoryGB])
+  @@index([formFactor, cpuLabel, memoryGB, date])
+}

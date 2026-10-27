@@ -121,3 +121,11 @@ export function cpuMemoryMatrix(items: PcItem[], formFactor: string, minRowCount
     })),
   };
 }
+
+// 予算別のページ（/pc/budget/under-30000 など・2026-10-27〜）
+export const PC_BUDGETS = [30000, 50000, 80000];
+export const pcBudgetPath = (max: number) => `/pc/budget/under-${max}`;
+export const pcBudgetSlug = (max: number) => `under-${max}`;
+export const pcSlugToBudget = (slug: string) => PC_BUDGETS.find((b) => pcBudgetSlug(b) === slug);
+// 予算内の在庫（訳ありを除く・Windows 11 対応）がこれより少ない予算のページは検索に出さない
+export const PC_BUDGET_MIN_INDEX_ITEMS = 10;

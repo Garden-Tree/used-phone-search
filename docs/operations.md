@@ -108,6 +108,8 @@
 - ランクの対応（`scraper/pc_spec.py`）: PC WRAP 美麗＝A・特選＝B・標準＝C・訳あり＝J（新品は載せない）。Qualit は表記の S/A/B/C、訳あり品＝J。画面には店の表記も出す
 - リンクは A8（`lib/affiliate.ts`。掲載サイト「中古スマホ一括検索」の商品リンク。飛び先は pcwrap.com・yrl-qualit.com の中だけ）。A8 の商品リンク作成で作った a8mat
 - `/pc` は在庫20件未満のあいだ noindex・サイトマップに出さない（`PC_MIN_INDEX_ITEMS`）
+- 予算別 `/pc/budget/under-30000`・`under-50000`・`under-80000`（`PC_BUDGETS`）。予算内のノート（訳あり以外・Windows 11 対応）が10件未満なら noindex・サイトマップ外
+- 相場の推移は表 `PcPriceSnapshot`（形 × CPU × メモリ・1日1行）。`npx tsx scripts/snapshot-pc-prices.ts`（Actions の「中古パソコンの相場の記録」。失敗しても止めない）
 
 ### エムモバの公式とエムコム Yahoo!ショッピング店（2026-10-10〜）
 - 同じ会社（株式会社エムコム）。`scripts/link-duplicate-shops.ts` がイオシスと同じ仕組みで、エムモバの行に Yahoo の価格・URL を添え、同じ商品の Yahoo の行を隠す。

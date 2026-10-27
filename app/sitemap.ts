@@ -8,7 +8,7 @@ import { isCompareIndexable, COMPARE_MIN_STOCK } from "@/lib/compareStock";
 import { SITE_URL } from "@/lib/site";
 import { reportMonths, reportPublished } from "@/lib/monthlyReport";
 import prisma from "@/lib/prisma";
-import { getPcItems, PC_MIN_INDEX_ITEMS } from "@/lib/pcInventory";
+import { getPcItems, pcBudgetPath, PC_BUDGETS, PC_BUDGET_MIN_INDEX_ITEMS, PC_MIN_INDEX_ITEMS } from "@/lib/pcInventory";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 
 // ビルドのたびに作る（lastmod を在庫の更新に合わせるため）
@@ -71,7 +71,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/aquos`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/watch`, lastModified, changeFrequency: "daily", priority: 0.8 },
     // 中古パソコン（2026-10-27〜）。在庫が少ないあいだ（取り込み前）は noindex なので入れない
-    ...((await getPcItems()).length >= PC_MIN_INDEX_ITEMS ? [{ url: `${SITE_URL}/pc`, lastModified, changeFrequency: "daily" as const, priority: 0.7 }] : []),
+    ...(await (async () => {
+      const pc = await getPcItems();
+      if (pc.length < PC_MIN_INDEX_ITEMS) return [];
+      // 予算別は、予算内の在庫（ノート・訳あり以外・Windows 11 対応）が足りるページだけ（ページの noindex と同じ条件）
+      const budgets = PC_BUDGETS.filter(
+        (max) => pc.filter((p) => p.formFactor === "note" && p.price <= max && p.conditionRank !== "J" && p.win11).length >= PC_BUDGET_MIN_INDEX_ITEMS,
+      );
+      return [
+        { url: `${SITE_URL}/pc`, lastModified, changeFrequency: "daily" as const, priority: 0.7 },
+        ...budgets.map((max) => ({ url: `${SITE_URL}${pcBudgetPath(max)}`, lastModified, changeFrequency: "daily" as const, priority: 0.6 })),
+      ];
+    })()),
     { url: `${SITE_URL}/about`, changeFrequency: "monthly", priority: 0.3 },
     ...PICKS.map((p) => ({
       url: `${SITE_URL}${pickPath(p.slug)}`,

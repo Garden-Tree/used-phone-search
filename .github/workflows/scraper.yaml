@@ -225,6 +225,14 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run snapshot:prices
 
+      # 中古パソコンの相場の推移（CPU × メモリごと・1日1行。2026-10-27〜）。スマホの記録とは別なので、失敗しても止めない
+      - name: 中古パソコンの相場の記録
+        if: ${{ !cancelled() && inputs.site_only != 'true' }}
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx tsx scripts/snapshot-pc-prices.ts
+
       # 監視: 取り込みが止まっていないか（問題があっても書き出しは続け、最後にジョブを失敗にして通知する）。
       # 1回きりの取得の失敗は警告（::warning::）だけ。最終更新が13時間超・8時間超が2店以上・「0件」が2回続いた、などで失敗（scripts/check-health.ts）
       - name: データ更新の監視
