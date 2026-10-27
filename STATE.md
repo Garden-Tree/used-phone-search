@@ -20,7 +20,7 @@
 - **IndexNow**: 毎日全件
 - **デザイン**: `docs/design.md`
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
-- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。店の比較 `/iphone/where-to-buy`・新型 iPad mini `/ipad/ipad-mini-new-vs-used`・新型 MBP `/mac/macbook-pro-m6-new-vs-used`。横動画は同テーマのページに（`lib/videos.ts`）
+- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。店の比較 `/iphone/where-to-buy`・新旧の比較 `/ipad/ipad-mini-new-vs-used`・`/mac/macbook-pro-m6-new-vs-used`。横動画は同テーマのページに（`lib/videos.ts`）
 - **画面の店数は在庫がある店だけ**（`lib/activeShops.ts`）
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**
 - **スペック・保証期限・発売年月・Apple 修理料金・Pencil 対応は公式で確かめた値だけ**（`lib/*Specs.ts`・`*Catalog.ts`・`appleRepairPrices.ts`・`ipadPencil.ts`）
@@ -45,7 +45,7 @@
 | **11/1** | 横動画9本目（月次・`longform/2026-11-01-monthly`）を取り直して公開 | 毎月 |
 | **10/31・11/16** | X 有料: 返信の表示・流入 | 返信 平均50 か 流入 週5。届かねば解約 |
 | **随時** | iPhone Duo・iPad mini (A20 Pro)・MBP 14 M6（11/6 発売）の中古在庫 | 出たら catalog へ |
-| **10/31 夜** | ショートの声 ipadgen↔pixelgen（ideas/10-27-shorts-plan） | 継続率 3pt 差 |
+| **10/31 夜** | ショートの声 ipadgen↔pixelgen | 継続率 3pt 差 |
 | **11/10** | 10/27 改修の前後（収益・18 Pro の CTR・Bing 引用。ideas/10-27） | 引用減なら冒頭を戻す |
 | **11/23** | TikTok 4週目 | 再生の中央値500 か フォロワー300。届かねば1日1本 |
 | **12/1** | ahamo 段階制（40GB 3,135円〜）→ `lib/simPlans.ts` | |
