@@ -39,6 +39,7 @@ npx tsx shorts/make-short.tsx watchgen plan --dir shorts/out/2026-10-28-watchgen
 npx tsx shorts/make-short.tsx macgen plan --dir shorts/out/2026-10-29-macgen       # MacBook Air、1世代前にするといくら安い？（型 A だけ・10/27〜・ずんだもん）
 npx tsx shorts/make-short.tsx ipadgen plan --dir shorts/out/2026-10-29-ipadgen     # iPad、1世代前にするといくら安い？（型 A だけ・10/27〜・つむぎ）
 npx tsx shorts/make-short.tsx pixelgen plan --dir shorts/out/2026-10-30-pixelgen   # Google Pixel、1世代前にするといくら安い？（型 A だけ・10/27〜・ずんだもん）
+npx tsx shorts/make-short.tsx stock plan --dir shorts/out/2026-10-29-stock             # 中古でいちばん出回っている iPhone は？在庫数ランキング（型 A だけ・10/27〜・つむぎ。Android 版は stockandroid・ずんだもん）
 npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）
 npx tsx shorts/make-short.tsx fold render --tiktok  # TikTok 用の short-A-tiktok.mp4（BGM なし・締めは「used.gadelog.com で検索」）
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
@@ -258,6 +259,11 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
   - macgen（`themes/macgen.ts`）: 組は Air 13インチ M5→M4→M3→M2→M1、15インチ M5→M4→M3→M2。SSD は両方に在庫5件以上の最小の容量。ひと言は1位の1世代前・その容量の**メモリの内訳（DB の memoryGB の groupBy）**から（「M3の256GBは／メモリ8GBが59%／後から増やせません」）。分かる在庫が5件未満なら一般の注意。注記「中古は同じSSD容量の中央値」。リンクは /mac。utm `_macgen`・#MacBook #MacBookAir #中古。声 ずんだもん
   - 見た目は ⑤ PRO（前後の ipadmini・promax の ③ と続かない）。つかみは**機器の形**（look.hook "device"・`DeviceHook`。時計の文字盤とバンド／開いたノート）に「最新」「1世代前」＋最大の差額。`hookLines` も効く
   - 読み: Series シリーズ（`voiceTuning.ts` の BRANDS で頭を切る。切らないと「シリーズジュウ/ニ」で12が「10・2」）・Ultra 2〜4 ウルトラツー〜フォー・M1〜M5 エムワン〜エムファイブ・mm ミリ・Watch ウォッチ・「（第2世代）」の全角括弧（`voice.ts` の speakable）
+- `stock`・`stockandroid`: 中古でいちばん出回っている iPhone／Android は？在庫数ランキング（型 A だけ。10/27〜。`themes/stock.ts` の `buildStockScript(date, "iphone" | "android")`、型 `StockScript`）
+  - 件数＝販売中・ジャンク品を除く在庫を、モデル名ごとに1回の groupBy で数え、`resolveModelNames` で機種にまとめる（表記ゆれを合算。機種ページのないモデル名は除く）。上位3機種だけ相場（在庫がいちばん多い容量の中央値・機種ページと同じ）を取る。割合は対象の合計に対して。最安は出さない
+  - stockandroid は Pixel・Galaxy・Xperia・AQUOS をまとめる。ひと言は「機種ごとにアップデートの期限を確認」（1位が Pixel ならアップデート保証の終わり）
+  - 声: stock つむぎ・stockandroid ずんだもん。見た目は ④ CONDITION＋つかみ `bars`。stock は締めに関連動画（いま買うならどれ）
+  - 1位と2位が近いときは公開の前日に plan を `--force` で取り直す（取り直すと utm が作成日に戻るので直す）
 - `ipadgen`・`pixelgen`: iPad／Google Pixel、1世代前にするといくら安い？（型 A だけ。10/27〜。watchgen・macgen と同じ型の iPad・Pixel 版。`themes/ipadgen.ts`・`pixelgen.ts`、型 `IpadGenScript`・`PixelGenScript`）
   - 容量は macgen と同じ（両方に在庫5件以上の最小の容量）。差の大きい順・率は新しい方に対して・差0以下は出さない・3組に満たなければ止める
   - ipadgen: 組は 無印 A16→第10→第9→第8世代、Air 11インチ M4→M3→M2→Air（第5世代）→第4世代、Air 13インチ M4→M3→M2、Pro 11インチ M5→M4→第4→第3→第2→第1世代、Pro 13インチ M5→M4→Pro 12.9インチ（第6世代）→第5→第4→第3世代、mini A17 Pro→第6→第5世代（`lib/ipadCatalog.ts` の表記。mini (A20 Pro) は中古の在庫がまだないので入れない）。ひと言は1位の組の **Apple Pencil の対応**（`lib/ipadPencil.ts`・Apple 公式）: 1世代前で使えなくなる Pencil があれば「12.9インチ第6世代は／Pencil Proが／使えません」、なければ「同じものが使えます」。注記「中古は同じ容量の中央値・PencilはApple公式」。店の数は IPAD_SHOPS。リンクは /ipad。utm `_ipadgen`・#iPad #中古iPad #中古。声 つむぎ。見た目は ② BUDGET＋縦のタブレットの形
@@ -271,7 +277,7 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
 | ① 値下がり DROPS | 紺 brand900 | 赤 price・左右いっぱい | 角丸28・縁なし | price | drops（1位の下がった額）・galaxybudget（予算の札）・pixelgen（カメラの帯のあるスマホの形＋最大の差額） |
 | ② 予算別 BUDGET | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | budget・pixelbudget・macbudget・bigbudget（予算の札）・ipadbudget（予算の丸い札・淡い金）・overnew（新品と中古の割合の2本の棒）・minie（「無印 vs mini・e」。右の札は price）・ipadgen（縦のタブレットの形＋最大の差額） |
 | ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・plusvs・plusmax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
-| ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形）・batteryswap（「中古＋電池交換＝1つ上」の札）・unused（「ランクA vs 未使用品」） |
+| ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形）・batteryswap（「中古＋電池交換＝1つ上」の札）・unused（「ランクA vs 未使用品」）・stock／stockandroid（横の棒3本・1位だけ「？？？」＋「最多 ○件」） |
 | ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札）・oldpro（「前のPro vs 無印」＋差 最大）・watchgen・macgen（時計・ノートの形＋最大の差額） |
 | ⑥ 広告の回 AD（5つの例外・10/26〜） | 明るい ground | 塗らない（墨の文字）・ピンク #D9005B の下線 | 灰の縁＋影 | ピンク #D9005B（札も） | rakutenmobile（料金の3段の階段＋2年で差）。左上に「PR」 |
 
