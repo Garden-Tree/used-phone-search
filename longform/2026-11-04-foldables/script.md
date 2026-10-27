@@ -211,6 +211,9 @@ BGM: Cyber Society by のる（OpenTracks）
 効果音：効果音ラボ
 立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)／ずんだもん立ち絵：坂本アヒル様
 
+中古スマホにするなら回線も見直す
+楽天モバイル（Rakuten最強プラン 月1,078円〜・税込・10/26 公式で確認）【PR】: https://hb.afl.rakuten.co.jp/hsc/58858f0c.304dd67c.566a1a2e.942e4aef/?link_type=text&rafst=rmn&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJ0ZXh0IiwiY29sIjoxLCJjYXQiOjEsImJhbiI6Im5hbWUiLCJhbXAiOmZhbHNlfQ%3D%3D
+
 #折りたたみスマホ #iPhoneDuo #GalaxyZFold #Pixel
 ```
 
@@ -226,3 +229,4 @@ BGM: Cyber Society by のる（OpenTracks）
 - Galaxy Z Fold8 の画面（外5.5・内7.6インチ）が Fold7（外6.5・内8.0）より小さい: lib/galaxySpecs.ts（ドコモ SC-57G の製品ページ）の値。作る前にドコモのページで再確認する（3章・6章・data.json で使う）
 - 読み: voice-draft の後に「Fold8 Ultra」「Z Flip」「eSIM」「A20 Pro」「Pixel 11 Pro Fold」の読みを聞いて確かめる
 - 終了画面: 動画2枠は 8本目 大きい画面（q9g7h5KLyfk）と 7本目 買ってはいけない（amx5UxG6wpI）。題は公開時の題（longform/2026-11-03-duo-vs-mini/data.json・2026-10-28-big-screen/data.json と同じ）。14本目（Duo と新型 mini）は公開して ID が出たら、1枠をそちらに替えてもよい
+- 楽天モバイルの行: 入れる（ユーザー 10/27・Duo の回と同じ）。概要欄のいちばん下（クレジットのあと・ハッシュタグの前）。中古スマホが主役

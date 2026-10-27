@@ -221,4 +221,4 @@ BGM: Cyber Society by のる（OpenTracks）
 - Duo の Pencil は「年内に Apple Pencil（USB-C）に対応予定」（ニュースリリース）。11月以降に対応したら言い方を直す
 - 終了画面: 動画2枠は 12本目（新型 iPad mini・N2slZY_hJ9s・10/27 公開）と 8本目（大きい画面・q9g7h5KLyfk）。**どちらも lib/videos.ts にはまだ無い**（id は ideas/2026-10-27.md・ideas/2026-10-26.md、題は各フォルダの youtube.txt の1行目）。公開時の題が違っていたら data.json の題を直す
 - 読み: voice-draft の後に「Duo」「A20 Pro」「IP68」「eSIM」「Pro Max」の読みを聞いて確かめる
-- 楽天モバイルの行は iPhone の回の決まり（README）。iPad の話も入る回なので、入れるかは公開前にユーザーに確かめる
+- 楽天モバイルの行: **入れる（ユーザー 10/27）。メインではないので概要欄のいちばん下（クレジットのあと・ハッシュタグの前）**。あくまで中古スマホが主役
