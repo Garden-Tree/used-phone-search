@@ -13,7 +13,7 @@ import { yen } from "@/lib/format";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import {
   bestWithin, cpuMemoryMatrix, getPcItems, pcBudgetPath, pcBudgetSlug, pcSlugToBudget,
-  PC_BUDGETS, PC_BUDGET_MIN_INDEX_ITEMS, PC_SHOPS, type PcItem,
+  PC_BUDGETS, PC_BUDGET_MIN_INDEX_ITEMS, pcShopLabels, type PcItem,
 } from "@/lib/pcInventory";
 
 // 予算別の中古ノートパソコン（/pc/budget/under-30000 など・2026-10-27〜）。在庫はビルド（1日4回）のたびに更新
@@ -88,7 +88,7 @@ export default async function PcBudgetPage({ params }: Props) {
 
         <h1 className="text-2xl md:text-3xl font-bold mb-3">{man(max)}以内で買える中古ノートパソコン</h1>
         <p className="text-ink-sub mb-4 leading-relaxed">
-          中古パソコン専門店（{PC_SHOPS.join("・")}）の在庫のうち、{yen(max)}以内で Windows 11 に対応するノートは <strong>{inBudget.length.toLocaleString()}件</strong>
+          中古ショップ（{pcShopLabels(items).join("・")}）の在庫のうち、{yen(max)}以内で Windows 11 に対応するノートは <strong>{inBudget.length.toLocaleString()}件</strong>
           {inBudget.length > 0 && <>（うちメモリ16GB以上は {mem16.toLocaleString()}件）</>}です。訳あり品は除いています。
         </p>
         <nav aria-label="ほかの予算" className="flex flex-wrap gap-2 mb-4">

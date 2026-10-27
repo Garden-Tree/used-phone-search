@@ -11,6 +11,8 @@ export type RakutenItem = {
   nw: string | null;
   batt?: number | null;
   car?: string | null;
+  /** パソコンのスペック（ソフマップの商品説明の〔CPU〕〔メモリ容量〕など。fetch.php の compactItem。2026-10-27〜） */
+  spec?: string | null;
   /** 販売元（Amazon の出品者名。scripts/fetch-amazon.ts だけが入れる） */
   seller?: string | null;
 };

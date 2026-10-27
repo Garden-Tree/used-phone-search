@@ -24,8 +24,15 @@ export type PcItem = {
   url: string;
 };
 
-// 店の表記（A8 のプログラム名と同じ。lib/affiliate.ts の A8_PROGRAMS）
-export const PC_SHOPS = ["PC WRAP", "Qualit"] as const;
+/** 在庫に出てくる店の短い名前（「ソフマップ（楽天市場店）」→「ソフマップ」）。件数の多い順 */
+export function pcShopLabels(items: PcItem[]): string[] {
+  const counts = new Map<string, number>();
+  for (const p of items) {
+    const label = p.shopName.replace(/（.*）$/, "");
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([l]) => l);
+}
 
 // 在庫がこれより少ないあいだ（取り込み前など）は /pc を検索に出さず、サイトマップにも入れない
 export const PC_MIN_INDEX_ITEMS = 20;

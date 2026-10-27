@@ -203,6 +203,15 @@ jobs:
           if [ "$fetch_ok" = 1 ]; then exit 1; fi
           exit "$ingest_ok"
 
+      # 楽天市場店（ソフマップ・じゃんぱら・イオシス）の中古ノートパソコン → PcInventory（2026-10-27〜）。
+      # ファイルは上の手順（ci-deploy.sh fetch-rakuten）が一緒に取ってくる。スマホとは別の表なので、失敗しても止めない
+      - name: 楽天市場店の中古パソコンを取り込む
+        if: ${{ !cancelled() && env.RAKUTEN_DATA_URL != '' && inputs.site_only != 'true' }}
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx tsx scripts/ingest-rakuten-pc.ts rakuten-data
+
       # にこスマ・イオシスの iPad は店の表記のまま入るので、lib/ipadCatalog.ts の正式名にそろえる
       - name: iPad の機種名をそろえる
         if: ${{ !cancelled() && inputs.site_only != 'true' }}

@@ -6,7 +6,7 @@ import AdDisclosure from "@/app/components/AdDisclosure";
 import { affiliateLinkType, affiliateUrl } from "@/lib/affiliate";
 import { yen } from "@/lib/format";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { bestWithin, cpuMemoryMatrix, getPcItems, pcBudgetPath, PC_BUDGETS, PC_MIN_INDEX_ITEMS, PC_SHOPS, type PcItem } from "@/lib/pcInventory";
+import { bestWithin, cpuMemoryMatrix, getPcItems, pcBudgetPath, PC_BUDGETS, PC_MIN_INDEX_ITEMS, pcShopLabels, type PcItem } from "@/lib/pcInventory";
 import PcItemRow, { type PcRowItem } from "@/app/components/PcItemRow";
 import PcItemList from "@/app/components/PcItemList";
 import PcPriceMatrix from "@/app/components/PcPriceMatrix";
@@ -73,7 +73,7 @@ export default async function PcIndexPage() {
           <p className="text-ink-sub mb-4">在庫の取り込みを準備しています。</p>
         ) : (
           <p className="text-ink-sub mb-4 leading-relaxed">
-            中古パソコン専門店（{PC_SHOPS.join("・")}）のWindowsパソコン <strong>{items.length.toLocaleString()}件</strong>
+            中古ショップ（{pcShopLabels(items).join("・")}）のWindowsパソコン <strong>{items.length.toLocaleString()}件</strong>
             （ノート {notes.length.toLocaleString()}件・デスクトップ {desktops.length.toLocaleString()}件）を、CPU・メモリ・SSD・状態で比べています。
             {macCount > 0 && <>MacBook <strong>{macCount.toLocaleString()}件</strong> の相場も下にまとめています。</>}
           </p>

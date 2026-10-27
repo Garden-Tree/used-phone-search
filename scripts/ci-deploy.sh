@@ -27,6 +27,11 @@ fetch_rakuten() {
       failed=1
     fi
   done
+  # 中古ノートパソコン（<shopCode>-pc.json.gz・2026-10-27〜。ソフマップ・じゃんぱら・イオシス）。
+  # なくてもスマホの取り込みは止めない（取れなければ scripts/ingest-rakuten-pc.ts が警告だけ出す）
+  for shop in akiba-u-shop janpara pc-good; do
+    curl -fsSR --connect-timeout 20 --max-time 120 --retry 3 --retry-delay 30 --retry-all-errors       -o "rakuten-data/$shop-pc.json.gz" "${RAKUTEN_DATA_URL%/}/$shop-pc.json.gz" || echo "$shop-pc: 取得できない（中古パソコン）"
+  done
   return $failed
 }
 

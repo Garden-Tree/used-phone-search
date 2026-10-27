@@ -10,6 +10,8 @@
  *   php fetch.php                 … 全ショップを全件取得して送信
  *   php fetch.php janpara         … 指定したショップだけ
  *   php fetch.php --dry [shop]    … 送信せず、先頭3ページ分を sample.json に保存（確認用）
+ *   php fetch.php --dry --kw=ノートパソコン --ng="MacBook Chromebook" janpara
+ *                                 … dry の検索語と除外語を変える（中古パソコンを足す前の確認用。2026-10-27〜）
  *
  * 秘密の値は同じディレクトリの config.php に置く（config.example.php を参照）。
  * 商品名の正規化は受け口（TypeScript）側で行い、ここでは取得と最小限の抽出だけを行う。
@@ -20,7 +22,14 @@ declare(strict_types=1);
 $config = require __DIR__ . '/config.php';
 $args = array_slice($argv ?? [], 1);
 $dryRun = in_array('--dry', $args, true);
-$onlyShops = array_values(array_filter($args, fn($a) => $a !== '--dry'));
+$onlyShops = array_values(array_filter($args, fn($a) => !str_starts_with($a, '--')));
+// --dry の検索語・除外語（NGKeyword）。指定がなければ KEYWORDS[0] で除外なし
+$dryKeyword = null;
+$dryNg = '';
+foreach ($args as $a) {
+    if (str_starts_with($a, '--kw=')) $dryKeyword = substr($a, 5);
+    if (str_starts_with($a, '--ng=')) $dryNg = substr($a, 5);
+}
 
 const ENDPOINT = 'https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701';
 // 取り込むショップ（楽天の shopCode）。受け口 lib/rakutenShops.ts の RAKUTEN_SHOPS と揃える
@@ -49,6 +58,14 @@ const ANDROID_SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'pc-good'];
 // 取得時間はゲオで約 +4 分（1.1 秒間隔×約 210）。1500 で足りる見込みなので上限は上げない。実際の要求数は fetch.log の「fetched … with N requests」で確かめる
 const WATCH_KEYWORDS = ['Apple Watch'];
 const WATCH_SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'pc-good', 'kamaya-awards', 'garakei'];
+// 中古ノートパソコン（Windows）は 2026-10-27〜、ソフマップ・じゃんぱら・イオシスの3店だけ（読み取りは lib/rakutenPc.ts。表は PcInventory）。
+// スマホのファイルとは別の <shopCode>-pc.json.gz に置く（スマホの取得・洗い替えに影響させない。PC の取得が失敗しても、スマホのファイルは置いたあと）。
+// MacBook・Chromebook・iPad は NGKeyword で外す。PC 専門店の楽天店は SKU 選択式で取り込めないので引かない（ideas/2026-10-27.md）。
+// 要求数の概算（10/27 の楽天の検索ページの件数）: ソフマップ 約4,200件（3,000件を超えるので価格帯を割る）＝約150要求、じゃんぱら 約1,800件＝約60、イオシス 約300件＝約10。
+// 1店あたりの MAX_REQUESTS=1500 に、今の約350〜650要求と合わせても収まる。取得時間はソフマップで約 +3 分
+const PC_SHOP_CODES = ['akiba-u-shop', 'janpara', 'pc-good'];
+const PC_KEYWORD = 'ノートパソコン';
+const PC_NG_KEYWORD = 'MacBook Chromebook iPad';
 const HITS = 30;              // 1ページの最大件数
 const MAX_PAGES = 100;        // API の上限（1検索あたり最大 3,000 件）
 const INTERVAL_US = 1100000;  // 登録した QPS=1 を守るため 1.1 秒間隔
@@ -67,7 +84,7 @@ function logLine(string $message): void
     file_put_contents(__DIR__ . '/fetch.log', date('Y-m-d H:i:s') . ' ' . $message . PHP_EOL, FILE_APPEND);
 }
 
-function fetchPage(array $config, string $shopCode, string $keyword, int $page, int $minPrice, int $maxPrice): array
+function fetchPage(array $config, string $shopCode, string $keyword, int $page, int $minPrice, int $maxPrice, string $ngKeyword = ''): array
 {
     global $requestCount;
     if (++$requestCount > MAX_REQUESTS) {
@@ -88,7 +105,7 @@ function fetchPage(array $config, string $shopCode, string $keyword, int $page, 
         'sort'          => '+itemPrice',
         'minPrice'      => $minPrice,
         'maxPrice'      => $maxPrice,
-    ]);
+    ] + ($ngKeyword !== '' ? ['NGKeyword' => $ngKeyword] : []));
     // 一時的なエラー（429・5xx・JSON でない応答）は少し待って2回までやり直す
     for ($attempt = 1; ; $attempt++) {
         $ch = curl_init(ENDPOINT . '?' . $query);
@@ -136,6 +153,16 @@ function compactItem(array $item): array
     if (!preg_match('/最大容量\s*[：:]?\s*(\d{2,3})\s*[%％]/u', $caption, $batt)) {
         preg_match('/バッテリー容量\s*[：:]?\s*(\d{2,3})\s*[%％]/u', $caption, $batt);
     }
+    // パソコンのスペック: ソフマップは商品説明に「〔CPU〕Core i5 10310U (1.7GHz)〔メモリ容量〕16GB〔ストレージ種類_1〕SSD〔ストレージ容量_1〕256GB〔モニターサイズ〕12.1インチワイド」
+    // （商品名にスペックがない）。〔CPU〕があるときだけ、この5項目を「CPU:…|メモリ:…」の形で送る（中古パソコン。2026-10-27〜）
+    $spec = null;
+    if (preg_match('/〔CPU〕\s*([^〔]+)/u', $caption, $cpu)) {
+        $parts = ['CPU:' . trim(strip_tags($cpu[1]))];
+        foreach (['メモリ容量' => 'メモリ', 'ストレージ種類_1' => '種類', 'ストレージ容量_1' => '容量', 'モニターサイズ' => '画面', 'OS' => 'OS'] as $key => $label) {
+            if (preg_match('/〔' . $key . '〕\s*([^〔]+)/u', $caption, $m)) $parts[] = $label . ':' . trim(strip_tags($m[1]));
+        }
+        $spec = cutUtf8(implode('|', $parts), 300);
+    }
     return [
         'code'  => (string)($item['itemCode'] ?? ''),
         'name'  => (string)($item['itemName'] ?? ''),
@@ -145,27 +172,28 @@ function compactItem(array $item): array
         'nw'    => $nw[1] ?? null,
         'batt'  => isset($batt[1]) ? (int)$batt[1] : null,
         'car'   => $car[1] ?? null,
+        'spec'  => $spec,
     ];
 }
 
 /**
  * 価格帯 [min, max] の在庫を集める。3,000 件を超える帯は半分に割って再帰的に取得する
  */
-function collectRange(array $config, string $shopCode, string $keyword, int $min, int $max, array &$items): void
+function collectRange(array $config, string $shopCode, string $keyword, int $min, int $max, array &$items, string $ngKeyword = ''): void
 {
-    $first = fetchPage($config, $shopCode, $keyword, 1, $min, $max);
+    $first = fetchPage($config, $shopCode, $keyword, 1, $min, $max, $ngKeyword);
     $count = (int)($first['count'] ?? 0);
 
     if ($count > HITS * MAX_PAGES && $max - $min > 1) {
         $mid = intdiv($min + $max, 2);
-        collectRange($config, $shopCode, $keyword, $min, $mid, $items);
-        collectRange($config, $shopCode, $keyword, $mid + 1, $max, $items);
+        collectRange($config, $shopCode, $keyword, $min, $mid, $items, $ngKeyword);
+        collectRange($config, $shopCode, $keyword, $mid + 1, $max, $items, $ngKeyword);
         return;
     }
 
     $pageCount = min((int)($first['pageCount'] ?? 1), MAX_PAGES);
     for ($page = 1; $page <= $pageCount; $page++) {
-        $res = $page === 1 ? $first : fetchPage($config, $shopCode, $keyword, $page, $min, $max);
+        $res = $page === 1 ? $first : fetchPage($config, $shopCode, $keyword, $page, $min, $max, $ngKeyword);
         foreach ($res['Items'] ?? $res['items'] ?? [] as $item) {
             $item = $item['Item'] ?? $item;
             $compact = compactItem($item);
@@ -175,16 +203,37 @@ function collectRange(array $config, string $shopCode, string $keyword, int $min
     logLine("{$shopCode} {$keyword} range {$min}-{$max}: count={$count}, pages={$pageCount}");
 }
 
+/**
+ * 中古ノートパソコンを取って <output_dir>/<shopCode>-pc.json.gz に置く（2026-10-27〜）。
+ * スマホのファイルを置いたあとに呼ぶ。失敗してもログに残すだけ（スマホの取り込みは止めない。PC は前回のファイルが残る）
+ */
+function syncPc(array $config, string $shopCode, string $dir): void
+{
+    global $requestCount;
+    $before = $requestCount;
+    $items = [];
+    try {
+        collectRange($config, $shopCode, PC_KEYWORD, 1, 999999, $items, PC_NG_KEYWORD);
+        $items = array_values($items);
+        $payload = gzencode(json_encode(['items' => $items], JSON_UNESCAPED_UNICODE), 9);
+        $tmp = "{$dir}/.{$shopCode}-pc.json.gz." . getmypid() . '.tmp';
+        $ok = file_put_contents($tmp, $payload) !== false && rename($tmp, "{$dir}/{$shopCode}-pc.json.gz");
+        logLine("{$shopCode} pc: " . count($items) . ' items with ' . ($requestCount - $before) . ' requests, saved ' . ($ok ? 'ok' : 'FAILED'));
+    } catch (Throwable $e) {
+        logLine("{$shopCode} pc ERROR: " . $e->getMessage());
+    }
+}
+
 /** 1ショップ分を取得して受け口へ送る。成功なら true */
 function syncShop(array $config, string $shopCode, bool $dryRun): bool
 {
-    global $requestCount;
+    global $requestCount, $dryKeyword, $dryNg;
     $requestCount = 0;
     $items = [];
 
     if ($dryRun) {
         for ($page = 1; $page <= 3; $page++) {
-            $res = fetchPage($config, $shopCode, KEYWORDS[0], $page, 1, 999999);
+            $res = fetchPage($config, $shopCode, $dryKeyword ?? KEYWORDS[0], $page, 1, 999999, $dryNg);
             foreach ($res['Items'] ?? $res['items'] ?? [] as $item) {
                 $items[] = compactItem($item['Item'] ?? $item);
                 // 新しい店の読み取りを作るとき用に、API の生の応答（説明文など）も残す
@@ -193,7 +242,7 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
         }
         file_put_contents(__DIR__ . "/sample-{$shopCode}.json", json_encode($items, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         file_put_contents(__DIR__ . "/sample-{$shopCode}-raw.json", json_encode($raw ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        logLine("{$shopCode} dry run: saved sample-{$shopCode}.json (" . count($items) . ' items)');
+        logLine("{$shopCode} dry run" . ($dryKeyword !== null ? " kw={$dryKeyword} ng={$dryNg}" : '') . ": saved sample-{$shopCode}.json (" . count($items) . ' items, count=' . ($res['count'] ?? '?') . ')');
         return true;
     }
 
@@ -221,6 +270,7 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
         $tmp = "{$dir}/.{$shopCode}.json.gz." . getmypid() . '.tmp';
         $ok = file_put_contents($tmp, $payload) !== false && rename($tmp, "{$dir}/{$shopCode}.json.gz");
         logLine("{$shopCode} saved: " . ($ok ? "{$dir}/{$shopCode}.json.gz (" . strlen($payload) . ' bytes)' : 'FAILED'));
+        if (in_array($shopCode, PC_SHOP_CODES, true)) syncPc($config, $shopCode, $dir);
         return $ok;
     }
     $ch = curl_init($config['ingest_url'] . '?shop=' . urlencode($shopCode));
