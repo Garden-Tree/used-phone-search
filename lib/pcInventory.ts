@@ -80,30 +80,44 @@ export function bestWithin(items: PcItem[], formFactor: string, maxPrice: number
     .slice(0, n);
 }
 
-export type PcGroupStat = { label: string; count: number; minPrice: number; medianPrice: number };
+export type PcCell = { count: number; minPrice: number; medianPrice: number };
+export type PcMatrix = { memories: number[]; rows: { label: string; cells: Map<number, PcCell>; count: number }[] };
 
-/** 条件（CPU の系統・メモリ）ごとの相場。訳あり（J）は除く。件数が minCount 未満の条件は出さない */
-export function groupStats(items: PcItem[], formFactor: string, minCount = 3): PcGroupStat[] {
-  const groups = new Map<string, number[]>();
+// 表の行の並び（系統ごとにまとめ、その中は世代の古い順）
+const FAMILY_ORDER = ["Celeron", "Pentium", "Core m3", "Core i3", "Core i5", "Core i7", "Core i9", "Core Ultra 5", "Core Ultra 7", "Core Ultra 9", "Ryzen 3", "Ryzen 5", "Ryzen 7", "Ryzen 9"];
+
+/**
+ * 条件別の相場の表（縦 CPU の系統・世代 × 横 メモリ）。訳あり（J）は除く。
+ * 行は合わせて minRowCount 件以上ある CPU だけ、列はその行に出てくるメモリ。マスは件数・最安値・中央値（1件でも出し、画面で「1件」と添える）
+ */
+export function cpuMemoryMatrix(items: PcItem[], formFactor: string, minRowCount = 3): PcMatrix {
+  const rows = new Map<string, { family: string; gen: number; prices: Map<number, number[]> }>();
   for (const p of items) {
     if (p.formFactor !== formFactor || p.conditionRank === "J") continue;
-    const gen = p.cpuGen ? ` 第${p.cpuGen}世代` : "";
-    const key = `${p.cpuFamily}${gen}・メモリ${p.memoryGB}GB`;
-    groups.set(key, [...(groups.get(key) ?? []), p.price]);
+    const label = p.cpuGen ? `${p.cpuFamily} 第${p.cpuGen}世代` : p.cpuFamily;
+    const row = rows.get(label) ?? { family: p.cpuFamily, gen: p.cpuGen ?? 0, prices: new Map() };
+    row.prices.set(p.memoryGB, [...(row.prices.get(p.memoryGB) ?? []), p.price]);
+    rows.set(label, row);
   }
-  return [...groups.entries()]
-    .filter(([, prices]) => prices.length >= minCount)
-    .map(([label, prices]) => {
-      const sorted = [...prices].sort((a, b) => a - b);
-      const mid = Math.floor(sorted.length / 2);
-      const median = sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
-      return { label, count: sorted.length, minPrice: sorted[0], medianPrice: median };
-    })
-    .sort((a, b) => a.medianPrice - b.medianPrice);
-}
-
-/** 「メモリ16GB・SSD 256GB」 */
-export function memoryStorage(p: Pick<PcItem, "memoryGB" | "storageGB" | "storageType">): string {
-  const sto = p.storageGB >= 1000 ? `${p.storageGB / 1000}TB` : `${p.storageGB}GB`;
-  return `メモリ${p.memoryGB}GB・${p.storageType} ${sto}`;
+  const order = (f: string) => (FAMILY_ORDER.indexOf(f) + 1 || 99);
+  const kept = [...rows.entries()]
+    .map(([label, r]) => ({ label, ...r, count: [...r.prices.values()].reduce((n, v) => n + v.length, 0) }))
+    .filter((r) => r.count >= minRowCount)
+    .sort((a, b) => order(a.family) - order(b.family) || a.gen - b.gen);
+  const memories = [...new Set(kept.flatMap((r) => [...r.prices.keys()]))].sort((a, b) => a - b);
+  return {
+    memories,
+    rows: kept.map((r) => ({
+      label: r.label,
+      count: r.count,
+      cells: new Map(
+        [...r.prices.entries()].map(([mem, prices]) => {
+          const sorted = [...prices].sort((a, b) => a - b);
+          const mid = Math.floor(sorted.length / 2);
+          const median = sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+          return [mem, { count: sorted.length, minPrice: sorted[0], medianPrice: median }];
+        }),
+      ),
+    })),
+  };
 }

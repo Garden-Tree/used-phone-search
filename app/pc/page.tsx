@@ -6,7 +6,9 @@ import AdDisclosure from "@/app/components/AdDisclosure";
 import { affiliateLinkType, affiliateUrl } from "@/lib/affiliate";
 import { yen } from "@/lib/format";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { bestWithin, getPcItems, groupStats, memoryStorage, PC_MIN_INDEX_ITEMS, PC_SHOPS, type PcItem } from "@/lib/pcInventory";
+import { bestWithin, cpuMemoryMatrix, getPcItems, PC_MIN_INDEX_ITEMS, PC_SHOPS, type PcItem, type PcMatrix } from "@/lib/pcInventory";
+import PcItemRow, { type PcRowItem } from "@/app/components/PcItemRow";
+import PcItemList from "@/app/components/PcItemList";
 
 // 中古パソコン（Windows のノート・デスクトップ）の最安値・相場（2026-10-27〜）。在庫はビルド（1日4回）のたびに更新
 export const dynamic = "force-static";
@@ -29,47 +31,51 @@ export async function generateMetadata(): Promise<Metadata> {
 const BUDGETS = [30000, 50000, 80000];
 const RANK_NOTE: Record<string, string> = { S: "未使用に近い", A: "美品", B: "良品", C: "並品", J: "訳あり" };
 
-function ShopLink({ p, children, className }: { p: PcItem; children: React.ReactNode; className?: string }) {
+// リンク先（A8）はここで作って、一覧（クライアント）には出来上がった URL だけ渡す
+const withLink = (p: PcItem): PcRowItem => {
   const href = affiliateUrl(p.shopName, p.url);
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="sponsored noopener"
-      className={className}
-      data-shop-click=""
-      data-shop={p.shopName}
-      data-model={p.productName}
-      data-storage={p.storageGB}
-      data-rank={p.conditionRank}
-      data-price={p.price}
-      data-link-type={affiliateLinkType(href)}
-    >
-      {children}
-    </a>
-  );
-}
+  return { ...p, href, linkType: affiliateLinkType(href) };
+};
 
-function ItemRow({ p, first }: { p: PcItem; first: boolean }) {
+// 条件別の相場: 縦 CPU × 横 メモリ。マスは中央値（大）と最安値・件数（小）
+function PriceMatrix({ m }: { m: PcMatrix }) {
   return (
-    <ShopLink p={p} className={`grid grid-cols-[1fr_auto] gap-x-4 px-4 py-3 hover:bg-ground items-center ${first ? "" : "border-t border-line-soft"}`}>
-      <span className="min-w-0">
-        <span className="block font-bold text-ink text-sm">{p.productName}</span>
-        <span className="block text-xs text-ink-sub">
-          {p.cpu}・{memoryStorage(p)}
-          {p.screenInch ? `・${p.screenInch}インチ` : ""}
-          {p.gpu ? `・${p.gpu}` : ""}
-        </span>
-        <span className="block text-[11px] text-ink-mute">
-          {p.shopName}・ランク {p.rankLabel}
-          {!p.win11 && <span className="ml-1 text-inspect-700">Windows 11 非対応のCPU</span>}
-        </span>
-      </span>
-      <span className="text-right">
-        <span className="block font-bold text-price">{yen(p.price)}</span>
-        <span className="block text-[10px] text-ink-mute">税込・店で見る ›</span>
-      </span>
-    </ShopLink>
+    <div className="bg-white rounded-xl border border-line overflow-x-auto">
+      <table className="w-full text-sm border-collapse">
+        <thead className="bg-ground text-xs text-ink-mute">
+          <tr>
+            <th className="text-left px-3 py-2 font-normal sticky left-0 bg-ground">CPU ＼ メモリ</th>
+            {m.memories.map((mem) => (
+              <th key={mem} className="text-center px-2 md:px-3 py-2 font-bold text-ink-sub">{mem}GB</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {m.rows.map((r) => (
+            <tr key={r.label} className="border-t border-line-soft">
+              <th scope="row" className="text-left px-2 md:px-3 py-2 font-bold text-ink text-xs md:text-sm whitespace-nowrap sticky left-0 bg-white">{r.label}</th>
+              {m.memories.map((mem) => {
+                const c = r.cells.get(mem);
+                return (
+                  <td key={mem} className="px-2 md:px-3 py-2 text-center align-top">
+                    {c ? (
+                      <>
+                        <span className="block font-bold tabular-nums text-[13px] md:text-sm">{yen(c.medianPrice)}</span>
+                        <span className="block text-[10px] text-ink-mute tabular-nums whitespace-nowrap">
+                          {c.count > 1 ? <>最安 <span className="text-price">{yen(c.minPrice)}</span>・{c.count}件</> : "1件のみ"}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-gray-300">—</span>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -77,7 +83,8 @@ export default async function PcIndexPage() {
   const items = await getPcItems();
   const notes = items.filter((p) => p.formFactor === "note");
   const desktops = items.filter((p) => p.formFactor === "desktop");
-  const noteStats = groupStats(items, "note");
+  const noteMatrix = cpuMemoryMatrix(items, "note");
+  const deskMatrix = cpuMemoryMatrix(items, "desktop");
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -129,7 +136,7 @@ export default async function PcIndexPage() {
                     {best.length === 0 ? (
                       <p className="px-4 py-3 text-sm text-ink-mute">いまは在庫がありません</p>
                     ) : (
-                      best.map((p, i) => <ItemRow key={p.url} p={p} first={i === 0} />)
+                      best.map((p, i) => <PcItemRow key={p.url} p={withLink(p)} first={i === 0} />)
                     )}
                   </div>
                 );
@@ -138,33 +145,17 @@ export default async function PcIndexPage() {
           </section>
         )}
 
-        {noteStats.length > 0 && (
-          <section className="my-8">
-            <h2 className="text-xl font-bold mb-1">条件別の相場（ノート）</h2>
-            <p className="text-xs text-ink-mute mb-3">同じ CPU・メモリの在庫が3件以上ある条件だけ。訳あり品は除いています。</p>
-            <div className="bg-white rounded-xl border border-line overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-ground text-xs text-ink-mute">
-                  <tr>
-                    <th className="text-left px-4 py-2 font-normal">CPU・メモリ</th>
-                    <th className="text-right px-4 py-2 font-normal">相場（中央値）</th>
-                    <th className="text-right px-4 py-2 font-normal">最安値</th>
-                    <th className="text-right px-4 py-2 font-normal">件数</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {noteStats.map((s) => (
-                    <tr key={s.label} className="border-t border-line-soft">
-                      <td className="px-4 py-2">{s.label}</td>
-                      <td className="px-4 py-2 text-right font-bold tabular-nums">{yen(s.medianPrice)}</td>
-                      <td className="px-4 py-2 text-right font-bold text-price tabular-nums">{yen(s.minPrice)}</td>
-                      <td className="px-4 py-2 text-right text-ink-mute tabular-nums">{s.count}件</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+        {[
+          { title: "条件別の相場（ノート）", m: noteMatrix },
+          { title: "条件別の相場（デスクトップ）", m: deskMatrix },
+        ].map(({ title, m }) =>
+          m.rows.length === 0 ? null : (
+            <section key={title} className="my-8">
+              <h2 className="text-xl font-bold mb-1">{title}</h2>
+              <p className="text-xs text-ink-mute mb-3">縦が CPU、横がメモリ。マスの大きい数字は相場（中央値）です。在庫が3件以上ある CPU だけ・訳あり品は除いています。</p>
+              <PriceMatrix m={m} />
+            </section>
+          ),
         )}
 
         {[
@@ -174,9 +165,7 @@ export default async function PcIndexPage() {
           list.length === 0 ? null : (
             <section key={title} className="my-8">
               <h2 className="text-xl font-bold mb-3">{title}</h2>
-              <div className="bg-white rounded-xl border border-line overflow-hidden">
-                {list.map((p, i) => <ItemRow key={p.url} p={p} first={i === 0} />)}
-              </div>
+              <PcItemList items={list.map(withLink)} />
             </section>
           ),
         )}
