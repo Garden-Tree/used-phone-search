@@ -26,6 +26,11 @@ type Common = {
    * いまは minie だけが絵を切り替える。声は narration.hook に答えの文を書く
    */
   hookStyle?: "question" | "answer";
+  /**
+   * つかみの大きな文字（任意・10/27〜）。書けば問いの代わりにこの行を出す（SplitHook・BudgetHook のテーマ。minie の自動の答えより優先）。
+   * 答えから始める回は hookStyle "answer"・hookLines・narration.hook をそろえて書く（SplitHook の札は「最大」→「1位」）
+   */
+  hookLines?: string[];
   /** TikTok 用の書き出し（render --tiktok・voice.ts の forTikTok が付ける。script.json には書かない）。締めに関連動画・プロフィールのリンクを出さない */
   tiktok?: boolean;
 };

@@ -291,7 +291,7 @@ function BudgetHook({ s, t }: { s: BudgetScript; t: number }) {
   const TW = (CW - 30) / 2;
   return (
     <Frame s={s}>
-      <Question lines={lines} max={92} />
+      <Question lines={s.hookLines ?? lines} max={92} />
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", width: CW, marginTop: 40, transform: `scale(${pulseOf(t)})` }}>
         {rows.map((r, i) => {
           // pixelbudget はアップデート保証の終わり、macbudget はチップ（M1・M2…）、budget は「なら？」
@@ -355,13 +355,13 @@ function SplitHook({ s, t, lines, left, right, teaser, label = "最大" }: { s: 
   );
   return (
     <Frame s={s}>
-      <Question lines={lines} max={88} />
+      <Question lines={s.hookLines ?? lines} max={88} />
       <div style={{ display: "flex", position: "relative", justifyContent: "space-between", width: CW, height: TH, marginTop: 40, transform: `scale(${pulseOf(t)})` }}>
         {tile(left)}
         {tile(right)}
         <div style={{ position: "absolute", left: (CW - VS) / 2, top: (TH - VS) / 2, width: VS, height: VS, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: VS / 2, background: L.bg, boxShadow: `0 0 0 6px ${L.fg}`, fontSize: 56, fontWeight: 900, lineHeight: 1, color: L.fg }}>VS</div>
       </div>
-      <Teaser s={s} label={label} value={teaser} />
+      <Teaser s={s} label={s.hookStyle === "answer" ? "1位" : label} value={teaser} />
     </Frame>
   );
 }

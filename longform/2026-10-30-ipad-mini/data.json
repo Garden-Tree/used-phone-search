@@ -127,7 +127,8 @@
               "Pro・USB-C",
               "Pro・USB-C"
             ],
-            "cue": "Apple Pencilは、どっちも"
+            "cue": "Apple Pencilは、どっちも",
+            "emphasis": []
           },
           {
             "cells": [
@@ -135,7 +136,8 @@
               "最大10時間",
               "最大10時間"
             ],
-            "cue": "Apple Pencilは、どっちも"
+            "cue": "Apple Pencilは、どっちも",
+            "emphasis": []
           },
           {
             "cells": [

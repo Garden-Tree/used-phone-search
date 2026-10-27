@@ -184,6 +184,8 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 - **予算と相場は1万円以内**（10/25 ユーザーの指示）: 各行は帯 (max(前の予算, 予算−1万円), 予算] の機種だけ。帯に機種がなければ plan がエラーになるので予算を変える（`themes/budget.ts` の BUDGET_GAP）
 - 予算別（budget・ipadbudget・pixelbudget・foldbudget）は `--budgets 40000,60000,80000,120000 --pick 40000` で予算の並びと注目を変えられる（`themes/budget.ts` の BudgetOpts）。注目の予算は予算別ページ（`lib/budgets.ts`）がある額にする（説明欄のリンク先）
 - 声の実験は script.json の `voice.speaker` を書き換えて render する
+- 出だしの実験（答えから始める）は script.json に `hookStyle: "answer"`・`hookLines`（つかみの大きな文字・問いの代わり）・`narration.hook`（答えの文）をそろえて書く。`hookLines` は SplitHook（provs・promax・plusvs・plusmax・minie・oldpro・unused・gen・storage・newused・ipadmini）と BudgetHook（budget・pixelbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget）のテーマで効く（10/27〜）
+- plan のフォルダは `<作った日>-<テーマ>` なので、同じテーマを別の予算で何本も作るときは、plan のたびにフォルダを公開日の名前に移し（例 `2026-10-29-budget`）、説明欄の utm の日付も公開日に直す。render は `--dir` でフォルダを指定する（指定しないと名前がいちばん後のフォルダを使う）
 
 ## 毎週の流れ
 

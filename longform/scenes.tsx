@@ -336,7 +336,7 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, background: i % 2 ? C.rowAlt : C.white, borderBottom: `2px solid ${C.line}`, opacity: p }}>
             {s.columns.map((_, j) => {
               const v = r.cells[j] ?? "";
-              const em = s.emphasis?.includes(j);
+              const em = (r.emphasis ?? s.emphasis)?.includes(j);
               return (
                 <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX, fontSize: fitFontSize(v || "　", widths[j] - PADX * 2, 44, 22), fontWeight: em ? 900 : 500, color: em ? C.red : C.ink }}>{v}</div>
               );

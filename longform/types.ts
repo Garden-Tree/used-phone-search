@@ -42,7 +42,8 @@ export type TableScene = {
   columns: string[];
   /** 赤く太くする列 */
   emphasis?: number[];
-  rows: { cells: string[]; cue?: string }[];
+  /** emphasis はその行だけ列を変える（[] でその行は赤くしない。新旧で同じ値の行など。10/27〜） */
+  rows: { cells: string[]; cue?: string; emphasis?: number[] }[];
   note?: string;
 };
 
