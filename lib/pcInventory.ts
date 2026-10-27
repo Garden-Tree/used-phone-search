@@ -66,6 +66,8 @@ export function bestWithin(items: PcItem[], formFactor: string, maxPrice: number
   return items
     .filter((p) => p.formFactor === formFactor && p.price <= maxPrice && p.conditionRank !== "J" && p.win11)
     .sort((a, b) => cpuScore(b) - cpuScore(a) || b.memoryGB - a.memoryGB || b.storageGB - a.storageGB || a.price - b.price)
+    // 同じ機種・同じ構成は、いちばん安い1件だけ（同じ VAIO が3枠を埋めないように）
+    .filter((p, i, list) => list.findIndex((q) => q.productName === p.productName && q.cpu === p.cpu && q.memoryGB === p.memoryGB && q.storageGB === p.storageGB) === i)
     .slice(0, n);
 }
 
