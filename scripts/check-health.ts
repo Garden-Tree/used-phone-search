@@ -23,6 +23,11 @@ import prisma from "@/lib/prisma";
 // スクレイパー・Yahoo は毎回（3〜6時間ごと）取り込むので、2周期抜けた時点で 13 時間前後になる
 const WARN_HOURS = 8;
 const FAIL_HOURS = 13;
+// 中古パソコンの店（PC WRAP・Qualit。DeviceInventory には Mac だけ入る）は前回から11時間たってから取る（1日2回・.github/workflows/scraper.yaml「中古パソコンの取得」）。
+// 普段の古さが17時間前後になるので別の基準で見る（10/28 に「9時間更新なし・2店」で毎回失敗になった）
+const PC_SHOP_NAMES = new Set(["PC WRAP", "Qualit"]);
+const PC_WARN_HOURS = 18;
+const PC_FAIL_HOURS = 30;
 const PREVIOUS_URL = "https://used.gadelog.com/health.json";
 
 const isMissing = (p: string) => / が0件$/.test(p);
@@ -69,7 +74,12 @@ async function main() {
   for (const s of (report.shops ?? []).filter((s) => s.hidden && !AMAZON_SHOP_NAMES.has(s.shop))) {
     warnings.push(`${s.shop}: ${s.ageHours ?? "?"}時間更新なし（在庫は隠し中。取得が戻れば自動で表示）`);
   }
-  const old = (report.shops ?? []).filter((s) => !AMAZON_SHOP_NAMES.has(s.shop) && !s.stale && !s.hidden && s.ageHours !== null && s.ageHours > WARN_HOURS);
+  for (const s of (report.shops ?? []).filter((s) => PC_SHOP_NAMES.has(s.shop) && !s.hidden && s.ageHours !== null && s.ageHours > PC_WARN_HOURS)) {
+    const msg = `${s.shop}: ${s.ageHours}時間更新なし（中古パソコンの店）`;
+    if (s.ageHours! > PC_FAIL_HOURS) failures.push(`${msg}（${PC_FAIL_HOURS}時間超）`);
+    else warnings.push(`${msg}（${PC_FAIL_HOURS}時間を超えたら失敗）`);
+  }
+  const old = (report.shops ?? []).filter((s) => !AMAZON_SHOP_NAMES.has(s.shop) && !PC_SHOP_NAMES.has(s.shop) && !s.stale && !s.hidden && s.ageHours !== null && s.ageHours > WARN_HOURS);
   for (const s of old) {
     const msg = `${s.shop}: ${s.ageHours}時間更新なし`;
     if (s.ageHours! > FAIL_HOURS) failures.push(`${msg}（${FAIL_HOURS}時間超）`);

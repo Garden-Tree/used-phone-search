@@ -16,11 +16,20 @@ export const MBP_M6_MEMORY_GB = 16;
 export const MBP_M6_STORAGE_GB = 1024;
 export const MBP_M6_PRICE_SOURCE = "https://www.apple.com/jp/newsroom/2026/10/apple-introduces-the-new-14-inch-macbook-pro-with-m6/";
 
-/** 比べる項目（新型 M6 と旧型 M4。どちらも公式の仕様のページの値）。電池（動画 最大24時間）と重さ（1.55kg）は同じ */
+/** 比べる項目（新型 M6 と旧型 M4。M5（support.apple.com/ja-jp/125405）も M4 と同じ値。どちらも公式の仕様のページの値）。電池（動画 最大24時間）と重さ（1.55kg）は同じ */
 export const MBP_M6_COMPARE = [
   { label: "CPU", m6: "12コア", m4: "10コア" },
   { label: "GPU", m6: "12コア", m4: "10コア" },
   { label: "Wi-Fi", m6: "Wi-Fi 7", m4: "Wi-Fi 6E" },
+  { label: "Bluetooth", m6: "6", m4: "5.3" },
   { label: "電池（動画）", m6: "最大24時間", m4: "最大24時間" },
   { label: "重さ", m6: "1.55kg", m4: "1.55kg" },
 ] as const;
+
+/** 仕様の出典（/mac/macbook-pro-m6-new-vs-used の出典の行） */
+export const MBP_M6_SPEC_SOURCE = "https://www.apple.com/jp/macbook-pro/specs/";
+export const MBP_M5_SPEC_SOURCE = "https://support.apple.com/ja-jp/125405";
+export const MBP_M4_SPEC_SOURCE = "https://support.apple.com/ja-jp/121552";
+
+/** チップも Pro の M5 Pro（14インチ）。Apple の技術仕様のページ（MBP_M6_SPEC_SOURCE・10/28 確認）の値。新品の値段は確かめていないので書かない */
+export const MBP_M5_PRO_SPEC = { cpu: "15コアから", gpu: "16コアから", thunderbolt: "Thunderbolt 5", battery: "最大22時間", weight: "1.60kg" } as const;

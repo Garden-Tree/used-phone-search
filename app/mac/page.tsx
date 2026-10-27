@@ -80,6 +80,11 @@ export default async function MacIndexPage() {
         </p>
         <AdDisclosure compact />
 
+        {/* 新型 MacBook Pro 14インチ（M6・10/27 発表）と中古の旧型の比較（10/28〜） */}
+        <p className="my-4">
+          <Link href="/mac/macbook-pro-m6-new-vs-used" className="font-bold text-brand-600 hover:underline underline-offset-4">新型MacBook Pro M6と中古のM5・M4、いくら違う？ &rarr;</Link>
+        </p>
+
         {FAMILIES.map(({ family, title }) => {
           const models = MAC_MODELS.filter((m) => MAC_INFO[m].family === family);
           return (
