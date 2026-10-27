@@ -599,6 +599,12 @@ export default async function ModelPage({ params }: Props) {
               <span className="inline-block mr-1 px-1 py-px rounded border border-line font-bold">PR</span>
               広告を含みます
             </p>
+            {/* 新型 iPad mini（A20 Pro・10/27 発表）との比較ページへ（10/27〜） */}
+            {(model === "iPad mini (A17 Pro)" || model === "iPad mini (第6世代)") && (
+              <p className="text-[12px] md:text-[13px]">
+                <Link href="/ipad/ipad-mini-new-vs-used" className={`${LINK} font-bold`}>新型iPad mini（A20 Pro）と比べる &rarr;</Link>
+              </p>
+            )}
 
             {chipModels.length > 1 && (
               <nav aria-label="同じシリーズの機種" className="flex gap-1.5 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap pt-1">

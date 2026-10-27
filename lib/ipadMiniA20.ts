@@ -10,6 +10,9 @@ export const IPAD_MINI_A20_CHECKED = "2026-10-27";
 export const IPAD_MINI_A20_NAME = "iPad mini (A20 Pro)";
 export const IPAD_MINI_A20_RELEASE = "2026-11-06";
 export const IPAD_MINI_A20_PRICE_SOURCE = "https://www.apple.com/jp/shop/buy-ipad/ipad-mini";
+/** 仕様の出典（上の説明と同じ URL。/ipad/ipad-mini-new-vs-used の出典の行で使う） */
+export const IPAD_MINI_A20_SPEC_SOURCE = "https://www.apple.com/jp/ipad-mini/specs/";
+export const IPAD_MINI_A17_SPEC_SOURCE = "https://support.apple.com/ja-jp/121456";
 
 /** Wi-Fi・標準ガラスの価格（円）。セルラーは +25,000円、Nano-texture は 256GB・512GB だけで +17,000円 */
 export const IPAD_MINI_A20_PRICES: Record<number, number> = { 128: 119800, 256: 136800, 512: 171800 };

@@ -21,7 +21,7 @@
 - **IndexNow**: 毎日全件
 - **デザイン**: `docs/design.md`
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
-- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。店の比較 `/iphone/where-to-buy`（10/24〜）。横動画は同テーマのページに埋め込み（`lib/videos.ts`）
+- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。店の比較 `/iphone/where-to-buy`。新型 iPad mini の比較 `/ipad/ipad-mini-new-vs-used`（10/27〜）。横動画は同テーマのページに埋め込み（`lib/videos.ts`）
 - **画面の店数は在庫がある店だけ**（`lib/activeShops.ts`）
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**
 - **スペック・保証期限・発売年月・Apple 修理料金・Pencil 対応は公式で確かめた値だけ**（`lib/*Specs.ts`・`*Catalog.ts`・`appleRepairPrices.ts`・`ipadPencil.ts`）
@@ -54,13 +54,13 @@
 ## 進行中・外部条件待ち
 
 - **審査中**: A8 バックマーケット・LINXAS・保険・J:COM・X-mobile・LIBMO・Y!mobile／VC IIJmio・LINEMO・ワイモバイル
-- **TikTok**: 10/26〜。`render --tiktok` を手で・PR はまだ
+- **TikTok**: 10/26〜・`render --tiktok`・PR はまだ
 - **Vercel 停止→Neon Free（ユーザー）**
 
 ## 次にやる（順序）
 
 ```
-1. 収益: 1訪問 18円 → 30円（ideas/10-25-analysis）。YouTube: ショート 10/28〜31 で声・出だしを対照（ideas/10-27-shorts-plan・11/1〜3 判定）・11/1 流入
+1. 収益: 1訪問 18円 → 30円（ideas/10-25-analysis）。YouTube: ショートの声・出だしの比較（ideas/10-27-shorts-plan）
 2. 伸ばし方（ideas/10-24-growth）
 3. X の日々の運用（ideas/x-posts）
 ```
