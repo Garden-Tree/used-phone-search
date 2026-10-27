@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { hasRelatedLong, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type Script, type VoiceConfig } from "./types";
+import { hasRelatedLong, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -80,7 +80,8 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
     : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s)
-    : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : s.theme === "ipadmini" ? ipadMiniNarration(s) : dropsNarration(s);
+    : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : s.theme === "ipadmini" ? ipadMiniNarration(s)
+    : s.theme === "watchgen" || s.theme === "macgen" ? deviceGenNarration(s) : dropsNarration(s);
 }
 
 /**
@@ -221,6 +222,32 @@ function storageNarration(s: StorageScript): Partial<Record<NarrationKey, string
     reveal: `1位は${top.model}。${top.from}から${top.to}にしても、${yen(top.diff)}しか変わりません。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、何ギガ派ですか？",
+  };
+}
+
+/** watchgen・macgen の組の読み（"Ultra 3からUltra 2"・"13インチのM4からM3"）。Apple Watch・MacBook Air は見出しと問いで言うので行では読まない */
+const MAC_CHIP = /\b(M\d)\b/;
+const devicePair = (s: DeviceGenScript, newer: string, older: string) => {
+  if (s.theme === "watchgen") return `${newer.replace(/^Apple Watch\s+/, "")}から${older.replace(/^Apple Watch\s+/, "")}`;
+  const inch = newer.match(/(\d+)インチ/)?.[1] ?? "13";
+  return `${inch}インチの${newer.match(MAC_CHIP)?.[1] ?? newer}から${older.match(MAC_CHIP)?.[1] ?? older}`;
+};
+
+/**
+ * watchgen・macgen の既定（gen と同じ形）: hook 問い / ranking 3位・2位を1文ずつ（「3位はSeries 11からSeries 10。差は<額>です。」。文頭の「○位は」で行を出す）
+ * macgen は容量（「256GB」）も読む。watchgen はケースの大きさを読まない（世代で違うことがあり、画面と注記に出す）
+ * reveal 1位の差（約○.○万円）と率（およそ○%）だけ / comment ひと言の本文だけ / outro サイトへの誘導と問い。口調は「です・ます」
+ */
+function deviceGenNarration(s: DeviceGenScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const watch = s.theme === "watchgen";
+  return {
+    hook: watch ? "Apple Watch、1世代前にすると、いくら安い？" : "MacBook Air、1世代前にすると、いくら安い？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${devicePair(s, items[i].newer, items[i].older)}${watch ? "" : `、${items[i].storage}`}。差は${yen(items[i].diff)}です。`).join(""),
+    reveal: `1位は${devicePair(s, top.newer, top.older)}。1世代前にすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、最新派？1世代前派？",
   };
 }
 
@@ -489,12 +516,15 @@ export function speakable(text: string): string {
     // ios27line（10/25）: 「iOS」を1字ずつ読まない・iPhone X／XS／XR は Apple の読み（テン）。longform/script.ts の forVoice と同じ
     [/iOS/g, "アイオーエス"], [/\bXS\b/g, "テンエス"], [/\bXR\b/g, "テンアール"], [/\bX\b/g, "テン"],
     [/iPhone/g, "アイフォン"], [/iPad/g, "アイパッド"], [/MacBook/g, "マックブック"], [/Apple Watch/g, "アップルウォッチ"],
+    // watchgen・macgen（10/27）: Watch 単独・Series・Ultra の世代（Apple の読みに合わせ英語の数）・M チップ（エムワン〜）・ケースの mm
+    [/\bWatch\b/g, "ウォッチ"], [/\bSeries\b/g, "シリーズ"], [/\bUltra\s*2\b/g, "ウルトラツー"], [/\bUltra\s*3\b/g, "ウルトラスリー"], [/\bUltra\s*4\b/g, "ウルトラフォー"],
+    [/\bM1\b/g, "エムワン"], [/\bM2\b/g, "エムツー"], [/\bM3\b/g, "エムスリー"], [/\bM4\b/g, "エムフォー"], [/\bM5\b/g, "エムファイブ"], [/(\d+)\s*mm\b/g, "$1ミリ"],
     // 「Galaxy A53 5G」は空白を詰めると「A535G」で「ゴヒャクサンジュウゴ」と読むので、5G を先にカナに（galaxybudget・10/24）
     [/Galaxy/g, "ギャラクシー"], [/\b5G\b/g, "ファイブジー"], [/\bUltra\b/g, "ウルトラ"], [/\bZ\s*(?=Fold|Flip)/g, "ゼット"], [/Fold/g, "フォールド"], [/Flip/g, "フリップ"], [/Pixel/g, "ピクセル"],
     [/Pro Max/g, "プロマックス"], [/\bPro\b/g, "プロ"], [/\bMax\b/g, "マックス"], [/\bPlus\b/g, "プラス"], [/\bmini\b/g, "ミニ"],
     [/\bAir\b/g, "エアー"], [/\bSE\b/g, "エスイー"], [/\bDuo\b/g, "デュオ"], [/(\d+)e\b/g, "$1イー"], [/(\d+)a\b/g, "$1エー"], [/\bXL\b/g, "エックスエル"],
     [/(\d+)\s*GB/g, "$1ギガ"], [/(\d+)\s*TB/g, "$1テラ"], [/(\d),(?=\d{3})/g, "$1"], [/%/g, "パーセント"],
-    [/−(\d)/g, "マイナス$1"], [/…/g, ""], [/○/g, "マル"], [/\s*\(第(\d)世代\)/g, "第$1世代"],
+    [/−(\d)/g, "マイナス$1"], [/…/g, ""], [/○/g, "マル"], [/\s*\(第(\d)世代\)/g, "第$1世代"], [/\s*（第(\d)世代）/g, "第$1世代"],
   ];
   return words.reduce((t, [re, to]) => t.replace(re, to), text).replace(/\s+/g, "");
 }

@@ -35,6 +35,8 @@ npx tsx shorts/make-short.tsx ios27line plan        # iOS 27 に対応する、�
 npx tsx shorts/make-short.tsx batteryswap plan      # 電池交換を足すと、1つ上の世代と同じ値段？（shorts/out/<日付>-batteryswap/。型 A だけ・10/25〜）
 npx tsx shorts/make-short.tsx overnew plan          # 中古なのに新品より高い？新品との差がいちばん小さい中古iPhone（shorts/out/<日付>-overnew/。型 A だけ・10/25〜）
 npx tsx shorts/make-short.tsx rakutenmobile plan    # 楽天モバイルは使った量で3段階｜中古iPhone 14と2年でいくら？（広告の回・PR。型 A だけ・10/26〜・つむぎ）
+npx tsx shorts/make-short.tsx watchgen plan --dir shorts/out/2026-10-28-watchgen   # Apple Watch、1世代前にするといくら安い？（型 A だけ・10/27〜・つむぎ）。--dir で公開日のフォルダに置ける
+npx tsx shorts/make-short.tsx macgen plan --dir shorts/out/2026-10-29-macgen       # MacBook Air、1世代前にするといくら安い？（型 A だけ・10/27〜・ずんだもん）
 npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）
 npx tsx shorts/make-short.tsx fold render --tiktok  # TikTok 用の short-A-tiktok.mp4（BGM なし・締めは「used.gadelog.com で検索」）
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
@@ -184,7 +186,7 @@ npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本
 - **予算と相場は1万円以内**（10/25 ユーザーの指示）: 各行は帯 (max(前の予算, 予算−1万円), 予算] の機種だけ。帯に機種がなければ plan がエラーになるので予算を変える（`themes/budget.ts` の BUDGET_GAP）
 - 予算別（budget・ipadbudget・pixelbudget・foldbudget）は `--budgets 40000,60000,80000,120000 --pick 40000` で予算の並びと注目を変えられる（`themes/budget.ts` の BudgetOpts）。注目の予算は予算別ページ（`lib/budgets.ts`）がある額にする（説明欄のリンク先）
 - 声の実験は script.json の `voice.speaker` を書き換えて render する
-- 出だしの実験（答えから始める）は script.json に `hookStyle: "answer"`・`hookLines`（つかみの大きな文字・問いの代わり）・`narration.hook`（答えの文）をそろえて書く。`hookLines` は SplitHook（provs・promax・plusvs・plusmax・minie・oldpro・unused・gen・storage・newused・ipadmini）と BudgetHook（budget・pixelbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget）のテーマで効く（10/27〜）
+- 出だしの実験（答えから始める）は script.json に `hookStyle: "answer"`・`hookLines`（つかみの大きな文字・問いの代わり）・`narration.hook`（答えの文）をそろえて書く。`hookLines` は SplitHook（provs・promax・plusvs・plusmax・minie・oldpro・unused・gen・storage・newused・ipadmini）と BudgetHook（budget・pixelbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget）・DeviceHook（watchgen・macgen）のテーマで効く（10/27〜）
 - plan のフォルダは `<作った日>-<テーマ>` なので、同じテーマを別の予算で何本も作るときは、plan のたびにフォルダを公開日の名前に移し（例 `2026-10-29-budget`）、説明欄の utm の日付も公開日に直す。render は `--dir` でフォルダを指定する（指定しないと名前がいちばん後のフォルダを使う）
 
 ## 毎週の流れ
@@ -248,6 +250,12 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
   - **言わない・書かないこと**: ポイント・キャンペーン・特典／「最安」「実質0円」「必ず安い」「無料」「お得」／ほかの会社の料金／すぐの解約・乗り換えの促し。**楽天モバイルのリンクはショートの説明欄・コメントに貼らない**（横動画の説明欄だけ）。説明欄のリンクは iPhone 14 の機種ページとトップだけ（utm の末尾 `_rakutenmobile`）。ハッシュタグ #中古iPhone #iPhone #楽天モバイル
   - 見た目は ⑥ 広告の回 AD（5つの例外。明るい地・塗らない見出しにピンク #D9005B の下線・ピンクの札と強調。つかみは料金の階段 tiers）。声は 春日部つむぎ（口調は「〜よ・〜ね」）。ひと言の下書き「まず iPhoneの設定の／モバイル通信で／今の使った量を見てね」
   - 関連動画の締めは、横動画11本目を公開して ID が分かるまで付けない（`relatedLong.ts` の RAKUTEN_MOBILE は ID が空・`types.ts` の RELATED_LONG_THEMES にまだ入れない）
+- `watchgen`・`macgen`: Apple Watch／MacBook Air、1世代前にするといくら安い？（型 A だけ。10/27〜。予算別を減らして iPhone 以外の機種を出す回）
+  - 場面・行は fold・gen と同じ（FoldRow・`FoldRanking`・`FoldReveal`）。台本の型は `WatchGenScript`・`MacGenScript`（`types.ts`）。差（新しい方 − 1世代前）の大きい順・率は新しい方に対して・差0以下は出さない・3組に満たなければ止める
+  - watchgen（`themes/watchgen.ts`）: 組は Ultra 4→3→2→初代、Series 12→…→6、SE 3→第2世代→第1世代。DB の storage はケースの mm。**ケースは機種ごとに在庫がいちばん多いサイズ**（Series は 10 から 42・46mm、9 までは 41・45mm で同じ大きさで比べられない。Ultra はどれも 49mm）。そのサイズの在庫が両方5件以上の組だけ。違うサイズの組は行に「46／45mm」（FoldRow の olderStorage）。注記「ケースは在庫がいちばん多いサイズ・中央値」。説明欄のリンクは1位の1世代前の機種ページと /watch。utm `_watchgen`・#AppleWatch #中古。ひと言の下書き「中古のWatchは／電池の最大容量と／バンドの付属を確認」。声 つむぎ
+  - macgen（`themes/macgen.ts`）: 組は Air 13インチ M5→M4→M3→M2→M1、15インチ M5→M4→M3→M2。SSD は両方に在庫5件以上の最小の容量。ひと言は1位の1世代前・その容量の**メモリの内訳（DB の memoryGB の groupBy）**から（「M3の256GBは／メモリ8GBが59%／後から増やせません」）。分かる在庫が5件未満なら一般の注意。注記「中古は同じSSD容量の中央値」。リンクは /mac。utm `_macgen`・#MacBook #MacBookAir #中古。声 ずんだもん
+  - 見た目は ⑤ PRO（前後の ipadmini・promax の ③ と続かない）。つかみは**機器の形**（look.hook "device"・`DeviceHook`。時計の文字盤とバンド／開いたノート）に「最新」「1世代前」＋最大の差額。`hookLines` も効く
+  - 読み: Series シリーズ（`voiceTuning.ts` の BRANDS で頭を切る。切らないと「シリーズジュウ/ニ」で12が「10・2」）・Ultra 2〜4 ウルトラツー〜フォー・M1〜M5 エムワン〜エムファイブ・mm ミリ・Watch ウォッチ・「（第2世代）」の全角括弧（`voice.ts` の speakable）
 
 **続けて公開するショートは、前の回と違う見た目（①〜⑤）にする**（10/24 15:00 の値下がり1か月 → 10/25 8:00 の galaxybudget が同じ①で続いた）。
 
@@ -257,7 +265,7 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
 | ② 予算別 BUDGET | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | budget・pixelbudget・macbudget・bigbudget（予算の札）・ipadbudget（予算の丸い札・淡い金）・overnew（新品と中古の割合の2本の棒）・minie（「無印 vs mini・e」。右の札は price） |
 | ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・plusvs・plusmax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
 | ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形）・batteryswap（「中古＋電池交換＝1つ上」の札）・unused（「ランクA vs 未使用品」） |
-| ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札）・oldpro（「前のPro vs 無印」＋差 最大） |
+| ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札）・oldpro（「前のPro vs 無印」＋差 最大）・watchgen・macgen（時計・ノートの形＋最大の差額） |
 | ⑥ 広告の回 AD（5つの例外・10/26〜） | 明るい ground | 塗らない（墨の文字）・ピンク #D9005B の下線 | 灰の縁＋影 | ピンク #D9005B（札も） | rakutenmobile（料金の3段の階段＋2年で差）。左上に「PR」 |
 
 関連動画につながるテーマ（`types.ts` の RELATED_LONG_THEMES）は、締めの「▼ くわしい解説は 下の関連動画で」の札が出るまで締めの動きを延ばす（`scenes.tsx` の TIMELINE。10/23 まで札が動画に出ていなかった）。

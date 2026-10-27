@@ -20,8 +20,9 @@ import type { Script } from "./types";
 /** 見出しの帯の形。full＝左右いっぱい・card＝角丸の箱・pill＝丸い端・tab＝左寄せの札と左の線・leaf＝対角だけ丸い・underline＝塗らずに下線・frame＝塗らずに太い枠 */
 export type BandShape = "full" | "card" | "pill" | "tab" | "leaf" | "underline" | "frame";
 /** つかみ（1コマ目）の型。number＝1位の額を先に出す・chips＝予算の札・coins＝予算の丸い札（数字を大きく）・split＝2つを並べて vs・fold＝折りたたみの形・abc＝ランクの札・battery＝縦の電池の形
- * phone＝スマホの形に「iOS 27」と「対応」の札（ios27line）・equation＝「古い方＋電池交換＝1つ上？」の式（batteryswap）・ratio＝新品と中古の2本の棒（overnew）・tiers＝料金の3段の階段と2年の差（rakutenmobile） */
-export type HookKind = "number" | "chips" | "coins" | "split" | "fold" | "abc" | "battery" | "phone" | "equation" | "ratio" | "tiers";
+ * phone＝スマホの形に「iOS 27」と「対応」の札（ios27line）・equation＝「古い方＋電池交換＝1つ上？」の式（batteryswap）・ratio＝新品と中古の2本の棒（overnew）・tiers＝料金の3段の階段と2年の差（rakutenmobile）
+ * device＝2つの機器の形（watchgen は時計の文字盤とバンド・macgen は開いたノート）に「最新」「1世代前」 */
+export type HookKind = "number" | "chips" | "coins" | "split" | "fold" | "abc" | "battery" | "phone" | "equation" | "ratio" | "tiers" | "device";
 
 export type Look = {
   /** 記録用の名前（README・SKILL の表と同じ） */
@@ -139,6 +140,11 @@ export const LOOKS: Record<Script["theme"], Look> = {
   // ipadmini（10/27〜・新型 iPad mini の回）: 新型と中古の旧型を比べる回なので newused と同じ ③ VERSUS（見た目は5つまでなので新しく作らない）。
   // つかみは「新型 vs 旧型」の札と新型の公式価格
   ipadmini: { ...VERSUS, hook: "split" },
+  // watchgen・macgen（10/27〜・声の比べ V1 の2本＝同じ型・同じ見た目）: 見た目は5つまでなので新しく作らない。前の ipadmini（③ VERSUS）・後の promax（③ VERSUS）と
+  // 続かないよう ⑤ PRO（墨の地・金の帯）。つかみは機器の形（時計・ノート）で、ほかのテーマの1コマ目と同じにならない。
+  // 2本は 10/28 18:00・10/29 18:00 で間の 10/29 8:00 が空きなら ⑤ が続く（V1 の比べを優先。ideas/2026-10-27-shorts-plan.md）
+  watchgen: { ...PRO, hook: "device" },
+  macgen: { ...PRO, hook: "device" },
 };
 
 export const lookOf = (s: Script): Look => LOOKS[s.theme];

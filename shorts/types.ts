@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini・watchgen・macgen）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -132,6 +132,8 @@ export type ProVsScript = Common & {
 export type FoldRow = {
   newer: string; older: string; storage: string; storageGb: number;
   newerMedian: number; olderMedian: number; newerCount: number; olderCount: number; diff: number; pct: number;
+  /** 1世代前の容量（watchgen だけ・新しい方とケースの大きさが違うとき。storage は新しい方の大きさ）。ケースは機種ごとに在庫がいちばん多いサイズ */
+  olderStorage?: string; olderStorageGb?: number;
 };
 
 /** テーマ fold「折りたたみスマホ、1世代前にするといくら安い？」 */
@@ -191,6 +193,20 @@ export type GenScript = Common & {
     outro: OutroScene;
   };
 };
+
+/**
+ * テーマ watchgen「Apple Watch、1世代前にするといくら安い？」・macgen「MacBook Air、1世代前にするといくら安い？」（10/27〜。行と場面は fold・gen と同じ FoldRow。
+ * shorts/themes/watchgen.ts・macgen.ts）。watchgen は機種ごとに在庫がいちばん多いケースの大きさで比べる（Series は世代で 45mm→46mm と変わるため。olderStorage）。
+ * macgen は両方に在庫5件以上ある SSD の容量のうちいちばん小さい容量
+ */
+type DeviceGenScenes = {
+  ranking: { items: FoldRow[] };
+  comment: CommentScene;
+  outro: OutroScene;
+};
+export type WatchGenScript = Common & { theme: "watchgen"; scenes: DeviceGenScenes };
+export type MacGenScript = Common & { theme: "macgen"; scenes: DeviceGenScenes };
+export type DeviceGenScript = WatchGenScript | MacGenScript;
 
 /**
  * storage の1行: 1機種の、在庫5件以上でいちばん小さい容量（from）と次の容量（to）の中古の相場（中央値）（shorts/themes/storage.ts）。
@@ -358,7 +374,7 @@ export type IpadMiniScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | OldProScript | RakutenMobileScript | IpadMiniScript;
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | OldProScript | RakutenMobileScript | IpadMiniScript | DeviceGenScript;
 
 /**
  * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。

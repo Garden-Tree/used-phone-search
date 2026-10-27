@@ -21,17 +21,17 @@
 - **IndexNow**: 毎日全件
 - **デザイン**: `docs/design.md`
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
-- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。検索の既定は全件・安い順（電池85%以上は切り替え）。店の比較 `/iphone/where-to-buy`（10/24〜）。横動画は同テーマのページに埋め込み（`lib/videos.ts`）
+- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。店の比較 `/iphone/where-to-buy`（10/24〜）。横動画は同テーマのページに埋め込み（`lib/videos.ts`）
 - **画面の店数は在庫がある店だけ**（`lib/activeShops.ts`）
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**
 - **スペック・保証期限・発売年月・Apple 修理料金・Pencil 対応は公式で確かめた値だけ**（`lib/*Specs.ts`・`*Catalog.ts`・`appleRepairPrices.ts`・`ipadPencil.ts`）
 - **新品価格は公式で確かめた値だけ**（`lib/applePrices.ts`・`lib/officialPrices.ts`・毎月1日に見直し）
 - **楽天の店**: ゲオ・じゃんぱら・ソフマップ・ニューズド・キタムラ・イオシス・MTM
-  - 同じ会社の別の売り場は公式のカードにまとめる（イオシス⇔楽天・エムモバ⇔エムコム）
+  - 同じ会社の別の売り場は公式のカードに（イオシス⇔楽天・エムモバ⇔エムコム）
 - **Amazon 整備済み品**: 停止中
-- **Yahoo! 7店**: VC 本体（2025875・2%・10/26〜。ideas/10-26）。もしもはメディア否認
+- **Yahoo! 7店**: VC 本体（2025875・10/26〜）。もしもはメディア否認
 - **収益の枠**: 回線（`SimTile`＝各社「月○円〜」・href のある社だけ。2年の総額は `/sim`（10/27〜））・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
-- **値動きの速報**: `scripts/price-alerts.ts`
+- **値動きの速報**: `price-alerts.ts`
 - **広告のショート** `rakutenmobile`: PR は左上・説明欄。リンクは横動画だけ
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch は storage＝mm）
@@ -42,17 +42,18 @@
 | --- | --- | --- |
 | **11/6** | GSC: 18 Pro 系のタイトル（10/23〜新品との差） | だめなら「新品より高い」を先頭に |
 | **11/7・11/9** | サムネの A/B テスト | 勝った型を次の回に |
-| **11/1** | 横動画9本目（月次おすすめ・`longform/2026-11-01-monthly`）を取り直して公開 | 毎月作り直す |
+| **11/1** | 横動画9本目（月次・`longform/2026-11-01-monthly`）を取り直して公開 | 毎月 |
 | **10/31・11/16** | X 有料: 返信の表示・流入 | 返信 平均50 か 流入 週5。届かねば解約 |
-| **10/27** | iPhone Duo の中古在庫 | 出たら catalog 等へ |
+| **随時** | iPhone Duo・iPad mini (A20 Pro) の中古在庫 | 出たら catalog へ |
+| **11/1 夜** | ショートの声: watchgen（つむぎ）↔ macgen（ずんだもん）（ideas/10-27-shorts-plan） | 継続率 3pt 以上低い声を外す |
 | **11/10** | 10/27 改修の前後（収益・18 Pro の CTR・Bing 引用。ideas/10-27） | 引用減なら冒頭を戻す |
 | **11/23** | TikTok 4週目 | 再生の中央値500 か フォロワー300。届かねば1日1本 |
-| **12/1** | ahamo が段階制（40GB 3,135円〜）に → `lib/simPlans.ts` の月額 | |
+| **12/1** | ahamo 段階制（40GB 3,135円〜）→ `lib/simPlans.ts` | |
 | **毎月1日** | 出典の開き直し・相場レポートが出たか | 出ていなければビルドのログ |
 
 ## 進行中・外部条件待ち
 
-- **審査中**: A8 バックマーケット・LINXAS・保険・J:COM・X-mobile・LIBMO・Y!mobile／VC IIJmio・LINEMO・ワイモバイル（回線は 10/26〜27 申請）
+- **審査中**: A8 バックマーケット・LINXAS・保険・J:COM・X-mobile・LIBMO・Y!mobile／VC IIJmio・LINEMO・ワイモバイル
 - **TikTok**: 10/26〜。`render --tiktok` を手で・PR はまだ
 - **Vercel 停止→Neon Free（ユーザー）**
 

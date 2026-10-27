@@ -120,6 +120,11 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - **PR**: 声では読まない（ユーザー 10/26）・左上に小さく「PR」（全場面）・説明欄の1行目「【PR】この動画は楽天アフィリエイトの広告を含みます。」・タイトルの頭に【PR】
   - **楽天モバイルのリンクはショートの説明欄・固定コメント・返信に貼らない**（横動画の説明欄だけ）。ポイント・キャンペーン・特典・「最安」「実質0円」「必ず安い」「無料」「お得」・ほかの会社の料金・すぐの解約や乗り換えは、声・画面・説明欄・コメントのどこにも出さない
   - 見た目は ⑥ AD（5つの例外。明るい地・ピンク #D9005B の下線と札）。声は 春日部つむぎ。utm の末尾 `_rakutenmobile`。関連動画の締めは横動画11本目の ID が分かってから（`relatedLong.ts` の RAKUTEN_MOBILE に ID → `types.ts` の RELATED_LONG_THEMES に足す）
+- watchgen・macgen（10/27〜・予算別を減らして iPhone 以外を出す回。`shorts/themes/watchgen.ts`・`macgen.ts`）: fold・gen と同じ場面・同じ行（FoldRow）。「Apple Watch／MacBook Air、1世代前にするといくら安い？」。差（新しい方 − 1世代前）の大きい順・率は新しい方に対して・差0以下は出さない
+  - watchgen: 組は Ultra 4→3→2→初代・Series 12→…→6・SE 3→第2→第1世代（`lib/watchCatalog.ts` の表記）。DB の storage はケースの mm。**ケースは機種ごとに在庫がいちばん多いサイズ**（Series は世代で 45→46mm と変わる。Ultra はどれも 49mm）、そのサイズの在庫が両方5件以上の組だけ。サイズが違う組は行に「46／45mm」。注記「ケースは在庫がいちばん多いサイズ・中央値」・説明欄の選び方にも書く。リンクは1位の1世代前の機種ページと /watch。utm `_watchgen`・#AppleWatch #中古。声 つむぎ
+  - macgen: 組は Air 13インチ M5→M4→M3→M2→M1・15インチ M5→M4→M3→M2（`lib/macCatalog.ts`）。SSD は両方に在庫5件以上の最小の容量。ひと言は1位の1世代前・その容量の**メモリの内訳（memoryGB の groupBy）**から（分かる在庫5件未満なら一般の注意）。リンクは /mac。utm `_macgen`・#MacBook #MacBookAir #中古。声 ずんだもん
+  - 見た目は ⑤ PRO、つかみは機器の形（look.hook "device"。時計の文字盤とバンド／開いたノート＋最大の差額）。関連動画の締めはなし（iPhone ではない）
+  - 読み: Series シリーズ（voiceTuning の BRANDS で頭を切る）・Ultra 2〜4 ウルトラツー〜フォー・M1〜M5 エムワン〜エムファイブ・mm ミリ・Watch ウォッチ（`voice.ts` の speakable）
 - **ランキングは3位・2位・1位（伏せ字）の3行だけ。** 4位・5位は出さない。空いた分、行と文字を大きくする（行の高さ 260px、機種名は最大80px で、幅に合わせて縮める）。
 - **ランキングの行は、声に合わせて出す。** 声は文ごとに合成し、各行は「○位は」の0.15秒前に出す。決まった間隔では出さない。
 - **上部の見出しの帯は大きく**（上の行は最大52px、題は2行で最大104px）。
@@ -133,8 +138,8 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 
 ### ナレーション（VOICEVOX）
 - **標準の声は 春日部つむぎ（ノーマル）**。drops と budget はこの声（10/21 ユーザーの指示。1本目の drops だけ ずんだもん）。
-  - **rank・gen・ios27line・batteryswap・overnew・oldpro は ずんだもん（ノーマル）**（10/22・10/25。口調は です・ます のまま。クレジット「VOICEVOX:ずんだもん」。規約は docs/youtube-shorts.md）。pixelbudget は 春日部つむぎ。
-  - **newused・provs・promax・plusvs・minie・unused・fold・foldbudget・ipadbudget は 青山龍星（ノーマル）**（macbudget・probudget・plusmax は 春日部つむぎ）（10/21・10/22 ユーザーの指示。クレジット「VOICEVOX:青山龍星」。法人が関わる利用は事前に ななはぴ へ確認。docs/youtube-shorts.md）。
+  - **rank・gen・ios27line・batteryswap・overnew・oldpro・macgen は ずんだもん（ノーマル）**（10/22・10/25。口調は です・ます のまま。クレジット「VOICEVOX:ずんだもん」。規約は docs/youtube-shorts.md）。pixelbudget は 春日部つむぎ。
+  - **newused・provs・promax・plusvs・minie・unused・fold・foldbudget・ipadbudget は 青山龍星（ノーマル）**（macbudget・probudget・plusmax・watchgen は 春日部つむぎ）（10/21・10/22 ユーザーの指示。クレジット「VOICEVOX:青山龍星」。法人が関わる利用は事前に ななはぴ へ確認。docs/youtube-shorts.md）。
   - 名前で指定する（`voice.ts` の `DEFAULT_SPEAKER`・`make-short.tsx` の `THEME_SPEAKER`）。ID はエンジンの GET /speakers から引く（この PC では 8）。
   - 説明欄のクレジットは「VOICEVOX:春日部つむぎ」（公式の規約で商用可・クレジット必須。10/21 確認。docs/youtube-shorts.md）。
   - 説明欄のクレジット「VOICEVOX:<キャラクター名>」は render が自動で入れる。
@@ -223,7 +228,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 | ② 予算別 BUDGET | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | budget・pixelbudget・macbudget・bigbudget（予算の札）・ipadbudget（予算の丸い札・淡い金）・overnew（新品と中古の割合の2本の棒）・minie（「無印 vs mini・e」。右の札は price） |
 | ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・plusvs・plusmax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
 | ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形）・batteryswap（「中古＋電池交換＝1つ上」の札）・unused（「ランクA vs 未使用品」） |
-| ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札）・oldpro（「前のPro vs 無印」＋差 最大） |
+| ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札）・oldpro（「前のPro vs 無印」＋差 最大）・watchgen・macgen（時計・ノートの形＋最大の差額） |
 | ⑥ 広告の回 AD（5つの例外） | 明るい ground | 塗らない（墨の文字）・ピンク #D9005B の下線 | 灰の縁＋影 | ピンク #D9005B（札も） | rakutenmobile（料金の3段の階段＋2年で差）。左上に「PR」 |
 
 ### 色

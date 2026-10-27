@@ -1,8 +1,8 @@
 /**
  * YouTube ショート（縦 1080x1920・約40秒）を、サイトの相場と同じ数字で作る
- *   npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile|ipadmini> plan [--force]                     … 台本 JSON を作る（shorts/out/<日付>-<テーマ>/script.json）
- *   npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile|ipadmini> render [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm] [--tiktok]  … 台本から short-*.mp4 と youtube.txt を作る
- * テーマ: drops＝今週いちばん値下がりした中古iPhone（型 A・B・C）/ budget＝予算ぴったりで買える中古iPhone / newused＝新品より中古でいくら安い？ / provs＝Proと無印、同じ容量でいくら違う？ / fold＝折りたたみスマホ、1世代前にするといくら安い？ / pixelbudget＝予算ぴったりで買える中古Pixel / ipadbudget＝予算ぴったりで買える中古iPad / macbudget＝予算ぴったりで買える中古MacBook / probudget＝予算ぴったりで買える中古iPhone Pro / foldbudget＝予算ぴったりで買える中古折りたたみスマホ / bigbudget＝予算ぴったりで買える 大きい画面の中古iPhone / promax＝Pro MaxとPro、同じ容量でいくら違う？ / plusvs＝Plusと無印、同じ容量でいくら違う？ / plusmax＝大画面はPlusとPro Max、同じ容量でいくら違う？ / oldpro＝1世代前のProと最新の無印、どっちが安い？ / minie＝無印より安い“弟分”（mini・e）、いくら安い？ / unused＝未使用品（ランクS）は、中古（ランクA）よりいくら高い？ / rank＝状態ランクでいくら違う？中古iPhone / battery＝電池90%台だといくら高い？中古iPhone / gen＝iPhone、1世代前にするといくら安い？ / storage＝容量を1つ上げるといくら高い？中古iPhone / ios27line＝iOS 27 に対応する、いちばん安い中古iPhoneは？ / batteryswap＝電池交換を足すと、1つ上の世代と同じ値段？ / overnew＝中古なのに新品より高い？新品との差がいちばん小さい中古iPhone / rakutenmobile＝楽天モバイルは使った量で3段階｜中古iPhone 14と2年でいくら？（広告の回・PR） / ipadmini＝新型iPad mini、中古の旧型ならいくら安い？（drops 以外は型 A だけ）
+ *   npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile|ipadmini|watchgen|macgen> plan [--force] [--dir <フォルダ>]    … 台本 JSON を作る（shorts/out/<日付>-<テーマ>/script.json）
+ *   npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile|ipadmini|watchgen|macgen> render [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm] [--tiktok]  … 台本から short-*.mp4 と youtube.txt を作る
+ * テーマ: drops＝今週いちばん値下がりした中古iPhone（型 A・B・C）/ budget＝予算ぴったりで買える中古iPhone / newused＝新品より中古でいくら安い？ / provs＝Proと無印、同じ容量でいくら違う？ / fold＝折りたたみスマホ、1世代前にするといくら安い？ / pixelbudget＝予算ぴったりで買える中古Pixel / ipadbudget＝予算ぴったりで買える中古iPad / macbudget＝予算ぴったりで買える中古MacBook / probudget＝予算ぴったりで買える中古iPhone Pro / foldbudget＝予算ぴったりで買える中古折りたたみスマホ / bigbudget＝予算ぴったりで買える 大きい画面の中古iPhone / promax＝Pro MaxとPro、同じ容量でいくら違う？ / plusvs＝Plusと無印、同じ容量でいくら違う？ / plusmax＝大画面はPlusとPro Max、同じ容量でいくら違う？ / oldpro＝1世代前のProと最新の無印、どっちが安い？ / minie＝無印より安い“弟分”（mini・e）、いくら安い？ / unused＝未使用品（ランクS）は、中古（ランクA）よりいくら高い？ / rank＝状態ランクでいくら違う？中古iPhone / battery＝電池90%台だといくら高い？中古iPhone / gen＝iPhone、1世代前にするといくら安い？ / storage＝容量を1つ上げるといくら高い？中古iPhone / ios27line＝iOS 27 に対応する、いちばん安い中古iPhoneは？ / batteryswap＝電池交換を足すと、1つ上の世代と同じ値段？ / overnew＝中古なのに新品より高い？新品との差がいちばん小さい中古iPhone / rakutenmobile＝楽天モバイルは使った量で3段階｜中古iPhone 14と2年でいくら？（広告の回・PR） / ipadmini＝新型iPad mini、中古の旧型ならいくら安い？ / watchgen＝Apple Watch、1世代前にするといくら安い？ / macgen＝MacBook Air、1世代前にするといくら安い？（drops 以外は型 A だけ）
  * --no-bgm: BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）。YouTube アプリの「音源を追加」で流行りの曲を付けて投稿する用
  * --tiktok: TikTok 用の short-A-tiktok.mp4（BGM なし・締めは「全機種の相場は used.gadelog.com で検索」。プロフィールのリンクと関連動画の誘導なし）と youtube-nobgm.txt
  *   npx tsx shorts/make-short.tsx --voice-test "テキスト" [--speaker 8|春日部つむぎ/ノーマル] [--speed 1.25]  … VOICEVOX の声だけ試す（shorts/out/voice-test.wav）
@@ -41,6 +41,8 @@ import { buildBatterySwapScript } from "./themes/batteryswap";
 import { buildOverNewScript } from "./themes/overnew";
 import { buildRakutenMobileScript } from "./themes/rakutenmobile";
 import { buildIpadMiniScript } from "./themes/ipadmini";
+import { buildWatchGenScript } from "./themes/watchgen";
+import { buildMacGenScript } from "./themes/macgen";
 import { renderShort } from "./render";
 import { isBudget, isProVs, type Script } from "./types";
 import { DEFAULT_SPEAKER, DEFAULT_SPEED, VOICEVOX_URL, defaultNarration, engineAvailable, forTikTok, narrationOf, resolveSpeaker, speakable, synthesize, tunedQuery, voiceCredit } from "./voice";
@@ -54,10 +56,10 @@ const opt = (name: string) => {
 };
 const OUT = resolve(__dirname, "out");
 const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
-const THEMES = ["drops", "budget", "pixelbudget", "ipadbudget", "macbudget", "probudget", "foldbudget", "galaxybudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "fold", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "rakutenmobile", "ipadmini"] as const;
+const THEMES = ["drops", "budget", "pixelbudget", "ipadbudget", "macbudget", "probudget", "foldbudget", "galaxybudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "fold", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "rakutenmobile", "ipadmini", "watchgen", "macgen"] as const;
 /**
  * テーマごとの声。drops・budget は 春日部つむぎ（ノーマル）＝ DEFAULT_SPEAKER（10/21 ユーザーの指示。1本目の drops は ずんだもんだった）。
- * newused・provs・fold は 青山龍星（ノーマル）（10/21・10/22 ユーザーの指示。この PC では ID 13）。pixelbudget は 春日部つむぎ、rank は ずんだもん（ノーマル。口調は「です・ます」のまま）（10/22）。ipadbudget・battery は 青山龍星（10/23）。gen は ずんだもん、storage は 春日部つむぎ（10/23）。promax は provs と同じ 青山龍星、macbudget は 春日部つむぎ（10/23）。probudget は 春日部つむぎ（10/24）。foldbudget は fold と同じ 青山龍星（10/24）。ios27line・batteryswap・overnew は ずんだもん（ノーマル。口調は「です・ます」）（10/25）。plusvs は provs と同じ 青山龍星（10/25）。minie・unused も 青山龍星（10/26）。plusmax は 春日部つむぎ、oldpro は ずんだもん（ノーマル。口調は「です・ます」）（10/26。強い「2つを比べて差を言う」型で 青山龍星 以外の声を試す）。bigbudget は 春日部つむぎ（10/26）。rakutenmobile（広告の回）は 春日部つむぎ（10/26。横動画11本目の解説役と同じ）。 ipadmini（新型 iPad mini の回）は 春日部つむぎ（10/27）。
+ * newused・provs・fold は 青山龍星（ノーマル）（10/21・10/22 ユーザーの指示。この PC では ID 13）。pixelbudget は 春日部つむぎ、rank は ずんだもん（ノーマル。口調は「です・ます」のまま）（10/22）。ipadbudget・battery は 青山龍星（10/23）。gen は ずんだもん、storage は 春日部つむぎ（10/23）。promax は provs と同じ 青山龍星、macbudget は 春日部つむぎ（10/23）。probudget は 春日部つむぎ（10/24）。foldbudget は fold と同じ 青山龍星（10/24）。ios27line・batteryswap・overnew は ずんだもん（ノーマル。口調は「です・ます」）（10/25）。plusvs は provs と同じ 青山龍星（10/25）。minie・unused も 青山龍星（10/26）。plusmax は 春日部つむぎ、oldpro は ずんだもん（ノーマル。口調は「です・ます」）（10/26。強い「2つを比べて差を言う」型で 青山龍星 以外の声を試す）。bigbudget は 春日部つむぎ（10/26）。rakutenmobile（広告の回）は 春日部つむぎ（10/26。横動画11本目の解説役と同じ）。 ipadmini（新型 iPad mini の回）は 春日部つむぎ（10/27）。watchgen は 春日部つむぎ、macgen は ずんだもん（ノーマル。口調は「です・ます」）（10/27。予算別を減らした声の比べ V1・ideas/2026-10-27-shorts-plan.md）。
  * 名前で指定するので、ID はエンジン（GET /speakers）から引く。クレジットは render がキャラクター名から自動で入れる
  */
 const THEME_SPEAKER: Record<(typeof THEMES)[number], number | string> = {
@@ -66,12 +68,14 @@ const THEME_SPEAKER: Record<(typeof THEMES)[number], number | string> = {
   ios27line: "ずんだもん/ノーマル", batteryswap: "ずんだもん/ノーマル", overnew: "ずんだもん/ノーマル",
   rakutenmobile: "春日部つむぎ/ノーマル",
   ipadmini: "春日部つむぎ/ノーマル",
+  watchgen: "春日部つむぎ/ノーマル", macgen: "ずんだもん/ノーマル",
 };
 
 async function plan() {
   // drops の --days（既定7）。7日以外は別のフォルダ（<日付>-drops-<日数>d）
   const days = Number(opt("days") ?? 7);
-  const dir = join(OUT, `${today}-${theme}${theme === "drops" && days !== 7 ? `-${days}d` : ""}`);
+  // --dir で置き場所を指定できる（公開日の名前のフォルダ。utm の日付は台本を作った後に直す）
+  const dir = opt("dir") ? resolve(opt("dir")!) : join(OUT, `${today}-${theme}${theme === "drops" && days !== 7 ? `-${days}d` : ""}`);
   const file = join(dir, "script.json");
   if (existsSync(file) && !flag("force")) throw new Error(`${file} はすでにあります（上書きするなら --force。コメントを直した後は上書きしないでください）`);
   // 予算別の --budgets 40000,60000,80000,120000 --pick 40000（同じ中身の回を避けるため。themes/budget.ts の BudgetOpts）
@@ -79,7 +83,8 @@ async function plan() {
   const built: Script = theme === "budget" ? await buildBudgetScript(today, budgetOpts) : theme === "newused" ? await buildNewUsedScript(today)
     : theme === "provs" ? await buildProVsScript(today) : theme === "promax" ? await buildProMaxScript(today) : theme === "plusvs" ? await buildPlusVsScript(today) : theme === "plusmax" ? await buildPlusMaxScript(today) : theme === "oldpro" ? await buildOldProScript(today) : theme === "minie" ? await buildMinieScript(today) : theme === "unused" ? await buildUnusedScript(today) : theme === "macbudget" ? await buildMacBudgetScript(today) : theme === "probudget" ? await buildProBudgetScript(today) : theme === "foldbudget" ? await buildFoldBudgetScript(today, budgetOpts) : theme === "galaxybudget" ? await buildGalaxyBudgetScript(today) : theme === "bigbudget" ? await buildBigBudgetScript(today) : theme === "fold" ? await buildFoldScript(today)
     : theme === "pixelbudget" ? await buildPixelBudgetScript(today, budgetOpts) : theme === "ipadbudget" ? await buildIpadBudgetScript(today, budgetOpts) : theme === "rank" ? await buildRankScript(today) : theme === "battery" ? await buildBatteryScript(today) : theme === "gen" ? await buildGenScript(today) : theme === "storage" ? await buildStorageScript(today)
-    : theme === "ios27line" ? await buildIos27LineScript(today) : theme === "batteryswap" ? await buildBatterySwapScript(today) : theme === "overnew" ? await buildOverNewScript(today) : theme === "rakutenmobile" ? await buildRakutenMobileScript(today) : theme === "ipadmini" ? await buildIpadMiniScript(today) : await buildDropsScript(today, days);
+    : theme === "ios27line" ? await buildIos27LineScript(today) : theme === "batteryswap" ? await buildBatterySwapScript(today) : theme === "overnew" ? await buildOverNewScript(today) : theme === "rakutenmobile" ? await buildRakutenMobileScript(today) : theme === "ipadmini" ? await buildIpadMiniScript(today)
+    : theme === "watchgen" ? await buildWatchGenScript(today) : theme === "macgen" ? await buildMacGenScript(today) : await buildDropsScript(today, days);
   // ナレーションの下書き（全場面・台本の数字だけ）と声の設定。comment は narration から消せば comment.lines を読む（直した lines が声にも反映）
   const { comment: _c, ...narration } = defaultNarration(built);
   void _c;
@@ -131,8 +136,8 @@ async function plan() {
     script.scenes.ranking.items.forEach((r, i) => console.log(`  ${i + 1}. ${r.older}／${r.newer}（${r.storage}・在庫${r.olderCount}件／${r.newerCount}件） 弟分 ${r.olderMedian.toLocaleString()}円・無印 ${r.newerMedian.toLocaleString()}円（−${r.diff.toLocaleString()}円・−${r.pct.toFixed(1)}%）`));
   } else if (script.theme === "unused") {
     script.scenes.ranking.items.forEach((r, i) => console.log(`  ${i + 1}. ${r.model}（${r.storage}） 未使用品S ${r.sMedian.toLocaleString()}円（${r.sCount}件）・ランクA ${r.aMedian.toLocaleString()}円（${r.aCount}件）（+${r.diff.toLocaleString()}円・+${r.pct.toFixed(1)}%）`));
-  } else if (script.theme === "fold" || script.theme === "gen") {
-    script.scenes.ranking.items.forEach((r, i) => console.log(`  ${i + 1}. ${r.newer}→${r.older}（${r.storage}・在庫${r.newerCount}件／${r.olderCount}件） ${r.newerMedian.toLocaleString()}円 → ${r.olderMedian.toLocaleString()}円（−${r.diff.toLocaleString()}円・−${r.pct.toFixed(1)}%）`));
+  } else if (script.theme === "fold" || script.theme === "gen" || script.theme === "watchgen" || script.theme === "macgen") {
+    script.scenes.ranking.items.forEach((r, i) => console.log(`  ${i + 1}. ${r.newer}→${r.older}（${r.olderStorage ? `${r.storage}／${r.olderStorage}` : r.storage}・在庫${r.newerCount}件／${r.olderCount}件） ${r.newerMedian.toLocaleString()}円 → ${r.olderMedian.toLocaleString()}円（−${r.diff.toLocaleString()}円・−${r.pct.toFixed(1)}%）`));
   } else {
     const s = script.scenes;
     console.log(`1位 ${s.hook.model}（${s.hook.storage}） −${s.hook.drop.toLocaleString()}円 / 比較 ${script.fromDate}〜${script.toDate} / ${script.shopCount}店 / 推移 ${s.trend.points.length}点`);
@@ -221,7 +226,7 @@ async function main() {
   const vt = opt("voice-test");
   if (vt !== undefined) return voiceTest(vt);
   if (!THEMES.includes(theme as (typeof THEMES)[number]) || (step !== "plan" && step !== "render")) {
-    throw new Error("使い方: npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile|ipadmini> <plan|render> [--force] [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm] [--tiktok]\n      npx tsx shorts/make-short.tsx --voice-test \"テキスト\" [--speaker 3] [--speed 1.25]\n      npx tsx shorts/make-short.tsx --voice-dump \"テキスト\"|script [--dir <フォルダ>]");
+    throw new Error("使い方: npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile|ipadmini|watchgen|macgen> <plan|render> [--force] [--variant A|B|C|all] [--dir <フォルダ>] [--keep-frames] [--no-voice] [--no-bgm] [--tiktok]\n      npx tsx shorts/make-short.tsx --voice-test \"テキスト\" [--speaker 3] [--speed 1.25]\n      npx tsx shorts/make-short.tsx --voice-dump \"テキスト\"|script [--dir <フォルダ>]");
   }
   await (step === "plan" ? plan() : render());
 }
