@@ -1,0 +1,162 @@
+{
+  "date": "2026-10-27",
+  "shops": 16,
+  "source": "script.md の数字そのまま（2026/10/27 の集計・longform/2026-11-03-duo-vs-mini/data-query.ts → data-query.log。iPhone は16店・iPad は14店（activeShops）。相場＝在庫がいちばん多い容量の中央値（getModelMarket）。iPhone Duo の値段・仕様は ideas/2026-10-27-iphone-duo.md（Apple 公式 apple.com/jp/shop/buy-iphone/iphone-duo・apple.com/jp/iphone-duo/specs/・support.apple.com/ja-jp/148588・ニュースリリース・10/27 確認）。新型 iPad mini は lib/ipadMiniA20.ts（10/27 確認）、18 Pro Max の新品は lib/applePrices.ts、Pro Max の画面・チップは lib/iphoneSpecs.ts、重さは support.apple.com/ja-jp/121032・125091（10/26 確認）、画面の修理は lib/appleRepairPrices.ts）",
+  "thumbnail": {
+    "lines": ["iPhone Duo 1台で", "何が買える？"],
+    "badge": [{ "text": "36.48万円", "red": true }],
+    "footer": "Apple 公式の値段と中古の相場で比べた ｜ used.gadelog.com"
+  },
+  "chapters": [
+    {
+      "title": "結論：Duo 1台で新品2台が買える",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "iPhone Duo 1台の値段で",
+        "items": [
+          { "label": "iPhone Duo 256GB（新品）", "value": "364,800", "unit": "円", "cue": "いちばん小さい256GBで36万4,800円" },
+          { "label": "新品の 18 Pro Max ＋ 新型 iPad mini", "value": "359,600", "unit": "円", "cue": "合わせて35万9,600円" },
+          { "label": "中古の 17 Pro Max ＋ 新型 iPad mini", "value": "328,580", "unit": "円", "cue": "新型のminiと合わせて32万8,580円" }
+        ],
+        "note": "新品は Apple 公式（税込・Duo は SIMフリー・mini は Wi-Fi 128GB・18 Pro Max は 256GB）。中古は 17 Pro Max 256GB の相場（2026/10/27）"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "どうやって調べた？",
+        "items": [
+          { "label": "iPhone を扱う中古ショップ", "value": "16", "unit": "店", "cue": "大手の中古ショップ16店" },
+          { "label": "iPhone の在庫", "value": "37,089", "unit": "件", "cue": "大手の中古ショップ16店" },
+          { "label": "iPhone Duo の中古", "value": "0", "unit": "件", "cue": "今日の時点で0台" }
+        ],
+        "note": "iPad は iPad を扱う14店の在庫。新品の値段と仕様は Apple 公式（10/27 確認）。中古の Duo の値段は予想しない"
+      }
+    },
+    {
+      "title": "iPhone Duoと新型iPad mini",
+      "scene": {
+        "type": "table",
+        "heading": "iPhone Duo と新型 iPad mini（Apple 公式の値）",
+        "columns": ["項目", "iPhone Duo", "新型 iPad mini"],
+        "emphasis": [1, 2],
+        "rows": [
+          { "cells": ["発売", "10/23", "11/6"], "cue": "10月23日に出た" },
+          { "cells": ["画面", "閉じて5.4・開いて7.6インチ 有機EL", "8.5インチ 有機EL"], "cue": "閉じると5.4インチ" },
+          { "cells": ["値段（いちばん小さい容量）", "256GB 364,800円", "128GB 119,800円（Wi-Fi）"], "cue": "値段はWi-Fiの128GBで11万9,800円" },
+          { "cells": ["重さ", "254g", "255g（Wi-Fi）"], "cue": "おもしろいのは重さ", "emphasis": [] },
+          { "cells": ["チップ", "A20 Pro", "A20 Pro"], "cue": "チップも、どっちもA20 Pro", "emphasis": [] },
+          { "cells": ["防水・防塵", "IP68", "IP67"], "cue": "DuoはIP68" },
+          { "cells": ["Apple Pencil", "年内に USB-C 対応予定", "Pro・USB-C"], "cue": "Pencil ProとUSB-Cのモデル" }
+        ],
+        "note": "Duo の値段は SIMフリー・税込。新品の iPhone 18 Pro Max のチップも A20 Pro（速さは比べない）"
+      }
+    },
+    {
+      "title": "画面の大きさと重さ",
+      "scene": {
+        "type": "table",
+        "heading": "画面の大きさ（対角）と重さ",
+        "columns": ["機種", "画面", "重さ", "値段"],
+        "emphasis": [1],
+        "rows": [
+          { "cells": ["iPhone Duo（開く）", "7.6インチ", "254g", "364,800円（新品）"], "cue": "Duoを開いた画面は" },
+          { "cells": ["iPhone 17 Pro Max", "6.9インチ", "233g", "208,780円（中古）"], "cue": "iPhone 17 Pro Maxは6.9インチ" },
+          { "cells": ["iPhone 16 Pro Max", "6.9インチ", "227g", "183,780円（中古）"], "cue": "iPhone 17 Pro Maxは6.9インチ" },
+          { "cells": ["iPad mini A17 Pro", "8.3インチ", "293g", "83,980円（中古）"], "cue": "中古のA17 Proは8.3インチ" },
+          { "cells": ["新型 iPad mini", "8.5インチ", "255g", "119,800円（新品）"], "cue": "中古のA17 Proは8.3インチ" }
+        ],
+        "note": "インチは画面の対角の長さ（形が違うので広さそのものではない）。中古は相場（Pro Max 256GB・mini 128GB）。重さは Apple の技術仕様（mini は Wi-Fi）"
+      }
+    },
+    {
+      "title": "Duoの値段で何が買える？",
+      "scene": {
+        "type": "bars",
+        "heading": "iPhone Duo 1台の値段で買える組み合わせ",
+        "unit": "万円",
+        "rows": [
+          { "label": "iPhone Duo", "sub": "新品・256GB", "median": 36.48, "cue": "Duoの36万4,800円で" },
+          { "label": "18 Pro Max＋新型 mini", "sub": "どちらも新品", "median": 35.96, "stock": "5,200円あまる", "cue": "1つ目、新品の18 Pro Max" },
+          { "label": "17 Pro Max＋新型 mini", "sub": "中古＋新品", "median": 32.858, "stock": "36,220円あまる", "cue": "2つ目、中古の17 Pro Max" },
+          { "label": "16 Pro Max＋mini A17 Pro", "sub": "どちらも中古", "median": 26.776, "stock": "97,040円あまる", "pick": true, "cue": "3つ目、中古の16 Pro Max" },
+          { "label": "15 Pro Max＋mini 第6世代", "sub": "どちらも中古", "median": 21.991, "stock": "144,890円あまる", "cue": "4つ目、中古の15 Pro Max" }
+        ],
+        "note": "新品は Apple 公式（mini は Wi-Fi 128GB）。中古は相場（Pro Max 256GB・A17 Pro 128GB・第6世代 256GB）。18 Pro Max の中古は256GBで7件・中央値 247,980円で新品より高い"
+      }
+    },
+    {
+      "title": "大きい画面なら中古のPro Max",
+      "scene": {
+        "type": "table",
+        "heading": "大きい画面なら：USB-C の Pro Max（256GB）",
+        "columns": ["機種", "発売", "画面", "相場", "最安", "在庫", "電池85%以上"],
+        "emphasis": [3],
+        "rows": [
+          { "cells": ["17 Pro Max", "2025年", "6.9インチ", "208,780円", "174,800円", "777件", "642件"], "cue": "17 Pro Maxは2025年の機種" },
+          { "cells": ["16 Pro Max", "2024年", "6.9インチ", "183,780円", "140,980円", "748件", "491件"], "cue": "2024年で、同じ6.9インチ" },
+          { "cells": ["15 Pro Max", "2023年", "6.7インチ", "146,980円", "108,000円", "579件", "146件"], "cue": "2023年で、6.7インチ", "emphasis": [3, 6] }
+        ],
+        "note": "どれも iOS 27 対応。電池85%以上＝電池の数字が85以上と書いてある在庫（店によって書き方が違う）"
+      }
+    },
+    {
+      "title": "iPad miniは中古の旧型でも",
+      "scene": {
+        "type": "pairs",
+        "heading": "新型 iPad mini と中古の A17 Pro",
+        "unit": "円",
+        "legend": ["新型（Apple 公式・Wi-Fi）", "中古の A17 Pro の相場"],
+        "colors": ["brand900", "price"],
+        "rows": [
+          { "label": "128GB", "a": 119800, "b": 83980, "diffLabel": "差 35,820円", "cue": "128GBの相場が8万3,980円" },
+          { "label": "256GB", "a": 136800, "b": 98780, "diffLabel": "差 38,020円", "cue": "256GBだと差は3万8,020円" },
+          { "label": "512GB", "a": 171800, "b": 131780, "diffLabel": "差 40,020円", "cue": "256GBだと差は3万8,020円" }
+        ],
+        "note": "第6世代（2021年・8.3インチ 液晶）は 256GB の相場 72,930円。Pencil Pro が使える中古の mini は A17 Pro だけ"
+      }
+    },
+    {
+      "title": "買う前の注意",
+      "scene": {
+        "type": "checklist",
+        "heading": "買う前に見る4つのこと",
+        "items": [
+          { "text": "iPhone Duo の中古は今日0件", "sub": "いま買うなら新品。中古の値段は予想しない", "cue": "1つ目、Duoの中古は今日0台" },
+          { "text": "Duo は eSIM だけ", "sub": "物理的な SIM カードには非対応（Apple の技術仕様）", "cue": "2つ目、DuoはeSIMだけ" },
+          { "text": "Duo の内側の画面の修理 182,800円", "sub": "Apple・保証対象外・税込。Pro Max の画面は 64,800円", "cue": "3つ目、修理の値段" },
+          { "text": "中古の Pro Max は電池の表記", "sub": "85%以上と書いてある在庫から選ぶ", "cue": "中古のPro Maxは、電池の表記" }
+        ]
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "table",
+        "heading": "まとめ：iPhone Duo と中古の代わり",
+        "columns": ["したいこと", "選ぶ機種", "値段"],
+        "emphasis": [2],
+        "rows": [
+          { "cells": ["折りたたみ1台にまとめたい", "iPhone Duo", "364,800円（新品・256GB）"], "cue": "Duoは256GBで36万4,800円" },
+          { "cells": ["大きい画面の iPhone", "中古の 16 Pro Max", "183,780円（256GB）"], "cue": "中古の16 Pro Maxが18万3,780円" },
+          { "cells": ["もっと大きい画面", "中古の iPad mini A17 Pro", "83,980円（128GB）"], "cue": "A17 Proで8万3,980円" },
+          { "cells": ["2台合わせて", "16 Pro Max＋mini A17 Pro", "267,760円（Duo より 97,040円安い）"], "cue": "2台合わせても26万7,760円" }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com"
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          { "id": "N2slZY_hJ9s", "title": "新型iPad mini（A20 Pro）買う？中古のA17 Proにする？差は3.6万円｜新旧の違いと中古の相場で比べた" },
+          { "id": "q9g7h5KLyfk", "title": "大きい画面の中古iPhone、どれを買う？Plus・Pro Max・Airを7千件の相場で比較" }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com"
+      }
+    }
+  ]
+}
