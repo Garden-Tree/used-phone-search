@@ -6,6 +6,7 @@ import VideoEmbed from "@/app/components/VideoEmbed";
 import { VIDEOS } from "@/lib/videos";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { getModelMarket } from "@/lib/marketStats";
+import { hubSummary, hubWebPage } from "@/lib/hubSummary";
 import { isIpad, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
@@ -42,14 +43,17 @@ export default async function IpadIndexPage() {
   const stats = await getModelMarket(IPAD_MODELS);
   const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
 
-  const jsonLd = {
+  // 冒頭の1文（/iphone と同じ形。AI の概要・「iPad 中古 相場」の検索向け。10/28〜）
+  const summary = hubSummary("iPad", IPAD_MODELS, stats, shops.length);
+
+  const jsonLd = [{
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "中古iPadの相場一覧", item: `${SITE_URL}/ipad` },
     ],
-  };
+  }, ...hubWebPage("中古iPadの相場一覧", "/ipad", summary)];
 
   return (
     <div className="min-h-screen text-ink">
@@ -68,6 +72,7 @@ export default async function IpadIndexPage() {
           {shopLabels(shops)}の中古iPad <strong>{total.toLocaleString()}件</strong>
           を機種別にまとめています。機種名から容量別・状態別の最安値へ。
         </p>
+        {summary && <p className="text-[13px] text-ink-mute mb-3 leading-relaxed">{summary}</p>}
         <AdDisclosure compact />
 
         {/* 目的・予算から探す（/pick/ipad-…・/ipad/budget/…） */}

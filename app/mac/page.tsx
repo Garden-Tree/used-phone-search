@@ -4,6 +4,7 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { getModelMarket } from "@/lib/marketStats";
+import { hubSummary, hubWebPage } from "@/lib/hubSummary";
 import { modelPagePath } from "@/lib/catalog";
 import { MAC_INFO, MAC_MODELS } from "@/lib/macCatalog";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -42,14 +43,17 @@ export default async function MacIndexPage() {
   const stats = await getModelMarket(MAC_MODELS);
   const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
 
-  const jsonLd = {
+  // 冒頭の1文（/iphone と同じ形。AI の概要・「MacBook 中古 相場」の検索向け。10/28〜）
+  const summary = hubSummary("MacBook", MAC_MODELS, stats, shops.length);
+
+  const jsonLd = [{
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "中古MacBookの相場一覧", item: `${SITE_URL}/mac` },
     ],
-  };
+  }, ...hubWebPage("中古MacBookの相場一覧", "/mac", summary)];
 
   return (
     <div className="min-h-screen text-ink">
@@ -68,6 +72,7 @@ export default async function MacIndexPage() {
           {shopLabels(shops)}の中古MacBook <strong>{total.toLocaleString()}件</strong>
           を機種別にまとめています。機種名から、メモリ・SSD別、状態別の最安値へ。
         </p>
+        {summary && <p className="text-[13px] text-ink-mute mb-3 leading-relaxed">{summary}</p>}
         <p className="text-sm text-ink-mute mb-4 leading-relaxed">
           載せているのは、macOS 27 Golden Gate に対応する Apple シリコン搭載モデルと MacBook Neo です
           （Apple 公式「<a href="https://www.apple.com/jp/os/macos/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">macOS</a>」）。

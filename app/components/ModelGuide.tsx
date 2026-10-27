@@ -70,6 +70,10 @@ export default function ModelGuide(p: {
         {p.factorsHref && (
           <Link href={p.factorsHref} className={`text-[13px] font-bold ${LINK}`}>電池・状態ランク・容量・世代で、値段はいくら違う？ ›</Link>
         )}
+        {/* iPhone だけ（factorsHref がある機種）。1か月の値下がりを発売からの年数別に（10/28〜） */}
+        {p.factorsHref && (
+          <Link href="/iphone/price-drop" className={`text-[13px] font-bold ${LINK}`}>中古iPhoneは1か月でいくら下がる？発売からの年数別 ›</Link>
+        )}
       </section>
 
       {/* 中古相場の推移（表） */}

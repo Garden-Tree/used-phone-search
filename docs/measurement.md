@@ -67,3 +67,22 @@
 - `https://used.gadelog.com/health.json`：書き出しのたびに作る。`ok`・`checkedAt`（書き出した時刻）・店ごとの最終更新（24時間以上止まると問題）・価格推移の最終記録日
   （10/6 まであった `/api/health` は Vercel 版の API で、廃止）
 - サーバーの cron が毎日10:00に確認し、問題時のみメール（詳細は `operations.md`）
+
+## AI からの集客の週次記録（2026-10-28〜・毎週月曜）
+
+AI（ChatGPT・Copilot・Google の AI モード／AI による概要）が実際に調べた問いを見て、答えるページがない問いに節かページを足す。記録は `ideas/YYYY-MM-DD.md`（初回 `ideas/2026-10-28-ai.md`）。
+
+| 見る場所 | 何を記録するか |
+| --- | --- |
+| Search Console「検索の生成 AI 機能のパフォーマンス」（`/performance/search-analytics/ai`） | 合計表示回数・上位10ページ（クエリは出ない） |
+| Search Console 検索結果（28日・クエリ・500行） | **会話の形の問い**（「11プロは？」「中古だと？」＝ AI モードの続きの質問）・比較（vs・比較・違い）・推移・店（どこ・どっち）・予算（○万円）。下の JS で絞る |
+| Bing Webmaster Tools「AI Performance」 | 引用回数・grounding query・引用されたページ（データは数日遅れ・サンプル） |
+| GA4 ランディングページ × チャネル「AI Assistant」 | AI から来た人の入口と shop_click |
+
+Search Console で「1ページあたりの行数」を 500 にしてから、コンソールで:
+```js
+const rows=[...document.querySelectorAll('table tbody tr')].map(r=>[...r.querySelectorAll('td')].map(t=>t.innerText.trim()));
+const re=/いつ|値下がり|下が|比較|vs|どっち|どれ|おすすめ|寿命|バッテリー|電池|買うべき|違い|予算|万円|推移|相場|どこ|買取|いくら|新品|一覧|コスパ|\?|？/i;
+rows.filter(r=>re.test(r[0])).map(r=>r[0]+'|'+r[2]+'|'+r[4]).join('\n') // 問い|表示|順位
+```
+判断: 同じ問いが2週続けて出て、答えるページがない（または順位20位より下）なら作る候補。比較の組は `lib/compare.ts`、店は `/iphone/where-to-buy`、値下がりは `/iphone/price-drop`、値段の差は `/iphone/price-factors`。

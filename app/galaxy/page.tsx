@@ -4,6 +4,7 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { getModelMarket } from "@/lib/marketStats";
+import { hubSummary, hubWebPage } from "@/lib/hubSummary";
 import { modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { GALAXY_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
@@ -40,14 +41,17 @@ export default async function GalaxyIndexPage() {
   const stats = await getModelMarket(GALAXY_MODELS);
   const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
 
-  const jsonLd = {
+  // 冒頭の1文（/iphone と同じ形。AI の概要・「Galaxy 中古 相場」の検索向け。10/28〜）
+  const summary = hubSummary("Galaxy", GALAXY_MODELS, stats, shops.length);
+
+  const jsonLd = [{
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "中古Galaxyの相場一覧", item: `${SITE_URL}/galaxy` },
     ],
-  };
+  }, ...hubWebPage("中古Galaxyの相場一覧", "/galaxy", summary)];
 
   return (
     <div className="min-h-screen text-ink">
@@ -66,6 +70,7 @@ export default async function GalaxyIndexPage() {
           {shopLabels(shops)}の中古Galaxy <strong>{total.toLocaleString()}件</strong>
           を機種別にまとめています（2022年以降の機種）。機種名から容量別・状態別の最安値へ。
         </p>
+        {summary && <p className="text-[13px] text-ink-mute mb-3 leading-relaxed">{summary}</p>}
         <AdDisclosure compact />
 
         {/* 目的・予算から探す（/pick/galaxy-…・/galaxy/budget/…）と比較ページ */}

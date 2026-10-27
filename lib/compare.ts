@@ -53,6 +53,7 @@ function buildPairs(): [string, string][] {
     ["iPad Air 11インチ (M2)", "iPad Air 11インチ (M3)"],
     ["iPad Air 11インチ (M3)", "iPad Air 11インチ (M4)"],
     ["iPad Air 11インチ (M2)", "iPad Pro 11インチ (M4)"],
+    ["iPad Air 11インチ (M4)", "iPad Pro 11インチ (M4)"], // 同じ M4 の Air と Pro（10/28: GSC に「ipad pro m4 air m4 比較」）
     ["iPad Pro 11インチ (第4世代)", "iPad Pro 11インチ (M4)"],
     ["iPad Pro 11インチ (M4)", "iPad Pro 11インチ (M5)"],
     ["iPad Pro 12.9インチ (第6世代)", "iPad Pro 13インチ (M4)"],

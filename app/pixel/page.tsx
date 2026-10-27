@@ -4,6 +4,7 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { getModelMarket } from "@/lib/marketStats";
+import { hubSummary, hubWebPage } from "@/lib/hubSummary";
 import { modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { PIXEL_CATALOG, PIXEL_INFO, PIXEL_MODELS, isPixel, jaMonth, updateUntil } from "@/lib/pixelCatalog";
@@ -39,14 +40,17 @@ export default async function PixelIndexPage() {
   const stats = await getModelMarket(PIXEL_MODELS);
   const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
 
-  const jsonLd = {
+  // 冒頭の1文（/iphone と同じ形。AI の概要・「Pixel 中古 相場」の検索向け。10/28〜）
+  const summary = hubSummary("Pixel", PIXEL_MODELS, stats, shops.length);
+
+  const jsonLd = [{
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "中古Google Pixelの相場一覧", item: `${SITE_URL}/pixel` },
     ],
-  };
+  }, ...hubWebPage("中古Google Pixelの相場一覧", "/pixel", summary)];
 
   return (
     <div className="min-h-screen text-ink">
@@ -65,6 +69,7 @@ export default async function PixelIndexPage() {
           {shopLabels(shops)}の中古Pixel <strong>{total.toLocaleString()}件</strong>
           を機種別にまとめています。機種名から容量別・状態別の最安値へ。
         </p>
+        {summary && <p className="text-[13px] text-ink-mute mb-3 leading-relaxed">{summary}</p>}
         <p className="text-sm text-ink-mute mb-4 leading-relaxed">
           Pixel は機種ごとに Google のアップデート保証の期限が決まっています（Pixel 8 以降は販売開始から7年、Pixel 6〜7 シリーズ・Pixel Fold は5年）。
           中古で買うときは、値段と一緒に「あと何年使えるか」も見てください。

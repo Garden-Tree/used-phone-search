@@ -9,7 +9,7 @@
 | `app/layout.tsx` の `verification.google` | Search Console の所有権確認 |
 | ゲオ公式ECへのスクレイピング | Akamai が拒否。**回避策は取らない**。ゲオは楽天API経由のみ |
 | 楽天APIで取った商品のリンク先 | 規約上、楽天市場（楽天アフィリエイト）以外へは張らない。A8 等を付けない |
-| `rakuten-sync/config.php`・`RAKUTEN_INGEST_SECRET` | 秘密情報。Git に入れない・Claude は扱わない（ユーザーが入力） |
+| `rakuten-sync/config.php`・`RAKUTEN_INGEST_SECRET` | 秘密情報。Claude は扱わない |
 | 在庫の全件取得（`findMany`） | Neon の転送量（月5GB）。集計は DB 側で |
 | サーバーの cron（2:40/8:40/14:40/20:40・10:00） | 取り込みと監視 |
 
@@ -32,7 +32,7 @@
 - **収益の枠**: 回線（`SimTile`・2年の総額 `/sim`）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **値動き速報**: `price-alerts.ts`
 - **広告のショート** `rakutenmobile`: PR は左上・説明欄
-- **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
+- **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。1か月の値下がり（年数別）`/iphone/price-drop`
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch の storage＝mm）
 - **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit は直接（A8）、ソフマップ・じゃんぱら・イオシスは楽天
 
@@ -45,17 +45,17 @@
 | **11/1** | 横動画9本目（月次・`longform/2026-11-01-monthly`）を取り直して公開 | 毎月 |
 | **10/31・11/16** | X 有料: 返信の表示・流入 | 返信 平均50 か 流入 週5。届かねば解約 |
 | **随時** | iPhone Duo・iPad mini (A20 Pro) の中古在庫 | 出たら catalog へ |
-| **10/31 夜** | ショートの声: ipadgen（つむぎ）↔ pixelgen（ずんだもん）同じ18時 | 継続率 3pt 差で決める |
+| **10/31 夜** | ショートの声 ipadgen↔pixelgen（ideas/10-27-shorts-plan） | 継続率 3pt 差 |
 | **11/10** | 10/27 改修の前後（収益・18 Pro の CTR・Bing 引用。ideas/10-27） | 引用減なら冒頭を戻す |
 | **11/23** | TikTok 4週目 | 再生の中央値500 か フォロワー300。届かねば1日1本 |
 | **12/1** | ahamo 段階制（40GB 3,135円〜）→ `lib/simPlans.ts` | |
 | **毎月1日** | 出典の開き直し・相場レポートが出たか | 出ていなければビルドのログ |
+| **毎週月曜** | AI の問い（GSC の会話形・比較・生成 AI。docs/measurement.md） | 2週続く問いで答えがなければ作る |
 
 ## 進行中・外部条件待ち
 
-- **審査中**: A8 バックマーケット・LINXAS・保険・J:COM・X-mobile・LIBMO・Y!mobile／VC IIJmio・LINEMO・ワイモバイル
+- **審査中**: A8 バックマーケット他6件／VC 3件（ideas/10-27-monetization）
 - **TikTok**: 10/26〜・`render --tiktok`・PR はまだ
-- **Vercel 停止→Neon Free（ユーザー）**
 
 ## 次にやる（順序）
 
