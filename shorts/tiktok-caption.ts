@@ -1,5 +1,6 @@
 // TikTok のキャプション（tiktok.txt）を作る。script.json と youtube.txt（あれば youtube-nobgm.txt）から組み立てる
-//   npx tsx shorts/tiktok-caption.ts shorts/out/<日付>-<テーマ>
+//   npx tsx shorts/tiktok-caption.ts shorts/out/<日付>-<テーマ> [--no-site]
+//   --no-site: 「相場は used.gadelog.com で検索」の行を入れない（10/27〜 URL の文字が配信に響くかの試し。動画の締めの声はそのまま）
 // 中身: つかみ（タイトル）→ 数字（説明欄の一覧の行・4行まで）→ データの出どころ → 「相場は used.gadelog.com で検索」（リンクにしない・utm なし）
 //       → VOICEVOX のクレジット → ハッシュタグ3〜4個。BGM のクレジットは入れない（TikTok は --tiktok の版 short-A-tiktok.mp4 を上げる）
 // 広告の回（rakutenmobile・タイトルが【PR】）は先頭に「#PR」。商用コンテンツの表示はコンソールに注意を出すだけ（キャプションには書かない）
@@ -49,6 +50,7 @@ const THEME_TAG: Partial<Record<Script["theme"], string>> = {
 };
 
 const dir = process.argv[2]?.replace(/[\\/]+$/, "");
+const noSite = process.argv.includes("--no-site");
 if (!dir || !existsSync(`${dir}/script.json`)) {
   throw new Error("使い方: npx tsx shorts/tiktok-caption.ts shorts/out/<日付>-<テーマ>（script.json と youtube.txt があるフォルダ）");
 }
@@ -95,8 +97,7 @@ const caption = [
   ...numbers,
   `（大手中古ショップ${script.shopCount}店の在庫の相場・${md(script.date)}時点）`,
   "",
-  "相場は used.gadelog.com で検索",
-  "",
+  ...(noSite ? [] : ["相場は used.gadelog.com で検索", ""]),
   ...credits,
   "",
   tags.slice(0, 4).join(" "),
