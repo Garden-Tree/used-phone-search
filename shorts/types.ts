@@ -360,9 +360,19 @@ export type RakutenMobileScript = Common & {
  */
 export type IpadMiniRow = { model: string; short: string; year: string; storage: string; storageGb: number; median: number; count: number; newStorageGb: number; newPrice: number; diff: number; pct: number };
 
-/** テーマ ipadmini「新型iPad mini、中古の旧型ならいくら安い？」（10/27〜・新型の発表に合わせた回。items は発売の新しい順で items[0]＝A17 Pro を最後まで伏せる） */
+/**
+ * 新型と中古の旧型の回で、画面の文字を機種ごとに変える分（mbpnew・10/28〜）。ipadmini は持たない（scenes.tsx の既定の文字）。
+ * head: 見出しの帯の2行・hook: つかみの3行・hookSub: つかみの左の札の下（新型のチップ）・foot: 下の注記・
+ * revealSub: 1位の補足の行・newBar: 新型の棒の札・compareHead: 違いの表の旧型の列の見出し
+ */
+export type NewVsOldCopy = { head: [string, string]; hook: string[]; hookSub: string; foot: string; revealSub: string; newBar: string; compareHead: string };
+
+/**
+ * テーマ ipadmini「新型iPad mini、中古の旧型ならいくら安い？」（10/27〜・新型の発表に合わせた回。items は発売の新しい順で items[0]＝A17 Pro を最後まで伏せる）・
+ * mbpnew「新型MacBook Pro M6、中古のM5・M4ならいくら安い？」（10/28〜。shorts/themes/mbpnew.ts。items は差の大きい順で items[0] を伏せる。copy で画面の文字を変える）
+ */
 export type IpadMiniScript = Common & {
-  theme: "ipadmini";
+  theme: "ipadmini" | "mbpnew";
   /** 新型の価格・仕様を Apple 公式で確かめた日（lib/ipadMiniA20.ts の IPAD_MINI_A20_CHECKED） */
   appleChecked: string;
   scenes: {
@@ -372,6 +382,7 @@ export type IpadMiniScript = Common & {
     ranking: { items: IpadMiniRow[] };
     /** 場面 reveal: 新型と items[0]（A17 Pro）の公式の仕様の違い（lib/ipadMiniA20.ts の IPAD_MINI_COMPARE から） */
     compare: { label: string; a20: string; a17: string }[];
+    copy?: NewVsOldCopy;
     comment: CommentScene;
     outro: OutroScene;
   };
@@ -415,3 +426,5 @@ export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" |
 export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax";
 /** stock・stockandroid（在庫数ランキング・場面を共有） */
 export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid";
+/** ipadmini・mbpnew（新型と中古の旧型・場面を共有） */
+export const isNewVsOld = (s: Script): s is IpadMiniScript => s.theme === "ipadmini" || s.theme === "mbpnew";

@@ -8,7 +8,7 @@ import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
 import { relatedThumb } from "./relatedLong";
-import { RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type Script } from "./types";
+import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -28,6 +28,7 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"] : s.theme === "plusmax" ? ["大画面はPlusとPro Max", "同じ容量でいくら違う？"]
     : s.theme === "oldpro" ? ["1世代前のProと最新の無印", "どっちが安い？中古iPhone"]
     : s.theme === "ipadmini" ? ["新型iPad mini", "中古の旧型ならいくら安い？"]
+    : s.theme === "mbpnew" ? (s.scenes.copy?.head ?? ["新型", "中古の旧型ならいくら安い？"])
     : s.theme === "watchgen" ? ["Apple Watch", "1世代前でいくら安い？"] : s.theme === "macgen" ? ["MacBook Air", "1世代前でいくら安い？"]
     : s.theme === "ipadgen" ? ["iPad", "1世代前でいくら安い？"] : s.theme === "pixelgen" ? ["Google Pixel", "1世代前でいくら安い？"]
     : s.theme === "stock" ? ["中古でいちばん多いiPhone", "在庫数ランキング"] : s.theme === "stockandroid" ? ["中古でいちばん多いAndroid", "在庫数ランキング"]
@@ -36,7 +37,7 @@ const HEAD_TITLE = (s: Script) =>
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
   s.theme === "rank" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
-    : s.theme === "ipadmini" ? ipadMiniFoot(s)
+    : isNewVsOld(s) ? (s.scenes.copy?.foot ?? ipadMiniFoot(s))
     : s.theme === "rakutenmobile" ? `${s.date.replace(/-/g, "/")}・料金は楽天モバイル公式（税込・割引なし）
 中古は${s.scenes.device.storage}の中央値`
     : s.theme === "unused" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記（S＝未使用品）・同じ容量の中央値`
@@ -157,7 +158,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
   if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
-    || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew" || s.theme === "ipadmini" || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen"
+    || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew" || isNewVsOld(s) || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen"
     || s.theme === "stock" || s.theme === "stockandroid") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
@@ -1047,11 +1048,11 @@ function IpadMiniReveal({ s, t }: { s: IpadMiniScript; t: number }) {
   const grow = prog(t, 0.8, 0.7);
   const diffText = `−${n(r.diff)}円`;
   // 「いちばん新しい旧型は…」の見出しは置く高さがない（仕様の表を入れたため）ので、補足の行に入れる
-  const sub = `いちばん新しい旧型・${r.storage}・${r.year}発売`;
+  const sub = s.scenes.copy?.revealSub ?? `いちばん新しい旧型・${r.storage}・${r.year}発売`;
   const LABEL = 230;
   const BAR = CW - 60 - LABEL - 20;
   const bars = [
-    { label: `新型 ${r.newStorageGb}GB`, price: r.newPrice, color: C.budget, w: BAR },
+    { label: s.scenes.copy?.newBar ?? `新型 ${r.newStorageGb}GB`, price: r.newPrice, color: C.budget, w: BAR },
     { label: "中古の相場", price: r.median, color: C.red, w: Math.round((BAR * r.median) / r.newPrice) },
   ];
   const COL = [250, 335, 275];
@@ -1080,7 +1081,7 @@ function IpadMiniReveal({ s, t }: { s: IpadMiniScript; t: number }) {
           <div style={{ ...row, fontSize: 60, fontWeight: 900, color: C.red, marginLeft: 16 }}>{`−${rate(r.pct)}%`}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 8, paddingTop: 8, borderTop: `3px solid ${C.line}`, opacity: prog(t, 1.4, 0.4) }}>
-          <div style={{ display: "flex" }}>{cells(["Apple公式", "新型", r.short], true)}</div>
+          <div style={{ display: "flex" }}>{cells(["Apple公式", "新型", s.scenes.copy?.compareHead ?? r.short], true)}</div>
           {s.scenes.compare.map((c, i) => (
             <div key={i} style={{ display: "flex", marginTop: 2 }}>{cells([c.label.replace(/（.+）$/, ""), c.a20, c.a17], false)}</div>
           ))}
@@ -2058,18 +2059,19 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       default: throw new Error(`${s.theme} に場面 ${sc.id} はありません`);
     }
   }
-  if (s.theme === "ipadmini") {
+  if (isNewVsOld(s)) {
     switch (sc.id) {
       case "hook": {
         const nm = s.scenes.newModel;
-        return <SplitHook s={s} t={t} lines={["新型iPad mini、", "中古の旧型なら", "いくら安い？"]} teaser={`${n(nm.price)}円〜`} label="新型"
-          left={{ label: "新型", sub: "A20 Pro", fill: C.budget }} right={{ label: "旧型", sub: "中古の相場", fill: lookOf(s).chip }} />;
+        const cp = s.scenes.copy;
+        return <SplitHook s={s} t={t} lines={cp?.hook ?? ["新型iPad mini、", "中古の旧型なら", "いくら安い？"]} teaser={`${n(nm.price)}円〜`} label="新型"
+          left={{ label: "新型", sub: cp?.hookSub ?? "A20 Pro", fill: C.budget }} right={{ label: "旧型", sub: "中古の相場", fill: lookOf(s).chip }} />;
       }
       case "ranking": return <IpadMiniRanking s={s} t={t} o={sc.o} />;
       case "reveal": return <IpadMiniReveal s={s} t={t} />;
       case "comment": return <Comment s={s} t={t} o={sc.o} />;
       case "outro": return <Outro s={s} t={t} o={sc.o} />;
-      default: throw new Error(`ipadmini に場面 ${sc.id} はありません`);
+      default: throw new Error(`${s.theme} に場面 ${sc.id} はありません`);
     }
   }
   if (s.theme === "newused") {

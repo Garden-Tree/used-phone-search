@@ -141,6 +141,8 @@ export const LOOKS: Record<Script["theme"], Look> = {
   // ipadmini（10/27〜・新型 iPad mini の回）: 新型と中古の旧型を比べる回なので newused と同じ ③ VERSUS（見た目は5つまでなので新しく作らない）。
   // つかみは「新型 vs 旧型」の札と新型の公式価格
   ipadmini: { ...VERSUS, hook: "split" },
+  // mbpnew（10/28〜・新型 MacBook Pro M6 の回）: ipadmini と同じ場面。前後の ③（ipadmini）・⑤（watchgen・macgen）と続かないよう ① DROPS（紺の地・赤い帯）
+  mbpnew: { ...DROPS, hook: "split" },
   // watchgen・macgen（10/27〜・声の比べ V1 の2本＝同じ型・同じ見た目）: 見た目は5つまでなので新しく作らない。前の ipadmini（③ VERSUS）・後の promax（③ VERSUS）と
   // 続かないよう ⑤ PRO（墨の地・金の帯）。つかみは機器の形（時計・ノート）で、ほかのテーマの1コマ目と同じにならない。
   // 2本は 10/28 18:00・10/29 18:00 で間の 10/29 8:00 が空きなら ⑤ が続く（V1 の比べを優先。ideas/2026-10-27-shorts-plan.md）

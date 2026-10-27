@@ -6,7 +6,7 @@ import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
 import { FPS, H, RANK_SHOWN, TIMELINE, W, budgetRows, countdown, sceneFrame, variantsOf, type Variant } from "./scenes";
 import { relatedLineStart } from "./relatedLong";
-import { isBudget, type Script } from "./types";
+import { isNewVsOld, isBudget, type Script } from "./types";
 import { VOICEVOX_URL, cachedCharacter, engineAvailable, narrationKey, narrationOf, resolveSpeaker, synthesize, voiceCredit, type Clip, type NarrationKey } from "./voice";
 
 function run(args: string[], bin = "ffmpeg") {
@@ -209,7 +209,7 @@ function rowOf(script: Script, sentence: string): number | null {
     const i = script.scenes.tiers.rows.findIndex((r) => sentence.startsWith(r.label));
     return i >= 0 ? i : null;
   }
-  if (script.theme === "ipadmini") {
+  if (isNewVsOld(script)) {
     // 文頭の旧型の名前（「第5世代は」）→ その行。items[0]（伏せた A17 Pro）は読まない
     const i = script.scenes.ranking.items.findIndex((r) => sentence.startsWith(`${r.short}は`));
     return i >= 1 ? i : null;

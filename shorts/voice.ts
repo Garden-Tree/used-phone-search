@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { hasRelatedLong, isBudget, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type StockScript, type Script, type VoiceConfig } from "./types";
+import { isNewVsOld, hasRelatedLong, isBudget, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type StockScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -80,7 +80,7 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
     : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s)
-    : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : s.theme === "ipadmini" ? ipadMiniNarration(s)
+    : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : isNewVsOld(s) ? (s.theme === "mbpnew" ? mbpNewNarration(s) : ipadMiniNarration(s))
     : s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen" ? deviceGenNarration(s)
     : isStock(s) ? stockNarration(s) : dropsNarration(s);
 }
@@ -455,6 +455,27 @@ function ipadMiniNarration(s: IpadMiniScript): Partial<Record<NarrationKey, stri
 }
 
 /**
+ * mbpnew の既定（10/28・新型 MacBook Pro M6 の回）: hook 問い / ranking 旧型の2行を差の小さい順に1文ずつ（文頭の short「M5の24GBは」で行を出す・render.ts の rowOf）/
+ * reveal 伏せた行（差がいちばん大きい中古）の相場と新型との差、公式の仕様の違い（CPU・Wi-Fi）と同じところ（電池）/ comment ひと言の本文だけ / outro サイトへの誘導と問い
+ */
+function mbpNewNarration(s: IpadMiniScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const c = (label: string) => s.scenes.compare.find((x) => x.label === label);
+  const cpu = c("CPU");
+  const wifi = c("Wi-Fi");
+  return {
+    hook: "新型MacBook Pro、中古のM5やM4なら、いくら安い？",
+    ranking: [...items.keys()].slice(1).reverse()
+      .map((i) => `${items[i].short}は、相場${yen(items[i].median)}。新型より${yen(items[i].diff)}安いです。`).join(""),
+    // 「約8.0万円」は「ハッテン/ゼロ/マンエン」と読まれるので、小数が 0 なら外す（10/28）
+    reveal: `${top.short}は、相場${yen(top.median)}。新型より約${(Math.round(top.diff / 1000) / 10).toFixed(1).replace(/\.0$/, "")}万円、およそ${Math.round(top.pct)}%安くなります。新型はCPUが${cpu?.a20}、${wifi?.a20.replace(/^Wi-Fi\s*(\d+)/, (_m, d: string) => `ワイファイ${EN_NUM[d] ?? d}`)}。電池の時間は同じです。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、新型と中古、どちらにしますか？",
+  };
+}
+
+/**
  * 機種名の読み上げ用（画面の文字は変えない）。iPad の「(M2)」「(A16)」のような括弧のチップ名は括弧で間が空くので読点に（「iPad Air 11インチ、M2」）。
  * 「(第9世代)」は speakable が括弧を外す
  */
@@ -552,7 +573,7 @@ export function speakable(text: string): string {
     [/iPhone/g, "アイフォン"], [/iPad/g, "アイパッド"], [/MacBook/g, "マックブック"], [/Apple Watch/g, "アップルウォッチ"],
     // watchgen・macgen（10/27）: Watch 単独・Series・Ultra の世代（Apple の読みに合わせ英語の数）・M チップ（エムワン〜）・ケースの mm
     [/\bWatch\b/g, "ウォッチ"], [/\bSeries\b/g, "シリーズ"], [/\bUltra\s*2\b/g, "ウルトラツー"], [/\bUltra\s*3\b/g, "ウルトラスリー"], [/\bUltra\s*4\b/g, "ウルトラフォー"],
-    [/\bM1\b/g, "エムワン"], [/\bM2\b/g, "エムツー"], [/\bM3\b/g, "エムスリー"], [/\bM4\b/g, "エムフォー"], [/\bM5\b/g, "エムファイブ"], [/(\d+)\s*mm\b/g, "$1ミリ"],
+    [/\bM1\b/g, "エムワン"], [/\bM2\b/g, "エムツー"], [/\bM3\b/g, "エムスリー"], [/\bM4\b/g, "エムフォー"], [/\bM5\b/g, "エムファイブ"], [/\bM6\b/g, "エムシックス"], [/(\d+)\s*mm\b/g, "$1ミリ"],
     // stockandroid（10/27）: Android・Xperia（「Xperia 10 V」＝テン マークファイブ。Sony の読み）・AQUOS（sense センス・wish ウィッシュ・R アール・pro プロ・plus プラス）
     [/Android/g, "アンドロイド"],
     [/Xperia\s*(1|5|10|Ace)\s+(VIII|VII|VI|IV|V|III|II)\b/g, (_m: string, no: string, gen: string) => `エクスペリア${XPERIA_NO[no]}マーク${ROMAN[gen]}`],
