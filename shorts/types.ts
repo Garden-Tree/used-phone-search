@@ -402,9 +402,9 @@ export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | 
 /**
  * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。
  * YouTube 公式ブログ 2026/7「最後の5秒で声と画面の両方で誘導」）。いまの横動画は iPhone なので、Pixel・iPad・折りたたみは外す。
- * TODO: rakutenmobile は横動画11本目（longform/2026-10-31-rakuten-mobile）を公開して ID が分かったら、relatedLong.ts の RAKUTEN_MOBILE に ID を入れてからここに足す
+ * rakutenmobile は横動画11本目（longform/2026-10-31-rakuten-mobile・10/27 18:00 公開）につなぐ
  */
-export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "stock"]);
+export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "stock", "rakutenmobile"]);
 export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";
 /** 締めに関連動画の誘導を出すか。TikTok（--tiktok）には関連動画がないので出さない */
 export const hasRelatedLong = (s: Script) => !s.tiktok && RELATED_LONG_THEMES.has(s.theme);

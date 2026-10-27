@@ -24,7 +24,7 @@ const IPAD_DORE: RelatedLong = { id: VIDEOS.ipadDore.id, title: VIDEOS.ipadDore.
 // 横動画10本目（10/27 にユーザーが予約から公開に）
 const BATTERY: RelatedLong = { id: "GcXIO15l6fU", title: "中古iPhoneのバッテリー、何%なら買っていい？85%以上が正解の理由を3.7万件の相場で", folder: "2026-10-29-battery" };
 const BIG_SCREEN: RelatedLong = { id: "q9g7h5KLyfk", title: "大きい画面の中古iPhone、どれを買う？Plus・Pro Max・Airを7千件の相場で比較", folder: "2026-10-28-big-screen" };
-// 横動画11本目（広告の回・楽天モバイル）。まだ公開前なので ID は空。公開したら ID を入れ、types.ts の RELATED_LONG_THEMES に rakutenmobile を足す
+// 横動画11本目（広告の回・楽天モバイル）。10/27 18:00 公開
 // （それまでは RELATED_LONG_THEMES にないので、締めは関連動画の声・札なしのいつもの形）
 const RAKUTEN_MOBILE: RelatedLong = { id: "Ua3ZRui2G4w", title: "【PR】中古iPhone＋楽天モバイル、2年でいくら？", folder: "2026-10-31-rakuten-mobile" };
 
