@@ -8,7 +8,7 @@ import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
 import { relatedThumb } from "./relatedLong";
-import { RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type Script } from "./types";
+import { RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -30,6 +30,7 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "ipadmini" ? ["新型iPad mini", "中古の旧型ならいくら安い？"]
     : s.theme === "watchgen" ? ["Apple Watch", "1世代前でいくら安い？"] : s.theme === "macgen" ? ["MacBook Air", "1世代前でいくら安い？"]
     : s.theme === "ipadgen" ? ["iPad", "1世代前でいくら安い？"] : s.theme === "pixelgen" ? ["Google Pixel", "1世代前でいくら安い？"]
+    : s.theme === "stock" ? ["中古でいちばん多いiPhone", "在庫数ランキング"] : s.theme === "stockandroid" ? ["中古でいちばん多いAndroid", "在庫数ランキング"]
     : s.theme === "rakutenmobile" ? ["楽天モバイルは使った量で3段階", `中古${s.scenes.device.model}と2年でいくら？`]
     : s.theme === "minie" ? ["無印より安い“弟分”", "いくら安い？中古iPhone"] : s.theme === "unused" ? ["未使用品（ランクS）は", "中古よりいくら高い？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : [`${periodOf(s as DropsScript).name}の中古iPhone`, "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
@@ -47,6 +48,8 @@ const FOOT = (s: Script) =>
     : s.theme === "ipadgen" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値・PencilはApple公式`
     : s.theme === "pixelgen" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値・アップデートはGoogle公式`
     : s.theme === "storage" ? `${s.date.replace(/-/g, "/")}・容量ごとの中央値`
+    : s.theme === "stock" || s.theme === "stockandroid" ? `${s.date.replace(/-/g, "/")}・件数はジャンク品を除く販売中の在庫
+相場は在庫がいちばん多い容量の中央値`
     : s.theme === "pixelbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・アップデートはGoogle公式`
     : s.theme === "ipadbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・PencilはApple公式`
     : s.theme === "macbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`
@@ -154,7 +157,8 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
   if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
-    || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew" || s.theme === "ipadmini" || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen") return [
+    || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew" || s.theme === "ipadmini" || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen"
+    || s.theme === "stock" || s.theme === "stockandroid") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -1787,7 +1791,103 @@ function TierTotals({ s, t }: { s: RakutenMobileScript; t: number }) {
   );
 }
 
+/**
+ * stock・stockandroid（10/27〜・在庫数ランキング）の名前。行・1位・棒の札で使う（長い Android の名前は幅に合わせて縮む）
+ * "iPhone SE (第3世代)" はそのまま（行の幅で縮む）
+ */
+const stockScope = (s: StockScript) => (s.theme === "stock" ? "iPhone" : "Android");
+
+/** stock・stockandroid: 問い＋在庫の数の横の棒3本（1位・2位・3位。機種は伏せ、1位の棒だけ強調色）＋「最多 ○件」 */
+function StockHook({ s, t }: { s: StockScript; t: number }) {
+  const L = lookOf(s);
+  const items = s.scenes.ranking.items;
+  const max = items[0].count;
+  const BAR = CW - 60 - 150 - 20;
+  return (
+    <Frame s={s}>
+      <Question lines={s.hookLines ?? ["中古でいちばん出回っている", `${stockScope(s)}は…？`]} max={84} />
+      <div style={{ ...card(L), width: CW, padding: "24px 30px", marginTop: 30, transform: `scale(${pulseOf(t)})` }}>
+        {items.map((r, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 14 : 0 }}>
+            <div style={{ ...row, width: 150, fontSize: 48, fontWeight: 900, color: C.white, background: BADGE[i], borderRadius: 18, padding: "2px 0" }}>{`${i + 1}位`}</div>
+            <div style={{ display: "flex", alignItems: "center", width: BAR, marginLeft: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(40, Math.round((BAR * r.count) / max)), height: 52, borderRadius: 14, background: i === 0 ? L.accent : C.line, color: C.white, fontSize: 40, fontWeight: 900 }}>{i === 0 ? "？？？" : ""}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Teaser s={s} label="最多" value={`${n(items[0].count)}件`} mt={20} />
+    </Frame>
+  );
+}
+
+/** stock・stockandroid のランキング: 機種名、下段は 在庫の件数（大）・相場（容量つき） */
+function StockRanking({ s, t, o }: { s: StockScript; t: number; o: Scene["o"] }) {
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
+    model: it.model,
+    cells: [
+      { text: `${n(it.count)}件`, w: 280, max: 76, color: lookOf(s).accent },
+      { text: `相場 ${n(it.median)}円（${it.storage}）`, w: 400, max: 40, color: C.muted },
+    ],
+  }));
+  return <RankRows s={s} t={t} o={o} items={items} />;
+}
+
+/**
+ * stock・stockandroid の1位: 機種名・在庫の件数（大・数え上げ）・全体の割合（帯の上の塗り）・相場（容量つき）、
+ * その下に 1位・2位・3位の件数の横の棒（1位を幅いっぱい）。棒は 0.8 秒から伸びる
+ */
+function StockReveal({ s, t }: { s: StockScript; t: number }) {
+  const L = lookOf(s);
+  const items = s.scenes.ranking.items;
+  const r = items[0];
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const grow = prog(t, 0.8, 0.7);
+  const share = `${stockScope(s)}全体の${rate(r.share)}%`;
+  const price = `相場 ${n(r.median)}円（${r.storage}）`;
+  const LABEL = 110;
+  const BAR = CW - 60 - LABEL - 20;
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: 56, fontWeight: 900, marginBottom: 10, opacity: prog(t, 0, 0.25) }}>1位は…</div>
+      <div style={{ ...card(L), width: CW, padding: "18px 30px 22px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 88), fontWeight: 900 }}>{r.model}</div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
+          <div style={{ ...row, fontSize: 44, fontWeight: 900, color: C.navy, marginRight: 14 }}>在庫</div>
+          <div style={{ ...row, fontSize: FIT(`${n(r.count)}件`, CW - 260, 104), fontWeight: 900, color: L.accent, lineHeight: 1.1 }}>{`${n(Math.round(r.count * prog(t, 1.0, 0.9)))}件`}</div>
+        </div>
+        <div style={{ ...row, fontSize: FIT(share, CW - 60, 46), fontWeight: 900, color: C.navy }}>{share}</div>
+        <div style={{ ...row, fontSize: FIT(price, CW - 60, 40), fontWeight: 900, color: C.muted, marginTop: 2 }}>{price}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 12, paddingTop: 12, borderTop: `3px solid ${C.line}`, opacity: prog(t, 1.2, 0.3) }}>
+          {items.map((b, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 8 : 0 }}>
+              <div style={{ ...row, width: LABEL, fontSize: 36, fontWeight: 900, color: C.white, background: BADGE[i], borderRadius: 14, padding: "2px 0" }}>{`${i + 1}位`}</div>
+              <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
+                <div style={{ display: "flex", alignItems: "baseline", width: BAR }}>
+                  <div style={{ ...row, fontSize: FIT(b.model, BAR - 190, 34, 24), fontWeight: 900, color: C.navy }}>{b.model}</div>
+                  <div style={{ ...row, fontSize: 34, fontWeight: 900, color: i === 0 ? L.accent : C.muted, marginLeft: "auto" }}>{`${n(b.count)}件`}</div>
+                </div>
+                <div style={{ display: "flex", width: Math.max(8, Math.round(((BAR * b.count) / r.count) * grow)), height: 20, background: i === 0 ? L.accent : C.silver, borderRadius: 10, marginTop: 2 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
+  if (isStock(s)) {
+    switch (sc.id) {
+      case "hook": return <StockHook s={s} t={t} />;
+      case "ranking": return <StockRanking s={s} t={t} o={sc.o} />;
+      case "reveal": return <StockReveal s={s} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`${s.theme} に場面 ${sc.id} はありません`);
+    }
+  }
   if (s.theme === "rakutenmobile") {
     switch (sc.id) {
       case "hook": return <TiersHook s={s} t={t} />;

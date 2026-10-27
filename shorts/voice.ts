@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { hasRelatedLong, isBudget, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type Script, type VoiceConfig } from "./types";
+import { hasRelatedLong, isBudget, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type StockScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -81,7 +81,8 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
     : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s)
     : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : s.theme === "ipadmini" ? ipadMiniNarration(s)
-    : s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen" ? deviceGenNarration(s) : dropsNarration(s);
+    : s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen" ? deviceGenNarration(s)
+    : isStock(s) ? stockNarration(s) : dropsNarration(s);
 }
 
 /**
@@ -259,6 +260,23 @@ function deviceGenNarration(s: DeviceGenScript): Partial<Record<NarrationKey, st
     reveal: `1位は${devicePair(s, top.newer, top.older)}。1世代前にすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、最新派？1世代前派？",
+  };
+}
+
+/**
+ * stock・stockandroid の既定（10/27〜）: hook 問い / ranking 3位・2位を1文ずつ（「3位はiPhone 15、在庫1,234件。相場は62,800円です。」。文頭の「○位は」で行を出す。容量は画面だけ）
+ * reveal 1位の件数・全体の割合（およそ○%）・相場と容量 / comment ひと言の本文だけ / outro サイトへの誘導と問い。口調は「です・ます」（ずんだもん でも「のだ」は使わない）
+ */
+function stockNarration(s: StockScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const scope = s.theme === "stock" ? "iPhone" : "Androidスマホ";
+  return {
+    hook: `中古でいちばん出回っている${scope}は…？`,
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、在庫${items[i].count.toLocaleString()}件。相場は${yen(items[i].median)}です。`).join(""),
+    reveal: `1位は${top.model}。在庫は${top.count.toLocaleString()}件で、${s.theme === "stock" ? "iPhone" : "Android"}全体の、およそ${Math.round(top.share)}%です。相場は${top.storage}で、${yen(top.median)}です。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、どの機種にしますか？",
   };
 }
 
@@ -518,9 +536,14 @@ export const READING_FIXES: [RegExp, string][] = [
   [/1つ上/g, "ひとつうえ"],
 ];
 
+/** Xperia の番号・世代（ローマ数字）と AQUOS の番号の読み（英語の数。Sony・シャープの読み） */
+const XPERIA_NO: Record<string, string> = { "1": "ワン", "5": "ファイブ", "10": "テン", Ace: "エース" };
+const ROMAN: Record<string, string> = { II: "ツー", III: "スリー", IV: "フォー", V: "ファイブ", VI: "シックス", VII: "セブン", VIII: "エイト" };
+const EN_NUM: Record<string, string> = { "2": "ツー", "3": "スリー", "4": "フォー", "5": "ファイブ", "6": "シックス", "7": "セブン", "8": "エイト", "9": "ナイン", "10": "テン", "11": "イレブン" };
+
 /** 読み上げ用に直す（画面の文字は変えない）。読み違える語（READING_FIXES）・英字の機種名・容量・記号をカナに */
 export function speakable(text: string): string {
-  const words: [RegExp, string][] = [
+  const words: [RegExp, string | ((...a: string[]) => string)][] = [
     ...READING_FIXES,
     // TikTok の締め（forTikTok）: 区切りの「・」で短い間を入れる。ガデログのアクセントは voice-dict.json（ガ'デログ）
     [/used\.gadelog\.com/g, "ユーズド・ガデログ・ドットコム"],
@@ -530,6 +553,15 @@ export function speakable(text: string): string {
     // watchgen・macgen（10/27）: Watch 単独・Series・Ultra の世代（Apple の読みに合わせ英語の数）・M チップ（エムワン〜）・ケースの mm
     [/\bWatch\b/g, "ウォッチ"], [/\bSeries\b/g, "シリーズ"], [/\bUltra\s*2\b/g, "ウルトラツー"], [/\bUltra\s*3\b/g, "ウルトラスリー"], [/\bUltra\s*4\b/g, "ウルトラフォー"],
     [/\bM1\b/g, "エムワン"], [/\bM2\b/g, "エムツー"], [/\bM3\b/g, "エムスリー"], [/\bM4\b/g, "エムフォー"], [/\bM5\b/g, "エムファイブ"], [/(\d+)\s*mm\b/g, "$1ミリ"],
+    // stockandroid（10/27）: Android・Xperia（「Xperia 10 V」＝テン マークファイブ。Sony の読み）・AQUOS（sense センス・wish ウィッシュ・R アール・pro プロ・plus プラス）
+    [/Android/g, "アンドロイド"],
+    [/Xperia\s*(1|5|10|Ace)\s+(VIII|VII|VI|IV|V|III|II)\b/g, (_m: string, no: string, gen: string) => `エクスペリア${XPERIA_NO[no]}マーク${ROMAN[gen]}`],
+    [/AQUOS\s+sense(\d+)(s?)(\s+plus)?/g, (_m: string, d: string, s2: string, plus?: string) => `アクオスセンス${EN_NUM[d] ?? d}${s2 ? "エス" : ""}${plus ? "プラス" : ""}`],
+    [/AQUOS\s+wish(\d*)/g, (_m: string, d: string) => `アクオスウィッシュ${d ? EN_NUM[d] ?? d : ""}`],
+    [/AQUOS\s+R(\d+)(\s+pro)?/g, (_m: string, d: string, pro?: string) => `アクオスアール${EN_NUM[d] ?? d}${pro ? "プロ" : ""}`],
+    // Galaxy S26+ の「+」
+    [/\b(S\d+)\+/g, "$1プラス"],
+    [/AQUOS/g, "アクオス"], [/Xperia/g, "エクスペリア"],
     // 「Galaxy A53 5G」は空白を詰めると「A535G」で「ゴヒャクサンジュウゴ」と読むので、5G を先にカナに（galaxybudget・10/24）
     [/Galaxy/g, "ギャラクシー"], [/\b5G\b/g, "ファイブジー"], [/\bUltra\b/g, "ウルトラ"], [/\bZ\s*(?=Fold|Flip)/g, "ゼット"], [/Fold/g, "フォールド"], [/Flip/g, "フリップ"], [/Pixel/g, "ピクセル"],
     [/Pro Max/g, "プロマックス"], [/\bPro\b/g, "プロ"], [/\bMax\b/g, "マックス"], [/\bPlus\b/g, "プラス"], [/\bmini\b/g, "ミニ"],
@@ -537,7 +569,7 @@ export function speakable(text: string): string {
     [/(\d+)\s*GB/g, "$1ギガ"], [/(\d+)\s*TB/g, "$1テラ"], [/(\d),(?=\d{3})/g, "$1"], [/%/g, "パーセント"],
     [/−(\d)/g, "マイナス$1"], [/…/g, ""], [/○/g, "マル"], [/\s*\(第(\d)世代\)/g, "第$1世代"], [/\s*（第(\d)世代）/g, "第$1世代"],
   ];
-  return words.reduce((t, [re, to]) => t.replace(re, to), text).replace(/\s+/g, "");
+  return words.reduce((t, [re, to]) => t.replace(re, to as string), text).replace(/\s+/g, "");
 }
 
 type Speaker = { name: string; styles: { name: string; id: number }[] };

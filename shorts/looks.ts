@@ -21,8 +21,9 @@ import type { Script } from "./types";
 export type BandShape = "full" | "card" | "pill" | "tab" | "leaf" | "underline" | "frame";
 /** つかみ（1コマ目）の型。number＝1位の額を先に出す・chips＝予算の札・coins＝予算の丸い札（数字を大きく）・split＝2つを並べて vs・fold＝折りたたみの形・abc＝ランクの札・battery＝縦の電池の形
  * phone＝スマホの形に「iOS 27」と「対応」の札（ios27line）・equation＝「古い方＋電池交換＝1つ上？」の式（batteryswap）・ratio＝新品と中古の2本の棒（overnew）・tiers＝料金の3段の階段と2年の差（rakutenmobile）
- * device＝2つの機器の形（watchgen は時計の文字盤とバンド・macgen は開いたノート・ipadgen はタブレット・pixelgen はカメラの帯のあるスマホの背面）に「最新」「1世代前」 */
-export type HookKind = "number" | "chips" | "coins" | "split" | "fold" | "abc" | "battery" | "phone" | "equation" | "ratio" | "tiers" | "device";
+ * device＝2つの機器の形（watchgen は時計の文字盤とバンド・macgen は開いたノート・ipadgen はタブレット・pixelgen はカメラの帯のあるスマホの背面）に「最新」「1世代前」
+ * bars＝在庫の数の横の棒3本（1位・2位・3位。機種は伏せ、1位の棒だけ強調色）と「最多 ○件」（stock・stockandroid） */
+export type HookKind = "number" | "chips" | "coins" | "split" | "fold" | "abc" | "battery" | "phone" | "equation" | "ratio" | "tiers" | "device" | "bars";
 
 export type Look = {
   /** 記録用の名前（README・SKILL の表と同じ） */
@@ -149,6 +150,10 @@ export const LOOKS: Record<Script["theme"], Look> = {
   // ipadgen（10/29 8:00・前後は ⑤）は ② BUDGET（明るい地・藍の帯。タブレットの形の縁は藍 brand600）、pixelgen（10/30 18:00・前は promax ③）は ① DROPS（紺の地・赤い帯。スマホの縁は赤 price）
   ipadgen: { ...BUDGET, hook: "device" },
   pixelgen: { ...DROPS, hook: "device" },
+  // stock・stockandroid（10/27〜・在庫数ランキング）: 見た目は5つまでなので新しく作らない。stock（10/29 8:00）の前の ipadgen（② BUDGET）・後の pixelgen（① DROPS）、
+  // stockandroid（10/31 8:00）の前の promax（③ VERSUS）・pixelgen（①）と続かないよう ④ CONDITION（生成りの地・墨の帯）。つかみは在庫の数の横の棒3本（bars）で、rank・battery の1コマ目と違う
+  stock: { ...CONDITION, hook: "bars" },
+  stockandroid: { ...CONDITION, hook: "bars" },
 };
 
 export const lookOf = (s: Script): Look => LOOKS[s.theme];

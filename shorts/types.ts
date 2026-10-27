@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini・watchgen・macgen・ipadgen・pixelgen）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini・watchgen・macgen・ipadgen・pixelgen・stock・stockandroid）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -377,14 +377,34 @@ export type IpadMiniScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | OldProScript | RakutenMobileScript | IpadMiniScript | DeviceGenScript;
+/**
+ * stock・stockandroid の1行: 機種ごとの販売中の在庫（ジャンク品を除く）の件数と、範囲の合計に対する割合（share・%・小数1桁）、
+ * 相場（在庫がいちばん多い容量 storage の中央値 median。機種ページ・getModelMarket と同じ）。storageCount はその容量の在庫数（ジャンク品も含む・相場の母数）
+ */
+export type StockRow = { model: string; count: number; share: number; storage: string; storageGb: number; median: number; storageCount: number };
+
+/** テーマ stock「中古でいちばん出回っているiPhoneは？在庫数ランキング」・stockandroid（同じ Android 版。Pixel・Galaxy・Xperia・AQUOS）（10/27〜。shorts/themes/stock.ts） */
+export type StockScript = Common & {
+  theme: "stock" | "stockandroid";
+  scenes: {
+    /** 範囲の全機種の件数の合計（割合の分母）と機種の数 */
+    total: number;
+    modelCount: number;
+    /** 場面 ranking（3位・2位・伏せた1位）と reveal（1位）。件数の多い順（items[0] が1位） */
+    ranking: { items: StockRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | OldProScript | RakutenMobileScript | IpadMiniScript | DeviceGenScript | StockScript;
 
 /**
  * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。
  * YouTube 公式ブログ 2026/7「最後の5秒で声と画面の両方で誘導」）。いまの横動画は iPhone なので、Pixel・iPad・折りたたみは外す。
  * TODO: rakutenmobile は横動画11本目（longform/2026-10-31-rakuten-mobile）を公開して ID が分かったら、relatedLong.ts の RAKUTEN_MOBILE に ID を入れてからここに足す
  */
-export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew"]);
+export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "stock"]);
 export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";
 /** 締めに関連動画の誘導を出すか。TikTok（--tiktok）には関連動画がないので出さない */
 export const hasRelatedLong = (s: Script) => !s.tiktok && RELATED_LONG_THEMES.has(s.theme);
@@ -393,3 +413,5 @@ export const hasRelatedLong = (s: Script) => !s.tiktok && RELATED_LONG_THEMES.ha
 export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget" || s.theme === "macbudget" || s.theme === "probudget" || s.theme === "foldbudget" || s.theme === "galaxybudget" || s.theme === "bigbudget";
 /** provs・promax・plusvs・plusmax（2機種の差のランキング・場面を共有） */
 export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax";
+/** stock・stockandroid（在庫数ランキング・場面を共有） */
+export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid";

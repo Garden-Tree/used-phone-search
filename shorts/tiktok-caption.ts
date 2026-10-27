@@ -26,6 +26,7 @@ const BASE_TAGS: Partial<Record<Script["theme"], string[]>> = {
   macgen: ["#中古Mac", "#MacBook", "#MacBookAir"],
   ipadgen: ["#中古iPad", "#iPad", "#タブレット"],
   pixelgen: ["#中古スマホ", "#Pixel", "#中古Pixel"],
+  stockandroid: ["#中古スマホ", "#Android", "#Pixel"],
 };
 const IPHONE_TAGS = ["#中古iPhone", "#iPhone", "#中古スマホ"];
 /** テーマの切り口のハッシュタグ（1個） */
@@ -43,6 +44,8 @@ const THEME_TAG: Partial<Record<Script["theme"], string>> = {
   unused: "#未使用品",
   ios27line: "#iOS27",
   rakutenmobile: "#楽天モバイル",
+  stock: "#ランキング",
+  stockandroid: "#ランキング",
 };
 
 const dir = process.argv[2]?.replace(/[\\/]+$/, "");

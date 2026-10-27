@@ -31,6 +31,8 @@ const RAKUTEN_MOBILE: RelatedLong = { id: "Ua3ZRui2G4w", title: "【PR】中古i
 export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   provs: PRO_OR_STANDARD, promax: PRO_OR_STANDARD, probudget: PRO_OR_STANDARD, plusvs: PRO_OR_STANDARD, minie: PRO_OR_STANDARD, plusmax: PRO_OR_STANDARD,
   budget: IPHONE_DORE, drops: IPHONE_DORE, newused: IPHONE_DORE, overnew: IPHONE_DORE,
+  // stock（10/27〜・在庫数ランキングの iPhone 版）: 「いま買うならどれ」につなぐ。stockandroid は Android なので入れない
+  stock: IPHONE_DORE,
   battery: BATTERY, batteryswap: BATTERY, storage: DONT_BUY, rank: DONT_BUY, unused: DONT_BUY,
   gen: HOW_OLD, ios27line: HOW_OLD, oldpro: HOW_OLD,
   ipadbudget: IPAD_DORE,
