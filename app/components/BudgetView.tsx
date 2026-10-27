@@ -102,13 +102,27 @@ export async function budgetMetadata(max: number, device: BudgetDevice): Promise
   };
 }
 
+/** ビルドした日（日本時間。機種ページの冒頭の1文と同じ書き方） */
+const todayJa = () => new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
+
+/**
+ * 冒頭の1文（10/27〜。AI 検索の引用が予算別ページにも来ているので、機種ページの buildSummary と同じ形にそろえる:
+ * 日付・機種数・件数・いちばん新しい機種と最安・店数）。画面の最初の段落と JSON-LD の description に同じ文を使う
+ */
+function budgetLead(p: { label: string; t: DeviceText; rows: { model: string; minPrice: number; count: number }[]; newest?: { model: string; minPrice: number } }): string {
+  const { label, t, rows, newest } = p;
+  if (rows.length === 0) return `${todayJa()}時点、${label}以下の${t.name}の在庫はありません。`;
+  const total = rows.reduce((n, r) => n + r.count, 0);
+  const lead = newest && t.byRelease !== false ? `${t.supportedLead}いちばん新しいのは${newest.model}（${yen(newest.minPrice)}〜）。` : "";
+  return `${todayJa()}時点、${label}以下で買える${t.name}は${rows.length}機種・${total.toLocaleString()}件（ジャンク品を除く）。${lead}大手中古ショップ${t.shops}店の在庫を集計。`;
+}
+
 export async function BudgetView({ max, device }: { max: number; device: BudgetDevice }) {
   const t = await withActiveShops(device);
   const label = budgetLabel(max);
   const rows = await getBudgetModels(max, device);
   const supported = rows.filter((r) => r.supported);
   const legacy = rows.filter((r) => !r.supported);
-  const totalCount = rows.reduce((n, r) => n + r.count, 0);
 
   // 予算内で買える新しい機種（最新 OS 対応・Pixel は保証が残っているもの）それぞれの最安の在庫
   const picks = (await Promise.all(supported.slice(0, 6).map((r) => cheapestUnder(r.model, max)))).filter(
@@ -116,6 +130,16 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
   );
 
   const path = budgetPath(max, device);
+  const lead = budgetLead({ label, t, rows, newest: supported[0] });
+  // ページの要約（AI の検索が日付と数字をそのまま引用できるように。機種ページと同じ形）
+  const webPage = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: `${label}以下で買える${t.name}`,
+    url: `${SITE_URL}${path}`,
+    description: lead,
+    dateModified: new Date().toISOString(),
+  };
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -130,6 +154,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
     <div className="min-h-screen text-ink">
       <SiteHeader label="予算から探す" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPage) }} />
 
       <main className="max-w-[1360px] mx-auto px-4 py-6">
         <nav aria-label="パンくずリスト" className="text-xs text-ink-mute mb-4">
@@ -145,20 +170,10 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
         </nav>
 
         <h1 className="text-2xl md:text-3xl font-bold mb-3">{label}以下で買える{t.name}</h1>
+        {/* 冒頭の1文（機種ページと同じ形。h1 の直後の最初の段落に1文だけ） */}
         <p className="text-ink-sub mb-4 leading-relaxed">
-          {rows.length > 0 ? (
-            <>
-              {label}以下で買える{t.name}は <strong>{rows.length}機種・{totalCount.toLocaleString()}件</strong>
-              （ジャンク品を除く）。
-              {supported[0] && t.byRelease !== false && (
-                <>
-                  {t.supportedLead}いちばん新しいのは <strong>{supported[0].model}</strong>（{yen(supported[0].minPrice)}〜）です。
-                </>
-              )}
-            </>
-          ) : (
-            <>いまは{label}以下の在庫がありません。</>
-          )}
+          {lead}
+          <Link href="/about#data" className="text-brand-600 hover:text-brand-800 ml-1 whitespace-nowrap">集計の方法</Link>
         </p>
         <AdDisclosure compact />
 

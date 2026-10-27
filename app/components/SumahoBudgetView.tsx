@@ -45,6 +45,20 @@ export async function SumahoBudgetView({ max }: { max: number }) {
   const sub = rows.filter((r) => !r.supported).sort((a, b) => a.minPrice - b.minPrice);
   const totalCount = rows.reduce((n, r) => n + r.count, 0);
   const path = sumahoBudgetPath(max);
+  // 冒頭の1文（10/27〜 機種ページ・予算別ページと同じ形: 日付・機種数・件数・いちばん新しい機種と最安）。画面と JSON-LD に同じ文
+  const today = new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
+  const newest = main[0];
+  const lead = rows.length > 0
+    ? `${today}時点、${label}以下で買える中古スマホは iPhone・Pixel・Galaxy・Xperia・AQUOS から${rows.length}機種・${totalCount.toLocaleString()}件（ジャンク品を除く）。${newest ? `いちばん新しいのは${newest.model}（${yen(newest.minPrice)}〜）。` : ""}`
+    : `${today}時点、${label}以下の中古スマホの在庫はありません。`;
+  const webPage = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: `${label}以下で買える中古スマホ`,
+    url: `${SITE_URL}${path}`,
+    description: lead,
+    dateModified: new Date().toISOString(),
+  };
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -58,6 +72,7 @@ export async function SumahoBudgetView({ max }: { max: number }) {
     <div className="min-h-screen text-ink">
       <SiteHeader label="予算から探す" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPage) }} />
 
       <main className="max-w-[1360px] mx-auto px-4 py-6">
         <nav aria-label="パンくずリスト" className="text-xs text-ink-mute mb-4">
@@ -67,15 +82,10 @@ export async function SumahoBudgetView({ max }: { max: number }) {
         </nav>
 
         <h1 className="text-2xl md:text-3xl font-bold mb-3">{label}以下で買える中古スマホ</h1>
+        {/* 冒頭の1文（機種ページと同じ形） */}
         <p className="text-ink-sub mb-4 leading-relaxed">
-          {rows.length > 0 ? (
-            <>
-              iPhone・Pixel・Galaxy・Xperia・AQUOS から <strong>{rows.length}機種・{totalCount.toLocaleString()}件</strong>
-              （ジャンク品を除く）。発売が新しい順です。
-            </>
-          ) : (
-            <>いまは{label}以下の在庫がありません。</>
-          )}
+          {lead}
+          <Link href="/about#data" className="text-brand-600 hover:text-brand-800 ml-1 whitespace-nowrap">集計の方法</Link>
         </p>
         <AdDisclosure compact />
 
