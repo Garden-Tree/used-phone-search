@@ -241,9 +241,10 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
     return $status === 200;
 }
 
-// 知らないショップ名（打ち間違い・パスに使えない文字）は止める
+// 知らないショップ名（打ち間違い・パスに使えない文字）は止める。
+// --dry だけは SHOP_CODES にない店も試せる（新しい店を足す前に API の生の応答を見るため。2026-10-27〜。送信も洗い替えもしない）
 foreach ($onlyShops as $shopCode) {
-    if (!in_array($shopCode, SHOP_CODES, true)) {
+    if (!preg_match('/^[a-z0-9_-]+$/', $shopCode) || (!$dryRun && !in_array($shopCode, SHOP_CODES, true))) {
         fwrite(STDERR, "unknown shop: {$shopCode}\n");
         exit(2);
     }
