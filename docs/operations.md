@@ -109,6 +109,7 @@
 - リンクは A8（`lib/affiliate.ts`。掲載サイト「中古スマホ一括検索」の商品リンク。飛び先は pcwrap.com・yrl-qualit.com の中だけ）。A8 の商品リンク作成で作った a8mat
 - `/pc` は在庫20件未満のあいだ noindex・サイトマップに出さない（`PC_MIN_INDEX_ITEMS`）
 - 予算別 `/pc/budget/under-30000`・`under-50000`・`under-80000`（`PC_BUDGETS`）。予算内のノート（訳あり以外・Windows 11 対応）が10件未満なら noindex・サイトマップ外
+- **MacBook も取る**（10/27〜）: `scripts/ingest-pc-shops-mac.ts` が PC WRAP（os=42）・Qualit（ct25）の一覧から MacBook を読み、DeviceInventory に店名「PC WRAP」「Qualit」で入れる（/mac に出る）。機種名・メモリ・SSD は楽天の MacBook と同じ `canonicalMacModel`・`parseMacSpec`（Intel は落ちる）。訳あり品は入れない。11時間に1回まで（`FORCE_PC=1` で無視）。`--dry` で確かめられる。店の情報は `lib/shops.ts` の `MAC_ONLY_SHOPS`（スマホの店の数・一覧には入れない）
 - 相場の推移は表 `PcPriceSnapshot`（形 × CPU × メモリ・1日1行）。`npx tsx scripts/snapshot-pc-prices.ts`（Actions の「中古パソコンの相場の記録」。失敗しても止めない）
 
 ### エムモバの公式とエムコム Yahoo!ショッピング店（2026-10-10〜）

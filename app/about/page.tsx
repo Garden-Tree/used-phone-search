@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
-import { SHOPS, shopLabels } from "@/lib/shops";
+import { MAC_ONLY_SHOPS, SHOPS, shopLabels } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import { OFFICIAL_X_URL, OFFICIAL_YOUTUBE_URL, SITE_NAME } from "@/lib/site";
 
@@ -138,6 +138,15 @@ export default async function AboutPage() {
             </table>
           </div>
           <p>保証の条件（対象外になる場合など）は店ごとに細かく決まっています。購入前に各店のページ（店名のリンク）で確認してください。</p>
+          <p>
+            MacBook と中古パソコン（Windows）は、中古パソコン専門店の在庫も載せています（2026年10月27日〜）:{" "}
+            {MAC_ONLY_SHOPS.map((s, i) => (
+              <span key={s.name}>
+                {i > 0 && "・"}
+                <a href={s.guaranteeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-800">{s.label}</a>（{s.warranty}）
+              </span>
+            ))}
+          </p>
         </Section>
 
         <Section id="ads" title="広告について">

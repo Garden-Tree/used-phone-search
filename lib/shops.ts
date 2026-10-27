@@ -128,13 +128,27 @@ export const ALIAS_SHOPS: Shop[] = [
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/mcom2022/guide.html", alias: "エムモバ", marketplace: "yahoo" },
 ];
 
+/**
+ * MacBook だけを載せる中古パソコン専門店（2026-10-27〜）。スマホの店の一覧・店の数（SHOPS）には入れない。
+ * 店の一覧ページから直接取り、リンクは A8（scripts/ingest-pc-shops-mac.ts・lib/affiliate.ts）。Windows は別の表（/pc）。
+ * 保証は各店の公式ページ（2026-10-27 に確認）
+ */
+export const MAC_ONLY_SHOPS: Shop[] = [
+  { name: "PC WRAP", label: "PC WRAP", mac: true, ipad: false, battery: "none",
+    warranty: "3年保証（訳あり品を除く）・到着7日以内の返品可", redRom: "対象外（パソコン）", warrantyShort: "保証3年", redRomShort: "",
+    guaranteeUrl: "https://www.pcwrap.com/content/guide" },
+  { name: "Qualit", label: "Qualit", mac: true, ipad: false, battery: "none",
+    warranty: "12カ月（訳あり品は出荷日から10日間）", redRom: "対象外（パソコン）", warrantyShort: "保証12ヶ月", redRomShort: "",
+    guaranteeUrl: "https://www.yrl-qualit.com/html/info.html" },
+];
+
 export const IPAD_SHOPS = SHOPS.filter((s) => s.ipad);
 
 /** 機種（iPhone / iPad）を扱うショップ */
 export const PIXEL_SHOPS = SHOPS.filter((s) => s.pixel);
 export const GALAXY_SHOPS = SHOPS.filter((s) => s.galaxy);
-/** MacBook を扱う店（じゃんぱら・ソフマップ・イオシス。ゲオは商品名にメモリ・SSD がなく取り込まない） */
-export const MAC_SHOPS = SHOPS.filter((s) => s.mac);
+/** MacBook を扱う店（じゃんぱら・ソフマップ・イオシス＋中古パソコン専門店の PC WRAP・Qualit。ゲオは商品名にメモリ・SSD がなく取り込まない） */
+export const MAC_SHOPS = [...SHOPS.filter((s) => s.mac), ...MAC_ONLY_SHOPS];
 /** Xperia・AQUOS を扱う店（ゲオ・じゃんぱら・ソフマップ・イオシス。ニューズドテック・キタムラ・エムティーエムは件数が少ないので取り込まない） */
 export const XPERIA_SHOPS = SHOPS.filter((s) => s.xperia);
 export const AQUOS_SHOPS = SHOPS.filter((s) => s.aquos);
@@ -147,4 +161,4 @@ export const shopsFor = (model: string): Shop[] =>
 /** 「イオシス・じゃんぱら・…」 */
 export const shopLabels = (shops: Shop[] = SHOPS): string => shops.map((s) => s.label).join("・");
 
-export const findShop = (name: string): Shop | undefined => [...SHOPS, ...ALIAS_SHOPS].find((s) => s.name === name);
+export const findShop = (name: string): Shop | undefined => [...SHOPS, ...ALIAS_SHOPS, ...MAC_ONLY_SHOPS].find((s) => s.name === name);

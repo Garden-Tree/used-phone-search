@@ -52,7 +52,7 @@ function activeMacShopNames(): Promise<Set<string>> {
       for (const r of rows) {
         const shop = findShop(r.shopName);
         const parent = shop?.alias ? findShop(shop.alias) : shop;
-        if (parent && SHOPS.includes(parent)) names.add(parent.name);
+        if (parent && MAC_SHOPS.includes(parent)) names.add(parent.name); // MacBook だけの店（PC WRAP・Qualit）も数える
       }
       return names;
     })
