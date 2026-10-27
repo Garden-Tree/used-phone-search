@@ -34,7 +34,7 @@
 - **広告のショート** `rakutenmobile`: PR は左上・説明欄
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch の storage＝mm）
-- **中古パソコン** `/pc`・予算別（10/27〜・MacBook は /mac）: 表 `PcInventory`。PC WRAP・Qualit の一覧だけ直接取得（2秒おき・1日2回）・A8・画像は使わない
+- **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit は一覧を直接（2秒おき・1日2回・A8）、ソフマップ・じゃんぱら・イオシスは楽天（`<店>-pc.json.gz`）
 
 ## 確認台帳（計測・判定）
 
