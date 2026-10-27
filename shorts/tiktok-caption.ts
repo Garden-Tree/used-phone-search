@@ -24,6 +24,8 @@ const BASE_TAGS: Partial<Record<Script["theme"], string[]>> = {
   foldbudget: ["#中古スマホ", "#折りたたみスマホ", "#Galaxy"],
   watchgen: ["#AppleWatch", "#中古", "#スマートウォッチ"],
   macgen: ["#中古Mac", "#MacBook", "#MacBookAir"],
+  ipadgen: ["#中古iPad", "#iPad", "#タブレット"],
+  pixelgen: ["#中古スマホ", "#Pixel", "#中古Pixel"],
 };
 const IPHONE_TAGS = ["#中古iPhone", "#iPhone", "#中古スマホ"];
 /** テーマの切り口のハッシュタグ（1個） */

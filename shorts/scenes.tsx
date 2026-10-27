@@ -29,6 +29,7 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "oldpro" ? ["1世代前のProと最新の無印", "どっちが安い？中古iPhone"]
     : s.theme === "ipadmini" ? ["新型iPad mini", "中古の旧型ならいくら安い？"]
     : s.theme === "watchgen" ? ["Apple Watch", "1世代前でいくら安い？"] : s.theme === "macgen" ? ["MacBook Air", "1世代前でいくら安い？"]
+    : s.theme === "ipadgen" ? ["iPad", "1世代前でいくら安い？"] : s.theme === "pixelgen" ? ["Google Pixel", "1世代前でいくら安い？"]
     : s.theme === "rakutenmobile" ? ["楽天モバイルは使った量で3段階", `中古${s.scenes.device.model}と2年でいくら？`]
     : s.theme === "minie" ? ["無印より安い“弟分”", "いくら安い？中古iPhone"] : s.theme === "unused" ? ["未使用品（ランクS）は", "中古よりいくら高い？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : [`${periodOf(s as DropsScript).name}の中古iPhone`, "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
@@ -43,6 +44,8 @@ const FOOT = (s: Script) =>
     : s.theme === "gen" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値`
     : s.theme === "watchgen" ? `${s.date.replace(/-/g, "/")}・ケースは在庫がいちばん多いサイズ・中央値`
     : s.theme === "macgen" ? `${s.date.replace(/-/g, "/")}・中古は同じSSD容量の中央値`
+    : s.theme === "ipadgen" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値・PencilはApple公式`
+    : s.theme === "pixelgen" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値・アップデートはGoogle公式`
     : s.theme === "storage" ? `${s.date.replace(/-/g, "/")}・容量ごとの中央値`
     : s.theme === "pixelbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・アップデートはGoogle公式`
     : s.theme === "ipadbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・PencilはApple公式`
@@ -151,7 +154,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
   if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
-    || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew" || s.theme === "ipadmini" || s.theme === "watchgen" || s.theme === "macgen") return [
+    || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew" || s.theme === "ipadmini" || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -399,37 +402,61 @@ const watchPair = (newer: string, older: string) => `${watchShort(newer)}／${wa
 const watchSize = (r: FoldRow) => (r.olderStorage && r.olderStorage !== r.storage ? `${r.storage.replace(/mm$/, "")}／${r.olderStorage}` : r.storage);
 const macChip = (model: string) => model.match(/\bM\d\b/)?.[0] ?? model.replace(/^MacBook Air\s+/, "");
 const macPairName = (newer: string, older: string) => `Air ${newer.match(/(\d+)インチ/)?.[1] ?? "13"}インチ ${macChip(newer)}／${macChip(older)}`;
+/** ipadgen・pixelgen の名前（themes/ipadgen.ts・pixelgen.ts と同じ）。"iPad Pro 11インチ (M5)" → 系列 "Pro 11インチ"・世代 "M5"、"Pixel 10 Pro" → "10 Pro" */
+const ipadSeries = (model: string) => model.replace(/\s*\(.*\)$/, "").replace(/^iPad\s+/, "") || "iPad";
+const ipadGen = (model: string) => model.match(/\(([^)]+)\)$/)?.[1] ?? ipadSeries(model);
+const ipadPairName = (newer: string, older: string) => {
+  const [a, b] = [ipadSeries(newer), ipadSeries(older)];
+  return `${a} ${ipadGen(newer)}／${a === b ? ipadGen(older) : `${b.replace(/^(Pro|Air)\s+/, "")} ${ipadGen(older)}`}`;
+};
+const pixelShort = (model: string) => model.replace(/^Pixel\s+/, "");
+const pixelPairName = (newer: string, older: string) => `Pixel ${pixelShort(newer)}／${pixelShort(older)}`;
 
 /**
- * watchgen・macgen: 問い＋2つの機器の形（図形だけ。watchgen は時計の文字盤とバンド、macgen は開いたノートの画面と台）。左が最新、右が1世代前＋1位の差額。
+ * watchgen・macgen・ipadgen・pixelgen: 問い＋2つの機器の形（図形だけ。watchgen は時計の文字盤とバンド、macgen は開いたノートの画面と台、
+ * ipadgen は縦のタブレット（太い縁）、pixelgen はスマホの背面と横いっぱいのカメラの帯）。左が最新、右が1世代前＋1位の差額。
  * 型は look.hook "device"（shorts/looks.ts）
  */
 function DeviceHook({ s, t }: { s: DeviceGenScript; t: number }) {
   const L = lookOf(s);
   const r = s.scenes.ranking.items[0];
-  const watch = s.theme === "watchgen";
-  const lines = s.hookLines ?? [watch ? "Apple Watch、" : "MacBook Air、", "1世代前にすると", "いくら安い？"];
+  const kind = s.theme;
+  const lead = kind === "watchgen" ? "Apple Watch、" : kind === "macgen" ? "MacBook Air、" : kind === "ipadgen" ? "iPad、" : "Google Pixel、";
+  const lines = s.hookLines ?? [lead, "1世代前にすると", "いくら安い？"];
   const label = (text: string, size: number) => <div style={{ ...row, fontSize: size, fontWeight: 900 }}>{text}</div>;
-  const face = (text: string, fill: string, size: number) => watch ? (
+  const face = (text: string, fill: string, size: number) => kind === "watchgen" ? (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <div style={{ display: "flex", width: 140, height: 34, background: L.chip, borderRadius: "16px 16px 0 0" }} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 230, height: 240, background: fill, borderRadius: 62, boxShadow: `0 0 0 14px ${L.chip}`, color: C.navy }}>{label(text, size)}</div>
       <div style={{ display: "flex", width: 140, height: 34, background: L.chip, borderRadius: "0 0 16px 16px" }} />
     </div>
-  ) : (
+  ) : kind === "macgen" ? (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 360, height: 240, background: fill, borderRadius: "22px 22px 4px 4px", boxShadow: `0 0 0 12px ${L.chip}`, color: C.navy }}>{label(text, size)}</div>
       <div style={{ display: "flex", width: 420, height: 30, marginTop: 12, background: L.chip, borderRadius: "4px 4px 22px 22px" }} />
     </div>
+  ) : kind === "ipadgen" ? (
+    // 縦のタブレット: 細い縁（chip）の中に画面。上の縁に小さなカメラの点
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 240, height: 300, background: fill, borderRadius: 18, boxShadow: `0 0 0 20px ${L.chip}`, color: C.navy }}>{label(text, size)}</div>
+  ) : (
+    // スマホの背面: 横いっぱいのカメラの帯（Pixel の形）と、その下に札
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 210, height: 330, background: fill, borderRadius: 44, boxShadow: `0 0 0 12px ${L.chip}`, color: C.navy }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", width: 210, height: 60, marginTop: 40, background: L.chip }}>
+        <div style={{ display: "flex", width: 34, height: 34, background: C.navy, borderRadius: 17, marginLeft: 26, marginRight: 12 }} />
+        <div style={{ display: "flex", width: 34, height: 34, background: C.navy, borderRadius: 17 }} />
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 210, height: 200 }}>{label(text, size)}</div>
+    </div>
   );
+  const tall = kind === "ipadgen" || kind === "pixelgen";
   return (
     <Frame s={s}>
       <Question lines={lines} max={80} />
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", width: CW, marginTop: watch ? 30 : 36, transform: `scale(${pulseOf(t)})` }}>
-        {face("最新", C.white, 64)}
-        {face("1世代前", SITE.brand200, 52)}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", width: CW, marginTop: kind === "watchgen" ? 30 : tall ? 30 : 36, transform: `scale(${pulseOf(t)})` }}>
+        {face("最新", C.white, tall ? 60 : 64)}
+        {face("1世代前", SITE.brand200, tall ? 44 : 52)}
       </div>
-      <Teaser s={s} label={s.hookStyle === "answer" ? "1位" : "最大"} value={`−${n(r.diff)}円`} mt={watch ? 24 : 36} />
+      <Teaser s={s} label={s.hookStyle === "answer" ? "1位" : "最大"} value={`−${n(r.diff)}円`} mt={kind === "watchgen" ? 24 : tall ? 26 : 36} />
     </Frame>
   );
 }
@@ -1853,15 +1880,17 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       default: throw new Error(`gen に場面 ${sc.id} はありません`);
     }
   }
-  if (s.theme === "watchgen" || s.theme === "macgen") {
-    // 行と1位は fold・gen と同じ部品（FoldRow）。つかみは時計・ノートの形（DeviceHook）。名前は「Ultra 3／Ultra 2」「Air 13インチ M4／M3」
+  if (s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen") {
+    // 行と1位は fold・gen と同じ部品（FoldRow）。つかみは時計・ノート・タブレット・スマホの形（DeviceHook）。
+    // 名前は「Ultra 3／Ultra 2」「Air 13インチ M4／M3」「Pro 11インチ M5／M4」「Pixel 10／9」
     const f = s as unknown as FoldScript;
     const watch = s.theme === "watchgen";
-    const nameOf = watch ? watchPair : macPairName;
+    const nameOf = watch ? watchPair : s.theme === "macgen" ? macPairName : s.theme === "ipadgen" ? ipadPairName : pixelPairName;
+    const shortOf = watch ? watchShort : s.theme === "macgen" ? macChip : s.theme === "ipadgen" ? ipadGen : pixelShort;
     switch (sc.id) {
       case "hook": return <DeviceHook s={s} t={t} />;
       case "ranking": return <FoldRanking s={f} t={t} o={sc.o} nameOf={nameOf} sizeOf={watch ? watchSize : undefined} />;
-      case "reveal": return <FoldReveal s={f} t={t} nameOf={nameOf} shortOf={watch ? watchShort : macChip} sizeOf={watch ? watchSize : undefined} />;
+      case "reveal": return <FoldReveal s={f} t={t} nameOf={nameOf} shortOf={shortOf} sizeOf={watch ? watchSize : undefined} />;
       case "comment": return <Comment s={s} t={t} o={sc.o} />;
       case "outro": return <Outro s={s} t={t} o={sc.o} />;
       default: throw new Error(`${s.theme} に場面 ${sc.id} はありません`);

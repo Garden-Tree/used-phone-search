@@ -58,16 +58,17 @@
 |---|---|---|---|---|---|---|
 | 10/28 8:00 | `shorts/out/2026-10-27-ipadmini` | ipadmini（承認待ち） | つむぎ | 問い | ③ split | 枠の確保。H2 の比べる相手（つむぎ・問い・朝・③ split） |
 | 10/28 18:00 | `shorts/out/2026-10-28-watchgen` | **watchgen**（Apple Watch 1世代前） | **つむぎ** | **問い** | ⑤ device（時計の形） | V1 の a |
-| 10/29 8:00 | — | **空き** | | | | 予算別でない新しい中身の案は今はない（下の「空き」） |
+| 10/29 8:00 | `shorts/out/2026-10-29-ipadgen` | **ipadgen**（iPad 1世代前・10/27 夜に追加） | つむぎ | 問い | ② device（タブレットの形） | 空きを埋める。⑤ が2本続くのを解く（⑤→②→⑤） |
 | 10/29 18:00 | `shorts/out/2026-10-29-macgen` | **macgen**（MacBook Air 1世代前） | **ずんだもん** | **問い** | ⑤ device（ノートの形） | V1 の b |
 | 10/30 8:00 | `shorts/out/2026-10-30-promax` | promax | つむぎ | **答え** | ③ split | H2（相手は ipadmini） |
-| 10/30 18:00 | — | **空き** | | | | |
+| 10/30 18:00 | `shorts/out/2026-10-30-pixelgen` | **pixelgen**（Pixel 1世代前・10/27 夜に追加） | ずんだもん | 問い | ① device（スマホの形） | 空きを埋める。前の promax ③ と続かない |
 | 10/31 8:00 | — | 空き | | | | 横動画11本目（楽天モバイル）が 10/31 9:00 予約（ideas/10-26・Ua3ZRui2G4w）。※依頼文では 21時ごろ → 時刻をユーザーに確認 |
 | 10/31 18:00 | — | 空き | | | | |
 
 **予備（予定から外した・フォルダは残す・公開するなら utm と日付を直す）**: `2026-10-28-budget`（4万 iPhone 12・つむぎ・問い）・`2026-10-29-budget`（10万 iPhone 15・ずんだもん・問い）・`2026-10-30-budget`（12万 15 Pro・つむぎ・答え）・`2026-10-29-foldbudget`（8万 Flip6・ずんだもん）・`2026-10-31-ipadbudget`（8万 Pro 11 第2世代・ずんだもん）。どれも書き出していない。
 
 **空きの枠（10/29 8:00・10/30 18:00・10/31）**: 予算別でなく、前の回と1位が違う新しい中身の案は、10/27 に流した plan（2章）では見つからなかった（provs・newused・gen・storage・rank・battery・fold・drops は前の回と同じ1位）。iPhone 以外の機種の同じ型（例: iPad の1世代前・Pixel の1世代前）は作れるが、新しいテーマのコードと確かめが要るので、この台本の段では入れていない。11/1 の drops「10月の値下がり」（1か月）は 10/31 以降に取り直せば新しい中身になる。
+【10/27 夜】10/29 8:00・10/30 18:00 は新しいテーマ ipadgen・pixelgen（watchgen・macgen と同じ型の iPad・Pixel 版）で埋めた（下の表）。残る空きは 10/31 だけ。
 
 **watchgen・macgen の台本（10/27 の DB・16店）**
 
@@ -79,6 +80,17 @@
 - watchgen の対象外・下位: Ultra 2→初代 −23,100・Series 11→10 −11,300・10→9（46／45mm）−10,700・9→8 −11,000・SE 3→第2世代（44／40mm）−20,900 ほか。上位3組はどれも同じケースの大きさ（49mm・46mm）
 - macgen の対象外: 15インチ M5→M4・M4→M3（両方に5件以上の容量がない）。13インチ M5→M4（512GB）−12,000・15インチ M3→M2（512GB・在庫8件）−12,670 は4位以下
 - 見た目: 前の ipadmini と後の promax が ③ なので ⑤ PRO にした。V1 の2本を同じ見た目にそろえたので、間の 10/29 8:00 が空きだと **⑤ が2本続く**（「続けて同じ見た目にしない」の例外。V1 の比べを優先）。10/29 8:00 に ⑤ 以外の回を入れれば解ける
+
+**ipadgen・pixelgen の台本（10/27 夜の DB。書き出し済み・型 A・未アップロード）**
+
+| フォルダ | 3位 | 2位 | 1位 | タイトル | ひと言 | mp4 |
+|---|---|---|---|---|---|---|
+| 2026-10-29-ipadgen（14店） | Pro 11インチ M5→M4（256GB）186,780→149,980円（−36,800・−19.7%） | Pro 13インチ M5→M4（256GB）225,280→181,000円（−44,280・−19.7%） | Pro 13インチ M4→12.9インチ 第6世代（256GB・在庫57／24）181,000→131,980円（**−49,020・−27.1%**） | iPad Pro 13インチ M4→12.9インチ 第6世代で約4.9万円安い！1世代前ランキング | 12.9インチ第6世代は／Pencil Proが／使えません（第6世代は USB-C・第2世代） | short-A.mp4 34.8秒・−11.4 LUFS |
+| 2026-10-30-pixelgen（13店） | Pixel 9 Pro XL→8 Pro（128GB・在庫54／29）98,780→65,780円（−33,000・−33.4%） | Pixel 11 Pro→10 Pro（256GB）168,080→131,780円（−36,300・−21.6%） | Pixel 11 Pro XL→10 Pro XL（256GB・在庫137／238）180,980→136,880円（**−44,100・−24.4%**） | Pixel 11 Pro XL→10 Pro XLで約4.4万円安い！Pixel 1世代前ランキング | Pixel 10 Pro XLも／アップデート保証は／2032年8月まで | short-A.mp4 38.2秒・−11.4 LUFS |
+
+- ipadgen の下位: mini 第6→第5（64GB）−32,080・Pro 12.9 第4→第3 −34,861（4位）・Pro 11 M4→第4世代 −29,200 ほか。第9→第8世代は5件以上の共通の容量なし。上位3組はどれも Pro（13インチ M4 → 12.9インチ 第6世代は Apple の後継の順で「1世代前」に数えた）
+- pixelgen の対象外: 7→6・7 Pro→6 Pro（6・6 Pro のアップデート保証が 2026年10月で終了）。9 Pro→8 Pro の代わりに 9 Pro XL→8 Pro（同じ大きさの後継）。無印 9→8 −24,739・9a→8a −23,057 は4位以下
+- utm は公開日（shorts_20261029_ipadgen・shorts_20261030_pixelgen）に直した。読みは voice-dump で直すところなし
 
 **注（フォルダ名）**: plan のフォルダは作った日（2026-10-27-<テーマ>）の名前になるので、公開日の名前に移した（上の表のフォルダ名＝公開日）。説明欄の utm の campaign も公開日（shorts_20261028_budget など）。
 - 予算別の budget は3本が同じテーマなので、**render は必ず `--dir shorts/out/<フォルダ>`**（指定しないと名前がいちばん後の 2026-10-30-budget を使う）
@@ -100,6 +112,7 @@
 - 再生数は参考（2〜3日で頭打ちになるので、継続率の方が先に分かる）。結果は ideas/ に表で残し、STATE の「次にやる」を直す
 
 ### 見た目の並び
+【10/27 夜】③（ipadmini）→ ⑤（watchgen）→ ②（ipadgen 10/29 8:00）→ ⑤（macgen）→ ③（promax）→ ①（pixelgen 10/30 18:00）。続けて同じ見た目はなくなった。
 【変更後】③（ipadmini 10/28 8:00）→ ⑤（watchgen 10/28 18:00）→ ⑤（macgen 10/29 18:00）→ ③（promax 10/30 8:00）。⑤ が2本続く（V1 の2本をそろえたため。間の 10/29 8:00 に ⑤ 以外の回を入れれば解ける）
 
 （変更前: ③（ipadmini）→ ②（A）→ ③（fold）→ ②（B）→ ③（promax）→ ②（C）→ ②（ipadbudget））
@@ -127,6 +140,7 @@
 - 【10/27 夕】上の5本の予算別（budget A・B・C・foldbudget・ipadbudget）は**予備**（3章）。promax だけ予定に残る
 
 ## 5. コードの変更（コミットしていない）
+- 【10/27 夜】新しいテーマ `ipadgen`・`pixelgen`（`shorts/themes/ipadgen.ts`・`pixelgen.ts`、型 `IpadGenScript`・`PixelGenScript`、DeviceHook にタブレットとスマホの背面の形）。見た目は ipadgen ② BUDGET・pixelgen ① DROPS（looks.ts）。読みは `voice.ts` の devicePair（「無印iPadのA16から第10世代」「Pixel 9 Pro XLから8 Pro」）。README・SKILL に追記
 - 【10/27 夕】新しいテーマ `watchgen`・`macgen`（`shorts/themes/watchgen.ts`・`macgen.ts`、型 `WatchGenScript`・`MacGenScript`、見た目 ⑤ PRO＋つかみ "device"＝`scenes.tsx` の DeviceHook）。`make-short.tsx` の plan に `--dir`。読み: Series（voiceTuning の BRANDS）・Ultra 2〜4・M1〜M5・mm・Watch・全角の（第2世代）（voice.ts の speakable）。README・SKILL に追記
 - `shorts/types.ts` に `hookLines?: string[]`、`shorts/scenes.tsx` の SplitHook・BudgetHook が `s.hookLines ?? 既定の問い` を出す。SplitHook の札は `hookStyle: "answer"` なら「1位」。既定は変わらない（書かなければ今まで通り）。`shorts/README.md` に使い方
 - 型チェック・静止画（stills.tsx）はまだ（PC の負荷を避けた）。書き出しの前に `npx tsx shorts/stills.tsx budget promax` で つかみ を見る（budget は最後のフォルダを読むので C の答えの絵が出る）
@@ -135,3 +149,7 @@
 1. `--voice-dump script --dir shorts/out/<フォルダ>` で読み: 「12万円なら、iPhone 15 Proが買えます。」「14 Proは256GBにしても」「Flip型」「縦に折る」・ずんだもんの「iPad Pro 11インチ、第2世代」「Galaxy Z Flip6」
 2. `render --dir shorts/out/<フォルダ>`（budget は必ず `--dir`）
 3. 予約公開の時刻は上の表。関連動画は `shorts/relatedLong.ts` のとおり（budget → いま買うならどれ R1Aki2b5mds・promax → Proと無印 Bmp5EgeiqW0・fold／iPad の予算別は締めの誘導なし）
+
+
+## 10/27 の変更（メインのセッション）
+- watchgen・macgen は 10/27 に前倒し（watchgen 15:30・macgen 21:00。ユーザー「出してほしい」「バラけさせて」）。10/28 18:00・10/29 18:00 の枠は空き。声の比較は時刻が違うので目安（判定 10/29 夜）

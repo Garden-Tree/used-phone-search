@@ -81,7 +81,7 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
     : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s)
     : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : s.theme === "ipadmini" ? ipadMiniNarration(s)
-    : s.theme === "watchgen" || s.theme === "macgen" ? deviceGenNarration(s) : dropsNarration(s);
+    : s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen" ? deviceGenNarration(s) : dropsNarration(s);
 }
 
 /**
@@ -227,8 +227,18 @@ function storageNarration(s: StorageScript): Partial<Record<NarrationKey, string
 
 /** watchgen・macgen の組の読み（"Ultra 3からUltra 2"・"13インチのM4からM3"）。Apple Watch・MacBook Air は見出しと問いで言うので行では読まない */
 const MAC_CHIP = /\b(M\d)\b/;
+const ipadSeries = (model: string) => model.replace(/\s*\(.*\)$/, "").replace(/^iPad\s+/, "") || "iPad";
+const ipadGen = (model: string) => model.match(/\(([^)]+)\)$/)?.[1] ?? ipadSeries(model);
 const devicePair = (s: DeviceGenScript, newer: string, older: string) => {
   if (s.theme === "watchgen") return `${newer.replace(/^Apple Watch\s+/, "")}から${older.replace(/^Apple Watch\s+/, "")}`;
+  // ipadgen（10/27）: 「無印iPadのA16から第10世代」「Pro 11インチのM5からM4」「Pro 13インチのM4から12.9インチの第6世代」
+  if (s.theme === "ipadgen") {
+    const [a, b] = [ipadSeries(newer), ipadSeries(older)];
+    const head = a === "iPad" ? "無印iPad" : a;
+    return `${head}の${ipadGen(newer)}から${a === b ? ipadGen(older) : `${b.replace(/^(Pro|Air)\s+/, "")}の${ipadGen(older)}`}`;
+  }
+  // pixelgen（10/27）: 「Pixel 10から9」「9 Pro XLから8 Pro」（Pixel は2つ目で言わない）
+  if (s.theme === "pixelgen") return `${newer}から${older.replace(/^Pixel\s+/, "")}`;
   const inch = newer.match(/(\d+)インチ/)?.[1] ?? "13";
   return `${inch}インチの${newer.match(MAC_CHIP)?.[1] ?? newer}から${older.match(MAC_CHIP)?.[1] ?? older}`;
 };
@@ -242,8 +252,9 @@ function deviceGenNarration(s: DeviceGenScript): Partial<Record<NarrationKey, st
   const items = s.scenes.ranking.items;
   const top = items[0];
   const watch = s.theme === "watchgen";
+  const lead = watch ? "Apple Watch" : s.theme === "macgen" ? "MacBook Air" : s.theme === "ipadgen" ? "iPad" : "Google Pixel";
   return {
-    hook: watch ? "Apple Watch、1世代前にすると、いくら安い？" : "MacBook Air、1世代前にすると、いくら安い？",
+    hook: `${lead}、1世代前にすると、いくら安い？`,
     ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${devicePair(s, items[i].newer, items[i].older)}${watch ? "" : `、${items[i].storage}`}。差は${yen(items[i].diff)}です。`).join(""),
     reveal: `1位は${devicePair(s, top.newer, top.older)}。1世代前にすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。`,
     comment: commentSentence(s.scenes.comment.lines),

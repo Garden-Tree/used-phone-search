@@ -21,7 +21,7 @@ import type { Script } from "./types";
 export type BandShape = "full" | "card" | "pill" | "tab" | "leaf" | "underline" | "frame";
 /** つかみ（1コマ目）の型。number＝1位の額を先に出す・chips＝予算の札・coins＝予算の丸い札（数字を大きく）・split＝2つを並べて vs・fold＝折りたたみの形・abc＝ランクの札・battery＝縦の電池の形
  * phone＝スマホの形に「iOS 27」と「対応」の札（ios27line）・equation＝「古い方＋電池交換＝1つ上？」の式（batteryswap）・ratio＝新品と中古の2本の棒（overnew）・tiers＝料金の3段の階段と2年の差（rakutenmobile）
- * device＝2つの機器の形（watchgen は時計の文字盤とバンド・macgen は開いたノート）に「最新」「1世代前」 */
+ * device＝2つの機器の形（watchgen は時計の文字盤とバンド・macgen は開いたノート・ipadgen はタブレット・pixelgen はカメラの帯のあるスマホの背面）に「最新」「1世代前」 */
 export type HookKind = "number" | "chips" | "coins" | "split" | "fold" | "abc" | "battery" | "phone" | "equation" | "ratio" | "tiers" | "device";
 
 export type Look = {
@@ -145,6 +145,10 @@ export const LOOKS: Record<Script["theme"], Look> = {
   // 2本は 10/28 18:00・10/29 18:00 で間の 10/29 8:00 が空きなら ⑤ が続く（V1 の比べを優先。ideas/2026-10-27-shorts-plan.md）
   watchgen: { ...PRO, hook: "device" },
   macgen: { ...PRO, hook: "device" },
+  // ipadgen・pixelgen（10/27〜・同じ「1世代前」の型の iPad・Pixel 版）: 見た目は5つまでなので新しく作らない。⑤（watchgen・macgen）・③（ipadmini・promax）と続かないよう、
+  // ipadgen（10/29 8:00・前後は ⑤）は ② BUDGET（明るい地・藍の帯。タブレットの形の縁は藍 brand600）、pixelgen（10/30 18:00・前は promax ③）は ① DROPS（紺の地・赤い帯。スマホの縁は赤 price）
+  ipadgen: { ...BUDGET, hook: "device" },
+  pixelgen: { ...DROPS, hook: "device" },
 };
 
 export const lookOf = (s: Script): Look => LOOKS[s.theme];

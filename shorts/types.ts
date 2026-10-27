@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini・watchgen・macgen）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini・watchgen・macgen・ipadgen・pixelgen）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -206,7 +206,10 @@ type DeviceGenScenes = {
 };
 export type WatchGenScript = Common & { theme: "watchgen"; scenes: DeviceGenScenes };
 export type MacGenScript = Common & { theme: "macgen"; scenes: DeviceGenScenes };
-export type DeviceGenScript = WatchGenScript | MacGenScript;
+/** ipadgen「iPad、1世代前にするといくら安い？」・pixelgen「Pixel、1世代前にするといくら安い？」（10/27〜。shorts/themes/ipadgen.ts・pixelgen.ts。容量は macgen と同じ選び方） */
+export type IpadGenScript = Common & { theme: "ipadgen"; scenes: DeviceGenScenes };
+export type PixelGenScript = Common & { theme: "pixelgen"; scenes: DeviceGenScenes };
+export type DeviceGenScript = WatchGenScript | MacGenScript | IpadGenScript | PixelGenScript;
 
 /**
  * storage の1行: 1機種の、在庫5件以上でいちばん小さい容量（from）と次の容量（to）の中古の相場（中央値）（shorts/themes/storage.ts）。
