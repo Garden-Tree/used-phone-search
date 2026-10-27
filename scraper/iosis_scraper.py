@@ -18,7 +18,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 }
 # (一覧の URL, 読み取り関数, 最大ページ数) はファイル末尾の CATEGORIES
-BATCH = 4  # 同時に取るページ数（店への負担を抑えるため 4 まで）
+BATCH = 3  # 同時に取るページ数（店への負担を抑えるため。10/27 に読み込みの時間切れが毎回1〜6ページ出ていたので 4 → 3）
 
 
 def parse_rank(li) -> str:
@@ -289,12 +289,12 @@ def scrape_iosis(max_pages=200):
                         done = True  # 商品のないページ＝最後のページの先
                 failed_batches = failed_batches + 1 if all(r is None for r in results) else 0
                 # サイト全体が止まっている（503 など）ときに、上限の200ページまで再試行し続けない（10/22〜23 に1回28分・約1,440回の要求になった）。
-                # 最初の4ページが全部だめならこの種類はやめる。途中でも4ページまとめての失敗が2回続いたらやめる
+                # 最初の BATCH ページが全部だめならこの種類はやめる。途中でも BATCH ページまとめての失敗が2回続いたらやめる
                 if failed_batches and (page == 1 or failed_batches >= 2):
                     print(f"  警告: {tpl} は{'最初の' if page == 1 else '続けて'}{len(pages)}ページを取得できなかったので打ち切る（サイトが止まっている疑い）")
                     break
                 page += BATCH
-                time.sleep(0.5)  # 4ページごとに間を空ける（店に負担をかけない）
+                time.sleep(1.0)  # BATCH ページごとに間を空ける（店に負担をかけない。10/27 に 0.5 → 1.0 秒）
             if not done and page > last:
                 print(f"  警告: {tpl} は上限 {last} ページに達しても終わらなかった（取りこぼしの恐れ。max_pages を見直す）")
     print(f"Finished scraping. Total items found: {len(all_items)}")
