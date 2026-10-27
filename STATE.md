@@ -15,13 +15,12 @@
 
 ## 決定事項
 
-- **GA4**: 556047315（docs/measurement.md）
-- **ホスティング**: Cloudflare Pages（docs/）
+- **GA4**: 556047315・**ホスティング**: Cloudflare Pages（docs/）
 - **DB**: Neon（Launch）
 - **IndexNow**: 毎日全件
 - **デザイン**: `docs/design.md`
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
-- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。店の比較 `/iphone/where-to-buy`。新型 iPad mini の比較 `/ipad/ipad-mini-new-vs-used`（10/27〜）。横動画は同テーマのページに埋め込み（`lib/videos.ts`）
+- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。店の比較 `/iphone/where-to-buy`・新型 iPad mini `/ipad/ipad-mini-new-vs-used`。横動画は同テーマのページに（`lib/videos.ts`）
 - **画面の店数は在庫がある店だけ**（`lib/activeShops.ts`）
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**
 - **スペック・保証期限・発売年月・Apple 修理料金・Pencil 対応は公式で確かめた値だけ**（`lib/*Specs.ts`・`*Catalog.ts`・`appleRepairPrices.ts`・`ipadPencil.ts`）
@@ -29,12 +28,13 @@
 - **楽天の店**: ゲオ・じゃんぱら・ソフマップ・ニューズド・キタムラ・イオシス・MTM
   - 同じ会社の別の売り場は公式のカードに（イオシス⇔楽天・エムモバ⇔エムコム）
 - **Amazon 整備済み品**: 停止中
-- **Yahoo! 7店**: VC 本体（2025875・10/26〜）。もしもはメディア否認
-- **収益の枠**: 回線（`SimTile`＝各社「月○円〜」・href のある社だけ。2年の総額は `/sim`（10/27〜））・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
-- **値動きの速報**: `price-alerts.ts`
-- **広告のショート** `rakutenmobile`: PR は左上・説明欄。リンクは横動画だけ
+- **Yahoo! 7店**: VC 本体（2025875）。もしもは否認
+- **収益の枠**: 回線（`SimTile`・2年の総額 `/sim`）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
+- **値動き速報**: `price-alerts.ts`
+- **広告のショート** `rakutenmobile`: PR は左上・説明欄
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開
-- **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch は storage＝mm）
+- **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch の storage＝mm）
+- **中古パソコン** `/pc`（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit の一覧だけ直接取得（2秒おき・1日2回）・A8。画像・説明文は使わない
 
 ## 確認台帳（計測・判定）
 

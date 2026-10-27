@@ -8,6 +8,7 @@ import { isCompareIndexable, COMPARE_MIN_STOCK } from "@/lib/compareStock";
 import { SITE_URL } from "@/lib/site";
 import { reportMonths, reportPublished } from "@/lib/monthlyReport";
 import prisma from "@/lib/prisma";
+import { getPcItems, PC_MIN_INDEX_ITEMS } from "@/lib/pcInventory";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 
 // ビルドのたびに作る（lastmod を在庫の更新に合わせるため）
@@ -69,6 +70,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/xperia`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/aquos`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/watch`, lastModified, changeFrequency: "daily", priority: 0.8 },
+    // 中古パソコン（2026-10-27〜）。在庫が少ないあいだ（取り込み前）は noindex なので入れない
+    ...((await getPcItems()).length >= PC_MIN_INDEX_ITEMS ? [{ url: `${SITE_URL}/pc`, lastModified, changeFrequency: "daily" as const, priority: 0.7 }] : []),
     { url: `${SITE_URL}/about`, changeFrequency: "monthly", priority: 0.3 },
     ...PICKS.map((p) => ({
       url: `${SITE_URL}${pickPath(p.slug)}`,

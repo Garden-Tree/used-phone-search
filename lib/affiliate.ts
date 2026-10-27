@@ -43,6 +43,9 @@ const A8_PROGRAMS: Record<string, string> = {
   "にこスマ": "45IED7+DCGUQI+4O7U+BW0YB",
   "エムモバ": "45IED7+DB9ZIY+5I5M+HUD03",
   "ダイワンテレコム": "45IED7+DD2ACA+3I5Y+ZPD5F",
+  // 中古パソコン（PcInventory・2026-10-27〜）。A8 の商品リンク（掲載サイト「中古スマホ一括検索」）。飛び先は各社のサイトの中だけ
+  "PC WRAP": "4BE68M+9SGNOA+4U56+BW0YB",
+  "Qualit": "4BE68M+9RV82I+50H8+BW0YB",
 };
 
 /**

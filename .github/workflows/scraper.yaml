@@ -109,6 +109,22 @@ jobs:
           cd scraper
           python run_all_scrapers.py
 
+      # 中古パソコン（PcInventory・2026-10-27〜）。店の一覧ページだけを2秒おきに1本ずつ読む。前回から11時間たっていなければ飛ばす（1日2回まで）。
+      # スマホの在庫とは別の表なので、失敗しても後ろの手順は止めない
+      - name: 中古パソコンの取得
+        if: ${{ inputs.site_only != 'true' }}
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          cd scraper
+          python test_pc_spec.py
+          # 1店が失敗しても、もう1店は取る
+          status=0
+          python -u pcwrap_scraper.py || status=1
+          python -u qualit_scraper.py || status=1
+          exit $status
+
       # スクレイピング結果から当日の価格推移を記録（モデル別ページのグラフ用）
       - name: Node.js をセットアップ
         if: ${{ !cancelled() }}

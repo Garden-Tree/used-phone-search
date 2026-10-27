@@ -58,3 +58,34 @@ model PriceSnapshot {
   @@unique([date, modelSlug, storage])
   @@index([modelSlug, storage, date])
 }
+
+// 中古パソコン（Windows のノート・デスクトップ。2026-10-27〜）。スマホとは別の表。
+// 取得は scraper/qualit_scraper.py・pcwrap_scraper.py（店の一覧ページだけ・1日2回まで）、条件の読み取りは scraper/pc_spec.py
+model PcInventory {
+  id            String   @id @default(uuid())
+  shopName      String   // 例: Qualit, PC WRAP
+  formFactor    String   // note | desktop
+  maker         String   // 例: Lenovo, 富士通
+  productName   String   // 店の表記の機種名 例: Lenovo ThinkPad X13 Gen 1
+  cpu           String   // 例: Core i5-10210U, Core Ultra 5 125U, Ryzen 5 5500U
+  cpuFamily     String   // 例: Core i5, Core Ultra 5, Ryzen 5
+  cpuGen        Int?     // Intel Core i の世代（Core Ultra・Ryzen は null）
+  win11         Boolean  // Windows 11 の対応 CPU か（Microsoft の一覧: Intel 第8世代以降・Core Ultra・Ryzen 2000 以降）
+  memoryGB      Int
+  storageGB     Int
+  storageType   String   // SSD | HDD
+  gpu           String?  // 専用 GPU（例: RTX3060）。内蔵だけなら null
+  screenInch    Float?   // ノートの画面。デスクトップは null
+  conditionRank String   // S, A, B, C, J（訳あり）にそろえたもの
+  rankLabel     String   // 店の表記 例: C:並品, 特選
+  stock         Int?     // 店の在庫数（出ていれば）
+  price         Int      // 税込
+  url           String   // 商品ページ（A8 のリンクは画面で付ける。lib/affiliate.ts）
+  isSoldOut     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([shopName])
+  @@index([formFactor, price])
+  @@index([cpuFamily])
+}

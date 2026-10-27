@@ -101,6 +101,14 @@
 - 取れない状態が12時間続くと在庫は自動で隠れる（上の「取得が止まった店の在庫を隠す」）
 - **ダイワンテレコムの公式サイトは 2026/10/21 19:00〜12月中旬（予定）リニューアルで休止**（トップが休止のお知らせ・一覧の URL は 404）。在庫は自動で隠れている。楽天市場店・Yahoo 店は営業中（サイトでは扱っていない）。再開したら一覧の URL が変わっていないかを確かめる
 
+### 中古パソコン（PcInventory・2026-10-27〜）
+- 取得は `scraper/pcwrap_scraper.py`（ノート category1=2・デスクトップ category1=1）と `scraper/qualit_scraper.py`（ノート ct01。EUC-JP）。どちらも**一覧ページだけ**を2秒おきに1本ずつ読む（商品ページ・画像・説明文は使わない。Qualit の利用規約 第3条）。売り切れが並び始めたページで止まる。1回 PC WRAP 約20回・Qualit 約4回の要求
+- GitHub Actions の「中古パソコンの取得」で、前回から11時間たっていれば取る（1日2回まで）。失敗してもスマホの手順は止めない（`continue-on-error`）。すぐ取り直すときは手元で `FORCE_PC=1 python pcwrap_scraper.py`
+- 取り込まずに確かめる: `python pcwrap_scraper.py --dry`（読めた件数と先頭15件）。読み取りのテストは `python test_pc_spec.py`（Actions でも毎回走る）
+- ランクの対応（`scraper/pc_spec.py`）: PC WRAP 美麗＝A・特選＝B・標準＝C・訳あり＝J（新品は載せない）。Qualit は表記の S/A/B/C、訳あり品＝J。画面には店の表記も出す
+- リンクは A8（`lib/affiliate.ts`。掲載サイト「中古スマホ一括検索」の商品リンク。飛び先は pcwrap.com・yrl-qualit.com の中だけ）。A8 の商品リンク作成で作った a8mat
+- `/pc` は在庫20件未満のあいだ noindex・サイトマップに出さない（`PC_MIN_INDEX_ITEMS`）
+
 ### エムモバの公式とエムコム Yahoo!ショッピング店（2026-10-10〜）
 - 同じ会社（株式会社エムコム）。`scripts/link-duplicate-shops.ts` がイオシスと同じ仕組みで、エムモバの行に Yahoo の価格・URL を添え、同じ商品の Yahoo の行を隠す。
   Yahoo の商品名に色がないので、鍵は 機種（空白を除く）・容量・ランク・価格（価格まで一致したものだけ）。カードの下に「Yahoo!ショッピングでも販売」（VC かもしも経由）が出る
