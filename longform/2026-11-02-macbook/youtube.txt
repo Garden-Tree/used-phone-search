@@ -1,0 +1,36 @@
+【中古MacBook】いま買うならどれ？10万・12万・15万・20万円の正解を相場で選んだ（Air・Pro・Neo）
+
+中古のMacBook（macOS 27 対応の Apple シリコンの Air・Pro と MacBook Neo）を、MacBook の在庫がある大手中古ショップ3店・1,990件の相場（2026/10/27時点）から、予算別に選びました。
+結論: 10万円→MacBook Pro 13インチ M1（512GB 87,800円）、12万円→MacBook Neo（512GB 117,480円）、15万円→MacBook Air 13インチ M3（256GB 143,630円）、20万円→MacBook Air 13インチ M4（256GB 177,130円）。
+
+・選び方: 在庫30件以上の機種のうち、相場が「ひとつ前の予算より上〜予算」に入る、いちばん高い機種
+・メモリで値段が分かれる: Air 13インチ M3 の256GBは 8GB 132,980円・16GB 167,130円（中央値）。M4 の256GBは在庫が全部16GB
+・1世代前（Air 13インチ・同じ容量）: M5→M4 −12,000円・M4→M3 −33,500円（16GBどうしは −10,000円）・M3→M2 −29,650円・M2→M1 −32,000円
+・充放電回数の上限の目安 1,000回は Apple のサポートページ（support.apple.com/ja-jp/102888）。MacBook Neo の仕様は Apple 公式
+
+相場＝在庫がいちばん多い容量（SSD）の中央値。メモリは商品名の表記から数えています。
+
+0:00 結論：予算別の4台
+0:43 どうやって選んだ？
+1:31 10万円：Pro 13インチ M1
+2:39 12万円：MacBook Neo
+3:55 15万円：Air 13インチ M3
+5:04 20万円：Air 13インチ M4
+6:11 1世代前でいくら安い？
+7:02 買う前の注意
+7:53 まとめ
+8:15 次におすすめの動画
+
+MacBook Neo: https://used.gadelog.com/mac/macbook-neo?utm_source=youtube&utm_medium=social&utm_campaign=long_20261102
+MacBook Air 13インチ M3: https://used.gadelog.com/mac/macbook-air-13-m3?utm_source=youtube&utm_medium=social&utm_campaign=long_20261102
+MacBook Pro 13インチ M1: https://used.gadelog.com/mac/macbook-pro-13-m1?utm_source=youtube&utm_medium=social&utm_campaign=long_20261102
+全機種の中古MacBookの相場: https://used.gadelog.com/mac?utm_source=youtube&utm_medium=social&utm_campaign=long_20261102
+
+VOICEVOX:春日部つむぎ
+VOICEVOX:ずんだもん
+BGM: Cyber Society by のる（OpenTracks）
+効果音：効果音ラボ
+立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)
+ずんだもん立ち絵：坂本アヒル様
+
+#中古MacBook #MacBook #MacBookAir
