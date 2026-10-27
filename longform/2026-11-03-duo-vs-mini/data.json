@@ -3,7 +3,7 @@
   "shops": 16,
   "source": "script.md の数字そのまま（2026/10/27 の集計・longform/2026-11-03-duo-vs-mini/data-query.ts → data-query.log。iPhone は16店・iPad は14店（activeShops）。相場＝在庫がいちばん多い容量の中央値（getModelMarket）。iPhone Duo の値段・仕様は ideas/2026-10-27-iphone-duo.md（Apple 公式 apple.com/jp/shop/buy-iphone/iphone-duo・apple.com/jp/iphone-duo/specs/・support.apple.com/ja-jp/148588・ニュースリリース・修理料金・10/27 確認）。新型 iPad mini は lib/ipadMiniA20.ts（10/27 確認）、Pro Max の画面・チップは lib/iphoneSpecs.ts、重さは support.apple.com/ja-jp/121032・125091（10/26 確認）、画面の修理は lib/appleRepairPrices.ts）",
   "thumbnail": {
-    "lines": ["大きい画面がほしいだけなら", "iPhone Duoでなくていい？"],
+    "lines": ["大きい画面なら", "Duoでなくていい？"],
     "badge": [{ "text": "16万〜28万円", "red": true }, { "text": "安い" }],
     "footer": "中古の Pro Max・iPad mini と1台ずつ比べた ｜ used.gadelog.com"
   },
