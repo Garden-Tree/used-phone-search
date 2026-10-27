@@ -42,6 +42,9 @@ export function parseCpu(text: string): Cpu | null {
   if (m && (/Ryzen/i.test(text) || m[2])) {
     return { cpu: `Ryzen ${m[1]}${m[2] ? ` ${m[2]}${(m[3] ?? "").toUpperCase()}` : ""}`, family: `Ryzen ${m[1]}`, gen: null };
   }
+  // Intel N100・N95・N150 など（第12世代の省電力版。Windows 11 の対応一覧に入っている）
+  m = text.match(/Intel\s?(N\d{2,3})\b/i);
+  if (m) return { cpu: `Intel ${m[1].toUpperCase()}`, family: "Intel N", gen: null };
   m = text.match(/(Celeron|Pentium|Atom|Core\s?m3)/i);
   if (m) {
     const name = /m3/i.test(m[1]) ? "Core m3" : m[1][0].toUpperCase() + m[1].slice(1).toLowerCase();
@@ -52,7 +55,7 @@ export function parseCpu(text: string): Cpu | null {
 
 /** Windows 11 の対応 CPU か（Microsoft の一覧: Intel 第8世代以降・Core Ultra・Ryzen 2000 以降）。世代が分からないときは、商品が Windows 11 で売られていれば対応とみなす */
 export function windows11Ok(c: Cpu, text: string): boolean {
-  if (c.family.startsWith("Core Ultra")) return true;
+  if (c.family.startsWith("Core Ultra") || c.family === "Intel N") return true;
   if (c.family.startsWith("Core i")) return c.gen !== null ? c.gen >= 8 : /Win(?:dows)?\s?11/i.test(text);
   if (c.family.startsWith("Ryzen")) {
     const m = c.cpu.match(/Ryzen \d (\d)\d{3}/);

@@ -12,6 +12,8 @@
  *   php fetch.php --dry [shop]    … 送信せず、先頭3ページ分を sample.json に保存（確認用）
  *   php fetch.php --dry --kw=ノートパソコン --ng="MacBook Chromebook" janpara
  *                                 … dry の検索語と除外語を変える（中古パソコンを足す前の確認用。2026-10-27〜）
+ *   php fetch.php --dry --pc janpara … 中古パソコンの検索語・除外語（PC_SHOP_KEYWORDS・PC_NG_KEYWORD）で dry。
+ *                                 サーバーパネルの cron は日本語や引用符を受け付けないので、cron から試すときはこちら
  *
  * 秘密の値は同じディレクトリの config.php に置く（config.example.php を参照）。
  * 商品名の正規化は受け口（TypeScript）側で行い、ここでは取得と最小限の抽出だけを行う。
@@ -29,6 +31,7 @@ $dryNg = '';
 foreach ($args as $a) {
     if (str_starts_with($a, '--kw=')) $dryKeyword = substr($a, 5);
     if (str_starts_with($a, '--ng=')) $dryNg = substr($a, 5);
+    if ($a === '--pc') $dryKeyword = '--pc'; // syncShop で PC_KEYWORD・PC_NG_KEYWORD に置き換える（定数はこの下で定義されるため）
 }
 
 const ENDPOINT = 'https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701';
@@ -63,8 +66,10 @@ const WATCH_SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'pc-good', 'k
 // MacBook・Chromebook・iPad は NGKeyword で外す。PC 専門店の楽天店は SKU 選択式で取り込めないので引かない（ideas/2026-10-27.md）。
 // 要求数の概算（10/27 の楽天の検索ページの件数）: ソフマップ 約4,200件（3,000件を超えるので価格帯を割る）＝約150要求、じゃんぱら 約1,800件＝約60、イオシス 約300件＝約10。
 // 1店あたりの MAX_REQUESTS=1500 に、今の約350〜650要求と合わせても収まる。取得時間はソフマップで約 +3 分
+// 検索語は店ごと: じゃんぱらは商品名に「ノートパソコン」がほとんどなく（10/27 の試しで4件）、ノートには画面の「12LCD(1920x1200)」が必ず入るので「LCD」
+// （モニター・Chromebook も当たるが、受け口の lib/rakutenPc.ts が CPU・メモリ・SSD の読めないものを落とす）
+const PC_SHOP_KEYWORDS = ['akiba-u-shop' => 'ノートパソコン', 'janpara' => 'LCD', 'pc-good' => 'ノートパソコン'];
 const PC_SHOP_CODES = ['akiba-u-shop', 'janpara', 'pc-good'];
-const PC_KEYWORD = 'ノートパソコン';
 const PC_NG_KEYWORD = 'MacBook Chromebook iPad';
 const HITS = 30;              // 1ページの最大件数
 const MAX_PAGES = 100;        // API の上限（1検索あたり最大 3,000 件）
@@ -213,7 +218,7 @@ function syncPc(array $config, string $shopCode, string $dir): void
     $before = $requestCount;
     $items = [];
     try {
-        collectRange($config, $shopCode, PC_KEYWORD, 1, 999999, $items, PC_NG_KEYWORD);
+        collectRange($config, $shopCode, PC_SHOP_KEYWORDS[$shopCode], 1, 999999, $items, PC_NG_KEYWORD);
         $items = array_values($items);
         $payload = gzencode(json_encode(['items' => $items], JSON_UNESCAPED_UNICODE), 9);
         $tmp = "{$dir}/.{$shopCode}-pc.json.gz." . getmypid() . '.tmp';
@@ -228,12 +233,15 @@ function syncPc(array $config, string $shopCode, string $dir): void
 function syncShop(array $config, string $shopCode, bool $dryRun): bool
 {
     global $requestCount, $dryKeyword, $dryNg;
+    // --pc は店ごとの PC の検索語（複数店を一度に試すので、グローバルは書き換えない）
+    $kw = $dryKeyword === '--pc' ? (PC_SHOP_KEYWORDS[$shopCode] ?? 'ノートパソコン') : $dryKeyword;
+    $ng = $dryKeyword === '--pc' ? PC_NG_KEYWORD : $dryNg;
     $requestCount = 0;
     $items = [];
 
     if ($dryRun) {
         for ($page = 1; $page <= 3; $page++) {
-            $res = fetchPage($config, $shopCode, $dryKeyword ?? KEYWORDS[0], $page, 1, 999999, $dryNg);
+            $res = fetchPage($config, $shopCode, $kw ?? KEYWORDS[0], $page, 1, 999999, $ng);
             foreach ($res['Items'] ?? $res['items'] ?? [] as $item) {
                 $items[] = compactItem($item['Item'] ?? $item);
                 // 新しい店の読み取りを作るとき用に、API の生の応答（説明文など）も残す
@@ -242,7 +250,7 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
         }
         file_put_contents(__DIR__ . "/sample-{$shopCode}.json", json_encode($items, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         file_put_contents(__DIR__ . "/sample-{$shopCode}-raw.json", json_encode($raw ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-        logLine("{$shopCode} dry run" . ($dryKeyword !== null ? " kw={$dryKeyword} ng={$dryNg}" : '') . ": saved sample-{$shopCode}.json (" . count($items) . ' items, count=' . ($res['count'] ?? '?') . ')');
+        logLine("{$shopCode} dry run" . ($kw !== null ? " kw={$kw} ng={$ng}" : '') . ": saved sample-{$shopCode}.json (" . count($items) . ' items, count=' . ($res['count'] ?? '?') . ')');
         return true;
     }
 

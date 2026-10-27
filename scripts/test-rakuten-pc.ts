@@ -18,6 +18,12 @@ const CASES: [(i: RakutenItem) => unknown, RakutenItem, [string, number | null, 
     ["Core i7", null, true, 32, 256, "SSD", null, "B"]],
   [normalizeIosysPc, item("中古パソコン Surface Laptop3 15インチ ブラック V9R-00039【Ryzen5(2.1GHz)/16GB/256GB SSD/Win11Home】 MICROSOFT 当社3ヶ月間保証 イオシス", { rank: "A" }),
     ["Ryzen 5", null, true, 16, 256, "SSD", 15, "A"]],
+  [normalizeIosysPc, item("中古パソコン ASUS BR1104F BR1104FGA-NS0010XA ミネラルグレー【Intel N100(0.8GHz)/8GB/128GB SSD/Win11Pro Education】 ASUS 当社3ヶ月間保証 イオシス", { rank: "C" }),
+    ["Intel N100", null, true, 8, 128, "SSD", null, "C"]],
+  [normalizeJanparaPc, item("【中古】N/B ノートパソコン【Intel N150 16G 1T(SSD) WiFi 17LCD(1920x1080)】【大須2】保証期間1ヶ月【ランクA】"),
+    ["Intel N150", null, true, 16, 1000, "SSD", 17, "A"]],
+  [normalizeSofmapPc, item("【中古】Lenovo(レノボジャパン) ideapad L340 81LW002RJP グラナイトブラック 【295-ud】", { rank: "A", spec: "CPU:AMD Ryzen 3 3200U (2.6GHz)|メモリ:4GB|種類:SSD|容量:128GB|画面:15.6インチワイド|OS:Windows 11 Home(アップグレード済み)" }),
+    ["Ryzen 3 3200U", null, true, 4, 128, "SSD", 15.6, "A"]],
   [normalizeJanparaPc, item("【中古】Apple MacBook Air 13インチ M2 16GB/256GB【ランクA】"), null],
 ];
 
