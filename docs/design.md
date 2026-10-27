@@ -24,7 +24,7 @@
 
 ## 文字・形
 
-- 書体 IBM Plex Sans JP（400/500/700。`next/font/google`）。数字は `tabular-nums`
+- 書体 IBM Plex Sans JP（400/700。`next/font/google`。500 は 10/28 に外した: ファイル数を 369→約246 に）。数字は `tabular-nums`
 - 角丸 12px（チップは全丸）、カード間 8px、スマホの左右余白 16px
 - 影は使わない（線で区切る）。グラデーション・絵文字は使わない（アイコンは lucide-react）
 

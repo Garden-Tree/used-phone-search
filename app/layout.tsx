@@ -9,7 +9,8 @@ import { activeShops } from "@/lib/activeShops";
 // 日本語の字形は Google Fonts の unicode-range 分割で配信される（latin だけ先読み）
 const plex = IBM_Plex_Sans_JP({
   variable: "--font-plex",
-  weight: ["400", "500", "700"],
+  // 500 は 10/28 に外した（日本語は文字の範囲ごとに約120ファイル×太さの数になり、Google のクロールの半分がフォントだった。500 の使用は5か所・600 はもともと 700 で表示）
+  weight: ["400", "700"],
   subsets: ["latin"],
   display: "swap",
 });
