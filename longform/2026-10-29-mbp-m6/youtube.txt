@@ -7,6 +7,7 @@
 ・新型と M5・M4 の違い（Apple 公式の技術仕様）: CPU 12コア／10コア／10コア・GPU 12コア／10コア／10コア・Wi-Fi 7／6E／6E・Bluetooth 6／5.3／5.3。電池（動画 最大24時間）と重さ（1.55kg）は同じ
 ・中古の相場（同じ構成の中央値）: M5 16GB・1TB 286,980円（24GB・1TB 330,980円は5件）／M4 16GB・1TB 260,980円・16GB・512GB 240,980円／M1 Pro 16GB・512GB 153,131円・16GB・1TB 163,980円／M3 8GB・512GB 165,980円
 ・M5 の在庫 55件のうち 30件は未使用品（ランクS）。14インチの M5 は Apple の販売一覧にもうない（10/28）
+・チップも Pro にするなら M5 Pro（CPU 15コア〜・GPU 16コア〜・Thunderbolt 5。Apple 公式）。中古の 24GB・1TB は相場 395,800円で、新型 M6 より 56,000円高い
 
 相場＝同じ機種・同じメモリ・同じ SSD の中央値。件数が少ない構成は目安です。充放電回数の上限の目安（1,000回）は Apple サポートの情報です。
 
@@ -14,11 +15,12 @@
 0:53 どうやって調べた？
 1:35 新型M6は何が変わった？
 2:41 新型か、中古のM5か
-3:57 もっと安くならM4
-4:39 半額以下ならM1 Pro
-5:39 中古で買う前に見ること
-6:22 まとめ
-7:05 次におすすめの動画
+3:57 チップもProならM5 Pro
+4:59 もっと安くならM4
+5:41 半額以下ならM1 Pro
+6:40 中古で買う前に見ること
+7:23 まとめ
+8:07 次におすすめの動画
 
 MacBook Pro 14インチ M5: https://used.gadelog.com/mac/macbook-pro-14-m5?utm_source=youtube&utm_medium=social&utm_campaign=long_20261029
 MacBook Pro 14インチ M4: https://used.gadelog.com/mac/macbook-pro-14-m4?utm_source=youtube&utm_medium=social&utm_campaign=long_20261029

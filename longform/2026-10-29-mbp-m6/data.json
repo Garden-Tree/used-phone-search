@@ -193,6 +193,78 @@
       }
     },
     {
+      "title": "チップもProならM5 Pro",
+      "scene": {
+        "type": "table",
+        "heading": "新型 M6 と M5 Pro（14インチ）",
+        "columns": [
+          "項目",
+          "新型 M6",
+          "M5 Pro"
+        ],
+        "emphasis": [
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "CPU",
+              "12コア",
+              "15コアから"
+            ],
+            "cue": "CPUは15コアから"
+          },
+          {
+            "cells": [
+              "GPU",
+              "12コア",
+              "16コアから"
+            ],
+            "cue": "CPUは15コアから"
+          },
+          {
+            "cells": [
+              "Thunderbolt",
+              "Thunderbolt 4",
+              "Thunderbolt 5"
+            ],
+            "cue": "ポートも、Thunderbolt 5"
+          },
+          {
+            "cells": [
+              "値段",
+              "339,800円（新品・16GB・1TB）",
+              "395,800円（中古・24GB・1TB）"
+            ],
+            "cue": "相場39万5,800円"
+          },
+          {
+            "cells": [
+              "電池（動画）",
+              "最大24時間",
+              "最大22時間"
+            ],
+            "cue": "電池も、動画の再生で",
+            "emphasis": [
+              1
+            ]
+          },
+          {
+            "cells": [
+              "重さ",
+              "1.55kg",
+              "1.60kg"
+            ],
+            "cue": "M5 Proは1.60キロ",
+            "emphasis": [
+              1
+            ]
+          }
+        ],
+        "note": "Apple 公式の技術仕様。M5 Pro の中古は35件（うち未使用品 11件）・相場は同じ構成の中央値"
+      }
+    },
+    {
       "title": "もっと安くならM4",
       "scene": {
         "type": "bars",
