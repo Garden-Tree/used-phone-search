@@ -5,13 +5,13 @@
  * 選び方（台本・説明欄・動画で同じ。主観は入れない）:
  * - 新型は lib/macbookProM6.ts（Apple 公式・税込・10/28 確認）のいちばん安い構成（16GB・1TB）だけ
  * - 中古は 14インチの M5・M4 を、新型と同じ SSD 1TB で比べる。メモリは 16GB（新型と同じ）と、M5 だけ 24GB も（在庫があるので）
- * - 相場は構成（機種・SSD・メモリ）ごとの中央値。在庫 MIN_COUNT 件以上の構成だけ（3行そろわなければ止める）
+ * - 相場は構成（機種・SSD・メモリ）ごとの中央値（ジャンクを除く・横動画 longform/2026-10-29-mbp-m6 と同じ数字）。在庫 MIN_COUNT 件以上の構成だけ（3行そろわなければ止める）
  * - 並びは新型との差の大きい順。items[0]（差がいちばん大きい）を伏せて reveal で新型と比べる
  * - reveal の仕様の違いは lib/macbookProM6.ts の MBP_M6_COMPARE（公式の仕様のページの値）から CPU・Wi-Fi・電池の3つ（電池は同じ）
  * DB は構成ごとの価格の列だけ（各十数行）。在庫の行を丸ごと取らない
  */
 import prisma from "@/lib/prisma";
-import { modelWhere } from "@/lib/modelInventory";
+import { medianPrice, modelWhere } from "@/lib/modelInventory";
 import { modelPagePath } from "@/lib/catalog";
 import { MAC_SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
@@ -30,27 +30,21 @@ const COMPARE_LABELS = ["CPU", "Wi-Fi", "電池（動画）"];
 const man = (n: number) => n.toLocaleString();
 const slash = (iso: string) => iso.replace(/-/g, "/");
 const md = (iso: string) => `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}`;
-const median = (xs: number[]) => {
-  const a = [...xs].sort((x, y) => x - y);
-  const m = a.length >> 1;
-  return a.length % 2 ? a[m] : Math.round((a[m - 1] + a[m]) / 2);
-};
 const utm = (date: string) => `utm_source=youtube&utm_medium=social&utm_campaign=shorts_${date.replace(/-/g, "")}_mbpnew`;
 const memLabel = (gb: number) => `${gb}GB・1TB`;
 
 export async function buildMbpNewScript(date: string): Promise<IpadMiniScript> {
   const rows: IpadMiniRow[] = [];
   for (const c of CONFIGS) {
-    const prices = (await prisma.deviceInventory.findMany({
-      where: { ...(await modelWhere(c.model)), isSoldOut: false, storage: MBP_M6_STORAGE_GB, memoryGB: c.memoryGB },
-      select: { price: true },
-    })).map((r) => r.price);
-    if (prices.length < MIN_COUNT) throw new Error(`${c.model} ${memLabel(c.memoryGB)} の在庫が ${prices.length} 件しかありません（${MIN_COUNT}件以上必要）`);
-    const med = median(prices);
+    // 中央値はサイトと同じ lib/modelInventory.ts の medianPrice（偶数件は真ん中の2件の上の方。平均しない）
+    const where = { AND: [await modelWhere(c.model), { isSoldOut: false, storage: MBP_M6_STORAGE_GB, memoryGB: c.memoryGB, conditionRank: { notIn: ["J", "j", "ジャンク"] } }] };
+    const count = await prisma.deviceInventory.count({ where });
+    if (count < MIN_COUNT) throw new Error(`${c.model} ${memLabel(c.memoryGB)} の在庫が ${count} 件しかありません（${MIN_COUNT}件以上必要）`);
+    const med = (await medianPrice(where, count))!;
     const diff = MBP_M6_PRICE - med;
     if (diff <= 0) throw new Error(`${c.model} ${memLabel(c.memoryGB)} の相場が新型以上です（差 ${diff}円）`);
     const row: IpadMiniRow = {
-      model: c.model, short: c.short, year: c.year, storage: memLabel(c.memoryGB), storageGb: MBP_M6_STORAGE_GB, median: med, count: prices.length,
+      model: c.model, short: c.short, year: c.year, storage: memLabel(c.memoryGB), storageGb: MBP_M6_STORAGE_GB, median: med, count,
       newStorageGb: MBP_M6_STORAGE_GB, newPrice: MBP_M6_PRICE, diff, pct: Math.round((diff / MBP_M6_PRICE) * 1000) / 10,
     };
     console.log(`  ${c.model}（${row.storage}・在庫${row.count}件） 相場 ${man(med)}円 / 新型 ${man(MBP_M6_PRICE)}円（差 ${man(diff)}円・${row.pct}%）`);

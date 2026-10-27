@@ -1,0 +1,363 @@
+{
+  "date": "2026-10-28",
+  "shops": 5,
+  "source": "script.md の数字そのまま（2026/10/28 の集計・longform/2026-10-29-mbp-m6/data-query.ts → data-query.log。ジャンクを除く。相場＝同じ構成（チップ・メモリ・SSD）の中央値。新型 MacBook Pro 14インチ M6 の値段・仕様は lib/macbookProM6.ts（Apple 公式 apple.com/jp/newsroom・apple.com/jp/shop/buy-mac/macbook-pro・apple.com/jp/macbook-pro/specs/・10/28 確認）。M5 は support.apple.com/ja-jp/125405、M4 は support.apple.com/ja-jp/121552）",
+  "thumbnail": {
+    "lines": [
+      "新型MacBook Pro",
+      "中古にする？"
+    ],
+    "badge": [
+      {
+        "text": "差"
+      },
+      {
+        "text": "7.9万円",
+        "red": true
+      }
+    ],
+    "footer": "新型 M6 33.98万円／中古 M4 26.1万円"
+  },
+  "chapters": [
+    {
+      "title": "結論：新型33.98万円・中古のM5は28.70万円",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "新型と中古（16GB・1TB）",
+        "items": [
+          {
+            "label": "新型 M6（Apple 公式）",
+            "value": "339,800",
+            "unit": "円",
+            "cue": "新型のM6は、メモリ16GB"
+          },
+          {
+            "label": "中古の M5 の相場",
+            "value": "286,980",
+            "unit": "円",
+            "cue": "中古のM5は相場28万6,980円"
+          },
+          {
+            "label": "中古の M4 の相場",
+            "value": "260,980",
+            "unit": "円",
+            "cue": "中古のM5は相場28万6,980円"
+          }
+        ],
+        "note": "新型は 11/6 発売（Apple 公式・10/28 確認）。中古は同じ 16GB・1TB の中央値（ジャンクを除く）。M1 Pro は 16GB・512GB で 153,131円"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "どうやって調べた？",
+        "items": [
+          {
+            "label": "Mac を扱う中古ショップ",
+            "value": "5",
+            "unit": "店",
+            "cue": "大手の中古ショップ5店"
+          },
+          {
+            "label": "MacBook の在庫",
+            "value": "1,995",
+            "unit": "件",
+            "cue": "大手の中古ショップ5店"
+          },
+          {
+            "label": "Pro 14インチ M5／M4",
+            "value": "55／25",
+            "unit": "件",
+            "cue": "M5が55台、M4が25台"
+          }
+        ],
+        "note": "相場＝同じ構成（チップ・メモリ・SSD）の中央値。新型の値段・仕様は Apple 公式（10/28 確認）"
+      }
+    },
+    {
+      "title": "新型M6は何が変わった？",
+      "scene": {
+        "type": "table",
+        "heading": "新型と旧型の違い（Apple 公式の仕様）",
+        "columns": [
+          "項目",
+          "新型 M6",
+          "M5",
+          "M4"
+        ],
+        "emphasis": [
+          1
+        ],
+        "rows": [
+          {
+            "cells": [
+              "CPU",
+              "12コア",
+              "10コア",
+              "10コア"
+            ],
+            "cue": "まずチップ"
+          },
+          {
+            "cells": [
+              "GPU",
+              "12コア",
+              "10コア",
+              "10コア"
+            ],
+            "cue": "まずチップ"
+          },
+          {
+            "cells": [
+              "Wi-Fi",
+              "Wi-Fi 7",
+              "Wi-Fi 6E",
+              "Wi-Fi 6E"
+            ],
+            "cue": "Wi-Fiが、Wi-Fi 6Eから"
+          },
+          {
+            "cells": [
+              "Bluetooth",
+              "6",
+              "5.3",
+              "5.3"
+            ],
+            "cue": "Wi-Fiが、Wi-Fi 6Eから"
+          },
+          {
+            "cells": [
+              "SSD",
+              "1TB",
+              "512GBか1TB",
+              "512GBか1TB"
+            ],
+            "cue": "新型は、公式ストアだと1TBから"
+          },
+          {
+            "cells": [
+              "電池（動画）",
+              "最大24時間",
+              "最大24時間",
+              "最大24時間"
+            ],
+            "cue": "電池は、動画の再生で",
+            "emphasis": []
+          },
+          {
+            "cells": [
+              "重さ",
+              "1.55kg",
+              "1.55kg",
+              "1.55kg"
+            ],
+            "cue": "電池は、動画の再生で",
+            "emphasis": []
+          }
+        ],
+        "note": "Apple 公式の技術仕様（M6: apple.com/jp/macbook-pro/specs・M5: support.apple.com/ja-jp/125405・M4: 121552）。M5 は発売時 248,800円〜（Apple 公式・2025/10）"
+      }
+    },
+    {
+      "title": "新型か、中古のM5か",
+      "scene": {
+        "type": "pairs",
+        "heading": "新型 M6 と中古の M5（SSD 1TB）",
+        "unit": "円",
+        "legend": [
+          "新型 M6（Apple 公式）",
+          "中古の M5 の相場"
+        ],
+        "colors": [
+          "brand900",
+          "price"
+        ],
+        "rows": [
+          {
+            "label": "16GB",
+            "a": 339800,
+            "b": 286980,
+            "diffLabel": "−52,820円",
+            "cue": "メモリ16GB、SSD 1TBどうしで"
+          },
+          {
+            "label": "24GB",
+            "a": 339800,
+            "b": 330980,
+            "diffLabel": "−8,820円",
+            "cue": "メモリ24GBのM5もあるよ"
+          }
+        ],
+        "note": "新型は 16GB・1TB の値段。M5 の 24GB・1TB は 5件だけ（目安）。M5 の在庫 55件のうち未使用品（ランクS）30件。Apple の販売一覧に 14インチの M5 はもうない（10/28）"
+      }
+    },
+    {
+      "title": "もっと安くならM4",
+      "scene": {
+        "type": "bars",
+        "heading": "中古の MacBook Pro 14インチ（相場）",
+        "unit": "万円",
+        "rows": [
+          {
+            "label": "M4",
+            "sub": "16GB・512GB",
+            "median": 24.1,
+            "min": 20.0,
+            "minLabel": "20.0万円",
+            "cue": "512GBなら、24万980円",
+            "minCue": "いちばん安いのは、19万9,800円から"
+          },
+          {
+            "label": "M4",
+            "sub": "16GB・1TB",
+            "median": 26.1,
+            "pick": true,
+            "cue": "16GB、1TBで26万980円"
+          },
+          {
+            "label": "M5",
+            "sub": "16GB・1TB",
+            "median": 28.7,
+            "cue": "16GB、1TBで26万980円"
+          }
+        ],
+        "note": "M4 は 2024年・M5 は 2025年。M4: CPU・GPU 10コア・Wi-Fi 6E・電池（動画）最大24時間・1.55kg（Apple 公式）。1TB の M4 は 6件"
+      }
+    },
+    {
+      "title": "半額以下ならM1 Pro",
+      "scene": {
+        "type": "bars",
+        "heading": "もっと安い中古の MacBook Pro 14インチ（相場）",
+        "unit": "万円",
+        "rows": [
+          {
+            "label": "M1 Pro",
+            "sub": "16GB・512GB",
+            "median": 15.3,
+            "min": 11.5,
+            "minLabel": "11.5万円",
+            "pick": true,
+            "cue": "16GB、512GBで15万3,131円"
+          },
+          {
+            "label": "M1 Pro",
+            "sub": "16GB・1TB",
+            "median": 16.4,
+            "min": 12.7,
+            "minLabel": "12.7万円",
+            "cue": "1TBでも16万3,980円"
+          },
+          {
+            "label": "M3",
+            "sub": "8GB・512GB",
+            "median": 16.6,
+            "min": 12.4,
+            "minLabel": "12.4万円",
+            "cue": "M3の14インチは"
+          }
+        ],
+        "note": "M1 Pro は 2021年・103件（ランクA 16・B 67・C 20）。M3 は 2023年・512GB の 15件中 13件が 8GB"
+      }
+    },
+    {
+      "title": "中古で買う前に見ること",
+      "scene": {
+        "type": "checklist",
+        "heading": "中古の MacBook Pro、買う前に見る5つ",
+        "items": [
+          {
+            "text": "メモリ（あとから増やせない・16GB 以上が安心）",
+            "cue": "1つ目は、メモリ"
+          },
+          {
+            "text": "SSD の容量（新型は 1TB から）",
+            "cue": "SSDの容量"
+          },
+          {
+            "text": "電池の充放電回数（Apple の目安 1,000回）",
+            "cue": "電池の充放電回数"
+          },
+          {
+            "text": "状態ランクと未使用品（M5 は半分以上が S）",
+            "cue": "4つ目は？"
+          },
+          {
+            "text": "保証の期間（店ごとに違う）",
+            "cue": "保証の期間"
+          }
+        ],
+        "note": "充放電回数は Mac の「システム情報」→「電源」。上限の目安は Apple サポートの情報"
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "table",
+        "heading": "新型 MacBook Pro、買う？中古にする？",
+        "columns": [
+          "使い方",
+          "選ぶ機種",
+          "値段"
+        ],
+        "emphasis": [
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "Wi-Fi 7・新しいチップ",
+              "新型 M6（16GB・1TB）",
+              "339,800円"
+            ],
+            "cue": "Wi-Fi 7と新しいチップがほしいなら"
+          },
+          {
+            "cells": [
+              "5万円浮かせる",
+              "中古の M5（16GB・1TB）",
+              "286,980円"
+            ],
+            "cue": "5万円浮かせたいなら"
+          },
+          {
+            "cells": [
+              "20万円台前半",
+              "中古の M4（16GB・512GB）",
+              "240,980円"
+            ],
+            "cue": "20万円台前半なら"
+          },
+          {
+            "cells": [
+              "半額以下",
+              "中古の M1 Pro（16GB・512GB）",
+              "153,131円"
+            ],
+            "cue": "半分以下で、ってことなら"
+          }
+        ],
+        "note": "新型は Apple 公式（10/28）・旧型は中古の相場（2026/10/28）。毎日更新: used.gadelog.com"
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          {
+            "id": "SHyQRQ8wAic",
+            "title": "【中古iPad】いま買うならどれ？ 16店の相場で「使い方別」に選んだ（無印・Air・mini・Pro）"
+          },
+          {
+            "id": "P78xAKBa274",
+            "title": "中古iPhone、店選びの正解は？16店の保証・電池表記・赤ロムを比較"
+          }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com"
+      }
+    }
+  ]
+}

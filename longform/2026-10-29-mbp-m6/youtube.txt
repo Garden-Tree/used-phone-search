@@ -1,0 +1,35 @@
+新型MacBook Pro M6 買う？中古のM5・M4にする？差は5.3万〜7.9万円｜新旧の違いと中古の相場で比べた
+
+10/27 に発表された新しい MacBook Pro 14インチ（M6・11/6 発売）と、中古の M5・M4・M1 Pro を、Apple 公式の値段・仕様と、Mac を扱う大手中古ショップ5店の相場（2026/10/28時点・ジャンクを除く）で比べました。
+結論: 新型は 16GB・1TB で 339,800円。同じ 16GB・1TB の中古は M5 が相場 286,980円（−52,820円）、M4 が 260,980円（−78,820円）。半額以下なら M1 Pro（16GB・512GB 153,131円）。
+
+・新型 M6 の値段（Apple 公式・10/28 確認）: 16GB・1TB 339,800円から（SSD は 1TB から）
+・新型と M5・M4 の違い（Apple 公式の技術仕様）: CPU 12コア／10コア／10コア・GPU 12コア／10コア／10コア・Wi-Fi 7／6E／6E・Bluetooth 6／5.3／5.3。電池（動画 最大24時間）と重さ（1.55kg）は同じ
+・中古の相場（同じ構成の中央値）: M5 16GB・1TB 286,980円（24GB・1TB 330,980円は5件）／M4 16GB・1TB 260,980円・16GB・512GB 240,980円／M1 Pro 16GB・512GB 153,131円・16GB・1TB 163,980円／M3 8GB・512GB 165,980円
+・M5 の在庫 55件のうち 30件は未使用品（ランクS）。14インチの M5 は Apple の販売一覧にもうない（10/28）
+
+相場＝同じ機種・同じメモリ・同じ SSD の中央値。件数が少ない構成は目安です。充放電回数の上限の目安（1,000回）は Apple サポートの情報です。
+
+0:00 結論：新型33.98万円・中古のM5は28.70万円
+0:53 どうやって調べた？
+1:35 新型M6は何が変わった？
+2:41 新型か、中古のM5か
+3:57 もっと安くならM4
+4:39 半額以下ならM1 Pro
+5:39 中古で買う前に見ること
+6:22 まとめ
+7:05 次におすすめの動画
+
+MacBook Pro 14インチ M5: https://used.gadelog.com/mac/macbook-pro-14-m5?utm_source=youtube&utm_medium=social&utm_campaign=long_20261029
+MacBook Pro 14インチ M4: https://used.gadelog.com/mac/macbook-pro-14-m4?utm_source=youtube&utm_medium=social&utm_campaign=long_20261029
+MacBook Pro 14インチ M1 Pro: https://used.gadelog.com/mac/macbook-pro-14-m1-pro?utm_source=youtube&utm_medium=social&utm_campaign=long_20261029
+全機種の中古MacBookの相場: https://used.gadelog.com/mac?utm_source=youtube&utm_medium=social&utm_campaign=long_20261029
+
+VOICEVOX:春日部つむぎ
+VOICEVOX:ずんだもん
+BGM: Cyber Society by のる（OpenTracks）
+効果音：効果音ラボ
+立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)
+ずんだもん立ち絵：坂本アヒル様
+
+#MacBookPro #中古MacBook #MacBook
