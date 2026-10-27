@@ -48,6 +48,15 @@ export async function getPcItems(): Promise<PcItem[]> {
   }
 }
 
+/** 在庫のある件数（トップの入口用。DB 側で数えて1行だけ返す）。読めなければ 0 */
+export async function countPcItems(): Promise<number> {
+  try {
+    return await prisma.pcInventory.count({ where: { isSoldOut: false } });
+  } catch {
+    return 0;
+  }
+}
+
 /**
  * CPU の新しさ・クラスのおおまかな目安（並べ替えだけに使う。画面に数字は出さない）。
  * Intel Core i は世代×10＋クラス、Core Ultra は第14世代の上、Ryzen は 5000 系＝Intel 第10世代くらいに置く。Celeron などは 0

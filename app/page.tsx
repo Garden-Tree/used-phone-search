@@ -17,6 +17,7 @@ import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetLabel, budg
 import prisma from "@/lib/prisma";
 import { SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
+import { countPcItems, PC_MIN_INDEX_ITEMS } from "@/lib/pcInventory";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import PopularModels from "@/app/components/PopularModels";
@@ -124,7 +125,7 @@ const card = "bg-white border border-line rounded-xl";
 const manLabel = (n: number) => (n >= 10000 ? `${(Math.floor(n / 1000) / 10).toFixed(1)}万` : n.toLocaleString());
 
 export default async function Home() {
-  const [counts, prices, drops, popular] = await Promise.all([shopCounts(), modelPrices(), getPriceDrops(7, 6), popularMarket()]);
+  const [counts, prices, drops, popular, pcCount] = await Promise.all([shopCounts(), modelPrices(), getPriceDrops(7, 6), popularMarket(), countPcItems()]);
   // 店の数・一覧は、いま在庫がある店だけ（lib/activeShops.ts）
   const shops = await activeShops();
   const latestReport = reportMonths()[0];
@@ -249,6 +250,14 @@ export default async function Home() {
             </Link>
           ))}
         </nav>
+
+        {/* 中古パソコン（2026-10-27〜）。タイルは8つで固定なので、その下に1行で */}
+        {pcCount >= PC_MIN_INDEX_ITEMS && (
+          <Link href="/pc" className={`${card} mt-2 px-3.5 py-2.5 flex items-center justify-between text-sm hover:bg-ground`}>
+            <span className="font-bold text-ink">中古パソコン（Windows）の最安値・相場</span>
+            <span className="text-xs text-ink-mute">{pcCount.toLocaleString()}件 ›</span>
+          </Link>
+        )}
 
         {/* 人気の機種 */}
         {popularRows.length > 0 && (
