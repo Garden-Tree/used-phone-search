@@ -38,3 +38,10 @@
 ## サイトでやること
 - 中古の在庫が出たら `lib/macCatalog.ts` に「MacBook Pro 14インチ M6」（Apple の識別ページ support.apple.com/ja-jp/108052 に載ってから。型番の頭・Mac の識別子）。STATE の「随時」に入れた
 - Mac には公式の新品価格の表示（lib/applePrices.ts）がない。入れるなら M6 の 339,800円（16GB／1TB）から
+
+## 公開（10/28 3時台）
+- 横動画13本目 **https://youtu.be/iAzTGx6wsTs** 「新型MacBook Pro M6 買う？中古のM5・M4にする？差は5.3万〜7.9万円｜新旧の違いと中古の相場で比べた」8分26秒・-14.04 LUFS・チャプター10・utm long_20261029。8分を超えるように章「チップもProならM5 Pro」（M5 Pro の公式の仕様と中古の相場 395,800円・新型より 56,000円高い）を足した
+- 設定: 子ども向けでない・改変/合成「いいえ」・すぐ公開（ユーザー「今すぐ出そう」）。サムネ thumbnail.png（差 7.9万円）。終了画面は新型 iPad mini の回（N2slZY_hJ9s）から取り込み（iPad の回・店選びの回・登録）
+- 固定コメント: 「動画の数字は10/28時点です…」→ /mac?utm_medium=comment&utm_campaign=pin_20261029
+- lib/videos.ts に mbpM6（MacBook Pro 14インチ M5・M5 Pro・M4・M3・M1 Pro の機種ページに出る）。ショート mbpnew の関連動画をこの回に（relatedLong.ts・締めの声と札）→ 書き出し直し 42.3秒
+- ショートの数字（M4 1TB 260,980円・−78,820円）は横動画と同じ（medianPrice・ジャンク除外）

@@ -10,6 +10,8 @@ export const VIDEOS = {
   ipadDore: { id: "SHyQRQ8wAic", title: "【中古iPad】いま買うならどれ？ 16店の相場で「使い方別」に選んだ（無印・Air・mini・Pro）", minutes: 8, asOf: "2026-10-23" },
   whereToBuy: { id: "P78xAKBa274", title: "中古iPhone、店選びの正解は？16店の保証・電池表記・赤ロムを比較", minutes: 8, asOf: "2026-10-24" },
   proOrStandard: { id: "Bmp5EgeiqW0", title: "中古iPhone、Proの差額で何が増える？120Hz・望遠カメラ・容量を相場で比較", minutes: 10, asOf: "2026-10-24", heading: "Proと無印の違いを動画で見る" },
+  // 10/28 公開（新型 MacBook Pro M6 の発表の翌日）
+  mbpM6: { id: "iAzTGx6wsTs", title: "新型MacBook Pro M6 買う？中古のM5・M4にする？差は5.3万〜7.9万円｜新旧の違いと中古の相場で比べた", minutes: 8, asOf: "2026-10-28", heading: "新型 M6 と中古の差を動画で見る" },
   howOld: { id: "T7ltgSB-4XM", title: "中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決めた", minutes: 9, asOf: "2026-10-25", heading: "何世代前まで買っていいかを動画で見る" },
 } satisfies Record<string, Video>;
 
@@ -19,6 +21,8 @@ export const VIDEOS = {
  */
 export function videoForModel(model: string): Video | null {
   if (/^iPhone 1[3-7]( Pro( Max)?)?$/.test(model)) return VIDEOS.proOrStandard;
+  // 新型 M6 の回で比べた MacBook Pro 14インチ（M5・M5 Pro・M4・M3・M1 Pro）
+  if (/^MacBook Pro 14インチ (M5( Pro)?|M4|M3|M1 Pro)$/.test(model)) return VIDEOS.mbpM6;
   if (/^iPhone (1[12]( mini| Pro( Max)?)?|X[SR]?( Max)?|SE \(第[23]世代\))$/.test(model)) return VIDEOS.howOld;
   return null;
 }

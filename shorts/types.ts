@@ -415,7 +415,7 @@ export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | 
  * YouTube 公式ブログ 2026/7「最後の5秒で声と画面の両方で誘導」）。いまの横動画は iPhone なので、Pixel・iPad・折りたたみは外す。
  * rakutenmobile は横動画11本目（楽天モバイル）、ipadmini は12本目（新型 iPad mini・iPad で声の誘導があるのはこの回だけ）につなぐ
  */
-export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "stock", "rakutenmobile", "ipadmini"]);
+export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "stock", "rakutenmobile", "ipadmini", "mbpnew"]);
 export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";
 /** 締めに関連動画の誘導を出すか。TikTok（--tiktok）には関連動画がないので出さない */
 export const hasRelatedLong = (s: Script) => !s.tiktok && RELATED_LONG_THEMES.has(s.theme);
