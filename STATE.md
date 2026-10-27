@@ -55,7 +55,7 @@
 ## 進行中・外部条件待ち
 
 - **審査中**: A8 バックマーケット他6件／VC 3件（ideas/10-27-monetization）
-- **TikTok**: 10/26〜・`render --tiktok`・PR はまだ
+- **TikTok**: 10/26〜・PR はまだ
 
 ## 次にやる（順序）
 
