@@ -116,7 +116,7 @@ export const ALL_SIM_PLANS: SimPlan[] = [
     href: "https://px.a8.net/svt/ejp?a8mat=4BEPPX+DDNPY2+5XZ2+5YRHE",
     imgSrc: "https://www15.a8.net/0.gif?a8mat=4BEPPX+DDNPY2+5XZ2+5YRHE",
     linkType: "a8",
-    // 色は仮（出す前にユーザーに見せる）
+    // 色は 10/28 ユーザー OK
     style: { background: "#047857", color: "#FFFFFF", border: "3px solid #047857" },
     // グリーンプラン 1GB 715円・3GB 968円・5GB 1,111円・10GB 1,518円・20GB 2,178円・30GB 3,058円・50GB 3,828円・100GB 9,328円（10/26 公式・税込）。
     // 期間限定のキャンペーン価格（3GB 363円・20GB 1,320円。10/31 まで）は入れない（料金一覧 https://xmobile.ne.jp/price-list/ も同じ値）
@@ -141,7 +141,7 @@ export const ALL_SIM_PLANS: SimPlan[] = [
     href: "https://px.a8.net/svt/ejp?a8mat=4BEPPX+DFG0RE+424K+BWVTE",
     imgSrc: "https://www10.a8.net/0.gif?a8mat=4BEPPX+DFG0RE+424K+BWVTE",
     linkType: "a8",
-    // 色は仮（出す前にユーザーに見せる）
+    // 色は 10/28 ユーザー OK
     style: { background: "#D6001C", color: "#FFFFFF", border: "3px solid #D6001C" },
     // シンプル3 S 5GB 3,278円・M 30GB 4,378円・L 35GB 5,478円（月額基本使用料・2026/6/2 改定後。10/26 公式・税込・割引前）。
     // 料金のページ（/plan/）は金額が JS で入るため読めず、公式の改定の告知ページで確かめた
