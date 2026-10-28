@@ -3,6 +3,7 @@
  *   npx tsx longform/thumb-ab3.tsx            # 4本ぶん（下の PLANS）と一覧 longform/thumb-ab3-contact.png
  *   npx tsx longform/thumb-ab3.tsx set2       # 10/26 に足した2本（iPad・大きい画面）と一覧 longform/thumb-ab3-contact2.png
  *   npx tsx longform/thumb-ab3.tsx set3       # 10/27 に足した3本（電池・新型 iPad mini・楽天モバイル）と一覧 longform/thumb-ab3-contact3.png
+ *   npx tsx longform/thumb-ab3.tsx set4       # 10/28: 13本目（新型 MBP）と、楽天モバイルの B を楽天のピンクに。一覧 longform/thumb-ab3-contact4.png
  *   npx tsx longform/thumb-ab3.tsx <フォルダ> # 1本だけ
  * 出力: <フォルダ>/thumb-B.png・thumb-C.png（1280x720）
  *
@@ -82,6 +83,19 @@ function Phone({ w, h, screen, dim, bare, style }: { w: number; h: number; scree
   );
 }
 
+/** ノートパソコンの絵（画面＋本体。ロゴなし） */
+function Laptop({ w, screen, style }: { w: number; screen: [string, string]; style?: Record<string, unknown> }) {
+  const h = Math.round(w * 0.62);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", ...style }}>
+      <div style={{ display: "flex", width: w, height: h, borderRadius: w * 0.04, background: "#1F2937", padding: w * 0.035, border: `${Math.max(3, Math.round(w * 0.015))}px solid #9CA3AF`, boxShadow: "0 16px 36px rgba(0,0,0,0.4)" }}>
+        <div style={{ display: "flex", flexGrow: 1, borderRadius: w * 0.02, background: `linear-gradient(160deg, ${screen[0]}, ${screen[1]})` }} />
+      </div>
+      <div style={{ display: "flex", width: w * 1.16, height: w * 0.05, borderRadius: `0 0 ${w * 0.03}px ${w * 0.03}px`, background: "linear-gradient(180deg, #D1D5DB, #9CA3AF)", boxShadow: "0 10px 20px rgba(0,0,0,0.35)" }} />
+    </div>
+  );
+}
+
 /** 電池の絵（%の代わりに文字を入れる） */
 const Battery = ({ w, label, style }: { w: number; label: string; style: Record<string, unknown> }) => (
   <div style={{ position: "absolute", display: "flex", alignItems: "center", ...style }}>
@@ -119,6 +133,8 @@ const Frame = ({ bg, children }: { bg: string; children: ReactNode }) => (
   <div style={{ width: W, height: H, display: "flex", position: "relative", background: bg, fontFamily: FONT, overflow: "hidden" }}>{children}</div>
 );
 const YELLOW_BG = `radial-gradient(circle at 65% 45%, #FFF7AE 0%, ${YELLOW} 45%, #F59E0B 100%)`;
+/** 楽天モバイルの回だけ（広告の回の色。ショートの rakutenmobile と同じピンク） */
+const PINK = "#D9005B";
 const DARKRED_BG = "radial-gradient(circle at 70% 40%, #8B1A1A 0%, #2A0A0A 70%)";
 
 type Plan = { id: string; B: () => ReactNode; C: () => ReactNode };
@@ -379,12 +395,16 @@ const PLANS: Record<string, Plan> = {
   // 11本目 Ua3ZRui2G4w（広告の回）。A＝「中古iPhone＋楽天モバイル／2年でいくら？」＋「14＋20GB → 11.8万円」。B・C も「PR」を出す（楽天の指針）
   "2026-10-31-rakuten-mobile": {
     id: "Ua3ZRui2G4w",
-    // B: 色帯＋端末（「0:00」: 14 128GB の相場 65,980円＋20GBまでの料金2年 52,272円＝118,252円・月あたり約4,900円）
+    // B: 楽天のピンクの地＋端末（10/28 ユーザー「楽天ピンクも使ってみて」。前の B＝黒地の色帯はテストの結果が出る前に入れ替え）
+    //   数字は「0:00」: 14 128GB の相場 65,980円＋20GBまでの料金2年 52,272円＝118,252円・月あたり約4,900円
     B: () => (
-      <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>
-        <Bands bands={[{ text: "中古iPhone＋楽天", bg: WHITE, color: BLACK, size: 92 }, { text: "2年でいくら？", bg: RED, color: WHITE, size: 112 }, { text: "11.8万円", bg: YELLOW, color: BLACK, size: 180 }]} />
-        <Labeled x={930} y={90} w={170} h={290} label="14" ok screen={SCREENS[1]} />
-        <div style={{ position: "absolute", left: 34, top: 560, display: "flex", fontSize: 66, fontWeight: 900, color: WHITE, letterSpacing: -2 }}>20GBまで・月あたり約4,900円</div>
+      <Frame bg={`radial-gradient(circle at 75% 40%, #F0457F 0%, ${PINK} 45%, #8C003A 100%)`}>
+        <Bands bands={[{ text: "中古iPhone＋楽天モバイル", bg: WHITE, color: PINK, size: 80 }, { text: "2年でいくら？", bg: BLACK, color: WHITE, size: 112 }]} />
+        <div style={{ position: "absolute", left: 34, top: 330, display: "flex", alignItems: "center", padding: "6px 34px", background: WHITE, borderRadius: 24, boxShadow: "10px 10px 0 rgba(0,0,0,0.3)" }}>
+          <Outlined text="11.8万円" size={200} color={PINK} spacing={-10} />
+        </div>
+        <Labeled x={930} y={150} w={170} h={290} label="14" ok screen={["#FBCFE8", "#F9A8D4"]} />
+        <div style={{ position: "absolute", left: 34, top: 600, display: "flex", fontSize: 62, fontWeight: 900, color: WHITE, letterSpacing: -2 }}>20GBまで・月あたり約4,900円</div>
         <div style={{ position: "absolute", left: 1150, top: 20, display: "flex", padding: "0 14px", background: WHITE, color: BLACK, fontSize: 48, fontWeight: 900 }}>PR</div>
       </Frame>
     ),
@@ -403,13 +423,48 @@ const PLANS: Record<string, Plan> = {
       </Frame>
     ),
   },
+  // 13本目 iAzTGx6wsTs（10/28 公開）。A＝「新型MacBook Pro／中古にする？／差 7.9万円」＋つむぎ
+  "2026-10-29-mbp-m6": {
+    id: "iAzTGx6wsTs",
+    // B: 左右に割った VS（「0:00」: 新型 M6 16GB・1TB 339,800円・中古の M4 同じ構成の相場 260,980円・差 78,820円）
+    B: () => (
+      <Frame bg={`linear-gradient(100deg, ${NAVY} 0%, ${NAVY} 50%, #E5E7EB 50%, #F8FAFC 100%)`}>
+        <div style={{ position: "absolute", left: 0, top: 0, width: W, height: 150, display: "flex", alignItems: "center", justifyContent: "center", background: BLACK }}>
+          <Outlined text="MacBook Pro どっち？" size={112} color={WHITE} spacing={-6} />
+        </div>
+        <div style={{ position: "absolute", left: 40, top: 165, display: "flex" }}><Outlined text="新型M6" size={130} color={YELLOW} outer={{ w: 8, c: BLACK }} spacing={-6} /></div>
+        <Laptop w={300} screen={["#312E81", "#A78BFA"]} style={{ position: "absolute", left: 90, top: 320 }} />
+        <div style={{ position: "absolute", left: 700, top: 165, display: "flex" }}><Outlined text="中古M4" size={130} color={BLACK} inner={{ w: 8, c: WHITE }} spacing={-6} /></div>
+        <Laptop w={300} screen={SCREENS[1]} style={{ position: "absolute", left: 830, top: 320 }} />
+        <div style={{ position: "absolute", left: 560, top: 270, display: "flex", width: 160, height: 160, borderRadius: 160, background: RED, border: `8px solid ${WHITE}`, alignItems: "center", justifyContent: "center", color: WHITE, fontSize: 84, fontWeight: 900, fontStyle: "italic" }}>VS</div>
+        <div style={{ position: "absolute", left: 0, top: 540, height: 170, display: "flex", alignItems: "center", padding: "0 30px 0 36px", background: YELLOW, boxShadow: "8px 8px 0 rgba(0,0,0,0.35)" }}>
+          <div style={{ display: "flex", fontSize: 90, fontWeight: 900, color: BLACK, letterSpacing: -4, marginRight: 8 }}>差は</div>
+          <Outlined text="7.9万円" size={150} color={RED} inner={{ w: 7, c: WHITE }} outer={{ w: 5, c: BLACK }} spacing={-8} />
+        </div>
+      </Frame>
+    ),
+    // C: 驚くずんだもん＋「中古M4なら7.9万円安い」（「0:00」: 同じ 16GB・1TB の相場 260,980円）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("zundamon-surprised", { left: -40, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 70, fontWeight: 900, letterSpacing: -2 }}>新型MacBook Pro 発表</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="中古M4なら" size={140} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="7.9万円安い" size={fit("7.9万円安い", 800, 180)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-10} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 490, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 64, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>新型 33.98万円／中古 26.1万円</div>
+        <Bubble text={"中古で\nいいのだ!?"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
 };
 
-/** 一覧のまとまり（引数なし＝第3弾の4本、set2＝10/26 に足した2本、set3＝10/27 に足した3本） */
+/** 一覧のまとまり（引数なし＝第3弾の4本、set2＝10/26 に足した2本、set3＝10/27 に足した3本、set4＝10/28） */
 const GROUPS: Record<string, { keys: string[]; out: string }> = {
   "": { keys: ["2026-10-24-where-to-buy", "2026-10-25-pro-or-standard", "2026-10-26-how-old", "2026-10-27-dont-buy"], out: "thumb-ab3-contact.png" },
   set2: { keys: ["2026-10-23-ipad-dore", "2026-10-28-big-screen"], out: "thumb-ab3-contact2.png" },
   set3: { keys: ["2026-10-29-battery", "2026-10-30-ipad-mini", "2026-10-31-rakuten-mobile"], out: "thumb-ab3-contact3.png" },
+  set4: { keys: ["2026-10-29-mbp-m6", "2026-10-31-rakuten-mobile"], out: "thumb-ab3-contact4.png" },
 };
 
 /** 一覧: 動画ごとに A・B・C を 400x225 と、スマホの関連動画の大きさ 168x94 で並べる */
