@@ -1,7 +1,8 @@
 /**
  * 横動画「新型 PROLED の MacBook Pro、買う？今のミニLEDか中古の M5 Pro／M4 Pro にする？」の数字（読むだけ。DB は groupBy・count と、中央値の1行だけ。findMany で在庫の行は取らない）
  *
- * - 機種: MacBook Pro 14インチ・16インチの M5 Pro・M5 Max・M4 Pro・M4 Max・M3 Pro・M1 Pro（lib/macCatalog.ts の名前）と、参考に 14インチ M5（無印）。ジャンクを除く
+ * - 機種: MacBook Pro 14インチ・16インチの M5 Pro・M5 Max・M4 Pro・M4 Max・M3 Pro・M1 Pro（lib/macCatalog.ts の名前）と、参考に 14インチ M5・M4（無印・M6 と同じ 16GB/1TB の行）。ジャンクを除く
+ * - 第2稿（10/29）: 参考に MacBook Air 13・15インチの M5・M4・M3・M2 と Air M1 も足した
  * - 容量（SSD）× メモリごと（在庫5件以上で中央値）に 件数・中央値・最安
  * - 新型の値段は ideas/2026-10-29-macbook-pro-proled.md（Apple 公式・10/29 確認）だけ。lib にはまだないので、ここに定数で写す
  *   差は「公式の開始価格 − 中古の同じ機種・同じ構成の中央値」。開始構成のメモリ・SSD は 14インチ M5 Pro だけ ideas に「24GB・1TB〜」とある
@@ -40,6 +41,17 @@ const MODELS = [
   "MacBook Pro 14インチ M1 Pro",
   "MacBook Pro 16インチ M1 Pro",
   "MacBook Pro 14インチ M5",
+  "MacBook Pro 14インチ M4",
+  // 参考: MacBook Air（第2稿・10/29 追加）
+  "MacBook Air 13インチ M5",
+  "MacBook Air 15インチ M5",
+  "MacBook Air 13インチ M4",
+  "MacBook Air 15インチ M4",
+  "MacBook Air 13インチ M3",
+  "MacBook Air 15インチ M3",
+  "MacBook Air 13インチ M2",
+  "MacBook Air 15インチ M2",
+  "MacBook Air M1",
 ];
 const NOT_JUNK: Where = { conditionRank: { notIn: ["J", "j", "ジャンク"] } };
 const MIN_ROW = 5;
