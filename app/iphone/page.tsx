@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { hubTitle } from "@/lib/hubSummary";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import VideoEmbed from "@/app/components/VideoEmbed";
@@ -25,13 +26,15 @@ const describe = (shopNum: number) =>
   `中古iPhoneの相場（中央値）と最安値を全機種まとめて比較。大手中古ショップ${shopNum}社の在庫から毎日更新。相場が安い順のランキングも。`;
 
 export async function generateMetadata(): Promise<Metadata> {
+  // タイトルの頭に、いちばん安い値段と機種（10/28〜・lib/hubSummary.ts の hubTitle）
+  const title = hubTitle("iPhone", ALL_PAGE_MODELS, await getModelMarket([...ALL_PAGE_MODELS]), TITLE, ALL_CATALOG_MODELS, "中古iPhone 相場一覧");
   const description = describe((await activeShops()).length);
   return {
-    title: TITLE,
+    title,
     description,
     alternates: { canonical: "/iphone" },
     // 画像は app/iphone/opengraph-image.tsx（相場一覧専用）
-    openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: "/iphone" },
+    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: "/iphone" },
   };
 }
 

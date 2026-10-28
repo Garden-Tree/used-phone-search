@@ -4,7 +4,7 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { getModelMarket } from "@/lib/marketStats";
-import { hubSummary, hubWebPage } from "@/lib/hubSummary";
+import { hubSummary, hubWebPage, hubTitle } from "@/lib/hubSummary";
 import { modelPagePath } from "@/lib/catalog";
 import { MAC_INFO, MAC_MODELS } from "@/lib/macCatalog";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -21,12 +21,14 @@ const describe = (shops: Shop[]) =>
   `中古MacBook（Air・Pro・Neo。macOS 27 Golden Gate に対応する Apple シリコン搭載モデル）の相場（中央値）・最安値・在庫数を機種別に比較。${shopLabels(shops.slice(0, 3))}など${shops.length}店の在庫から毎日更新。`;
 
 export async function generateMetadata(): Promise<Metadata> {
+  // タイトルの頭に、いちばん安い値段と機種（10/28〜・lib/hubSummary.ts の hubTitle）
+  const title = hubTitle("MacBook", MAC_MODELS, await getModelMarket([...MAC_MODELS]), TITLE);
   const description = describe(await activeMacShops());
   return {
-    title: TITLE,
+    title,
     description,
     alternates: { canonical: "/mac" },
-    openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: "/mac" },
+    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: "/mac" },
   };
 }
 

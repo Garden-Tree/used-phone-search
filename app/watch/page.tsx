@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { hubTitle } from "@/lib/hubSummary";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
@@ -20,12 +21,14 @@ const describe = (shops: Shop[]) =>
   `中古Apple Watch（Series 6 以降・Ultra・SE）の相場（中央値）・最安値・在庫数を世代別に比較。ケースのサイズ（mm）・通信方式（GPS／GPS+Cellular）別。${shopLabels(shops.slice(0, 3))}など${shops.length}店の在庫から毎日更新。`;
 
 export async function generateMetadata(): Promise<Metadata> {
+  // タイトルの頭に、いちばん安い値段と機種（10/28〜・lib/hubSummary.ts の hubTitle）
+  const title = hubTitle("Apple Watch", WATCH_MODELS, await getModelMarket([...WATCH_MODELS]), TITLE);
   const description = describe(await activeWatchShops());
   return {
-    title: TITLE,
+    title,
     description,
     alternates: { canonical: "/watch" },
-    openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: "/watch" },
+    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: "/watch" },
   };
 }
 

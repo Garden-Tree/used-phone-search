@@ -6,7 +6,7 @@ import VideoEmbed from "@/app/components/VideoEmbed";
 import { VIDEOS } from "@/lib/videos";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { getModelMarket } from "@/lib/marketStats";
-import { hubSummary, hubWebPage } from "@/lib/hubSummary";
+import { hubSummary, hubWebPage, hubTitle } from "@/lib/hubSummary";
 import { isIpad, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
@@ -27,12 +27,14 @@ const describe = (shops: Shop[]) =>
   `中古iPad（iPad・iPad mini・iPad Air・iPad Pro）の相場（中央値）・最安値・在庫数を機種別に比較。${shopLabels(shops.slice(0, 3))}など${shops.length}店の在庫から毎日更新。`;
 
 export async function generateMetadata(): Promise<Metadata> {
+  // タイトルの頭に、いちばん安い値段と機種（10/28〜・lib/hubSummary.ts の hubTitle）
+  const title = hubTitle("iPad", IPAD_MODELS, await getModelMarket([...IPAD_MODELS]), TITLE);
   const description = describe(await activeShops(IPAD_SHOPS));
   return {
-    title: TITLE,
+    title,
     description,
     alternates: { canonical: "/ipad" },
-    openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: "/ipad" },
+    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: "/ipad" },
   };
 }
 
