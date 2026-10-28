@@ -7,6 +7,8 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import VideoEmbed from "@/app/components/VideoEmbed";
 import { videoForModel } from "@/lib/videos";
+import { REPAIR_STATUS_TEXT, repairStatus } from "@/lib/appleVintage";
+import { appleRepair } from "@/lib/appleRepairPrices";
 import {
   ALL_CATALOG_MODELS,
   ALL_DEVICE_PAGE_MODELS,
@@ -301,7 +303,7 @@ export default async function ModelPage({ params }: Props) {
         : isAndroidJp(model)
           ? supportSentence(model, nowYm)
         : isIphone
-          ? (ALL_CATALOG_MODELS.includes(model) ? `${model}は iOS 27 に対応しています。` : `${model}は iOS 27 には対応していないため、サブ機・撮影用向けです。`)
+          ? `${ALL_CATALOG_MODELS.includes(model) ? `${model}は iOS 27 に対応しています。` : `${model}は iOS 27 には対応していないため、サブ機・撮影用向けです。`}Apple の修理は${REPAIR_STATUS_TEXT[repairStatus(model).status]}（Apple 公式）。${appleRepair(model) ? `バッテリー交換は Apple で${yen(appleRepair(model)!.battery)}です。` : ""}ほかの機種との比べ方は「中古iPhoneはいつまで使える？機種別の一覧」にまとめています。`
           : null;
   // 新品（Apple 公式）との差。公式価格を確かめた機種だけ（lib/applePrices.ts）。容量ごとの最安は上の集計（stats.byStorage）をそのまま使う
   // 新品（公式）との差。iPhone は Apple 公式、Pixel・Galaxy は Google ストア・Samsung 公式（lib/officialPrices.ts）
@@ -901,6 +903,9 @@ export default async function ModelPage({ params }: Props) {
                             <p className="text-[13px] leading-[1.7] text-gray-700"><span className="font-bold text-price mr-1">A.</span>{f.a}</p>
                           </div>
                         ))}
+                        {isIphone && (
+                          <Link href="/iphone/how-long" className="text-[13px] font-bold text-brand-600 hover:underline underline-offset-4">中古iPhoneはいつまで使える？機種別の一覧 &rarr;</Link>
+                        )}
                       </div>
                     </Accordion>
                   )}

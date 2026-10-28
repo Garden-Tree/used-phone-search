@@ -27,7 +27,7 @@ export default function RepairOrReplace({ model, medianPrice, medianStorage, nex
   const gb = medianStorage !== null ? storageLabel(medianStorage, model) : null;
   const rows: { label: React.ReactNode; value: number; price?: boolean }[] = [
     ...(repair ? [
-      { label: "電池交換（Apple 公式）", value: repair.battery },
+      { label: "バッテリー交換（Apple 公式）", value: repair.battery },
       { label: "画面修理（Apple 公式）", value: repair.screen },
     ] : []),
     ...(medianPrice !== null ? [{ label: <>中古の{model}{gb && `（${gb}）`}</>, value: medianPrice, price: true }] : []),

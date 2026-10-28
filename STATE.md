@@ -1,6 +1,6 @@
 # STATE ── 現在の決定と進行中の確認
 
-規則は CLAUDE.md。経緯は `ideas/`・手順は `docs/`。
+規則は CLAUDE.md・経緯 `ideas/`・手順 `docs/`。
 
 ## 触ってはいけない（データ・計測の保護）
 
@@ -27,13 +27,13 @@
 - **新品価格は公式で確かめた値だけ**（`lib/applePrices.ts`・`lib/officialPrices.ts`・毎月1日に見直し）
 - **楽天の店**: ゲオ・じゃんぱら・ソフマップ・ニューズド・キタムラ・イオシス・MTM
   - 同じ会社の別の売り場は公式のカードに（イオシス⇔楽天・エムモバ⇔エムコム）
-- **Amazon 整備済み品**: 停止中
-- **Yahoo! 7店**: VC 本体（2025875）。もしもは否認
+- **Amazon 整備済み**: 停止
+- **Yahoo! 7店**: VC（2025875）。もしもは否認
 - **収益の枠**: 回線（`SimTile`・2年の総額 `/sim`）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **値動き速報**: `price-alerts.ts`
 - **広告のショート** `rakutenmobile`: PR は左上・説明欄
-- **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。1か月の値下がり（年数別）`/iphone/price-drop`
-- **掲載機種**: iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch（Watch の storage＝mm）
+- **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。1か月の値下がり（年数別）`/iphone/price-drop`・いつまで使える `/iphone/how-long`
+- **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
 - **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit は直接（A8）、ソフマップ・じゃんぱら・イオシスは楽天
 
 ## 確認台帳（計測・判定）

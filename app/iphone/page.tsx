@@ -136,6 +136,9 @@ export default async function IphoneIndexPage() {
           <Link href="/iphone/price-factors" className="font-bold text-brand-600 hover:underline underline-offset-4">電池・状態ランク・容量・世代で、値段はいくら違う？ &rarr;</Link>
         </p>
         <p className="text-sm mb-4">
+          <Link href="/iphone/how-long" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPhoneはいつまで使える？iOS 27・修理・バッテリー交換を機種別に &rarr;</Link>
+        </p>
+        <p className="text-sm mb-4">
           <Link href="/iphone/price-drop" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPhoneは1か月でいくら下がる？発売からの年数別 &rarr;</Link>
         </p>
         <p className="text-sm mb-4">
