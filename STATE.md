@@ -32,6 +32,7 @@
 - **収益の枠**: 回線（`SimTile`・2年の総額 `/sim`）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`。値動き速報 `price-alerts.ts`
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。いつまで使える `/iphone/how-long`・何年で・実質いくら `/iphone/resale-value`（旧 price-drop を統合）
+- **YouTube の公開予約は最長2日後まで**（相場が動くため・10/29 ユーザー）
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
 - **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit・PC next・Be-Stock は A8、ソフマップ・じゃんぱら・イオシスは楽天
 
@@ -55,7 +56,7 @@
 ## 進行中・外部条件待ち
 
 - **審査中**: A8 J:COM 他／VC 3件。LIBMO はサイト停止中（再開で入れる）
-- **TikTok**: 10/26〜・PR はまだ。**10/28 5本とも視聴0〜1→止める（ユーザー）**
+- **TikTok**: 10/28 停止（5本とも視聴0〜1・ユーザー）
 
 ## 次にやる（順序）
 
