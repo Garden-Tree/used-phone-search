@@ -18,11 +18,12 @@ export type BuybackShop = {
 };
 
 const netoffA8 = BUYBACK_PROGRAMS.find((p) => p.name === "ネットオフ")?.href ?? null;
+const mobasteA8 = BUYBACK_PROGRAMS.find((p) => p.name === "モバステ")?.href ?? null;
 
 export const BUYBACK_SHOPS: BuybackShop[] = [
   { name: "ネットオフ", good: "a", goodLabel: "美品", unopened: "s", a8Href: netoffA8 },
   { name: "にこスマ", good: "A", goodLabel: "良品", unopened: "", a8Href: null },
-  { name: "モバステ", good: "used_max", goodLabel: "中古の上限", unopened: "unopened", a8Href: null },
+  { name: "モバステ", good: "used_max", goodLabel: "中古の上限", unopened: "unopened", a8Href: mobasteA8 },
 ];
 
 export type BuybackCell = { shop: string; price: number; label: string; href: string; linkType: "a8" | "direct" };

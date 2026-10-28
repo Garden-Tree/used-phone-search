@@ -91,7 +91,7 @@ export default async function KaitoriPage() {
           {lead && <p className="text-[13px] md:text-sm text-ink-sub leading-relaxed">{lead}</p>}
           <p className="text-[11px] md:text-xs text-ink-mute">
             <span className="inline-block mr-1 px-1 py-px rounded border border-line font-bold">PR</span>
-            広告を含みます（ネットオフのリンクは A8.net 経由）
+            広告を含みます（ネットオフ・モバステのリンクは A8.net 経由）
           </p>
         </div>
 
@@ -116,7 +116,7 @@ export default async function KaitoriPage() {
         <section className="flex flex-col gap-2">
           <h2 className="text-lg md:text-xl font-bold">ほかの買取店</h2>
           <div className={`${CARD} divide-y divide-line-soft`}>
-            {BUYBACK_PROGRAMS.filter((p) => p.name !== "ネットオフ").map((p) => (
+            {BUYBACK_PROGRAMS.filter((p) => !BUYBACK_SHOPS.some((s) => s.name === p.name)).map((p) => (
               <a key={p.name} href={p.href} target="_blank" rel="sponsored nofollow noopener" data-shop-click="" data-shop={`${p.name}（買取）`} data-model="kaitori" data-link-type="a8"
                 className="flex items-center justify-between gap-3 px-3.5 py-2.5 hover:bg-ground">
                 <span className="text-sm font-bold">{p.name}</span>

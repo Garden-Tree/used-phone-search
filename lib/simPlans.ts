@@ -110,10 +110,11 @@ export const ALL_SIM_PLANS: SimPlan[] = [
     checked: "2026-10-26",
   }),
   plan({
-    // A8「X-mobile（グリーンプラン）」（s00000027731001。10/26 深夜に申請・提携待ち）
+    // A8「X-mobile（グリーンプラン）」（s00000027731001。10/26 提携・新規開通 6,000円。10/28 にリンクを入れた）
     name: "X-mobile",
     text: "データ量を選べるグリーンプラン",
-    href: "",
+    href: "https://px.a8.net/svt/ejp?a8mat=4BEPPX+DDNPY2+5XZ2+5YRHE",
+    imgSrc: "https://www15.a8.net/0.gif?a8mat=4BEPPX+DDNPY2+5XZ2+5YRHE",
     linkType: "a8",
     // 色は仮（出す前にユーザーに見せる）
     style: { background: "#047857", color: "#FFFFFF", border: "3px solid #047857" },
@@ -134,10 +135,11 @@ export const ALL_SIM_PLANS: SimPlan[] = [
   }),
   // UQ mobile は入れない（A8 で過去に否認。ユーザー 10/26「連携しても通らない」）
   plan({
-    // A8「Y!mobile（Yステーション）」（s00000018938002。MNP。**ソフトバンク認定中古品の契約は否認**。提携待ち）
+    // A8「Y!mobile（Yステーション）」（s00000018938002。MNP 4,500円・新規 500円。**ソフトバンク認定中古品の契約は否認**。10/28 提携・リンクを入れた）
     name: "Y!mobile",
     text: "ソフトバンクの回線のプラン",
-    href: "",
+    href: "https://px.a8.net/svt/ejp?a8mat=4BEPPX+DFG0RE+424K+BWVTE",
+    imgSrc: "https://www10.a8.net/0.gif?a8mat=4BEPPX+DFG0RE+424K+BWVTE",
     linkType: "a8",
     // 色は仮（出す前にユーザーに見せる）
     style: { background: "#D6001C", color: "#FFFFFF", border: "3px solid #D6001C" },
@@ -151,7 +153,7 @@ export const ALL_SIM_PLANS: SimPlan[] = [
     priceSource: "https://www.ymobile.jp/sp/price_info_2026/",
     checked: "2026-10-26",
   }),
-  // LIBMO（A8 s00000017964001）は 10/26 時点で公式サイトが一時停止中（セキュリティ対応・再開日の記載なし）で月額を確かめられないため入れていない
+  // LIBMO（A8 s00000017964001・10/26 提携・リンク a8mat=4BEPPX+D9HOPM+3UM0+5YRHE）は 10/28 も公式サイトがメンテナンス中（mainte-mypage.libmo.jp へ転送）で月額を確かめられないため入れていない
 ];
 
 /** 画面に出す社（href があるものだけ）。A8 のインプレッション画像もこれだけ */

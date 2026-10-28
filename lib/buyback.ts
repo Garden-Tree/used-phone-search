@@ -10,7 +10,7 @@ export type BuybackProgram = {
   imgSrc: string;
 };
 
-// 並び（10/21 見直し）: 報酬の高い古本市場（3,124円）と、EPC・確定率の高いネットオフ（EPC 166・確定率97%）を上に。
+// 並び（10/21 見直し）: 報酬の高い古本市場（3,124円）と、EPC・確定率の高いネットオフ（EPC 166・確定率97%）を上に。10/28 にモバステ（2,000円・買取価格の表で最高値の店が多い）と LINXAS（3,000円）を足した。
 // モバゾウ（EPC 10）は外した。報酬・EPC は A8 の参加中プログラム一覧（10/21）
 export const BUYBACK_PROGRAMS: BuybackProgram[] = [
   {
@@ -24,6 +24,20 @@ export const BUYBACK_PROGRAMS: BuybackProgram[] = [
     text: "あなたの携帯・スマホ、実は高く売れるんです！",
     href: "https://px.a8.net/svt/ejp?a8mat=4BELTJ+BOXI8Q+1SOW+ZQ80I",
     imgSrc: "https://www11.a8.net/0.gif?a8mat=4BELTJ+BOXI8Q+1SOW+ZQ80I",
+  },
+  {
+    // 10/20 提携（A8 s00000027426001・買取成立 2,000円）。10/28 にリンクを入れた。買取価格の表（lib/buybackPrices.ts）もこのリンク
+    name: "モバステ",
+    text: "全国対応・破損品もOK！スマホ・iPhoneを高く売るなら【モバステ】",
+    href: "https://px.a8.net/svt/ejp?a8mat=4BEH5C+7DJDCQ+5VMC+5YJRM",
+    imgSrc: "https://www14.a8.net/0.gif?a8mat=4BEH5C+7DJDCQ+5VMC+5YJRM",
+  },
+  {
+    // 10/27 提携（A8 s00000027351002・買取成立 3,000円）
+    name: "LINXAS（リンクサス）",
+    text: "創業10年の信頼！iPhone・スマホ・ジャンク品も高価買取【リンクサス買取】",
+    href: "https://px.a8.net/svt/ejp?a8mat=4BELTJ+B43C2I+5V1I+BWVTE",
+    imgSrc: "https://www17.a8.net/0.gif?a8mat=4BELTJ+B43C2I+5V1I+BWVTE",
   },
   {
     name: "ノジマのスマホ買取",

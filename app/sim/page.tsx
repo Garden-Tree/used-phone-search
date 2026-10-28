@@ -77,7 +77,7 @@ export default async function SimPage() {
             <table className={`w-full table-fixed tabular-nums ${many ? "text-[12px]" : "text-[14px]"} md:text-[15px]`}>
               <thead>
                 <tr>
-                  <th scope="col" className="w-[34%] text-left align-bottom text-[11px] font-normal text-ink-mute px-1 pb-2">2年の総額</th>
+                  <th scope="col" className={`${many ? "w-[30%]" : "w-[34%]"} text-left align-bottom text-[11px] font-normal text-ink-mute px-1 pb-2`}>2年の総額{many && <span className="block text-[10px]">（約）</span>}</th>
                   {plans.map(({ plan: p, tier }) => (
                     <th key={p.name} scope="col" className="px-1 pb-2 align-bottom font-normal">
                       <a
@@ -107,8 +107,11 @@ export default async function SimPage() {
                       <span className="block text-[11px] text-ink-mute mt-0.5">中古 {manYen(r.median)}</span>
                     </th>
                     {plans.map(({ plan: p, tier }) => (
-                      <td key={p.name} className="px-1 py-2.5 text-center font-bold text-price whitespace-nowrap">
-                        {manYen(total(r.median, tier.monthly))}
+                      <td key={p.name} className="px-0.5 py-2.5 text-center font-bold text-price whitespace-nowrap">
+                        {/* 4社以上はスマホの幅で数字がつながるので「約」を外し、万円を小さく（10/28） */}
+                        {many
+                          ? <>{(Math.round(total(r.median, tier.monthly) / 1000) / 10).toFixed(1)}<span className="text-[10px] font-normal">万円</span></>
+                          : manYen(total(r.median, tier.monthly))}
                       </td>
                     ))}
                   </tr>

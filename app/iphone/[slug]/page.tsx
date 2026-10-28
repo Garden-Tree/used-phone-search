@@ -535,7 +535,7 @@ export default async function ModelPage({ params }: Props) {
           <span className="text-[10px] text-ink-mute mt-1">ほかの買取店</span>
         </div>
       )}
-      {BUYBACK_PROGRAMS.filter((p) => !(buybackRow && p.name === "ネットオフ")).map((p) => (
+      {BUYBACK_PROGRAMS.filter((p) => !(buybackRow && buybackRow.cells.some((c) => c.shop === p.name))).map((p) => (
         <a
           key={p.name}
           href={p.href}
