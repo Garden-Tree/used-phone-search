@@ -61,7 +61,7 @@
 ## 次にやる（順序）
 
 ```
-1. 収益: 1訪問 18円 → 30円（ideas/10-25-analysis）。YouTube: ショートの声・出だしの比較（ideas/10-27-shorts-plan）・在庫数ランキング stock
+1. 収益: 1訪問 18円 → 30円（ideas/10-25-analysis）。YouTube: ショートの声・出だし（ideas/10-27-shorts-plan）
 2. 伸ばし方（ideas/10-24-growth）
 3. X の日々の運用（ideas/x-posts）
 ```
