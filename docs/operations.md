@@ -88,6 +88,13 @@
 - Yahoo・Amazon・楽天の取り込みの失敗の扱いは今までどおり（楽天は自動のやり直しあり）
 - 警告は実行の Summary の Annotations に出る（通知メールは来ない）。サイト構造の変更・続くアクセス拒否は、在庫の古さか「0件」の2回目で失敗になる
 
+### 買取価格（BuybackPrice・2026-10-28〜）
+- `scraper/buyback_scraper.py`。iPhone だけ。ネットオフ（機種ページ約40本を5秒おき・容量×s/a/ab/b/c）・にこスマ（/sell の __NEXT_DATA__ を1回・A/B/C）・モバステ（運営パステック pastec.net/iphone を1回・未開封／中古の上限〜下限）
+- Actions の「買取価格の取得」で、前回から6日たっていれば取る（週1回）。失敗しても止めない。取得が前回の半分未満なら洗い替えない。403・429 は回避しない（前回の値のまま）
+- すぐ取り直す: `FORCE_BUYBACK=1 python buyback_scraper.py`。取り込まずに確かめる: `--dry`
+- 使うところ: `/iphone/resale-value` の「いま売ると」（3店のきれいな状態＝ネットオフ a・にこスマ A・モバステ used_max のうち最高。`lib/resaleValue.ts` の BUYBACK_GOOD_GRADES）
+- 掲載はユーザーの判断で OK（10/28）。規約は「スクレイピング」を名指しで禁じていないが、営利目的・不適当な行為の条項はある（ideas/2026-10-28.md）
+
 ### 在庫が急に減った・消えた
 - スクレイパーも楽天の取り込みも「件数が既存の50%未満なら洗い替えを中止」する。意図的に減らしたときは
   スクレイパーは `FORCE_REPLACE=1`、楽天は `npx tsx scripts/ingest-rakuten.ts <dir> --allow-shrink`

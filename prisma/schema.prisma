@@ -106,3 +106,22 @@ model PcPriceSnapshot {
   @@unique([date, formFactor, cpuLabel, memoryGB])
   @@index([formFactor, cpuLabel, memoryGB, date])
 }
+
+// 店の買取価格（店が客から買い取る値段・2026-10-28〜）。iPhone だけ・店ごとに週1回洗い替え（scraper/buyback_scraper.py）。
+// /iphone/resale-value の「発表時の値段 − いま売るといくら」に使う。grade は店の区分のまま（ネットオフ s/a/ab/b/c・にこスマ A/B/C・モバステ unopened/used_max/used_min）
+model BuybackPrice {
+  id         String   @id @default(uuid())
+  shopName   String   // ネットオフ / にこスマ / モバステ
+  model      String   // lib/catalog.ts の機種名 例: iPhone 15 Pro Max
+  storage    Int      // GB
+  grade      String
+  gradeLabel String   // 店の表記 例: 美品, 良品
+  carrier    String?  // 店の表記（にこスマは容量ごとに1つ）
+  price      Int      // 円（店の表示のまま。特典込みなど条件は店ごと）
+  url        String   // 価格が載っているページ
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([model, storage])
+  @@index([shopName])
+}

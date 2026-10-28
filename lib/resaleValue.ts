@@ -1,4 +1,5 @@
 import { cache } from "react";
+import prisma from "@/lib/prisma";
 import { getMedianAt } from "@/lib/modelStats";
 import { LAUNCH_PRICES } from "@/lib/launchPrices";
 
@@ -25,7 +26,14 @@ export type ResaleRow = {
   retention: number;
   /** （発売時の値段 − いまの相場）÷ 発売からの月数（円・1円単位）。1年未満の機種は出さない */
   perMonth: number | null;
+  /** いま売ると: 3店のきれいな状態の買取価格のうち最高（同じ容量）。なければ null */
+  buyback: { price: number; shop: string; label: string } | null;
+  /** 実質の負担（発売時の値段 − 買取の最高）÷ 発売からの月数。1年未満・買取なしは null */
+  realPerMonth: number | null;
 };
+
+/** 店ごとの「きれいな状態」の区分（比べるときの基準。ネットオフ 美品・にこスマ 良品・モバステ 中古の上限） */
+export const BUYBACK_GOOD_GRADES: Record<string, string> = { "ネットオフ": "a", "にこスマ": "A", "モバステ": "used_max" };
 
 export type ResaleGroup = { label: string; min: number; max: number; rows: ResaleRow[]; avgRetention: number };
 
@@ -34,16 +42,25 @@ const yearsBetween = (from: string, to: Date) => (to.getTime() - new Date(`${fro
 export const getResaleValue = cache(async (now: Date = new Date()): Promise<{ rows: ResaleRow[]; groups: ResaleGroup[] }> => {
   const entries = Object.entries(LAUNCH_PRICES);
   const medians = await Promise.all(entries.map(([model, l]) => getMedianAt(model, l.storage)));
+  // 買取価格（表 BuybackPrice は iPhone × 容量 × 店の区分で約1,400行。必要な機種・区分だけ取る）
+  const bb = await prisma.buybackPrice.findMany({
+    where: { model: { in: entries.map(([m]) => m) }, OR: Object.entries(BUYBACK_GOOD_GRADES).map(([shopName, grade]) => ({ shopName, grade })) },
+    select: { model: true, storage: true, shopName: true, gradeLabel: true, price: true },
+  });
   const rows: ResaleRow[] = entries
     .map(([model, l], i) => {
       const m = medians[i];
       if (m.median === null || m.count < RESALE_MIN_COUNT) return null;
       const years = Math.round(yearsBetween(l.date, now) * 10) / 10;
       const months = yearsBetween(l.date, now) * 12;
+      const best = bb.filter((b) => b.model === model && b.storage === l.storage).sort((a, b) => b.price - a.price)[0];
+      const buyback = best ? { price: best.price, shop: best.shopName, label: best.gradeLabel } : null;
       return {
         model, launchDate: l.date, storage: l.storage, launchPrice: l.price, median: m.median, count: m.count, years,
         retention: Math.round((m.median / l.price) * 1000) / 10,
         perMonth: months >= 12 ? Math.round((l.price - m.median) / months) : null,
+        buyback,
+        realPerMonth: buyback && months >= 12 ? Math.round((l.price - buyback.price) / months) : null,
       };
     })
     .filter((r): r is ResaleRow => r !== null)

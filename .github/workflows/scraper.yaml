@@ -125,6 +125,17 @@ jobs:
           python -u qualit_scraper.py || status=1
           exit $status
 
+      # iPhone の買取価格（BuybackPrice・2026-10-28〜）。ネットオフ・にこスマ・モバステ。前回から6日たっていなければ飛ばす（週1回）。
+      # 別の表なので、失敗しても後ろの手順は止めない
+      - name: 買取価格の取得
+        if: ${{ inputs.site_only != 'true' }}
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          cd scraper
+          python -u buyback_scraper.py
+
       # スクレイピング結果から当日の価格推移を記録（モデル別ページのグラフ用）
       - name: Node.js をセットアップ
         if: ${{ !cancelled() }}
