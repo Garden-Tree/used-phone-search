@@ -32,7 +32,7 @@
 - **収益の枠**: 回線（`SimTile`・2年の総額 `/sim`）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **値動き速報**: `price-alerts.ts`
 - **広告のショート** `rakutenmobile`: PR は左上・説明欄
-- **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。1か月の値下がり（年数別）`/iphone/price-drop`・いつまで使える `/iphone/how-long`
+- **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。1か月の値下がり（年数別）`/iphone/price-drop`・いつまで使える `/iphone/how-long`・何年で `/iphone/resale-value`
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
 - **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit は直接（A8）、ソフマップ・じゃんぱら・イオシスは楽天
 
