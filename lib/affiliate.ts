@@ -46,6 +46,9 @@ const A8_PROGRAMS: Record<string, string> = {
   // 中古パソコン（PcInventory・2026-10-27〜）。A8 の商品リンク（掲載サイト「中古スマホ一括検索」）。飛び先は各社のサイトの中だけ
   "PC WRAP": "4BE68M+9SGNOA+4U56+BW0YB",
   "Qualit": "4BE68M+9RV82I+50H8+BW0YB",
+  // 2026-10-28〜（10/27 提携）。PC next は購入の8%・Be-Stock（中古パソコンショップ・be-stock.com/shop2）は5%（いずれも税抜）
+  "PC next": "4BEPQ5+9K4L7E+4X3U+BW0YB",
+  "Be-Stock": "4BEPQ5+9ICAE2+3JD0+HUD03",
 };
 
 /**

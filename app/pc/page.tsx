@@ -150,7 +150,7 @@ export default async function PcIndexPage() {
 
         <div className="text-xs text-ink-mute leading-relaxed space-y-1">
           <p>
-            状態ランクは店ごとの基準です（{Object.entries(RANK_NOTE).map(([k, v]) => `${k}＝${v}`).join("・")}の目安にそろえ、店の表記を添えています）。
+            状態ランクは店ごとの基準です（{Object.entries(RANK_NOTE).map(([k, v]) => `${k}＝${v}`).join("・")}の目安にそろえ、店の表記を添えています。PC next はランクの表記がない再生パソコンです）。
             訳あり品は動作に不具合がある場合があり、保証がつかないことがあります。
           </p>
           <p>価格は税込・取得時点のものです。在庫・保証・付属品は各店のページでご確認ください。</p>

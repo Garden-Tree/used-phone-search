@@ -33,7 +33,7 @@ export default function PcItemRow({ p, first }: { p: PcRowItem; first: boolean }
           {p.gpu ? `・${p.gpu}` : ""}
         </span>
         <span className="block text-[11px] text-ink-mute">
-          {p.shopName}・ランク {p.rankLabel}
+          {p.shopName}・{p.conditionRank === "-" ? "再生品（ランク表記なし）" : `ランク ${p.rankLabel}`}
           {!p.win11 && <span className="ml-1 text-inspect-700">Windows 11 非対応のCPU</span>}
         </span>
       </span>

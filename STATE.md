@@ -34,7 +34,7 @@
 - **値動き速報**: `price-alerts.ts`
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。いつまで使える `/iphone/how-long`・何年で・実質いくら `/iphone/resale-value`（旧 price-drop を統合）
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
-- **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit は直接（A8）、ソフマップ・じゃんぱら・イオシスは楽天
+- **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit・PC next・Be-Stock は A8、ソフマップ・じゃんぱら・イオシスは楽天
 
 ## 確認台帳（計測・判定）
 
@@ -55,7 +55,7 @@
 
 ## 進行中・外部条件待ち
 
-- **審査中**: A8 J:COM ほか／VC 3件。LIBMO は公式メンテ中で未掲載
+- **審査中**: A8 J:COM ほか／VC 3件。LIBMO はサイト停止中（再開で入れる）
 - **TikTok**: 10/26〜・PR はまだ
 
 ## 次にやる（順序）

@@ -153,7 +153,7 @@ export const ALL_SIM_PLANS: SimPlan[] = [
     priceSource: "https://www.ymobile.jp/sp/price_info_2026/",
     checked: "2026-10-26",
   }),
-  // LIBMO（A8 s00000017964001・10/26 提携・リンク a8mat=4BEPPX+D9HOPM+3UM0+5YRHE）は 10/28 も公式サイトがメンテナンス中（mainte-mypage.libmo.jp へ転送）で月額を確かめられないため入れていない
+  // LIBMO（A8 s00000017964001・10/26 提携・リンク a8mat=4BEPPX+D9HOPM+3UM0+5YRHE）は 10/28 夕方も公式サイトが「脆弱性情報を受けた予防的なセキュリティ対策」でアクセス停止中（mainte-mypage.libmo.jp へ転送・申し込みできない）のため入れていない。再開したら料金を確かめて入れる
 ];
 
 /** 画面に出す社（href があるものだけ）。A8 のインプレッション画像もこれだけ */

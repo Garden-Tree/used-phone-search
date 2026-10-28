@@ -113,6 +113,7 @@
 - 取得は `scraper/pcwrap_scraper.py`（ノート category1=2・デスクトップ category1=1）と `scraper/qualit_scraper.py`（ノート ct01。EUC-JP）。どちらも**一覧ページだけ**を2秒おきに1本ずつ読む（商品ページ・画像・説明文は使わない。Qualit の利用規約 第3条）。売り切れが並び始めたページで止まる。1回 PC WRAP 約20回・Qualit 約4回の要求
 - GitHub Actions の「中古パソコンの取得」で、前回から11時間たっていれば取る（1日2回まで）。失敗してもスマホの手順は止めない（`continue-on-error`）。すぐ取り直すときは手元で `FORCE_PC=1 python pcwrap_scraper.py`
 - 取り込まずに確かめる: `python pcwrap_scraper.py --dry`（読めた件数と先頭15件）。読み取りのテストは `python test_pc_spec.py`（Actions でも毎回走る）
+- **PC next・Be-Stock**（10/28〜・A8 8%・5%）: `scraper/pcnext_scraper.py` は Shopify の公開 `/products.json` で在庫ありのパソコン（非公開・周辺機器・新品・電話注文用を除く）を選び、仕様表のある商品ページを2秒おきに読む（約30回）。ランクの表記がないので conditionRank "-"（画面は「再生品（ランク表記なし）」）。`scraper/bestock_scraper.py` は `/shop2/note.html`・`desktop.html` の一覧（20件ずつ・約37回）。ランクは店の「表記項目の説明」（/shop2/notation）の商品全体の札: S・A・B はそのまま、C（筐体に破損のあるわけあり品）と「動作ランク：B」は J。Windows 以外（Mac・iPad・スマホ）は入れない
 - ランクの対応（`scraper/pc_spec.py`）: PC WRAP 美麗＝A・特選＝B・標準＝C・訳あり＝J（新品は載せない）。Qualit は表記の S/A/B/C、訳あり品＝J。画面には店の表記も出す
 - リンクは A8（`lib/affiliate.ts`。掲載サイト「中古スマホ一括検索」の商品リンク。飛び先は pcwrap.com・yrl-qualit.com の中だけ）。A8 の商品リンク作成で作った a8mat
 - `/pc` は在庫20件未満のあいだ noindex・サイトマップに出さない（`PC_MIN_INDEX_ITEMS`）
