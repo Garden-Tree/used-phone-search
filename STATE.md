@@ -30,7 +30,7 @@
 - **Amazon 整備済み**: 停止
 - **Yahoo! 7店**: VC（2025875）。もしもは否認
 - **収益の枠**: 回線（`SimTile`・2年の総額 `/sim`）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
-- **買取価格**: ネットオフ・にこスマ・モバステ 週1
+- **買取価格**: ネットオフ・にこスマ・モバステ 週1。一覧 `/iphone/kaitori`・機種ページの売る枠と #kaitori
 - **値動き速報**: `price-alerts.ts`
 - **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。いつまで使える `/iphone/how-long`・何年で・実質いくら `/iphone/resale-value`（旧 price-drop を統合）
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）

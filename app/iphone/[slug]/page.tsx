@@ -55,6 +55,8 @@ import { appleCheckedJa, applePriceSource, newVsUsed } from "@/lib/applePrices";
 import { newVsUsedOfficial, officialCheckedJa, officialPriceSource } from "@/lib/officialPrices";
 import NewVsUsedSection from "@/app/components/NewVsUsedSection";
 import RepairOrReplace from "@/app/components/RepairOrReplace";
+import BuybackPrices from "@/app/components/BuybackPrices";
+import { getModelBuyback } from "@/lib/buybackPrices";
 import IpadGuide from "@/app/components/IpadGuide";
 import { buildFaq, buildSummary, modelDescription } from "@/lib/modelFaq";
 import { BUYBACK_PROGRAMS, REPAIR_PROGRAMS } from "@/lib/buyback";
@@ -510,12 +512,30 @@ export default async function ModelPage({ params }: Props) {
   const nextAt = nextModel && stats.medianStorage !== null ? await getMedianAt(nextModel, stats.medianStorage) : null;
   const nextGen = nextModel && nextAt && nextAt.count >= 3 && nextAt.median !== null ? { model: nextModel, median: nextAt.median } : null;
   const PR_BADGE = <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1 py-px leading-none">PR</span>;
+  // 店ごとの買取価格（iPhone・表 BuybackPrice・週1回）。タイルは相場の容量（なければいちばん小さい容量）の行だけ、全容量は「買取価格（店ごと）」に
+  const buyback = showBuyback && isIphone ? await getModelBuyback(model) : [];
+  const buybackRow = buyback.find((r) => r.storage === stats.medianStorage) ?? buyback[0] ?? null;
   // 買取のタイル（10/25〜 切り出し）。スマホは要約カードの直下に出す（買取は1件あたりの報酬が高いのに3週で15クリックだった）。
   // 10/27〜 相場の1行と各社の説明文は出さない（文字を減らす）
   const buybackTile = showBuyback ? (
     <div className="bg-white border border-line rounded-xl p-3 flex flex-col gap-1">
       <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">今のスマホを売る {PR_BADGE}</span>
-      {BUYBACK_PROGRAMS.map((p) => (
+      {buybackRow && (
+        <div className="flex flex-col">
+          <span className="text-[11px] text-ink-sub">{model}（{storageLabel(buybackRow.storage, model)}）の買取価格・きれいな状態</span>
+          {[...buybackRow.cells].sort((a, b) => b.price - a.price).map((c, i) => (
+            <a key={c.shop} href={c.href} target="_blank" rel={c.linkType === "a8" ? "sponsored nofollow noopener" : "nofollow noopener"}
+              data-shop-click="" data-shop={`${c.shop}（買取）`} data-model={model} data-link-type={c.linkType}
+              className="flex items-center justify-between gap-2 py-1 hover:bg-ground rounded">
+              <span className="text-[13px] font-bold text-ink">{c.shop}<span className="ml-1 text-[10px] font-normal text-ink-mute">{c.label}</span></span>
+              <span className={`text-[13px] font-bold tabular-nums ${i === 0 ? "text-price" : "text-ink"}`}>{yen(c.price)} <span className="text-ink-mute font-normal" aria-hidden="true">›</span></span>
+            </a>
+          ))}
+          {buyback.length > 1 && <a href="#kaitori" className="text-[11px] text-brand-600 hover:underline underline-offset-2 py-0.5">ほかの容量の買取価格 ›</a>}
+          <span className="text-[10px] text-ink-mute mt-1">ほかの買取店</span>
+        </div>
+      )}
+      {BUYBACK_PROGRAMS.filter((p) => !(buybackRow && p.name === "ネットオフ")).map((p) => (
         <a
           key={p.name}
           href={p.href}
@@ -735,6 +755,17 @@ export default async function ModelPage({ params }: Props) {
                     <Accordion title="検品担当が見るポイント" badge={tips.length}>
                       <InspectionTips model={model} has64GB={has64GB} embedded />
                     </Accordion>
+                  )}
+                  {buyback.length > 0 && (
+                    <div id="kaitori" className="scroll-mt-16">
+                      <Accordion title="買取価格（店ごと）" hint={buybackRow?.best ? `最高 ${yen(buybackRow.best.price)}` : undefined} open>
+                        <BuybackPrices rowLabel="容量" model={() => model}
+                          rows={buyback.map((r) => ({ key: String(r.storage), label: <span className="font-bold">{storageLabel(r.storage, model)}</span>, cells: r.cells, best: r.best }))} />
+                        <p className="text-[11px] text-ink-mute leading-relaxed mt-2">
+                          店が表示している上限の目安（きれいな状態・週1回取得）。実際の査定は状態で下がります。<Link href="/iphone/kaitori" className="text-brand-600 underline underline-offset-2">ほかの機種の買取価格 ›</Link>
+                        </p>
+                      </Accordion>
+                    </div>
                   )}
                   <Accordion title="店ごとの保証" hint={`${stats.byShop.length}店`}>
                     <div>

@@ -188,7 +188,7 @@ export default async function ResaleValuePage() {
         {/* 売るなら（買取の A8。機種ページの「今のスマホを売る」と同じリンク・計測） */}
         <section className="flex flex-col gap-2">
           <h2 className="text-lg md:text-xl font-bold">今の iPhone を売るなら</h2>
-          <p className="text-[13px] text-ink-sub leading-relaxed">同じ機種・容量・きれいな状態でも、買取価格は店で1万円近く違うことがあります。申し込む前に、2〜3社の査定を比べるのがおすすめです。</p>
+          <p className="text-[13px] text-ink-sub leading-relaxed">同じ機種・容量・きれいな状態でも、買取価格は店で1万円近く違うことがあります。申し込む前に、2〜3社の査定を比べるのがおすすめです。機種ごとの買取価格は<Link href="/iphone/kaitori" className={LINK}>3店の比較の一覧</Link>にまとめています。</p>
           <div className={`${CARD} divide-y divide-line-soft`}>
             {BUYBACK_PROGRAMS.map((p) => (
               <a key={p.name} href={p.href} target="_blank" rel="sponsored nofollow noopener" data-shop-click="" data-shop={`${p.name}（買取）`} data-model="resale-value" data-link-type="a8"
