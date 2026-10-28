@@ -88,7 +88,13 @@ export async function budgetMetadata(max: number, device: BudgetDevice): Promise
   const newest = rows.find((r) => r.supported) ?? rows[0];
   const label = budgetLabel(max);
   const byRelease = t.byRelease !== false;
-  const title = `${label}以下で買える${t.name}｜${byRelease ? "予算内でいちばん新しい機種" : "機種ごとの最安値"}【毎日更新】`;
+  // 10/28〜: 検索結果で答えが見えるよう、いちばん新しい機種と最安値をタイトルの頭に（5〜8位なのに押されていなかった。ideas/2026-10-28-analysis.md）。
+  // 機種名は頭の「iPhone」などを外し（「中古iPhoneはiPhone 13」と重なるため）、かっこも外す（値段のかっこと重なるため）。
+  // 「iPad (第8世代)」→「第8世代」・「iPad mini (第6世代)」→「mini 第6世代」
+  const short = newest ? newest.model.replace(/^(iPhone|iPad|Google Pixel|Pixel|Galaxy)\s*/, "").replace(/\s*\((.+?)\)/g, " $1").trim() : "";
+  const title = byRelease && newest
+    ? `${label}以下の${t.name}は${short}（${yen(newest.minPrice)}〜）｜${rows.length}機種の最安値【毎日更新】`
+    : `${label}以下で買える${t.name}｜${byRelease ? "予算内でいちばん新しい機種" : "機種ごとの最安値"}【毎日更新】`;
   const description = newest
     ? `${label}以下で買える${t.name}は${rows.length}機種・${rows.reduce((n, r) => n + r.count, 0).toLocaleString()}件。${byRelease ? `いちばん新しいのは${newest.model}（${yen(newest.minPrice)}〜）。` : ""}大手中古ショップ${t.shops}社の在庫から機種ごとの最安値を比較。`
     : `${label}以下で買える${t.name}を大手中古ショップ${t.shops}社の在庫から探せます。`;
