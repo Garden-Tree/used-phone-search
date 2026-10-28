@@ -28,10 +28,11 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"] : s.theme === "plusmax" ? ["大画面はPlusとPro Max", "同じ容量でいくら違う？"]
     : s.theme === "oldpro" ? ["1世代前のProと最新の無印", "どっちが安い？中古iPhone"]
     : s.theme === "ipadmini" ? ["新型iPad mini", "中古の旧型ならいくら安い？"]
-    : s.theme === "mbpnew" ? (s.scenes.copy?.head ?? ["新型", "中古の旧型ならいくら安い？"])
+    : s.theme === "mbpnew" || s.theme === "mbpproled" ? (s.scenes.copy?.head ?? ["新型", "中古の旧型ならいくら安い？"])
     : s.theme === "watchgen" ? ["Apple Watch", "1世代前でいくら安い？"] : s.theme === "macgen" ? ["MacBook Air", "1世代前でいくら安い？"]
     : s.theme === "ipadgen" ? ["iPad", "1世代前でいくら安い？"] : s.theme === "pixelgen" ? ["Google Pixel", "1世代前でいくら安い？"]
-    : s.theme === "stock" ? ["中古でいちばん多いiPhone", "在庫数ランキング"] : s.theme === "stockandroid" ? ["中古でいちばん多いAndroid", "在庫数ランキング"]
+    : s.theme === "stock" ? ["中古でいちばん多いiPhone", "在庫数ランキング"] : s.theme === "stockandroid" ? ["中古でいちばん多いAndroid", "在庫数ランキング"] : s.theme === "stockmac" ? ["中古でいちばん多いMacBook", "在庫数ランキング"]
+    : s.theme === "watchbudget" ? ["予算ぴったりで買える", "中古Apple Watch"] : s.theme === "mbpvsair" ? ["MacBook ProとAir", "中古ならどっちが安い？"]
     : s.theme === "rakutenmobile" ? ["楽天モバイルは使った量で3段階", `中古${s.scenes.device.model}と2年でいくら？`]
     : s.theme === "minie" ? ["無印より安い“弟分”", "いくら安い？中古iPhone"] : s.theme === "unused" ? ["未使用品（ランクS）は", "中古よりいくら高い？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : [`${periodOf(s as DropsScript).name}の中古iPhone`, "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
@@ -49,7 +50,11 @@ const FOOT = (s: Script) =>
     : s.theme === "ipadgen" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値・PencilはApple公式`
     : s.theme === "pixelgen" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値・アップデートはGoogle公式`
     : s.theme === "storage" ? `${s.date.replace(/-/g, "/")}・容量ごとの中央値`
-    : s.theme === "stock" || s.theme === "stockandroid" ? `${s.date.replace(/-/g, "/")}・件数はジャンク品を除く販売中の在庫
+    : s.theme === "watchbudget" ? `${s.date.replace(/-/g, "/")}・ケースは在庫がいちばん多いサイズの中央値
+watchOS 27対応はApple公式`
+    : s.theme === "mbpvsair" ? `${s.date.replace(/-/g, "/")}・新品はApple公式（同じ16GB・1TB）
+中古は同じメモリ・SSDの中央値`
+    : s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" ? `${s.date.replace(/-/g, "/")}・件数はジャンク品を除く販売中の在庫
 相場は在庫がいちばん多い容量の中央値`
     : s.theme === "pixelbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・アップデートはGoogle公式`
     : s.theme === "ipadbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・PencilはApple公式`
@@ -159,7 +164,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
   if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
     || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew" || isNewVsOld(s) || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen"
-    || s.theme === "stock" || s.theme === "stockandroid") return [
+    || s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "mbpvsair") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -298,7 +303,7 @@ function Hook({ s, t }: { s: DropsScript; t: number }) {
 function BudgetHook({ s, t }: { s: BudgetScript; t: number }) {
   const L = lookOf(s);
   const rows = s.scenes.budgets.rows;
-  const lines = ["予算ぴったりで買える", s.theme === "pixelbudget" ? "中古Pixelは…？" : s.theme === "macbudget" ? "中古MacBookは…？" : s.theme === "probudget" ? "中古iPhone Proは…？" : s.theme === "foldbudget" ? "中古折りたたみスマホは…？" : s.theme === "galaxybudget" ? "中古Galaxyは…？" : s.theme === "bigbudget" ? "大きい画面の中古iPhoneは…？" : "中古iPhoneは…？"];
+  const lines = ["予算ぴったりで買える", s.theme === "pixelbudget" ? "中古Pixelは…？" : s.theme === "macbudget" ? "中古MacBookは…？" : s.theme === "probudget" ? "中古iPhone Proは…？" : s.theme === "foldbudget" ? "中古折りたたみスマホは…？" : s.theme === "galaxybudget" ? "中古Galaxyは…？" : s.theme === "bigbudget" ? "大きい画面の中古iPhoneは…？" : s.theme === "watchbudget" ? "中古Apple Watchは…？" : "中古iPhoneは…？"];
   const TW = (CW - 30) / 2;
   return (
     <Frame s={s}>
@@ -923,7 +928,7 @@ function BudgetRows({ s, t, o }: { s: BudgetScript; t: number; o: Scene["o"] }) 
   const RH = 190;
   const RIGHT = 660;
   // 3段目: pixelbudget はアップデート保証の終わり、ipadbudget は使える Apple Pencil、macbudget はチップと発売年
-  const extraOf = (r: BudgetScript["scenes"]["budgets"]["rows"][number]) => (r.updateUntil ? `アップデート ${jaYm(r.updateUntil)}まで` : r.pencil ? `Pencil ${r.pencil}` : r.chip ? `${r.chip}チップ・${r.released}発売` : r.spec ? `${r.spec}・${r.released}発売` : "");
+  const extraOf = (r: BudgetScript["scenes"]["budgets"]["rows"][number]) => (r.updateUntil ? `アップデート ${jaYm(r.updateUntil)}まで` : r.pencil ? `Pencil ${r.pencil}` : r.chip ? `${r.chip}チップ・${r.released}発売` : r.spec ? (r.released ? `${r.spec}・${r.released}発売` : r.spec) : "");
   const upd = rows.some((r) => extraOf(r));
   return (
     <Frame s={s}>
@@ -955,7 +960,8 @@ function Pick({ s, t }: { s: BudgetScript; t: number }) {
   const p = s.scenes.pick;
   const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
   const price = `相場 ${n(p.median)}円`;
-  const sub = `${p.storage}・${p.released}発売`;
+  // watchbudget は発売年を持たない（公式で確かめていない）ので、ケースのサイズだけ
+  const sub = p.released ? `${p.storage}・${p.released}発売` : p.storage;
   const stock = `在庫 ${n(p.count)}台`;
   // pixelbudget: アップデート保証の終わり（ナレーションも読む）
   // ipadbudget: 使える Apple Pencil（ナレーションは在庫数を読む）・macbudget: チップ（ナレーションは在庫数を読む）
@@ -1027,15 +1033,18 @@ ${[...new Set(fb.map((r) => r.storage))].join("・")}は新型にないので新
 
 /** ipadmini のランキング: 札は発売年（「2019年」）、機種名、下段は 容量・相場・新型との差（額・大）。items[0]（A17 Pro）は伏せる */
 function IpadMiniRanking({ s, t, o }: { s: IpadMiniScript; t: number; o: Scene["o"] }) {
+  // mbpproled（rankBadges・10/29〜）は「24GB・1TB」が 130px に収まらず値段とくっつくので、容量の欄を広げる（合計 680 は同じ）
+  const W = s.scenes.copy?.rankBadges ? [175, 240, 265] : [130, 250, 300];
   const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
     model: it.model,
     cells: [
-      { text: it.storage, w: 130, max: 44, color: C.muted },
-      { text: `相場${n(it.median)}円`, w: 250, max: 42, color: C.navy },
-      { text: `−${n(it.diff)}円`, w: 300, max: 72, color: C.red },
+      { text: it.storage, w: W[0], max: 44, color: C.muted },
+      // mbpproled の新品の行（isNew）は公式の価格なので「新品」（10/29〜）
+      { text: `${it.isNew ? "新品" : "相場"}${n(it.median)}円`, w: W[1], max: 42, color: C.navy },
+      { text: `−${n(it.diff)}円`, w: W[2], max: 72, color: C.red },
     ],
   }));
-  return <RankRows s={s} t={t} o={o} items={items} badges={s.scenes.ranking.items.slice(0, RANK_SHOWN).map((r) => r.year)} />;
+  return <RankRows s={s} t={t} o={o} items={items} badges={s.scenes.copy?.rankBadges ? undefined : s.scenes.ranking.items.slice(0, RANK_SHOWN).map((r) => r.year)} />;
 }
 
 /**
@@ -1053,7 +1062,7 @@ function IpadMiniReveal({ s, t }: { s: IpadMiniScript; t: number }) {
   const BAR = CW - 60 - LABEL - 20;
   const bars = [
     { label: s.scenes.copy?.newBar ?? `新型 ${r.newStorageGb}GB`, price: r.newPrice, color: C.budget, w: BAR },
-    { label: "中古の相場", price: r.median, color: C.red, w: Math.round((BAR * r.median) / r.newPrice) },
+    { label: s.scenes.copy?.oldBar ?? "中古の相場", price: r.median, color: C.red, w: Math.round((BAR * r.median) / r.newPrice) },
   ];
   const COL = [250, 335, 275];
   const cells = (xs: string[], head: boolean) => xs.map((x, k) => (
@@ -1081,7 +1090,7 @@ function IpadMiniReveal({ s, t }: { s: IpadMiniScript; t: number }) {
           <div style={{ ...row, fontSize: 60, fontWeight: 900, color: C.red, marginLeft: 16 }}>{`−${rate(r.pct)}%`}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 8, paddingTop: 8, borderTop: `3px solid ${C.line}`, opacity: prog(t, 1.4, 0.4) }}>
-          <div style={{ display: "flex" }}>{cells(["Apple公式", "新型", s.scenes.copy?.compareHead ?? r.short], true)}</div>
+          <div style={{ display: "flex" }}>{cells(["Apple公式", s.scenes.copy?.compareNewHead ?? "新型", s.scenes.copy?.compareHead ?? r.short], true)}</div>
           {s.scenes.compare.map((c, i) => (
             <div key={i} style={{ display: "flex", marginTop: 2 }}>{cells([c.label.replace(/（.+）$/, ""), c.a20, c.a17], false)}</div>
           ))}
@@ -1628,12 +1637,12 @@ function UnusedReveal({ s, t }: { s: UnusedScript; t: number }) {
 }
 
 /** oldpro の安い方の短い名前（"iPhone 15 Pro" → "15 Pro"。diff ＝ 無印 − Pro が正なら Pro が安い） */
-const oldProCheaper = (r: OldProRow) => foldShort(r.diff > 0 ? r.older : r.newer);
+const oldProCheaper = (r: OldProRow) => (r.diff > 0 ? r.olderShort ?? foldShort(r.older) : r.newerShort ?? foldShort(r.newer));
 
 /** oldpro のランキング: 機種名は「1世代前の Pro／次の無印」、下段は 容量・差（額・大）・どちらが安いか（batteryswap と同じ形） */
 function OldProRanking({ s, t, o }: { s: OldProScript; t: number; o: Scene["o"] }) {
   const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
-    model: pairName(it.older, it.newer),
+    model: it.label ?? pairName(it.older, it.newer),
     cells: [
       { text: it.storage, w: 150, max: 44, color: C.muted },
       { text: `差 ${n(Math.abs(it.diff))}円`, w: 300, max: 70, color: lookOf(s).accent },
@@ -1652,14 +1661,14 @@ function OldProReveal({ s, t }: { s: OldProScript; t: number }) {
   const L = lookOf(s);
   const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
   const grow = prog(t, 0.8, 0.7);
-  const name = pairName(r.older, r.newer);
-  const sub = `${r.storage}・中古の相場`;
+  const name = r.label ? r.label.replace(/^(新品|中古) /, "") : pairName(r.older, r.newer);
+  const sub = `${r.storage}・${r.isNew ? "新品（Apple公式）" : "中古の相場"}`;
   const LABEL = 190;
   const BAR = CW - 60 - LABEL - 20;
   const max = Math.max(r.olderMedian, r.newerMedian);
   const bars = [
-    { label: foldShort(r.older), price: r.olderMedian, color: L.chip, w: Math.round((BAR * r.olderMedian) / max) },
-    { label: foldShort(r.newer), price: r.newerMedian, color: C.budget, w: Math.round((BAR * r.newerMedian) / max) },
+    { label: r.olderShort ?? foldShort(r.older), price: r.olderMedian, color: L.chip, w: Math.round((BAR * r.olderMedian) / max) },
+    { label: r.newerShort ?? foldShort(r.newer), price: r.newerMedian, color: C.budget, w: Math.round((BAR * r.newerMedian) / max) },
   ];
   const labelSize = Math.min(...bars.map((b) => FIT(b.label, LABEL, 48)));
   const gapText = `差 ${n(Math.abs(r.diff))}円`;
@@ -1796,7 +1805,7 @@ function TierTotals({ s, t }: { s: RakutenMobileScript; t: number }) {
  * stock・stockandroid（10/27〜・在庫数ランキング）の名前。行・1位・棒の札で使う（長い Android の名前は幅に合わせて縮む）
  * "iPhone SE (第3世代)" はそのまま（行の幅で縮む）
  */
-const stockScope = (s: StockScript) => (s.theme === "stock" ? "iPhone" : "Android");
+const stockScope = (s: StockScript) => (s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : "Android");
 
 /** stock・stockandroid: 問い＋在庫の数の横の棒3本（1位・2位・3位。機種は伏せ、1位の棒だけ強調色）＋「最多 ○件」 */
 function StockHook({ s, t }: { s: StockScript; t: number }) {
@@ -1937,10 +1946,14 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       default: throw new Error(`minie に場面 ${sc.id} はありません`);
     }
   }
-  if (s.theme === "oldpro") {
+  if (s.theme === "oldpro" || s.theme === "mbpvsair") {
     switch (sc.id) {
       case "hook": {
         const r = s.scenes.ranking.items[0];
+        // mbpvsair: 新品どうしの差を見せて「中古なら？」と問う（1位の答えは伏せる）
+        const nw = s.scenes.ranking.items.find((x) => x.isNew);
+        if (s.theme === "mbpvsair") return <SplitHook s={s} t={t} lines={["MacBook ProとAir、", "中古なら", "どっちが安い？"]} teaser={nw ? `${n(Math.abs(nw.diff))}円` : "？？？"} label="新品の差"
+          left={{ label: "Pro", sub: "14インチ", fill: lookOf(s).chip }} right={{ label: "Air", sub: "13インチ", fill: C.budget }} />;
         return <SplitHook s={s} t={t} lines={["1世代前のProと、", "最新の無印、", "どっちが安い？"]} teaser={`${n(Math.abs(r.diff))}円`} label="差 最大"
           left={{ label: "前のPro", sub: "1世代前", fill: lookOf(s).chip }} right={{ label: "無印", sub: "次の世代", fill: C.budget }} />;
       }
@@ -2064,8 +2077,8 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       case "hook": {
         const nm = s.scenes.newModel;
         const cp = s.scenes.copy;
-        return <SplitHook s={s} t={t} lines={cp?.hook ?? ["新型iPad mini、", "中古の旧型なら", "いくら安い？"]} teaser={`${n(nm.price)}円〜`} label="新型"
-          left={{ label: "新型", sub: cp?.hookSub ?? "A20 Pro", fill: C.budget }} right={{ label: "旧型", sub: "中古の相場", fill: lookOf(s).chip }} />;
+        return <SplitHook s={s} t={t} lines={cp?.hook ?? ["新型iPad mini、", "中古の旧型なら", "いくら安い？"]} teaser={`${n(nm.price)}円〜`} label={cp?.teaserLabel ?? "新型"}
+          left={{ label: "新型", sub: cp?.hookSub ?? "A20 Pro", fill: C.budget }} right={{ label: cp?.hookRight?.label ?? "旧型", sub: cp?.hookRight?.sub ?? "中古の相場", fill: lookOf(s).chip }} />;
       }
       case "ranking": return <IpadMiniRanking s={s} t={t} o={sc.o} />;
       case "reveal": return <IpadMiniReveal s={s} t={t} />;

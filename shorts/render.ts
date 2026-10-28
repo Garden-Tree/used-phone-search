@@ -212,7 +212,10 @@ function rowOf(script: Script, sentence: string): number | null {
   if (isNewVsOld(script)) {
     // 文頭の旧型の名前（「第5世代は」）→ その行。items[0]（伏せた A17 Pro）は読まない
     const i = script.scenes.ranking.items.findIndex((r) => sentence.startsWith(`${r.short}は`));
-    return i >= 1 ? i : null;
+    if (i >= 1) return i;
+    // mbpproled（10/29〜）は「3位は、…」「2位は、…」で行を出す（items は差の大きい順なので ○位 → items[○−1]）
+    const rank = Number(sentence.match(/^(\d+)位/)?.[1]);
+    return script.scenes.copy?.rankBadges && rank >= 2 && rank <= script.scenes.ranking.items.length ? rank - 1 : null;
   }
   if (isBudget(script)) {
     const m = sentence.match(/^(\d+)万円なら/);

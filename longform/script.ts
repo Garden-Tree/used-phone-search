@@ -22,7 +22,7 @@ export const LONG_PAUSE = 0.5;
  * 「7万件」「新しめ」などショートでも出る読み違いは shorts/voice.ts の READING_FIXES（speakable が合成の前に通す）
  */
 export function forVoice(text: string): string {
-  const words: [RegExp, string][] = [
+  const words: [RegExp, string | ((...a: string[]) => string)][] = [
     [/USB-C/g, "ユーエスビーシー"], [/MagSafe/g, "マグセーフ"], [/(\d+)Hz/g, "$1ヘルツ"], [/\bOS\b/g, "オーエス"],
     [/\bMac\b/g, "マック"], [/\bApple\b/g, "アップル"], [/\bOK\b/g, "オーケー"], [/〜/g, "ー"], [/あーし/g, "アーシ"], [/△/g, "サンカク"], [/×/g, "バツ"],
     // 「へたってる」の「へ」を助詞（エ）と読む・「3.0万円」は「サンテンゼロ」・「数字はね」は「ハネ」・「あと13は」は「アトジュウ／サンワ」（10/22）
@@ -45,8 +45,40 @@ export function forVoice(text: string): string {
     // 楽天モバイル（10/26）: 「iOS 14.4」がジュウ／ヨンテンヨンに切れる → 1つの数に
     [/iOS 14\.4/g, "アイオーエス ジュウヨンテンヨン"],
     [/iOS/g, "アイオーエス"], [/\bXS\b/g, "テンエス"], [/\bXR\b/g, "テンアール"], [/\bX\b/g, "テン"], [/Intelligence/g, "インテリジェンス"],
+    // PROLED・MBP vs Air（10/29）: 「1,600ニト」がイチマンロクセン／ニト・「500ニト」がゴセン／ニトになる（ニを数字と読む）→ 数を漢数字に。
+    // 「Adobe」をアドベ・「P3」をピーサン・「Thunderbolt 5」をサンダーボルトゴ・「3分の1」をサンプンノイチと読む
+    [/(\d{1,2}),?(\d{3})ニト|(\d{1,3})ニト/g, (m: string) => `${kanjiNum(Number(m.replace(/[^\d]/g, "")))}ニト`],
+    [/Adobe/g, "アドビ"], [/\bP3\b/g, "ピースリー"], [/Thunderbolt\s*5/g, "サンダーボルトファイブ"], [/Thunderbolt\s*4/g, "サンダーボルトフォー"],
+    [/(\d)分の1/g, "$1ぶんのいち"],
+    // 「最大24時間」がニジュウ／ヨジカン、「1.23キロ」がイッテンニイ／サンキロ、「35台のうち11台」がウチジュウ／イチダイに切れる（10/29）
+    [/(\d{2})時間/g, (_m: string, n: string) => `${hourKana(Number(n))}ジカン`],
+    [/(\d)\.(\d+)キロ/g, (_m: string, i: string, f: string) => `${INT_TEN[i] ?? i + "テン"}${[...f.replace(/0+$/, "")].map((c) => DIGIT_KANA[c]).join("")}キロ`],
+    // 「102台のうちランクBが」がウチランク／ビー／ガ、「メモリ16GB」がメモリジュウ／ロクギガに切れる（10/29）→ 読点を足す
+    [/のうち(?!、)/g, "のうち、"], [/メモリ(\d)/g, "メモリ、$1"],
   ];
-  return words.reduce((t, [re, to]) => t.replace(re, to), text);
+  return words.reduce((t, [re, to]) => t.replace(re, to as string), text);
+}
+
+const DIGIT_KANA: Record<string, string> = { "0": "ゼロ", "1": "イチ", "2": "ニー", "3": "サン", "4": "ヨン", "5": "ゴー", "6": "ロク", "7": "ナナ", "8": "ハチ", "9": "キュー" };
+const INT_TEN: Record<string, string> = { "1": "イッテン", "2": "ニーテン", "3": "サンテン" };
+/** 10〜99 の時間の読み（24 → ニジュウヨ。後ろにジカン） */
+function hourKana(n: number): string {
+  const ones = ["", "イチ", "ニ", "サン", "ヨ", "ゴ", "ロク", "ナナ", "ハチ", "ク"];
+  const tens = ["", "ジュウ", "ニジュウ", "サンジュウ", "ヨンジュウ", "ゴジュウ", "ロクジュウ", "ナナジュウ", "ハチジュウ", "キュウジュウ"];
+  return tens[Math.floor(n / 10)] + ones[n % 10];
+}
+
+/** 1〜99999 を漢数字に（「千六百」。ニトの前だけで使う） */
+function kanjiNum(n: number): string {
+  const d = "〇一二三四五六七八九";
+  const units: [number, string][] = [[10000, "万"], [1000, "千"], [100, "百"], [10, "十"]];
+  let out = "";
+  for (const [u, k] of units) {
+    const q = Math.floor(n / u);
+    if (q) out += (q === 1 && u !== 10000 ? "" : d[q]) + k;
+    n %= u;
+  }
+  return out + (n ? d[n] : "");
 }
 
 export type ScriptItem = { chapter?: string; who?: Who; text?: string };

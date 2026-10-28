@@ -143,6 +143,8 @@ export const LOOKS: Record<Script["theme"], Look> = {
   ipadmini: { ...VERSUS, hook: "split" },
   // mbpnew（10/28〜・新型 MacBook Pro M6 の回）: ipadmini と同じ場面。前後の ③（ipadmini）・⑤（watchgen・macgen）と続かないよう ① DROPS（紺の地・赤い帯）
   mbpnew: { ...DROPS, hook: "split" },
+  // mbpproled（10/29〜・PROLED MacBook Pro の4択）: mbpnew と同じ場面。10/29 の前後（stock ④ 8:00・macgen ⑤ 18:00）と続かないよう ③ VERSUS
+  mbpproled: { ...VERSUS, hook: "split" },
   // watchgen・macgen（10/27〜・声の比べ V1 の2本＝同じ型・同じ見た目）: 見た目は5つまでなので新しく作らない。前の ipadmini（③ VERSUS）・後の promax（③ VERSUS）と
   // 続かないよう ⑤ PRO（墨の地・金の帯）。つかみは機器の形（時計・ノート）で、ほかのテーマの1コマ目と同じにならない。
   // 2本は 10/28 18:00・10/29 18:00 で間の 10/29 8:00 が空きなら ⑤ が続く（V1 の比べを優先。ideas/2026-10-27-shorts-plan.md）
@@ -156,6 +158,12 @@ export const LOOKS: Record<Script["theme"], Look> = {
   // stockandroid（10/31 8:00）の前の promax（③ VERSUS）・pixelgen（①）と続かないよう ④ CONDITION（生成りの地・墨の帯）。つかみは在庫の数の横の棒3本（bars）で、rank・battery の1コマ目と違う
   stock: { ...CONDITION, hook: "bars" },
   stockandroid: { ...CONDITION, hook: "bars" },
+  // stockmac・watchbudget・mbpvsair（10/29〜・iPhone 以外の3本）: 見た目は5つまでなので新しく作らない。
+  // stockmac は stock と同じ ④ CONDITION＋横の棒（bars）、watchbudget は予算別の ② BUDGET＋予算の札（chips）、
+  // mbpvsair は oldpro と同じ「どっちが安い？」の ⑤ PRO＋「Pro vs Air」の札（split）。直前に公開する mbpproled（③）と続かない
+  stockmac: { ...CONDITION, hook: "bars" },
+  watchbudget: { ...BUDGET, hook: "chips" },
+  mbpvsair: { ...PRO, hook: "split" },
 };
 
 export const lookOf = (s: Script): Look => LOOKS[s.theme];

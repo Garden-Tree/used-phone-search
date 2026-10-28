@@ -1,0 +1,601 @@
+{
+  "date": "2026-10-29",
+  "shops": 5,
+  "source": "script.md の数字そのまま（2026/10/29 の集計・longform/2026-10-31-mbp-proled/data-query.ts → data-query.log。ジャンクを除く。相場＝同じ構成（機種・メモリ・SSD）の中央値）。新品の値段は Apple 公式・税込（PROLED・ミニLED: apple.com/jp/shop/buy-mac/macbook-pro-proled-xdr・apple.com/jp/shop/buy-mac/macbook-pro、M6: lib/macbookProM6.ts、Air: apple.com/jp/shop/buy-mac/macbook-air。10/29 確認）。仕様は ideas/2026-10-29-macbook-pro-proled.md・apple.com/jp/macbook-pro/specs/・apple.com/jp/macbook-air/specs/",
+  "thumbnail": {
+    "lines": [
+      "MacBook Pro",
+      "どれ買う？"
+    ],
+    "badge": [
+      {
+        "text": "4択",
+        "red": true
+      }
+    ],
+    "footer": "新型2つ・今のモデル・中古"
+  },
+  "chapters": [
+    {
+      "title": "結論：4つの値段",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "今選べる MacBook Pro 14インチ",
+        "items": [
+          {
+            "label": "① 新型 PROLED",
+            "value": "499,800",
+            "unit": "円",
+            "cue": "1つ目は、タッチ対応の新型"
+          },
+          {
+            "label": "② 新型 M6",
+            "value": "339,800",
+            "unit": "円",
+            "cue": "2つ目は、一昨日発表された"
+          },
+          {
+            "label": "③ 今のモデル（ミニLED）",
+            "value": "429,800",
+            "unit": "円",
+            "cue": "3つ目は、今までのミニLED"
+          },
+          {
+            "label": "④ 中古 M5 Pro の相場",
+            "value": "402,980",
+            "unit": "円",
+            "cue": "4つ目は中古"
+          }
+        ],
+        "note": "いちばん安い構成（①③④は M5 Pro・24GB・1TB、②は 16GB・1TB）。新品は Apple 公式・税込（10/29 確認・①②は 11/6 発売）。中古は同じ構成の中央値"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "どうやって調べた？",
+        "items": [
+          {
+            "label": "Mac を扱う中古ショップ",
+            "value": "5",
+            "unit": "店",
+            "cue": "Macを扱う大手の中古ショップ5店"
+          },
+          {
+            "label": "MacBook の在庫",
+            "value": "2,004",
+            "unit": "件",
+            "cue": "Macを扱う大手の中古ショップ5店"
+          },
+          {
+            "label": "14インチ M5 Pro／M5",
+            "value": "35／58",
+            "unit": "件",
+            "cue": "相場は、いつもの真ん中"
+          }
+        ],
+        "note": "新品の値段と仕様は Apple 公式（10/29 確認）。相場＝同じ構成（機種・メモリ・SSD）の中央値・ジャンクを除く"
+      }
+    },
+    {
+      "title": "①新型PROLED：画面・タッチ・軽さ",
+      "scene": {
+        "type": "table",
+        "heading": "今のミニLED と 新型 PROLED（Apple 公式の仕様）",
+        "columns": [
+          "項目",
+          "今のミニLED",
+          "新型 PROLED"
+        ],
+        "emphasis": [
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "画面",
+              "ミニLED",
+              "タンデムOLED"
+            ],
+            "cue": "ミニLEDから、タンデムOLED"
+          },
+          {
+            "cells": [
+              "タッチ",
+              "なし",
+              "あり（Mac で初めて）"
+            ],
+            "cue": "Macで初めて、画面を指で"
+          },
+          {
+            "cells": [
+              "上の切り欠き",
+              "ノッチ",
+              "Dynamic Island"
+            ],
+            "cue": "Macで初めて、画面を指で"
+          },
+          {
+            "cells": [
+              "ピーク輝度",
+              "1,600ニト",
+              "2,000ニト"
+            ],
+            "cue": "いちばん明るいところが"
+          },
+          {
+            "cells": [
+              "色域",
+              "P3",
+              "P3＋Adobe RGB"
+            ],
+            "cue": "いちばん明るいところが"
+          },
+          {
+            "cells": [
+              "重さ（14インチ）",
+              "1.60kg",
+              "1.38kg"
+            ],
+            "cue": "それと、軽くなった"
+          },
+          {
+            "cells": [
+              "チップ",
+              "M5 Pro・M5 Max",
+              "M5 Pro・M5 Max"
+            ],
+            "cue": "チップは、今のモデルと同じ",
+            "emphasis": []
+          }
+        ],
+        "note": "新型 PROLED は 14インチ 499,800円〜／16インチ 599,800円〜（どちらも 24GB・1TB・Apple 公式・11/6 発売）"
+      }
+    },
+    {
+      "title": "②新型M6：新しいチップのいちばん安い入口",
+      "scene": {
+        "type": "table",
+        "heading": "新型 M6 と M5 Pro（14インチ・Apple 公式の仕様）",
+        "columns": [
+          "項目",
+          "新型 M6",
+          "M5 Pro"
+        ],
+        "emphasis": [
+          1
+        ],
+        "rows": [
+          {
+            "cells": [
+              "CPU・GPU",
+              "12コア・12コア",
+              "15コア〜・16コア〜"
+            ],
+            "cue": "CPUは、M6が12コア",
+            "emphasis": [
+              2
+            ]
+          },
+          {
+            "cells": [
+              "端子",
+              "Thunderbolt 4 ×3",
+              "Thunderbolt 5 ×3"
+            ],
+            "cue": "CPUは、M6が12コア",
+            "emphasis": [
+              2
+            ]
+          },
+          {
+            "cells": [
+              "値段（新品）",
+              "339,800円〜",
+              "429,800円〜（PROLED 499,800円〜）"
+            ],
+            "cue": "まず値段"
+          },
+          {
+            "cells": [
+              "電池（動画）",
+              "最大24時間",
+              "最大22時間"
+            ],
+            "cue": "それに、電池"
+          },
+          {
+            "cells": [
+              "画面",
+              "Liquid Retina XDR",
+              "Liquid Retina XDR（ミニLED）"
+            ],
+            "cue": "今までのミニLEDのモデルと同じ画面",
+            "emphasis": []
+          },
+          {
+            "cells": [
+              "メモリ（いちばん安い構成）",
+              "16GB・1TB",
+              "24GB・1TB"
+            ],
+            "cue": "いちばん安い構成は16GB",
+            "emphasis": []
+          },
+          {
+            "cells": [
+              "重さ",
+              "1.55kg",
+              "1.60kg"
+            ],
+            "cue": "いちばん安い構成は16GB"
+          }
+        ],
+        "note": "どちらも HDMI・SDXC・MagSafe 3（apple.com/jp/macbook-pro/specs/・10/29 確認）。M6 は 11/6 発売"
+      }
+    },
+    {
+      "title": "③今のモデル（ミニLED）：同じチップで7万円安い",
+      "scene": {
+        "type": "pairs",
+        "heading": "M5 Pro の新品（Apple 公式）",
+        "unit": "円",
+        "legend": [
+          "今のミニLED",
+          "新型 PROLED"
+        ],
+        "colors": [
+          "price",
+          "brand900"
+        ],
+        "rows": [
+          {
+            "label": "14インチ",
+            "a": 429800,
+            "b": 499800,
+            "diffLabel": "差 70,000円",
+            "cue": "14インチで42万9,800円"
+          },
+          {
+            "label": "16インチ",
+            "a": 519800,
+            "b": 599800,
+            "diffLabel": "差 80,000円",
+            "cue": "14インチで42万9,800円"
+          }
+        ],
+        "note": "Apple 公式・税込（10/29 確認）。今のモデルは値下げなしで併売。チップ・メモリ・SSD（24GB・1TB）は同じ"
+      }
+    },
+    {
+      "title": "④中古：M5 Pro・M5・M4・M1 Pro",
+      "scene": {
+        "type": "bars",
+        "heading": "中古の MacBook Pro（相場）",
+        "unit": "万円",
+        "rows": [
+          {
+            "label": "14インチ M5 Pro",
+            "sub": "24GB・1TB",
+            "median": 40.3,
+            "min": 35.2,
+            "minLabel": "35.2万円",
+            "stock": "24件",
+            "cue": "中古の14インチM5 Proは"
+          },
+          {
+            "label": "16インチ M5 Pro",
+            "sub": "24GB・1TB",
+            "median": 46.7,
+            "stock": "7件・目安",
+            "cue": "24GB、1TBで46万7,130円"
+          },
+          {
+            "label": "14インチ M5",
+            "sub": "16GB・1TB",
+            "median": 29.7,
+            "stock": "19件",
+            "cue": "1つ前の無印のM5なら"
+          },
+          {
+            "label": "14インチ M4",
+            "sub": "16GB・1TB",
+            "median": 27.1,
+            "stock": "6件・目安",
+            "cue": "M4は27万980円"
+          },
+          {
+            "label": "14インチ M1 Pro",
+            "sub": "16GB・512GB",
+            "median": 15.3,
+            "stock": "65件",
+            "cue": "それなら2021年のM1 Pro"
+          },
+          {
+            "label": "14インチ M1 Pro",
+            "sub": "16GB・1TB",
+            "median": 16.8,
+            "stock": "23件",
+            "cue": "それなら2021年のM1 Pro"
+          }
+        ],
+        "note": "14インチ M5 Pro 35件のうち未使用品（ランクS）11件。M4 Pro は 14・16インチとも在庫1件"
+      }
+    },
+    {
+      "title": "4つを並べると",
+      "scene": {
+        "type": "table",
+        "heading": "4つを並べると（14インチ・いちばん安い構成）",
+        "columns": [
+          "",
+          "①新型 PROLED",
+          "②新型 M6",
+          "③今のモデル",
+          "④中古 M5 Pro"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "チップ",
+              "M5 Pro",
+              "M6",
+              "M5 Pro",
+              "M5 Pro"
+            ],
+            "cue": "チップで分けると",
+            "emphasis": []
+          },
+          {
+            "cells": [
+              "画面",
+              "有機EL・タッチ",
+              "ミニLED",
+              "ミニLED",
+              "ミニLED"
+            ],
+            "cue": "新型は画面と軽さ",
+            "emphasis": [
+              1
+            ]
+          },
+          {
+            "cells": [
+              "値段",
+              "499,800円",
+              "339,800円",
+              "429,800円",
+              "402,980円（相場）"
+            ],
+            "cue": "安い順に",
+            "emphasis": [
+              2
+            ]
+          },
+          {
+            "cells": [
+              "メモリ・SSD",
+              "24GB・1TB",
+              "16GB・1TB",
+              "24GB・1TB",
+              "24GB・1TB"
+            ],
+            "cue": "安い順に",
+            "emphasis": []
+          },
+          {
+            "cells": [
+              "重さ",
+              "1.38kg",
+              "1.55kg",
+              "1.60kg",
+              "1.60kg"
+            ],
+            "cue": "いちばん軽いのは",
+            "emphasis": [
+              1
+            ]
+          },
+          {
+            "cells": [
+              "電池（動画）",
+              "最大22時間",
+              "最大24時間",
+              "最大22時間",
+              "最大22時間（新品時）"
+            ],
+            "cue": "電池がいちばん長いのは",
+            "emphasis": [
+              2
+            ]
+          },
+          {
+            "cells": [
+              "保証",
+              "Apple",
+              "Apple",
+              "Apple",
+              "店ごと"
+            ],
+            "cue": "保証と値段の差で",
+            "emphasis": [
+              4
+            ]
+          }
+        ],
+        "note": "Apple 公式の仕様と値段（10/29 確認）。中古は同じ構成の中央値（2026/10/29）"
+      }
+    },
+    {
+      "title": "参考：Airならいくら？",
+      "scene": {
+        "type": "table",
+        "heading": "参考：MacBook Air と MacBook Pro（新品・Apple 公式）",
+        "columns": [
+          "項目",
+          "Air 13インチ M5",
+          "Pro 14インチ M6"
+        ],
+        "emphasis": [
+          1
+        ],
+        "rows": [
+          {
+            "cells": [
+              "値段",
+              "224,800円〜（16GB・512GB）",
+              "339,800円〜（16GB・1TB）"
+            ],
+            "cue": "参考までにね"
+          },
+          {
+            "cells": [
+              "重さ",
+              "1.23kg",
+              "1.55kg"
+            ],
+            "cue": "Airはファンのない設計"
+          },
+          {
+            "cells": [
+              "端子",
+              "Thunderbolt 4 ×2・MagSafe 3",
+              "Thunderbolt 4 ×3・HDMI・SDXC・MagSafe 3"
+            ],
+            "cue": "Airはファンのない設計",
+            "emphasis": [
+              2
+            ]
+          },
+          {
+            "cells": [
+              "画面の明るさ",
+              "500ニト",
+              "ピーク 1,600ニト（HDR）"
+            ],
+            "cue": "Airはファンのない設計",
+            "emphasis": [
+              2
+            ]
+          },
+          {
+            "cells": [
+              "電池（動画）",
+              "最大18時間",
+              "最大24時間"
+            ],
+            "cue": "Airはファンのない設計",
+            "emphasis": [
+              2
+            ]
+          }
+        ],
+        "note": "差 115,000円。Air はファンレス設計（Apple 公式）。中古の Air 13インチ M2（16GB・512GB）は相場 154,980円（31件）"
+      }
+    },
+    {
+      "title": "中古で買う前に見ること",
+      "scene": {
+        "type": "checklist",
+        "heading": "中古の MacBook Pro、買う前に見る4つ",
+        "items": [
+          {
+            "text": "メモリと SSD（あとから増やせない）",
+            "cue": "1つ目は、メモリとSSD"
+          },
+          {
+            "text": "電池の充放電回数（Apple の目安は 1,000回）",
+            "cue": "電池の充放電回数"
+          },
+          {
+            "text": "状態ランクと未使用品",
+            "sub": "M5 Pro は未使用品が多い・M1 Pro は小さな傷のあるランク B が多い",
+            "cue": "状態ランク。"
+          },
+          {
+            "text": "保証の期間（店ごとに違う）",
+            "cue": "保証の期間"
+          }
+        ],
+        "note": "充放電回数は Mac の「システム情報」→「電源」。上限の目安は Apple サポートの情報"
+      }
+    },
+    {
+      "title": "まとめ：誰にどれ",
+      "scene": {
+        "type": "table",
+        "heading": "MacBook Pro、誰にどれ？",
+        "columns": [
+          "向く人",
+          "選ぶもの",
+          "値段"
+        ],
+        "emphasis": [
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "画面・軽さ・タッチがほしい",
+              "① 新型 PROLED",
+              "499,800円〜"
+            ],
+            "cue": "画面と軽さとタッチがほしいなら"
+          },
+          {
+            "cells": [
+              "Pro のチップを新品で、7万円抑える",
+              "③ 今のモデル",
+              "429,800円〜"
+            ],
+            "cue": "Proのチップを新品で"
+          },
+          {
+            "cells": [
+              "Pro のチップを少しでも安く",
+              "④ 中古 M5 Pro／M1 Pro",
+              "402,980円／153,131円（相場）"
+            ],
+            "cue": "もっと安くなら"
+          },
+          {
+            "cells": [
+              "新品で、チップは無印でいい",
+              "② 新型 M6",
+              "339,800円〜"
+            ],
+            "cue": "新品で、チップは無印でいいなら"
+          },
+          {
+            "cells": [
+              "参考：普段使い",
+              "MacBook Air 13インチ M5",
+              "224,800円〜"
+            ],
+            "cue": "新品で、チップは無印でいいなら"
+          }
+        ],
+        "note": "新品は Apple 公式（10/29）・中古は相場（2026/10/29）。毎日更新: used.gadelog.com"
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          {
+            "id": "iAzTGx6wsTs",
+            "title": "新型MacBook Pro M6 買う？中古のM5・M4にする？差は5.3万〜7.9万円｜新旧の違いと中古の相場で比べた"
+          },
+          {
+            "id": "SHyQRQ8wAic",
+            "title": "【中古iPad】いま買うならどれ？ 16店の相場で「使い方別」に選んだ（無印・Air・mini・Pro）"
+          }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com"
+      }
+    }
+  ]
+}

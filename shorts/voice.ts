@@ -79,8 +79,8 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
     : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s)
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
-    : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s)
-    : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : isNewVsOld(s) ? (s.theme === "mbpnew" ? mbpNewNarration(s) : ipadMiniNarration(s))
+    : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s) : s.theme === "mbpvsair" ? mbpVsAirNarration(s)
+    : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : isNewVsOld(s) ? (s.theme === "mbpnew" ? mbpNewNarration(s) : s.theme === "mbpproled" ? mbpProledNarration(s) : ipadMiniNarration(s))
     : s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen" ? deviceGenNarration(s)
     : isStock(s) ? stockNarration(s) : dropsNarration(s);
 }
@@ -270,11 +270,11 @@ function deviceGenNarration(s: DeviceGenScript): Partial<Record<NarrationKey, st
 function stockNarration(s: StockScript): Partial<Record<NarrationKey, string>> {
   const items = s.scenes.ranking.items;
   const top = items[0];
-  const scope = s.theme === "stock" ? "iPhone" : "Androidスマホ";
+  const scope = s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : "Androidスマホ";
   return {
     hook: `中古でいちばん出回っている${scope}は…？`,
     ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、在庫${items[i].count.toLocaleString()}件。相場は${yen(items[i].median)}です。`).join(""),
-    reveal: `1位は${top.model}。在庫は${top.count.toLocaleString()}件で、${s.theme === "stock" ? "iPhone" : "Android"}全体の、およそ${Math.round(top.share)}%です。相場は${top.storage}で、${yen(top.median)}です。`,
+    reveal: `1位は${top.model}。在庫は${top.count.toLocaleString()}件で、${s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : "Android"}全体の、およそ${Math.round(top.share)}%です。相場は${top.storage}で、${yen(top.median)}です。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、どの機種にしますか？",
   };
@@ -382,6 +382,31 @@ function oldProNarration(s: OldProScript): Partial<Record<NarrationKey, string>>
 }
 
 /**
+ * mbpvsair の既定（10/29〜・longform/2026-11-01-mbp-vs-mba/short-plan.md。声は 青山龍星）: hook 新品どうしの差と問い /
+ * ranking 3位・2位を1文ずつ（「3位は新品のAir M5とPro M6、16GBと1TB。Airが97,000円安いです。」）/ reveal 1位の Air と Pro の相場と、安い方・差。
+ * 安い方は毎回の数字から（逆転していたら「Proが安い」と言わない）
+ */
+function mbpVsAirNarration(s: OldProScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const newRow = items.find((r) => r.isNew);
+  // 「中古のAir M2とPro M1 Pro」だと「エアアエムツウト」と1つの句になるので、チップを先に「中古、M2のAirとM1 Pro」（M6 は「M6のPro」）
+  const pair = (r: OldProRow) => {
+    const m = (r.label ?? "").match(/^(新品|中古) Air (\S+)／Pro (.+)$/);
+    return m ? `${m[1]}、${m[2]}のAirと${/Pro$/.test(m[3]) ? m[3] : `${m[3]}のPro`}` : `${r.newer}と${r.older}`;
+  };
+  const mem = (r: OldProRow) => r.storage.replace("・", "と");
+  const cheaper = (r: OldProRow) => (r.diff > 0 ? r.olderShort ?? r.older : r.newerShort ?? r.newer);
+  return {
+    hook: newRow ? `MacBook ProとAir、新品だと${yen(Math.abs(newRow.diff))}違います。中古なら、どっちが安い？` : "MacBook ProとAir、中古なら、どっちが安い？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${pair(items[i])}、${mem(items[i])}。${cheaper(items[i])}が${yen(Math.abs(items[i].diff))}安いです。`).join(""),
+    reveal: `1位は${pair(top)}、${mem(top)}。Airが${yen(top.newerMedian)}、Proが${yen(top.olderMedian)}。${cheaper(top)}の方が、${yen(Math.abs(top.diff))}安いです。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、Pro派？Air派？",
+  };
+}
+
+/**
  * minie の既定（plusvs と同じ形。行は FoldRow で newer＝無印・older＝弟分）: ranking「3位は<弟分>と<番号 無印>、<容量>。差は<額>です。」/ reveal「弟分にすると、約○.○万円、およそ○%安くなります。」
  * 締めの「小さい・安い」は、出す3組がどれも mini のときだけ（16e・17e は無印と同じ 6.1 インチ。lib/iphoneSpecs.ts）
  */
@@ -476,6 +501,30 @@ function mbpNewNarration(s: IpadMiniScript): Partial<Record<NarrationKey, string
 }
 
 /**
+ * mbpproled の既定（10/29・PROLED MacBook Pro の4択。longform/2026-10-31-mbp-proled/short-plan.md）: hook 問い / ranking 3位・2位を1文ずつ（文頭の「3位は」で行を出す・render.ts の rowOf）/
+ * reveal 伏せた1位（PROLED との差がいちばん大きい行）の値段と差、M6 ならチップ・画面・重さの違い / comment ひと言の本文だけ / outro サイトへの誘導と問い
+ */
+function mbpProledNarration(s: IpadMiniScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const rowLine = (r: (typeof items)[number], rank: number) =>
+    r.short === "今の14インチ" ? `${rank}位は、今の14インチ。チップは同じM5 Proで、新品で${yen(r.diff)}安いです。`
+      : r.short === "M6" ? `${rank}位は、新型のM6。${yen(r.median)}で、${yen(r.diff)}安いです。`
+      : `${rank}位は、中古の14インチ、M5 Pro。相場${yen(r.median)}で、${yen(r.diff)}安いです。`;
+  const c = (label: string) => s.scenes.compare.find((x) => x.label === label);
+  const weight = c("重さ")?.a17.replace(/kg$/, "キロ");
+  return {
+    hook: "MacBook Pro、今選べるのは4つ。いちばん高いのは、タッチ対応の新型。ほかの3つは、いくら安い？",
+    ranking: [...items.keys()].slice(1).reverse().map((i) => rowLine(items[i], i + 1)).join(""),
+    reveal: top.short === "M6"
+      ? `1位は、新型のM6。${yen(top.median)}で、${yen(top.diff)}、およそ${Math.round(top.pct)}%安くなります。ただしチップはProではなくM6。画面にタッチはなく、重さは${weight}です。`
+      : rowLine(top, 1).replace(/です。$/, `、およそ${Math.round(top.pct)}%安くなります。`),
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、4つのうちどれにしますか？",
+  };
+}
+
+/**
  * 機種名の読み上げ用（画面の文字は変えない）。iPad の「(M2)」「(A16)」のような括弧のチップ名は括弧で間が空くので読点に（「iPad Air 11インチ、M2」）。
  * 「(第9世代)」は speakable が括弧を外す
  */
@@ -495,10 +544,12 @@ function budgetNarration(s: BudgetScript): Partial<Record<NarrationKey, string>>
   const fold = s.theme === "foldbudget";
   const galaxy = s.theme === "galaxybudget";
   const big = s.theme === "bigbudget";
+  const watch = s.theme === "watchbudget";
   const until = p.updateUntil ? `${Number(p.updateUntil.slice(0, 4))}年${Number(p.updateUntil.slice(5, 7))}月` : "";
   return {
-    hook: pixel ? "予算ぴったりで買える中古Pixelは…？" : ipad ? "予算ぴったりで買える中古iPadは…？" : mac ? "予算ぴったりで買える中古MacBookは…？" : pro ? "予算ぴったりで買える中古iPhone Proは…？" : fold ? "予算ぴったりで買える中古折りたたみスマホは…？" : galaxy ? "予算ぴったりで買える中古Galaxyは…？" : big ? "予算ぴったりで買える、大きい画面の中古iPhoneは…？" : "予算ぴったりで買える中古iPhoneは…？",
-    ranking: s.scenes.budgets.rows.map((r) => `${r.label}なら、${spokenModel(r.model)}、相場${yen(r.median)}です。`).join(""),
+    hook: pixel ? "予算ぴったりで買える中古Pixelは…？" : ipad ? "予算ぴったりで買える中古iPadは…？" : mac ? "予算ぴったりで買える中古MacBookは…？" : pro ? "予算ぴったりで買える中古iPhone Proは…？" : fold ? "予算ぴったりで買える中古折りたたみスマホは…？" : galaxy ? "予算ぴったりで買える中古Galaxyは…？" : big ? "予算ぴったりで買える、大きい画面の中古iPhoneは…？" : watch ? "予算ぴったりで買える中古Apple Watchは…？" : "予算ぴったりで買える中古iPhoneは…？",
+    // watchbudget: 「Apple Watch」は問いで言うので、行は「Series 7」から（「アップルウォッチシリイズナナ」と1つの句になる）
+    ranking: s.scenes.budgets.rows.map((r) => `${r.label}なら、${watch ? r.model.replace(/^Apple Watch /, "") : spokenModel(r.model)}、相場${yen(r.median)}です。`).join(""),
     reveal: pixel && until
       ? `注目は${p.label}の${p.model}。相場${yen(p.median)}、アップデートは${until}までです。`
       : `注目は${p.label}の${spokenModel(p.model)}。相場${yen(p.median)}、在庫は${p.count.toLocaleString()}台です。`,
@@ -510,6 +561,7 @@ function budgetNarration(s: BudgetScript): Partial<Record<NarrationKey, string>>
       : fold ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの折りたたみにしますか？"
       : galaxy ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのGalaxyにしますか？"
       : big ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの大画面iPhoneにしますか？"
+      : watch ? "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どのApple Watchにしますか？"
       : "全機種の相場は、プロフィールのリンクから見られます。あなたの予算なら、どの機種にしますか？",
   };
 }

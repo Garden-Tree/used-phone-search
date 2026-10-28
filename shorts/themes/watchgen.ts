@@ -43,17 +43,19 @@ export const watchShort = (model: string) => model.replace(/^Apple Watch\s+/, ""
 /** 組のケースの大きさ（"49mm"、違えば "46mm／45mm"） */
 export const sizeText = (r: FoldRow) => (r.olderStorage && r.olderStorage !== r.storage ? `${r.storage}／${r.olderStorage}` : r.storage);
 
-type Side = { where: Awaited<ReturnType<typeof modelWhere>>; size: number; count: number } | null;
-/** 在庫がいちばん多いケースの大きさ（同じ数なら小さい方）と、その件数 */
-async function side(model: string): Promise<Side> {
+export type Side = { where: Awaited<ReturnType<typeof modelWhere>>; size: number; count: number; total?: number } | null;
+/** 在庫がいちばん多いケースの大きさ（同じ数なら小さい方）と、その件数（watchbudget も使う） */
+export async function side(model: string): Promise<Side> {
   const where = await modelWhere(model);
   // ケースの大きさが分からない在庫（null）は数えない
-  const groups = (await groupMinPrice(where, "storage")).filter((g) => Number(g.key) > 0);
+  const all = await groupMinPrice(where, "storage");
+  const groups = all.filter((g) => Number(g.key) > 0);
   if (!groups.length) return null;
   const top = groups.reduce((a, b) => (b.count > a.count || (b.count === a.count && Number(b.key) < Number(a.key)) ? b : a));
-  return { where, size: Number(top.key), count: top.count };
+  // total: 販売中の全在庫（サイズを問わない。watchbudget の在庫数）
+  return { where, size: Number(top.key), count: top.count, total: all.reduce((a, g) => a + g.count, 0) };
 }
-const medianOf = async (s: NonNullable<Side>) => (await medianPrice({ AND: [s.where, { storage: s.size }] }, s.count))!;
+export const medianOf = async (s: NonNullable<Side>) => (await medianPrice({ AND: [s.where, { storage: s.size }] }, s.count))!;
 
 export async function buildWatchGenScript(date: string): Promise<WatchGenScript> {
   const rows: FoldRow[] = [];

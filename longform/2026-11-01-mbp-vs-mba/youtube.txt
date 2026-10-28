@@ -1,0 +1,37 @@
+MacBook ProとAir、何が違う？新品で11.5万円差｜Proにしかない6つと、Airで十分な人
+
+MacBook Pro と MacBook Air の違い（画面・端子・電池・スピーカー・チップ）と値段を、Apple 公式の値段・仕様と、Mac を扱う大手中古ショップ5店の相場（2026/10/29時点・ジャンクを除く）で比べました。
+結論: ネット・動画・書類なら Air。画面・端子・電池が要る人が Pro。新品は Air 13インチ M5 224,800円・Pro 14インチ M6 339,800円で、差は 115,000円。
+
+・新品の値段（Apple 公式・税込・10/29 確認）: Air 13インチ M5（16GB・512GB）224,800円／Air 15インチ M5（16GB・512GB）264,800円／Pro 14インチ M6（16GB・1TB）339,800円／Pro 14インチ M5 Pro（24GB・1TB）429,800円。同じ 16GB・1TB だと Air 13インチ 242,800円・Pro M6 339,800円（差 97,000円）
+・Pro にしかないもの（Apple 公式の仕様）: Liquid Retina XDR（HDR ピーク1,600ニト・ProMotion 最大120Hz）・HDMI と SDXC カードスロット・Thunderbolt 3つ・電池 最大24時間（Air は18時間）・6スピーカー（15インチ Air も6）・M5 Pro／M5 Max を選べる・外部ディスプレイ3台〜（M5 Pro 以上）
+・Air にだけあるもの: ファンレス設計・軽さ（13インチ 1.23kg／Pro 14インチ 1.55kg）
+・中古の相場（同じ構成の中央値）: Air M2 16GB・512GB 154,980円／Pro 14インチ M1 Pro 16GB・512GB 153,131円（差 1,849円）・Air 13インチ M5 16GB・512GB 215,980円・Pro 14インチ M2 Pro 16GB・512GB 193,130円・Pro 14インチ M4 16GB・512GB 247,980円・Air M1 8GB・256GB 83,980円／16GB・512GB 99,800円
+・M2 Air と M1 Pro の仕様は Apple サポートの技術仕様（Air 1.24kg・ムービー再生 最大18時間／M1 Pro 1.6kg・最大17時間）
+
+相場＝同じ機種・同じメモリ・同じ SSD の中央値。件数が少ない構成は目安です。
+
+0:00 結論：ふつうの使い方ならAir
+0:49 どうやって調べた？
+1:18 新品の値段：Airは22.48万円・Proは33.98万円
+2:18 Proにしかないもの
+3:46 Airで十分な人・Proが要る人
+4:37 中古だと同じ15万円台：M2 AirとM1 Pro
+5:43 予算22万円なら
+6:26 10万円以下なら
+7:13 まとめ
+7:54 次におすすめの動画
+
+MacBook Air 13インチ M2: https://used.gadelog.com/mac/macbook-air-13-m2?utm_source=youtube&utm_medium=social&utm_campaign=long_20261101
+MacBook Pro 14インチ M1 Pro: https://used.gadelog.com/mac/macbook-pro-14-m1-pro?utm_source=youtube&utm_medium=social&utm_campaign=long_20261101
+MacBook Air 13インチ M5: https://used.gadelog.com/mac/macbook-air-13-m5?utm_source=youtube&utm_medium=social&utm_campaign=long_20261101
+全機種の中古MacBookの相場: https://used.gadelog.com/mac?utm_source=youtube&utm_medium=social&utm_campaign=long_20261101
+
+VOICEVOX:春日部つむぎ
+VOICEVOX:ずんだもん
+BGM: Cyber Society by のる（OpenTracks）
+効果音：効果音ラボ
+立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)
+ずんだもん立ち絵：坂本アヒル様
+
+#MacBookPro #MacBookAir #中古MacBook

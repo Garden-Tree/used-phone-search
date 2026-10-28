@@ -45,6 +45,8 @@ export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   rakutenmobile: RAKUTEN_MOBILE,
   ipadmini: IPAD_MINI,
   mbpnew: MBP_M6,
+  // mbpproled（10/29〜）: PROLED の横動画（longform/2026-10-31-mbp-proled）はまだ公開前なので、公開済みの新型 M6 の回につなぐ。公開したら差し替える
+  mbpproled: MBP_M6,
 };
 
 /** 締めに札を出す横動画（声で誘導するテーマだけ） */

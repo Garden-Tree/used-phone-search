@@ -1,0 +1,43 @@
+MacBook Pro、どれ買う？新型PROLED・新型M6・今のモデル・中古の4択を値段と違いで比べた
+
+今選べる MacBook Pro 14インチの4つ（10/28 発表の「PROLED XDRディスプレイ搭載MacBook Pro」・10/27 発表の M6・併売の今のミニLEDのモデル・中古）を、Apple 公式の値段・仕様と、Mac を扱う大手中古ショップ5店の相場（2026/10/29時点・ジャンクを除く）で比べました。参考に MacBook Air の値段も。
+
+結論（14インチ・いちばん安い構成）:
+① 新型 PROLED（M5 Pro・24GB・1TB） 499,800円
+② 新型 M6（16GB・1TB） 339,800円
+③ 今のミニLED（M5 Pro・24GB・1TB） 429,800円（併売・値下げなし）
+④ 中古 M5 Pro（24GB・1TB） 相場 402,980円
+
+・新品の値段（Apple 公式・税込・10/29 確認）: PROLED 14インチ M5 Pro 499,800円／16インチ M5 Pro 599,800円。ミニLED 14インチ M5 Pro 429,800円／16インチ M5 Pro 519,800円。M6 14インチ 339,800円。発売は PROLED・M6 とも 11/6
+・違い（Apple 公式の仕様）: PROLED はタンデムOLED・Mac で初めてのタッチ・Dynamic Island・ピーク輝度 2,000ニト・P3＋Adobe RGB・14インチ 1.38kg。チップは今のモデルと同じ M5 Pro・M5 Max。M6 は CPU 12コア・Thunderbolt 4 ×3・ビデオストリーミング最大24時間・1.55kg
+・中古の相場（同じ構成の中央値）: 14インチ M5 Pro 24GB・1TB 402,980円（24件）／16インチ M5 Pro 24GB・1TB 467,130円（7件・目安）／14インチ M5 16GB・1TB 296,980円／14インチ M4 16GB・1TB 270,980円（6件・目安）／14インチ M1 Pro 16GB・512GB 153,131円・16GB・1TB 167,630円
+・M4 Pro の中古は 14インチ・16インチとも在庫1件（10/29）
+・参考 MacBook Air（Apple 公式）: 13インチ M5（16GB・512GB）224,800円／15インチ M5 264,800円。中古の 13インチ M2（16GB・512GB）相場 154,980円
+
+相場＝同じ機種・同じメモリ・同じ SSD の中央値。件数が少ない構成は目安です。
+
+0:00 結論：4つの値段
+0:50 どうやって調べた？
+1:13 ①新型PROLED：画面・タッチ・軽さ
+2:07 ②新型M6：新しいチップのいちばん安い入口
+3:05 ③今のモデル（ミニLED）：同じチップで7万円安い
+3:41 ④中古：M5 Pro・M5・M4・M1 Pro
+4:58 4つを並べると
+5:43 参考：Airならいくら？
+6:27 中古で買う前に見ること
+7:01 まとめ：誰にどれ
+7:47 次におすすめの動画
+
+MacBook Pro 14インチ M5 Pro: https://used.gadelog.com/mac/macbook-pro-14-m5-pro?utm_source=youtube&utm_medium=social&utm_campaign=long_20261031
+MacBook Pro 14インチ M5: https://used.gadelog.com/mac/macbook-pro-14-m5?utm_source=youtube&utm_medium=social&utm_campaign=long_20261031
+MacBook Pro 14インチ M1 Pro: https://used.gadelog.com/mac/macbook-pro-14-m1-pro?utm_source=youtube&utm_medium=social&utm_campaign=long_20261031
+全機種の中古MacBookの相場: https://used.gadelog.com/mac?utm_source=youtube&utm_medium=social&utm_campaign=long_20261031
+
+VOICEVOX:春日部つむぎ
+VOICEVOX:ずんだもん
+BGM: Cyber Society by のる（OpenTracks）
+効果音：効果音ラボ
+立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)
+ずんだもん立ち絵：坂本アヒル様
+
+#MacBookPro #中古MacBook #MacBook

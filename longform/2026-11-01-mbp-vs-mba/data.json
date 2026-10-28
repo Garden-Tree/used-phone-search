@@ -1,0 +1,481 @@
+{
+  "date": "2026-10-29",
+  "shops": 5,
+  "source": "script.md の数字そのまま（2026/10/29 の集計・longform/2026-11-01-mbp-vs-mba/data-query.ts → data-query.log。ジャンクを除く。相場＝同じ構成（機種・メモリ・SSD）の中央値）。新品の値段は Apple 公式・税込（apple.com/jp/shop/buy-mac/macbook-air・apple.com/jp/shop/buy-mac/macbook-pro・lib/macbookProM6.ts。10/29 確認）。仕様は apple.com/jp/macbook-air/specs/・apple.com/jp/macbook-pro/specs/・support.apple.com/ja-jp/111867（Air M2）・111902（14インチ M1 Pro）",
+  "thumbnail": {
+    "lines": [
+      "Pro と Air",
+      "どっち？"
+    ],
+    "badge": [
+      {
+        "text": "差"
+      },
+      {
+        "text": "11.5万円",
+        "red": true
+      }
+    ],
+    "footer": "新品 Air 22.48万円／Pro 33.98万円"
+  },
+  "chapters": [
+    {
+      "title": "結論：ふつうの使い方ならAir",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "新品の MacBook Air と Pro（いちばん安い構成）",
+        "items": [
+          {
+            "label": "Air 13インチ M5",
+            "value": "224,800",
+            "unit": "円",
+            "cue": "新品だと、Airは22万4,800円から"
+          },
+          {
+            "label": "Pro 14インチ M6",
+            "value": "339,800",
+            "unit": "円",
+            "cue": "新品だと、Airは22万4,800円から"
+          },
+          {
+            "label": "差",
+            "value": "115,000",
+            "unit": "円",
+            "cue": "新品だと、Airは22万4,800円から"
+          }
+        ],
+        "note": "Air は 16GB・512GB、Pro は 16GB・1TB。Apple 公式・税込（10/29 確認）"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "どうやって調べた？",
+        "items": [
+          {
+            "label": "Mac を扱う中古ショップ",
+            "value": "5",
+            "unit": "店",
+            "cue": "Macを扱う大手の中古ショップ5店"
+          },
+          {
+            "label": "MacBook の在庫",
+            "value": "2,004",
+            "unit": "件",
+            "cue": "Macを扱う大手の中古ショップ5店"
+          },
+          {
+            "label": "Air／Pro",
+            "value": "1,287／542",
+            "unit": "件",
+            "cue": "Airが1,287台"
+          }
+        ],
+        "note": "新品の値段と仕様は Apple 公式（10/29 確認）。相場＝同じ構成（機種・メモリ・SSD）の中央値・ジャンクを除く"
+      }
+    },
+    {
+      "title": "新品の値段：Airは22.48万円・Proは33.98万円",
+      "scene": {
+        "type": "bars",
+        "heading": "新品の値段（Apple 公式・税込）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "Air 13インチ M5",
+            "sub": "16GB・512GB",
+            "median": 224800,
+            "cue": "Airの13インチが22万4,800円"
+          },
+          {
+            "label": "Air 13インチ M5",
+            "sub": "16GB・1TB",
+            "median": 242800,
+            "cue": "Airの13インチが24万2,800円"
+          },
+          {
+            "label": "Air 15インチ M5",
+            "sub": "16GB・512GB",
+            "median": 264800,
+            "cue": "Airの13インチが22万4,800円"
+          },
+          {
+            "label": "Pro 14インチ M6",
+            "sub": "16GB・1TB",
+            "median": 339800,
+            "cue": "14インチのM6が33万9,800円"
+          },
+          {
+            "label": "Pro 14インチ M5 Pro",
+            "sub": "24GB・1TB",
+            "median": 429800,
+            "cue": "14インチのM6が33万9,800円"
+          }
+        ],
+        "note": "同じ 16GB・1TB どうしで差 97,000円（10/29 確認）。中古の Air 13インチ M5（16GB・512GB）は相場 215,980円"
+      }
+    },
+    {
+      "title": "Proにしかないもの",
+      "scene": {
+        "type": "table",
+        "heading": "Air と Pro の違い（Apple 公式の仕様・いまの新品）",
+        "columns": [
+          "項目",
+          "Air 13インチ M5",
+          "Pro 14インチ M6"
+        ],
+        "emphasis": [
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "画面",
+              "500ニト",
+              "XDR・最大120Hz・HDR ピーク 1,600ニト"
+            ],
+            "cue": "1つ目は、画面"
+          },
+          {
+            "cells": [
+              "端子",
+              "Thunderbolt 4 ×2",
+              "Thunderbolt 4 ×3・HDMI・SDカード"
+            ],
+            "cue": "端子。Airは"
+          },
+          {
+            "cells": [
+              "電池（ビデオ）",
+              "最大18時間",
+              "最大24時間"
+            ],
+            "cue": "電池。動画の再生で"
+          },
+          {
+            "cells": [
+              "スピーカー",
+              "4つ",
+              "6つ"
+            ],
+            "cue": "4つ目はスピーカー"
+          },
+          {
+            "cells": [
+              "チップ",
+              "M5 だけ",
+              "M6・M5 Pro・M5 Max"
+            ],
+            "cue": "チップの選び方"
+          },
+          {
+            "cells": [
+              "外の画面",
+              "最大2台",
+              "最大2台（M5 Pro は3台）"
+            ],
+            "cue": "外につなぐ画面の数"
+          },
+          {
+            "cells": [
+              "重さ",
+              "1.23kg",
+              "1.55kg"
+            ],
+            "cue": "Airは、ファンがない作り",
+            "emphasis": [
+              1
+            ]
+          }
+        ],
+        "note": "Air はファンレス設計（apple.com/jp/macbook-air/）。15インチの Air も6スピーカー。Wi-Fi 7 はどちらも同じ"
+      }
+    },
+    {
+      "title": "Airで十分な人・Proが要る人",
+      "scene": {
+        "type": "table",
+        "heading": "Air で足りる使い方・Pro が要る人",
+        "columns": [
+          "使い方",
+          "選ぶもの"
+        ],
+        "emphasis": [
+          1
+        ],
+        "rows": [
+          {
+            "cells": [
+              "ネット・動画を見る・書類・オンライン会議",
+              "Air"
+            ],
+            "cue": "YouTubeを見て、調べもの"
+          },
+          {
+            "cells": [
+              "スマホの写真の整理と軽い編集",
+              "Air"
+            ],
+            "cue": "スマホの写真を整理したり"
+          },
+          {
+            "cells": [
+              "SDカードで写真や動画を取り込む",
+              "Pro"
+            ],
+            "cue": "カメラのSDカードから"
+          },
+          {
+            "cells": [
+              "長い動画の編集",
+              "Pro"
+            ],
+            "cue": "カメラのSDカードから"
+          },
+          {
+            "cells": [
+              "HDR の動画や写真の仕上げ・外の画面を3台つなぐ",
+              "Pro"
+            ],
+            "cue": "HDRの写真や動画を"
+          },
+          {
+            "cells": [
+              "電源のない所で長く使う",
+              "Pro"
+            ],
+            "cue": "HDRの写真や動画を"
+          }
+        ],
+        "note": "Pro にしかないもの（画面・端子・電池・チップ）を使うかどうかで決める"
+      }
+    },
+    {
+      "title": "中古だと同じ15万円台：M2 AirとM1 Pro",
+      "scene": {
+        "type": "table",
+        "heading": "中古の Air M2 と Pro 14インチ M1 Pro",
+        "columns": [
+          "項目",
+          "Air 13インチ M2（2022年）",
+          "Pro 14インチ M1 Pro（2021年）"
+        ],
+        "emphasis": [],
+        "rows": [
+          {
+            "cells": [
+              "相場（16GB・512GB）",
+              "154,980円",
+              "153,131円"
+            ],
+            "cue": "メモリ16GB、512GBどうしで",
+            "emphasis": [
+              2
+            ]
+          },
+          {
+            "cells": [
+              "相場（16GB・1TB）",
+              "159,980円",
+              "167,630円"
+            ],
+            "cue": "メモリ16GB、512GBどうしで",
+            "emphasis": [
+              1
+            ]
+          },
+          {
+            "cells": [
+              "画面",
+              "500ニト",
+              "XDR・最大120Hz"
+            ],
+            "cue": "Proなら、明るいXDR",
+            "emphasis": [
+              2
+            ]
+          },
+          {
+            "cells": [
+              "端子",
+              "2つ",
+              "3つ＋HDMI＋SDカード"
+            ],
+            "cue": "Proなら、明るいXDR",
+            "emphasis": [
+              2
+            ]
+          },
+          {
+            "cells": [
+              "スピーカー",
+              "4つ",
+              "6つ"
+            ],
+            "cue": "Proなら、明るいXDR",
+            "emphasis": [
+              2
+            ]
+          },
+          {
+            "cells": [
+              "重さ",
+              "1.24kg",
+              "1.6kg"
+            ],
+            "cue": "1.24キロで",
+            "emphasis": [
+              1
+            ]
+          },
+          {
+            "cells": [
+              "電池（ムービー）",
+              "最大18時間",
+              "最大17時間"
+            ],
+            "cue": "1.24キロで",
+            "emphasis": [
+              1
+            ]
+          }
+        ],
+        "note": "相場は同じ構成の中央値（Air 31件・22件／M1 Pro 65件・23件）。M1 Pro は 102件中ランクB 66件"
+      }
+    },
+    {
+      "title": "予算22万円なら",
+      "scene": {
+        "type": "bars",
+        "heading": "予算22万円くらいなら（16GB・512GB）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "新品 Air M5",
+            "sub": "13インチ・公式",
+            "median": 224800,
+            "cue": "新品のAirが22万4,800円"
+          },
+          {
+            "label": "中古 Air M5",
+            "sub": "13インチ・相場",
+            "median": 215980,
+            "stock": "77件",
+            "cue": "新品のAirが22万4,800円"
+          },
+          {
+            "label": "中古 Pro M2 Pro",
+            "sub": "14インチ・2023年",
+            "median": 193130,
+            "stock": "13件",
+            "cue": "2023年のM2 Proなら"
+          },
+          {
+            "label": "中古 Pro M4",
+            "sub": "14インチ・2024年",
+            "median": 247980,
+            "stock": "19件",
+            "cue": "2024年の14インチ、M4のProは"
+          }
+        ],
+        "note": "中古は相場＝同じ構成の中央値（2026/10/29・ジャンクを除く）"
+      }
+    },
+    {
+      "title": "10万円以下なら",
+      "scene": {
+        "type": "bars",
+        "heading": "10万円以下なら：中古の MacBook Air（M1・2020年）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "Air M1",
+            "sub": "8GB・256GB",
+            "median": 83980,
+            "stock": "278件",
+            "cue": "2020年のM1のAir"
+          },
+          {
+            "label": "Air M1",
+            "sub": "16GB・512GB",
+            "median": 99800,
+            "stock": "21件",
+            "pick": true,
+            "cue": "16GB、512GBで、9万9,800円"
+          }
+        ],
+        "note": "注意: 13インチの Pro（2020 M1・2022 M2）は Touch Bar の古い形・端子は Air と同じ2つ（Apple 技術仕様）"
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "table",
+        "heading": "MacBook Pro と Air、どっち？",
+        "columns": [
+          "使い方",
+          "選ぶ機種",
+          "値段"
+        ],
+        "emphasis": [
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "ネット・動画・書類",
+              "新品 Air 13インチ M5",
+              "224,800円"
+            ],
+            "cue": "まとめるのだ"
+          },
+          {
+            "cells": [
+              "画面・端子・電池が要る",
+              "新品 Pro 14インチ M6",
+              "339,800円"
+            ],
+            "cue": "画面と端子と電池が要る人は"
+          },
+          {
+            "cells": [
+              "15万円台で",
+              "中古 Air M2 か M1 Pro（16GB・512GB）",
+              "154,980円／153,131円"
+            ],
+            "cue": "15万円台なら"
+          },
+          {
+            "cells": [
+              "10万円以下",
+              "中古 Air M1（8GB・256GB）",
+              "83,980円"
+            ],
+            "cue": "持ち歩くならAir、机ならM1 Pro"
+          }
+        ],
+        "note": "新品は Apple 公式（10/29）・中古は相場（2026/10/29）。毎日更新: used.gadelog.com"
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          {
+            "id": "iAzTGx6wsTs",
+            "title": "新型MacBook Pro M6 買う？中古のM5・M4にする？差は5.3万〜7.9万円｜新旧の違いと中古の相場で比べた"
+          },
+          {
+            "id": "SHyQRQ8wAic",
+            "title": "【中古iPad】いま買うならどれ？ 16店の相場で「使い方別」に選んだ（無印・Air・mini・Pro）"
+          }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com"
+      }
+    }
+  ]
+}

@@ -40,6 +40,9 @@ npx tsx shorts/make-short.tsx macgen plan --dir shorts/out/2026-10-29-macgen    
 npx tsx shorts/make-short.tsx ipadgen plan --dir shorts/out/2026-10-29-ipadgen     # iPad、1世代前にするといくら安い？（型 A だけ・10/27〜・つむぎ）
 npx tsx shorts/make-short.tsx pixelgen plan --dir shorts/out/2026-10-30-pixelgen   # Google Pixel、1世代前にするといくら安い？（型 A だけ・10/27〜・ずんだもん）
 npx tsx shorts/make-short.tsx stock plan --dir shorts/out/2026-10-29-stock             # 中古でいちばん出回っている iPhone は？在庫数ランキング（型 A だけ・10/27〜・つむぎ。Android 版は stockandroid・ずんだもん）
+npx tsx shorts/make-short.tsx mbpvsair plan             # MacBook AirとPro、中古ならどっちが安い？（型 A だけ・10/29〜・青山龍星）
+npx tsx shorts/make-short.tsx watchbudget plan          # 予算ぴったりで買える中古Apple Watch（型 A だけ・10/29〜・つむぎ。--budgets・--pick も効く）
+npx tsx shorts/make-short.tsx stockmac plan             # 中古でいちばん多いMacBook・在庫数ランキング（型 A だけ・10/29〜・青山龍星）
 npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）
 npx tsx shorts/make-short.tsx fold render --tiktok  # TikTok 用の short-A-tiktok.mp4（BGM なし・締めは「used.gadelog.com で検索」）
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
@@ -300,6 +303,12 @@ YouTube の画面表示に隠れる上 220px・下 420px・右 140px には文�
 - 長さと配置は統一し、見た目はテーマごとに変える（`looks.ts`）。**テーマは毎週ローテーション**（値下がり → 予算 → 2機種比較 → 豆知識）。
 - **毎回、検品担当のひと言を人が書く**。テンプレートだけの繰り返し動画は収益化の対象外になりうる（ideas/youtube-shorts.md）。
 
+## mbpvsair・watchbudget・stockmac（10/29〜・iPhone 以外の3本）
+
+- `mbpvsair`（`themes/mbpvsair.ts`・台本案 `longform/2026-11-01-mbp-vs-mba/short-plan.md`）: 場面・行は oldpro と同じ（OldProRow に label・olderShort・newerShort・isNew を足した。型 MbpVsAirScript）。行は 新品 Air 13インチ M5 vs Pro 14インチ M6（16GB・1TB。`lib/macbookAirM5.ts`・`lib/macbookProM6.ts`・Apple 公式）・中古 Air 13インチ M2 vs Pro 14インチ M1 Pro（16GB・512GB／1TB。構成の中央値・ジャンク除く・在庫5件以上）。差の大きさの小さい順（1位＝いちばん同じ値段に近い組）。安い方は毎回の数字から（逆転していたら「Proが安い」と言わない）。13インチ Pro は比べない（Touch Bar の旧筐体）。見た目 ⑤ PRO＋split（「新品の差」）。声 青山龍星。関連動画の締めは横動画の ID が分かってから
+- `watchbudget`（`themes/watchbudget.ts`）: budget と同じ（`pickBudgetModels`・BudgetScript）。ケースは watchgen と同じ（機種ごとに在庫がいちばん多いサイズ・`watchgen.ts` の side を共有）。予算 2万・4万・5万・8万円・注目4万円（`WATCH_SHORT_BUDGETS`・`WATCH_PICK_BUDGET`）。切り口は watchOS 27 対応（Apple 公式）。発売年は持たない（released は空。行・注目の補足は出さない）。行の声は「Series 7」から（「Apple Watch」を付けると1つの句になる）。見た目 ② BUDGET＋chips。声 つむぎ
+- `stockmac`（`themes/stock.ts` の kind "mac"）: stock の MacBook 版。機種は MAC_MODELS、groupBy 1回（モデル名の頭 "MacBook"）。店の数は activeMacShops。見た目 ④ CONDITION＋bars。声 青山龍星。関連動画なし
+
 ## mbpnew（10/28〜・新型 MacBook Pro 14インチ M6 の回）
 
 - 「新型MacBook Pro M6、中古のM5・M4ならいくら安い？」。場面・画面は ipadmini と同じ（台本の型 IpadMiniScript・`isNewVsOld`）。画面の文字（見出しの帯・つかみ・注記・1位の補足・棒の札・表の見出し）は `scenes.copy`（NewVsOldCopy）で変える。ipadmini は copy を持たない（今までの文字のまま）
@@ -307,3 +316,10 @@ YouTube の画面表示に隠れる上 220px・下 420px・右 140px には文�
 - 中古は 14インチの M4（16GB）・M5（16GB）・M5（24GB）を、新型と同じ SSD 1TB で。相場は構成ごとの中央値（在庫5件以上）。差の大きい順で items[0] を伏せる
 - 声 青山龍星・見た目 ① DROPS＋つかみ split。読み: M6 エムシックス・Wi-Fi 7 ワイファイセブン・「約8.0万円」は小数の 0 を外す（「ハッテンゼロ」と読まれた）
 - 関連動画の締めはなし（Mac の横動画はまだ）
+
+## mbpproled（10/29〜・PROLED XDR ディスプレイ搭載 MacBook Pro の4択）
+
+- 「MacBook Pro 4択、新型（有機EL）よりいくら安い？」。台本案は `longform/2026-10-31-mbp-proled/short-plan.md`。場面・画面は mbpnew と同じ（IpadMiniScript・`isNewVsOld`）
+- 基準は新型 PROLED 14インチ M5 Pro（24GB・1TB 499,800円）。値は `lib/macbookProProled.ts`（Apple 公式・10/29 確認）。行は 今のミニLED M5 Pro（新品 429,800円）・中古 M5 Pro 24GB・1TB（DB の中央値・ジャンク除外・在庫5件以上）・新型 M6（新品 339,800円・`lib/macbookProM6.ts`）。差の大きい順で items[0] を伏せる
+- 新品の行は `isNew`（count 0・ランキングの値段は「新品○円」）。`copy` に足した欄: `hookRight`（つかみの右の札）・`teaserLabel`・`oldBar`（2本目の棒の札）・`compareNewHead`（表の基準の列）・`rankBadges`（札を「3位・2位」に。声の「3位は」で行を出す・render.ts の rowOf）。どれも省略可で、ipadmini・mbpnew は今までどおり
+- 声 青山龍星・見た目 ③ VERSUS＋つかみ split。関連動画は PROLED の横動画が公開前なので、公開済みの新型 M6 の回（relatedLong.ts の MBP_M6）。公開したら差し替える

@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini・watchgen・macgen・ipadgen・pixelgen・stock・stockandroid）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini・watchgen・macgen・ipadgen・pixelgen・stock・stockandroid・stockmac・watchbudget・mbpvsair）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -72,7 +72,7 @@ export type BudgetRow = { budget: number; label: string; model: string; storage:
 
 /** テーマ budget「予算ぴったりで買える中古iPhoneは？」・pixelbudget「…中古Pixelは？」・ipadbudget「…中古iPadは？」（同じ場面・同じ選び方） */
 export type BudgetScript = Common & {
-  theme: "budget" | "pixelbudget" | "ipadbudget" | "macbudget" | "probudget" | "foldbudget" | "galaxybudget" | "bigbudget";
+  theme: "budget" | "pixelbudget" | "ipadbudget" | "macbudget" | "probudget" | "foldbudget" | "galaxybudget" | "bigbudget" | "watchbudget";
   scenes: {
     /** 場面 ranking: 予算の行（予算の小さい順） */
     budgets: { rows: BudgetRow[] };
@@ -315,11 +315,20 @@ export type UnusedScript = Common & {
 export type OldProRow = {
   older: string; newer: string; storage: string; storageGb: number;
   olderMedian: number; newerMedian: number; olderCount: number; newerCount: number; diff: number; pct: number;
+  /** mbpvsair（10/29〜）だけ: 画面の行の名前（「中古 Air M2／Pro M1 Pro」）・棒の札と「○○が安い」の短い名前（「Pro」「Air」）・新品の行（Apple 公式の定数。件数は 0） */
+  label?: string; olderShort?: string; newerShort?: string; isNew?: boolean;
 };
 
-/** テーマ oldpro「1世代前のProと最新の無印、どっちが安い？」（差の大きさの大きい順） */
-export type OldProScript = Common & {
-  theme: "oldpro";
+/**
+ * テーマ oldpro「1世代前のProと最新の無印、どっちが安い？」（差の大きさの大きい順）・
+ * mbpvsair「MacBook AirとPro、中古ならどっちが安い？」（10/29〜。shorts/themes/mbpvsair.ts。older＝Pro・newer＝Air。差の大きさの小さい順で items[0] が1位）
+ */
+export type OldProScript = OldProBody & { theme: "oldpro" | "mbpvsair" };
+/** mbpvsair だけの型（判別のため oldpro と分ける。中身は同じ） */
+export type MbpVsAirScript = OldProBody & { theme: "mbpvsair" };
+type OldProBody = Common & {
+  /** mbpvsair: 新品の値段を Apple 公式で確かめた日 */
+  appleChecked?: string;
   scenes: {
     ranking: { items: OldProRow[] };
     comment: CommentScene;
@@ -358,21 +367,27 @@ export type RakutenMobileScript = Common & {
  * newStorageGb: 比べた新型の容量（同じ容量の公式価格があればその容量、なければ 128GB＝最安の始まり）。diff = 新型 − 中古の相場、pct = diff / 新型（%・小数1桁）
  * short: 機種名の括弧の中（「第5世代」「A17 Pro」。行の声の頭）・year: 発売年（行の札）
  */
-export type IpadMiniRow = { model: string; short: string; year: string; storage: string; storageGb: number; median: number; count: number; newStorageGb: number; newPrice: number; diff: number; pct: number };
+export type IpadMiniRow = { model: string; short: string; year: string; storage: string; storageGb: number; median: number; count: number; newStorageGb: number; newPrice: number; diff: number; pct: number;
+  /** mbpproled（10/29〜）: 新品の行（Apple 公式の定数）。median は公式の価格・count は 0（件数は出さない）。ranking の値段の欄は「新品○円」 */
+  isNew?: boolean };
 
 /**
  * 新型と中古の旧型の回で、画面の文字を機種ごとに変える分（mbpnew・10/28〜）。ipadmini は持たない（scenes.tsx の既定の文字）。
  * head: 見出しの帯の2行・hook: つかみの3行・hookSub: つかみの左の札の下（新型のチップ）・foot: 下の注記・
  * revealSub: 1位の補足の行・newBar: 新型の棒の札・compareHead: 違いの表の旧型の列の見出し
  */
-export type NewVsOldCopy = { head: [string, string]; hook: string[]; hookSub: string; foot: string; revealSub: string; newBar: string; compareHead: string };
+export type NewVsOldCopy = { head: [string, string]; hook: string[]; hookSub: string; foot: string; revealSub: string; newBar: string; compareHead: string;
+  /** mbpproled（10/29〜）で足した分（どれも省略可・なければ今までの文字）: hookRight つかみの右の札（既定「旧型／中古の相場」）・teaserLabel つかみの値段の札（既定「新型」）・
+   * oldBar reveal の2本目の棒の札（既定「中古の相場」）・compareNewHead 違いの表の基準の列の見出し（既定「新型」）・rankBadges ランキングの札を発売年でなく「3位・2位」に */
+  hookRight?: { label: string; sub: string }; teaserLabel?: string; oldBar?: string; compareNewHead?: string; rankBadges?: boolean };
 
 /**
  * テーマ ipadmini「新型iPad mini、中古の旧型ならいくら安い？」（10/27〜・新型の発表に合わせた回。items は発売の新しい順で items[0]＝A17 Pro を最後まで伏せる）・
- * mbpnew「新型MacBook Pro M6、中古のM5・M4ならいくら安い？」（10/28〜。shorts/themes/mbpnew.ts。items は差の大きい順で items[0] を伏せる。copy で画面の文字を変える）
+ * mbpnew「新型MacBook Pro M6、中古のM5・M4ならいくら安い？」（10/28〜。shorts/themes/mbpnew.ts。items は差の大きい順で items[0] を伏せる。copy で画面の文字を変える）・
+ * mbpproled「MacBook Pro 4択、新型（有機EL）よりいくら安い？」（10/29〜。shorts/themes/mbpproled.ts。基準は新型 PROLED（newModel）、行は新品（isNew）と中古の混在）
  */
 export type IpadMiniScript = Common & {
-  theme: "ipadmini" | "mbpnew";
+  theme: "ipadmini" | "mbpnew" | "mbpproled";
   /** 新型の価格・仕様を Apple 公式で確かめた日（lib/ipadMiniA20.ts の IPAD_MINI_A20_CHECKED） */
   appleChecked: string;
   scenes: {
@@ -396,7 +411,7 @@ export type StockRow = { model: string; count: number; share: number; storage: s
 
 /** テーマ stock「中古でいちばん出回っているiPhoneは？在庫数ランキング」・stockandroid（同じ Android 版。Pixel・Galaxy・Xperia・AQUOS）（10/27〜。shorts/themes/stock.ts） */
 export type StockScript = Common & {
-  theme: "stock" | "stockandroid";
+  theme: "stock" | "stockandroid" | "stockmac";
   scenes: {
     /** 範囲の全機種の件数の合計（割合の分母）と機種の数 */
     total: number;
@@ -408,23 +423,23 @@ export type StockScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | OldProScript | RakutenMobileScript | IpadMiniScript | DeviceGenScript | StockScript;
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | (OldProBody & { theme: "oldpro" }) | RakutenMobileScript | IpadMiniScript | DeviceGenScript | StockScript | MbpVsAirScript;
 
 /**
  * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。
  * YouTube 公式ブログ 2026/7「最後の5秒で声と画面の両方で誘導」）。いまの横動画は iPhone なので、Pixel・iPad・折りたたみは外す。
  * rakutenmobile は横動画11本目（楽天モバイル）、ipadmini は12本目（新型 iPad mini・iPad で声の誘導があるのはこの回だけ）につなぐ
  */
-export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "stock", "rakutenmobile", "ipadmini", "mbpnew"]);
+export const RELATED_LONG_THEMES = new Set<Script["theme"]>(["drops", "budget", "probudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "stock", "rakutenmobile", "ipadmini", "mbpnew", "mbpproled"]);
 export const RELATED_LONG_LINE = "くわしい解説は 下の関連動画で";
 /** 締めに関連動画の誘導を出すか。TikTok（--tiktok）には関連動画がないので出さない */
 export const hasRelatedLong = (s: Script) => !s.tiktok && RELATED_LONG_THEMES.has(s.theme);
 
 /** budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget（予算の4行・注目の1機種の場面を共有） */
-export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget" || s.theme === "macbudget" || s.theme === "probudget" || s.theme === "foldbudget" || s.theme === "galaxybudget" || s.theme === "bigbudget";
+export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget" || s.theme === "macbudget" || s.theme === "probudget" || s.theme === "foldbudget" || s.theme === "galaxybudget" || s.theme === "bigbudget" || s.theme === "watchbudget";
 /** provs・promax・plusvs・plusmax（2機種の差のランキング・場面を共有） */
 export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax";
-/** stock・stockandroid（在庫数ランキング・場面を共有） */
-export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid";
-/** ipadmini・mbpnew（新型と中古の旧型・場面を共有） */
-export const isNewVsOld = (s: Script): s is IpadMiniScript => s.theme === "ipadmini" || s.theme === "mbpnew";
+/** stock・stockandroid・stockmac（在庫数ランキング・場面を共有） */
+export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac";
+/** ipadmini・mbpnew・mbpproled（新型と中古の旧型・場面を共有） */
+export const isNewVsOld = (s: Script): s is IpadMiniScript => s.theme === "ipadmini" || s.theme === "mbpnew" || s.theme === "mbpproled";

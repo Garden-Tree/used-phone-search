@@ -1,6 +1,6 @@
 /**
  * テーマ「中古でいちばん出回っている iPhone／Android は？ 在庫数ランキング」（10/27〜）。
- * stock＝iPhone、stockandroid＝Android（Pixel・Galaxy・Xperia・AQUOS をまとめて）。場面・行・選び方は同じで、機種の範囲・ひと言・説明欄だけ違う
+ * stock＝iPhone、stockandroid＝Android（Pixel・Galaxy・Xperia・AQUOS をまとめて）、stockmac＝MacBook（10/29〜・lib/macCatalog.ts）。場面・行・選び方は同じで、機種の範囲・ひと言・説明欄だけ違う
  *
  * 選び方（台本・説明欄・動画で同じ。主観は入れない）:
  * - 機種はサイトに機種ページのある機種（iPhone は lib/catalog.ts の ALL_PAGE_MODELS、Android は lib/pixelCatalog.ts・galaxyCatalog.ts・
@@ -20,11 +20,12 @@ import { PIXEL_MODELS, isPixel, jaMonth, updateUntil } from "@/lib/pixelCatalog"
 import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
 import { XPERIA_MODELS } from "@/lib/xperiaCatalog";
 import { AQUOS_MODELS } from "@/lib/aquosCatalog";
+import { MAC_MODELS } from "@/lib/macCatalog";
 import { GALAXY_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
-import { activeAquosShops, activeShops, activeXperiaShops } from "@/lib/activeShops";
+import { activeAquosShops, activeMacShops, activeShops, activeXperiaShops } from "@/lib/activeShops";
 import type { StockRow, StockScript } from "../types";
 
-export type StockKind = "iphone" | "android";
+export type StockKind = "iphone" | "android" | "mac";
 const SHOWN = 3;
 
 const man = (n: number) => n.toLocaleString();
@@ -35,10 +36,12 @@ const utm = (date: string, theme: StockScript["theme"]) => `utm_source=youtube&u
 const KINDS = {
   iphone: { theme: "stock", models: ALL_PAGE_MODELS, prefixes: ["iPhone"], label: "iPhone" },
   android: { theme: "stockandroid", models: [...PIXEL_MODELS, ...GALAXY_MODELS, ...XPERIA_MODELS, ...AQUOS_MODELS], prefixes: ["Pixel", "Galaxy", "Xperia", "AQUOS"], label: "Android" },
+  // stockmac（10/29〜）: MacBook（lib/macCatalog.ts の MAC_MODELS。Apple シリコンの Air・Pro と Neo）。相場の容量は SSD
+  mac: { theme: "stockmac", models: MAC_MODELS, prefixes: ["MacBook"], label: "MacBook" },
 } as const;
 
 /** "iPhone 13" → "13"・"iPhone SE (第3世代)" → "SE（第3世代）"（タイトルの答え。iPhone は「中古でいちばん多いiPhoneは」に続ける） */
-const titleName = (kind: StockKind, model: string) => (kind === "iphone" ? model.replace(/^iPhone\s+/, "").replace(/\s*\((第\d世代)\)$/, "（$1）") : model);
+const titleName = (kind: StockKind, model: string) => (kind === "iphone" ? model.replace(/^iPhone\s+/, "").replace(/\s*\((第\d世代)\)$/, "（$1）") : kind === "mac" ? model.replace(/^MacBook\s+/, "") : model);
 
 export async function buildStockScript(date: string, kind: StockKind): Promise<StockScript> {
   const k = KINDS[kind];
@@ -81,14 +84,17 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
 
   const shops = kind === "iphone"
     ? await activeShops(SHOPS)
+    : kind === "mac" ? await activeMacShops()
     : [...(await activeShops(PIXEL_SHOPS)), ...(await activeShops(GALAXY_SHOPS)), ...(await activeXperiaShops()), ...(await activeAquosShops())];
   const shopCount = new Set(shops.map((s) => s.name)).size;
 
   // 検品担当のひと言の下書き（1行16字以内・3行まで）。数字は入れない（画面と声に件数がある）
   // iPhone: 在庫が多い機種は同じ機種の中で電池・保証を比べて選べる。Android: アップデートの期限は機種で違う（Pixel は Google 公式の保証、Galaxy は公式の保証期間が出ていない）
   const pixelUntil = kind === "android" && isPixel(top.model) ? updateUntil(top.model) : undefined;
+  // Mac: Apple シリコンの MacBook はメモリを後から増やせない。在庫が多い機種はメモリ・SSD の構成を選べる
   const lines = kind === "iphone"
     ? ["在庫が多い機種ほど", "電池の%と保証を", "比べて選べます"]
+    : kind === "mac" ? ["在庫が多い機種ほど", "メモリとSSDの", "構成を選べます"]
     : pixelUntil
       ? [`${top.model}は`, "アップデート保証が", `${jaMonth(pixelUntil)}まで`]
       : ["Androidは機種ごとに", "アップデートの期限を", "確認しましょう"];
@@ -98,9 +104,9 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
   const rawTitle = `中古でいちばん多い${k.label}は${titleName(kind, top.model)}！在庫${man(top.count)}件ランキング`;
   const title = rawTitle.length <= 60 ? rawTitle : `中古でいちばん多い${k.label}は？在庫${man(top.count)}件ランキング`;
   const rowText = (r: StockRow, i: number) => `${i + 1}位 ${r.model} 在庫${man(r.count)}件（${r.share.toFixed(1)}%）・相場${man(r.median)}円（${r.storage}）`;
-  const scope = kind === "iphone" ? "iPhone" : "Android（Pixel・Galaxy・Xperia・AQUOS）";
+  const scope = kind === "iphone" ? "iPhone" : kind === "mac" ? "MacBook（Air・Pro・Neo）" : "Android（Pixel・Galaxy・Xperia・AQUOS）";
   const description = [
-    `中古でいちばん出回っている${scope}は？ 大手中古ショップの在庫の数のランキングです。1位は${top.model}で、在庫${man(top.count)}件。${kind === "iphone" ? "iPhone" : "Android"}全体の${top.share.toFixed(1)}%です。相場は${top.storage}で${man(top.median)}円。`,
+    `中古でいちばん出回っている${scope}は？ 大手中古ショップの在庫の数のランキングです。1位は${top.model}で、在庫${man(top.count)}件。${k.label}全体の${top.share.toFixed(1)}%です。相場は${kind === "mac" ? "SSD " : ""}${top.storage}で${man(top.median)}円。`,
     "",
     ...items.map(rowText),
     "",
@@ -108,7 +114,7 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
     "",
     // utm で YouTube から来た人を GA で数える（canonical は印なしなので検索には影響しない）
     `${top.model}の店ごとの在庫と最安値: https://used.gadelog.com${modelPagePath(top.model)}?${utm(date, theme)}`,
-    `全機種の中古相場: https://used.gadelog.com/?${utm(date, theme)}`,
+    kind === "mac" ? `中古MacBookの全機種の相場: https://used.gadelog.com/mac?${utm(date, theme)}` : `全機種の中古相場: https://used.gadelog.com/?${utm(date, theme)}`,
   ].join("\n");
 
   return {
@@ -127,6 +133,6 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
         question: "あなたなら どれにする？",
       },
     },
-    youtube: { title, description, hashtags: kind === "iphone" ? ["#中古iPhone", "#iPhone"] : ["#中古スマホ", "#Android"] },
+    youtube: { title, description, hashtags: kind === "iphone" ? ["#中古iPhone", "#iPhone"] : kind === "mac" ? ["#MacBook", "#中古MacBook"] : ["#中古スマホ", "#Android"] },
   };
 }
