@@ -27,11 +27,10 @@
 - **新品価格は公式で確かめた値だけ**（`lib/applePrices.ts`・`lib/officialPrices.ts`・毎月1日に見直し）
 - **楽天の店**: ゲオ・じゃんぱら・ソフマップ・ニューズド・キタムラ・イオシス・MTM
   - 同じ会社の別の売り場は公式のカードに（イオシス⇔楽天・エムモバ⇔エムコム）
-- **Amazon 整備済み**: 停止
 - **Yahoo! 7店**: VC（2025875）。もしもは否認
 - **収益の枠**: 回線（`SimTile`・2年の総額 `/sim`）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`。値動き速報 `price-alerts.ts`
-- **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。いつまで使える `/iphone/how-long`・何年で・実質いくら `/iphone/resale-value`（旧 price-drop を統合）
+- **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。いつまで使える `/iphone/how-long`・何年で・実質いくら `/iphone/resale-value`
 - **YouTube の公開予約は最長2日後まで**（相場が動くため・10/29 ユーザー）
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
 - **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit・PC next・Be-Stock は A8、ソフマップ・じゃんぱら・イオシスは楽天
@@ -43,7 +42,7 @@
 | **再クロールの2週後** | 18 Pro 系のタイトル（10/23〜・ideas/10-28-ai） | だめなら「最安値・相場｜N店比較」 |
 | **11/7・11/9** | サムネの A/B テスト | 勝った型を次の回に |
 | **11/1** | 横動画9本目（月次・`longform/2026-11-01-monthly`）を取り直して公開 | 毎月 |
-| **10/31・11/16** | X 有料: 返信の表示・流入 | 返信平均50か流入週5。未達で解約 |
+| **10/31・11/16** | X 有料: 返信の表示・流入 | 返信平均50か流入週5。未達→解約 |
 | **随時** | Duo・iPad mini A20・MBP M6・PROLED MBP（11/6発売）の中古在庫 | 出たら catalog へ |
 | **10/31 夜** | ショートの声 ipadgen↔pixelgen | 継続率 3pt 差 |
 | **11/10** | 10/27 改修の前後（ideas/10-27） | 引用減なら冒頭を戻す |
