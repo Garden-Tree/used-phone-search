@@ -24,6 +24,9 @@ const KEYWORDS = ["iPhone", "iPad", "Pixel", "Galaxy"];
 /** 1ページの件数。API が 400 を返したら順に小さくする（上限が 100 でなかったときの保険） */
 const PAGE_SIZES = [100, 50, 20];
 const MAX_START = 1000; // start の上限＝1回の検索で取れる件数
+// 件数が上限に近い帯も割る（10/28: モバステの iPhone が約1,000件で、start=981 のページが 400 になった。
+// 取得の途中で件数が増えると上限を超えるため、100件の余裕を持たせる）
+const SPLIT_ABOVE = MAX_START - 100;
 const INTERVAL_MS = 2000;
 const RATE_LIMIT_WAIT_MS = 30_000; // 429（回数制限）のあと待つ時間
 const MAX_REQUESTS = 3000; // 暴走防止（1ストアあたり）
@@ -170,10 +173,10 @@ function toItem(sellerId: string, hit: Hit): RakutenItem | null {
   };
 }
 
-/** 価格帯 [from, to] の在庫を集める。先頭 1,000 件を超える帯は半分に割って再帰的に取得する */
+/** 価格帯 [from, to] の在庫を集める。900 件（SPLIT_ABOVE）を超える帯は半分に割って再帰的に取得する */
 async function collectRange(sellerId: string, keyword: string, from: number, to: number, items: Map<string, RakutenItem>): Promise<void> {
   const first = await fetchPage(sellerId, keyword, 1, from, to);
-  if (first.total > MAX_START && to - from > 1) {
+  if (first.total > SPLIT_ABOVE && to - from > 1) {
     const mid = Math.floor((from + to) / 2);
     await collectRange(sellerId, keyword, from, mid, items);
     await collectRange(sellerId, keyword, mid + 1, to, items);

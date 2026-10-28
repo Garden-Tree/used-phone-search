@@ -72,7 +72,7 @@ export default function ModelGuide(p: {
         )}
         {/* iPhone だけ（factorsHref がある機種）。1か月の値下がりを発売からの年数別に（10/28〜） */}
         {p.factorsHref && (
-          <Link href="/iphone/price-drop" className={`text-[13px] font-bold ${LINK}`}>中古iPhoneは1か月でいくら下がる？発売からの年数別 ›</Link>
+          <Link href="/iphone/resale-value" className={`text-[13px] font-bold ${LINK}`}>iPhoneは発売から何年でいくら下がる？実質いくら ›</Link>
         )}
       </section>
 

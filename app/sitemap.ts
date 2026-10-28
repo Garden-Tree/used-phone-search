@@ -53,7 +53,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: SITE_URL, lastModified, changeFrequency: "daily", priority: 1 },
     { url: `${SITE_URL}/iphone`, lastModified, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/iphone/price-factors`, lastModified, changeFrequency: "daily", priority: 0.7 },
-    { url: `${SITE_URL}/iphone/price-drop`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/iphone/where-to-buy`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/sim`, lastModified, changeFrequency: "daily", priority: 0.7 },
     // 月次の相場レポート: 終わった月があるときだけ（一覧はレポートが1本もない間は noindex）。終わった月の中身は変わらないので lastmod は公開日（翌月1日）

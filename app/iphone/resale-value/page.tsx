@@ -6,6 +6,7 @@ import { modelPagePath } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
 import { activeShops } from "@/lib/activeShops";
 import { getResaleValue, RESALE_MIN_COUNT, type ResaleRow } from "@/lib/resaleValue";
+import { getPriceDrop } from "@/lib/priceDrop";
 import { LAUNCH_PRICES_CHECKED } from "@/lib/launchPrices";
 import { applePrice } from "@/lib/applePrices";
 import { BUYBACK_PROGRAMS } from "@/lib/buyback";
@@ -17,7 +18,8 @@ export const dynamic = "force-static";
 /**
  * 中古iPhoneは発売から何年でいくら下がる？（2026-10-28〜）: 発売時の Apple 公式の値段と、いまの中古の相場（同じ容量）を比べ、
  * 発売からの年数ごとの「残っている割合」と、機種ごとの「1か月あたり実質いくら（目安）」を出す。
- * 「iphone 値下がり率」「iphone リセール」「実質いくら」の検索向け。数字は lib/resaleValue.ts。短期の値動きは /iphone/price-drop
+ * 「iphone 値下がり率」「iphone リセール」「実質いくら」の検索向け。数字は lib/resaleValue.ts。
+ * 10/28 に /iphone/price-drop（直近30日の値動き・年数別）をこのページの1節にまとめた（public/_redirects で転送）。30日の数字は lib/priceDrop.ts
  */
 const PATH = "/iphone/resale-value";
 const H1 = "中古iPhoneは発売から何年でいくら下がる？";
@@ -36,6 +38,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ResaleValuePage() {
   const shopNum = (await activeShops()).length;
   const { rows, groups } = await getResaleValue();
+  const drop = await getPriceDrop();
+  const pctText = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : "±"}${Math.abs(n).toFixed(1)}%`;
+  const yenDiff = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : "±"}${Math.abs(n).toLocaleString()}円`;
   const dateText = new Date().toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
   const lead = groups.length >= 2
     ? `${dateText}時点、中古の相場は発売時の値段の${groups.map((g) => `${g.label}で約${Math.round(g.avgRetention)}%`).join("・")}（同じ容量・Apple 公式の発売時の値段と大手中古ショップ${shopNum}店の在庫の中央値を比べた機種の平均。発売後に新品が値上がりした機種は100%を超える）。`
@@ -161,6 +166,25 @@ export default async function ResaleValuePage() {
           </p>
         </section>
 
+        {/* 直近30日の値動き（旧 /iphone/price-drop・10/28 にここへまとめた） */}
+        {drop.groups.length > 0 && drop.startDate && drop.endDate && (
+          <section id="last-30-days" className="flex flex-col gap-2">
+            <h2 className="text-lg md:text-xl font-bold">直近{drop.days}日の値動き（発売からの年数別）</h2>
+            <p className="text-[13px] text-ink-sub leading-relaxed">
+              {slash(drop.startDate)}〜{slash(drop.endDate)}の相場（在庫がいちばん多い容量の中央値）の変化。平均{pctText(drop.avgPct)}（{yenDiff(drop.avgDiff)}）・{drop.rows.length}機種。
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {drop.groups.map((g) => (
+                <div key={g.label} className={`${CARD} px-3 py-2.5 flex flex-col gap-0.5`}>
+                  <span className="text-[11px] text-ink-mute">{g.label}</span>
+                  <span className={`text-lg font-bold tabular-nums ${g.avgPct < 0 ? "text-safe" : g.avgPct > 0 ? "text-price" : "text-ink-mute"}`}>{pctText(g.avgPct)}</span>
+                  <span className="text-[10px] text-ink-mute">平均{yenDiff(g.avgDiff)}・{g.rows.length}機種</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* 売るなら（買取の A8。機種ページの「今のスマホを売る」と同じリンク・計測） */}
         <section className="flex flex-col gap-2">
           <h2 className="text-lg md:text-xl font-bold">今の iPhone を売るなら</h2>
@@ -198,7 +222,6 @@ export default async function ResaleValuePage() {
             買取: ネットオフ・にこスマ・モバステの買取価格の表示（週1回取得）。<Link href="/about#data" className={LINK}>集計の方法</Link>
           </p>
           <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-            <Link href="/iphone/price-drop" className="font-bold text-brand-600 hover:underline underline-offset-4 text-sm">直近1か月の値下がり &rarr;</Link>
             <Link href="/iphone" className="font-bold text-brand-600 hover:underline underline-offset-4 text-sm">中古iPhoneの相場一覧 &rarr;</Link>
           </p>
         </section>

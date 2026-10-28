@@ -142,9 +142,6 @@ export default async function IphoneIndexPage() {
           <Link href="/iphone/resale-value" className="font-bold text-brand-600 hover:underline underline-offset-4">発売から何年でいくら下がる？発売時の値段と中古の相場 &rarr;</Link>
         </p>
         <p className="text-sm mb-4">
-          <Link href="/iphone/price-drop" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPhoneは1か月でいくら下がる？発売からの年数別 &rarr;</Link>
-        </p>
-        <p className="text-sm mb-4">
           <Link href="/iphone/where-to-buy" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPhoneはどこで買う？店ごとの在庫・保証・電池表記の比較 &rarr;</Link>
         </p>
         {latestReport && (
