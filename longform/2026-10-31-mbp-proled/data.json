@@ -1,7 +1,7 @@
 {
   "date": "2026-10-29",
   "shops": 5,
-  "source": "script.md の数字そのまま（2026/10/29 の集計・longform/2026-10-31-mbp-proled/data-query.ts → data-query.log。ジャンクを除く。相場＝同じ構成（機種・メモリ・SSD）の中央値）。新品の値段は Apple 公式・税込（PROLED・ミニLED: apple.com/jp/shop/buy-mac/macbook-pro-proled-xdr・apple.com/jp/shop/buy-mac/macbook-pro、M6: lib/macbookProM6.ts、Air: apple.com/jp/shop/buy-mac/macbook-air。10/29 確認）。仕様は ideas/2026-10-29-macbook-pro-proled.md・apple.com/jp/macbook-pro/specs/・apple.com/jp/macbook-air/specs/",
+  "source": "script.md の数字そのまま（2026/10/29 の集計・longform/2026-10-31-mbp-proled/data-query.ts → data-query.log。ジャンクを除く。相場＝同じ構成（機種・メモリ・SSD）の中央値）。新品の値段は Apple 公式・税込（PROLED・ミニLED: apple.com/jp/shop/buy-mac/macbook-pro-proled-xdr・apple.com/jp/shop/buy-mac/macbook-pro、M6: lib/macbookProProled.ts（24GB・1TB 375,800円）・lib/macbookProM6.ts（16GB・1TB 339,800円）、Air: lib/macbookAirM5.ts。10/29 確認）。仕様は ideas/2026-10-29-macbook-pro-proled.md・apple.com/jp/macbook-pro/specs/・apple.com/jp/macbook-air/specs/",
   "thumbnail": {
     "lines": [
       "MacBook Pro",
@@ -20,7 +20,7 @@
       "title": "結論：4つの値段",
       "scene": {
         "type": "bigNumber",
-        "heading": "今選べる MacBook Pro 14インチ",
+        "heading": "24GB・1TB でそろえると",
         "items": [
           {
             "label": "① 新型 PROLED",
@@ -30,7 +30,7 @@
           },
           {
             "label": "② 新型 M6",
-            "value": "339,800",
+            "value": "375,800",
             "unit": "円",
             "cue": "2つ目は、一昨日発表された"
           },
@@ -47,7 +47,7 @@
             "cue": "4つ目は中古"
           }
         ],
-        "note": "いちばん安い構成（①③④は M5 Pro・24GB・1TB、②は 16GB・1TB）。新品は Apple 公式・税込（10/29 確認・①②は 11/6 発売）。中古は同じ構成の中央値"
+        "note": "どれも 14インチ・24GB・1TB（M6 のいちばん安い構成は 16GB・1TB 339,800円）。新品は Apple 公式・税込（10/29 確認・①②は 11/6 発売）。中古は同じ構成の中央値"
       }
     },
     {
@@ -82,7 +82,7 @@
       "title": "①新型PROLED：画面・タッチ・軽さ",
       "scene": {
         "type": "table",
-        "heading": "今のミニLED と 新型 PROLED（Apple 公式の仕様）",
+        "heading": "今のミニLED と 新型 PROLED",
         "columns": [
           "項目",
           "今のミニLED",
@@ -134,11 +134,19 @@
           },
           {
             "cells": [
-              "重さ（14インチ）",
-              "1.60kg",
-              "1.38kg"
+              "重さ（14／16インチ）",
+              "1.60／2.14kg",
+              "1.38／1.82kg"
             ],
             "cue": "それと、軽くなった"
+          },
+          {
+            "cells": [
+              "背面の Apple ロゴ",
+              "光らない",
+              "光る"
+            ],
+            "cue": "背面のリンゴマーク"
           },
           {
             "cells": [
@@ -191,9 +199,9 @@
           },
           {
             "cells": [
-              "値段（新品）",
-              "339,800円〜",
-              "429,800円〜（PROLED 499,800円〜）"
+              "値段（24GB・1TB）",
+              "375,800円",
+              "429,800円（PROLED 499,800円）"
             ],
             "cue": "まず値段"
           },
@@ -216,9 +224,9 @@
           },
           {
             "cells": [
-              "メモリ（いちばん安い構成）",
-              "16GB・1TB",
-              "24GB・1TB"
+              "いちばん安い構成",
+              "16GB・1TB 339,800円",
+              "24GB・1TB 429,800円"
             ],
             "cue": "いちばん安い構成は16GB",
             "emphasis": []
@@ -320,14 +328,14 @@
             "cue": "それなら2021年のM1 Pro"
           }
         ],
-        "note": "14インチ M5 Pro 35件のうち未使用品（ランクS）11件。M4 Pro は 14・16インチとも在庫1件"
+        "note": "14インチ M5 Pro 35件のうち未使用品（ランクS）11件。M5・M4 は M6 のいちばん安い構成（16GB・1TB 339,800円）と同じ構成。M4 Pro は 14・16インチとも在庫1件"
       }
     },
     {
       "title": "4つを並べると",
       "scene": {
         "type": "table",
-        "heading": "4つを並べると（14インチ・いちばん安い構成）",
+        "heading": "4つを並べると（14インチ・どれも 24GB・1TB）",
         "columns": [
           "",
           "①新型 PROLED",
@@ -364,7 +372,7 @@
             "cells": [
               "値段",
               "499,800円",
-              "339,800円",
+              "375,800円",
               "429,800円",
               "402,980円（相場）"
             ],
@@ -377,7 +385,7 @@
             "cells": [
               "メモリ・SSD",
               "24GB・1TB",
-              "16GB・1TB",
+              "24GB・1TB",
               "24GB・1TB",
               "24GB・1TB"
             ],
@@ -431,7 +439,7 @@
       "title": "参考：Airならいくら？",
       "scene": {
         "type": "table",
-        "heading": "参考：MacBook Air と MacBook Pro（新品・Apple 公式）",
+        "heading": "参考：MacBook Air と MacBook Pro（新品・Apple 公式・16GB・1TB）",
         "columns": [
           "項目",
           "Air 13インチ M5",
@@ -443,9 +451,9 @@
         "rows": [
           {
             "cells": [
-              "値段",
-              "224,800円〜（16GB・512GB）",
-              "339,800円〜（16GB・1TB）"
+              "値段（16GB・1TB）",
+              "242,800円",
+              "339,800円"
             ],
             "cue": "参考までにね"
           },
@@ -491,7 +499,7 @@
             ]
           }
         ],
-        "note": "差 115,000円。Air はファンレス設計（Apple 公式）。中古の Air 13インチ M2（16GB・512GB）は相場 154,980円（31件）"
+        "note": "差 97,000円。Air のいちばん安い構成は 16GB・512GB 224,800円。Air はファンレス設計（Apple 公式）。中古の Air 13インチ M2（16GB・512GB）は相場 154,980円（31件）"
       }
     },
     {
@@ -563,7 +571,7 @@
             "cells": [
               "新品で、チップは無印でいい",
               "② 新型 M6",
-              "339,800円〜"
+              "375,800円（24GB）"
             ],
             "cue": "新品で、チップは無印でいいなら"
           },
@@ -576,7 +584,7 @@
             "cue": "新品で、チップは無印でいいなら"
           }
         ],
-        "note": "新品は Apple 公式（10/29）・中古は相場（2026/10/29）。毎日更新: used.gadelog.com"
+        "note": "Pro は 14インチ・24GB・1TB（M6 は 16GB・1TB なら 339,800円〜）。新品は Apple 公式（10/29）・中古は相場（2026/10/29）。毎日更新: used.gadelog.com"
       }
     },
     {

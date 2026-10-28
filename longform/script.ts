@@ -55,6 +55,8 @@ export function forVoice(text: string): string {
     [/(\d)\.(\d+)キロ/g, (_m: string, i: string, f: string) => `${INT_TEN[i] ?? i + "テン"}${[...f.replace(/0+$/, "")].map((c) => DIGIT_KANA[c]).join("")}キロ`],
     // 「102台のうちランクBが」がウチランク／ビー／ガ、「メモリ16GB」がメモリジュウ／ロクギガに切れる（10/29）→ 読点を足す
     [/のうち(?!、)/g, "のうち、"], [/メモリ(\d)/g, "メモリ、$1"],
+    // 「PROLED」を「プロエルイーディー」と読む（字幕は PROLED のまま。「PROLED XDR」は続けてエックスディーアール。10/29 ユーザー指示）
+    [/PROLED/g, "プロエルイーディー"], [/\bXDR\b/g, "エックスディーアール"],
   ];
   return words.reduce((t, [re, to]) => t.replace(re, to as string), text);
 }
