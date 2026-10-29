@@ -1,13 +1,13 @@
 /**
  * 横動画の1コマ（1920x1080）。frameAt(timeline, t) が t 秒（動画の頭から）のコマを返す。ImageResponse（next/og）で PNG にする
  *
- * 配置（いつも同じ）:
+ * 配置（10/29〜。下の LAYOUTS.d1。それまでの配置は LONGFORM_LAYOUT=legacy）:
  *   上   y24〜96     左上に章の帯（番号＋章の名前）・右上に URL
- *   中央 x290〜1630  白いカード（グラフ・表。data.json の scene を描く）
- *   左右 x40〜266 / x1654〜1880  話し手の枠（左＝ずんだもん・右＝つむぎ。longform/assets/chara/ に立ち絵があれば立ち絵、なければ名前の札だけ）
- *                立ち絵は画面の端まで使う（x0〜280 / x1640〜1920・y116〜792）
- *   下   y812〜1012  字幕（話し手の名前と色・2行まで）
- *   最下 y1024〜     データの日付と「大手中古ショップ17店の在庫から」
+ *   中央 x190〜1730  白いカード（y112〜872。グラフ・表。data.json の scene を描く）
+ *   左右 x0〜180 / x1740〜1920  立ち絵（高さ 300px・カードの下にそろえる。longform/assets/chara/ になければ名前の札だけ）。
+ *                名前の札は頭から 10 秒だけ
+ *   下   y880〜1042  字幕（白い帯・白の文字＋話し手の色の縁・帯の端の色の線は話している人の側・2行まで。帯の下は再生バーの分あける）
+ *   最下行なし（データの日付と店の数は説明欄 youtube.txt）
  *   終了画面（最後の章が endScreen のとき）: カードの中に YouTube の終了画面の要素を置く枠（下の END_SCREEN）。最後の 20 秒
  * 色は lib/brandColors.ts だけ（白いカードの上は SITE、紺の地の上は ON_DARK）
  */
@@ -46,12 +46,57 @@ function fit(text: string, maxWidth: number, maxSize: number, min = MIN_FONT, wh
 }
 
 const HEADER = { x: 40, y: 24, h: 72 };
-const CARD = { x: 290, y: 116, w: 1340, h: 676, pad: 52 };
-const SLOT = { y: 116, w: 226, h: 676, left: 40, right: W - 40 - 226 };
-/** 立ち絵の枠: 画面の端からカードの手前まで（左 x0〜280・右 x1640〜1920。カードとは 10px あける）。絵の高さ 560px・はみ出た左右は切る */
-const ART = { w: 280, h: SLOT.h, imgH: 560, left: 0, right: W - 280 };
-const SUB = { x: 40, y: 812, w: W - 80, h: 200, tag: 210, padX: 36, gap: 30, font: 50, lineHeight: 1.4 };
-const FOOT_Y = 1024;
+
+/**
+ * 画面の配置（1か所にまとめる）。既定は d1（10/29 ユーザーが案 D1 に決めた）。LONGFORM_LAYOUT=legacy でそれまでの配置（10/21〜10/29 に出した回）
+ *
+ * - card: 中央の白いカード。scale: カードの中の文字の上限（見出し 48px・表 44px など）に掛ける倍率
+ * - art: 立ち絵の枠（絵の高さ imgH で枠の下にそろえる。はみ出た左右は切る）
+ * - plate: 立ち絵の下の名前の札（always＝いつも・first10＝頭から NAME_FIRST_SEC 秒だけ）
+ * - sub: 字幕の帯（白）。tag＝帯の中の名前の札（always・never）・tagW＝その幅、edge＝白の文字を話し手の色で縁取る太さ（0＝黒の文字）、
+ *        edgeSide＝帯の端の色の線を付ける側（left＝いつも左・speaker＝話している人の側。ずんだもんは左・つむぎは右）
+ * - footY: 最下行（データの日付と店の数）の y。null なら出さない（説明欄に入れる。video.tsx の youtubeText）
+ */
+type Layout = {
+  card: { x: number; y: number; w: number; h: number; pad: number; scale: number };
+  art: { w: number; y: number; h: number; imgH: number; left: number; right: number };
+  /** 立ち絵がないときの枠（名前の札だけ） */
+  slot: { y: number; w: number; h: number; left: number; right: number };
+  plate: { w: number; font: number; show: "always" | "first10" };
+  sub: { x: number; y: number; w: number; h: number; tag: "always" | "never"; tagW: number; padX: number; gap: number; font: number; lineHeight: number; edge: number; edgeSide: "left" | "speaker" };
+  footY: number | null;
+};
+const LAYOUTS: Record<string, Layout> = {
+  /** 10/29 までの配置。立ち絵の枠: 画面の端からカードの手前まで（左 x0〜280・右 x1640〜1920）・絵の高さ 560px。字幕 50px の黒い文字・帯の中に名前の札・最下行あり */
+  legacy: {
+    card: { x: 290, y: 116, w: 1340, h: 676, pad: 52, scale: 1 },
+    art: { w: 280, y: 116, h: 676, imgH: 560, left: 0, right: W - 280 },
+    slot: { y: 116, w: 226, h: 676, left: 40, right: W - 40 - 226 },
+    plate: { w: 198, font: 34, show: "always" },
+    sub: { x: 40, y: 812, w: W - 80, h: 200, tag: "always", tagW: 210, padX: 36, gap: 30, font: 50, lineHeight: 1.4, edge: 0, edgeSide: "left" },
+    footY: 1024,
+  },
+  /**
+   * 10/29〜（案 D1）: 立ち絵を小さく（高さ 300px）・カードを広く 1540x760（文字の上限 1.15 倍）・字幕 60px（白の文字＋話し手の色の縁 6px）。
+   * 帯の中の名前の札は出さない・立ち絵の下の札は頭から 10 秒だけ・最下行なし。帯の下は 38px あける（YouTube の再生バー）
+   */
+  d1: {
+    card: { x: 190, y: 112, w: 1540, h: 760, pad: 48, scale: 1.15 },
+    art: { w: 180, y: 112, h: 760, imgH: 300, left: 0, right: W - 180 },
+    slot: { y: 112, w: 170, h: 760, left: 10, right: W - 180 },
+    plate: { w: 172, font: 26, show: "first10" },
+    sub: { x: 40, y: 880, w: W - 80, h: 162, tag: "never", tagW: 200, padX: 36, gap: 20, font: 60, lineHeight: 1.18, edge: 6, edgeSide: "speaker" },
+    footY: null,
+  },
+};
+export const LAYOUT_NAME = process.env.LONGFORM_LAYOUT && LAYOUTS[process.env.LONGFORM_LAYOUT] ? process.env.LONGFORM_LAYOUT : "d1";
+const L = LAYOUTS[LAYOUT_NAME];
+const CARD = L.card;
+const SLOT = L.slot;
+const SUB = L.sub;
+const FOOT_Y = L.footY;
+/** カードの中の文字の上限（px）。legacy では元の値のまま */
+const cap = (px: number) => Math.round(px * CARD.scale);
 
 /**
  * 終了画面（YouTube Studio の「終了画面」で要素を重ねる場所。画面の座標・1920x1080）。
@@ -96,9 +141,11 @@ export function endScreenWindow(tl: Timeline): { start: number; end: number } | 
   return { start: Math.max(0, end - END_SCREEN.sec), end };
 }
 
-/** 字幕の文字の幅（px）と1行に入れる量（em。太字の英数字の幅の揺れを見込んで 0.95） */
-const SUB_TEXT_W = SUB.w - SUB.tag - SUB.padX * 2 - SUB.gap;
+/** 字幕の文字の幅（px）と1行に入れる量（em。太字の英数字の幅の揺れを見込んで 0.95）。帯の中の名前の札がなければ、端の色の線 14px を引く */
+const SUB_TEXT_W = SUB.tag === "always" ? SUB.w - SUB.tagW - SUB.padX * 2 - SUB.gap : SUB.w - SUB.padX * 2 - 14;
 export const SUB_LINE_EM = (SUB_TEXT_W / SUB.font) * 0.95;
+/** 名前の札（first10）を出しておく秒 */
+const NAME_FIRST_SEC = 10;
 
 /** 太字の目安幅（lib/ogFont.ts の fitFontSize と同じ数え方）: 漢字・かな 1em、英数字 0.6em、空白 0.3em */
 export const textEm = (s: string) => Array.from(s).reduce((w, c) => w + (c === " " ? 0.3 : c.charCodeAt(0) > 0x2e80 ? 1 : 0.6), 0);
@@ -209,7 +256,7 @@ const INNER_W = CARD.w - CARD.pad * 2;
 function Heading({ text, rightW = 0, right }: { text: string; rightW?: number; right?: ReactNode }) {
   return (
     <div style={{ ...row, justifyContent: "space-between", width: INNER_W, marginBottom: 28 }}>
-      <div style={{ display: "flex", fontSize: fit(text, INNER_W - rightW, 48, MIN_FONT, "見出し"), fontWeight: 900, color: C.ink }}>{text}</div>
+      <div style={{ display: "flex", fontSize: fit(text, INNER_W - rightW, cap(48), MIN_FONT, "見出し"), fontWeight: 900, color: C.ink }}>{text}</div>
       {right ?? null}
     </div>
   );
@@ -224,7 +271,7 @@ const noteH = (text?: string) => {
   return (w <= INNER_W ? 1 : Math.ceil((w * 1.03) / INNER_W)) * Math.ceil(noteFont(text) * 1.45) + 8;
 };
 /** 見出し（Heading）の高さ（px。下の余白 28 を含む） */
-const headingH = (text: string, rightW = 0) => Math.ceil(Math.max(MIN_FONT, Math.min(48, Math.floor((INNER_W - rightW) / textEm(text)))) * 1.45) + 28;
+const headingH = (text: string, rightW = 0) => Math.ceil(Math.max(MIN_FONT, Math.min(cap(48), Math.floor((INNER_W - rightW) / textEm(text)))) * 1.45) + 28;
 /**
  * 見出しと脚注を除いた、表・棒に使える高さ（px）。脚注が長いと行が低くなる（10/29: 行の高さを決め打ちにしていて、3行の脚注がカードの外にはみ出た）
  */
@@ -239,18 +286,18 @@ function Note({ text }: { text?: string }) {
 function BigNumber({ s, t, reveal }: { s: BigNumberScene; t: number; reveal: Record<string, number> }) {
   const colW = Math.floor(INNER_W / s.items.length);
   // 値・単位・ラベルの大きさは全項目で同じ（いちばん窮屈な項目に合わせる。項目ごとに決めると値段の高さがそろわない。10/29 ユーザー指摘）
-  const valueFont = Math.min(150, ...s.items.map((it) => {
+  const valueFont = Math.min(cap(150), ...s.items.map((it) => {
     // 単位は値の 0.45 倍の大きさで横に並ぶ
     const need = Math.floor((colW - 40) / (textEm(it.value) + (it.unit ? textEm(it.unit) * 0.45 : 0)));
     if (need < MIN_FONT) report(`大きな数字「${it.value}${it.unit ?? ""}」は ${need}px にしないと入らない（最小 ${MIN_FONT}px）`);
     return Math.max(MIN_FONT, need);
   }));
-  const unitFont = Math.min(64, Math.floor(valueFont * 0.45));
+  const unitFont = Math.min(cap(64), Math.floor(valueFont * 0.45));
   const labels = s.items.map((it) => it.label).filter((l): l is string => !!l);
-  const labelFont = labels.length ? Math.min(...labels.map((l) => fit(l, colW - 40, 36, MIN_FONT, "数字のラベル"))) : 0;
+  const labelFont = labels.length ? Math.min(...labels.map((l) => fit(l, colW - 40, cap(36), MIN_FONT, "数字のラベル"))) : 0;
   return (
     <div style={{ ...col, width: INNER_W, height: "100%", alignItems: "center" }}>
-      <div style={{ display: "flex", marginTop: 24, fontSize: fit(s.heading, INNER_W, 72, MIN_FONT, "見出し"), fontWeight: 900, color: C.ink }}>{s.heading}</div>
+      <div style={{ display: "flex", marginTop: 24, fontSize: fit(s.heading, INNER_W, cap(72), MIN_FONT, "見出し"), fontWeight: 900, color: C.ink }}>{s.heading}</div>
       {/* 下ぞろえ（ラベルのない項目があっても値の下の線がそろう） */}
       <div style={{ ...row, width: INNER_W, marginTop: 56, alignItems: "flex-end" }}>
         {s.items.map((it, i) => {
@@ -272,14 +319,18 @@ function BigNumber({ s, t, reveal }: { s: BigNumberScene; t: number; reveal: Rec
 }
 
 function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string, number> }) {
-  const LABEL = 340, VALUE = 300, GAP = 28, PICK = 190;
+  const LABEL = cap(340), VALUE = cap(300), GAP = 28, PICK = 190;
   const track = INNER_W - LABEL - VALUE - GAP * 2;
   const max = axisMax(s.rows.flatMap((r) => [r.median, r.min ?? 0]));
-  const rowH = Math.min(150, Math.floor(bodyH(s.heading, s.note) / s.rows.length));
+  const rowH = Math.min(cap(150), Math.floor(bodyH(s.heading, s.note) / s.rows.length));
   // 1行 100px 未満か、補足が2行（sub に改行）の行があれば行の間を詰める（10/24・10/25）。補足・在庫も本文なので MIN_FONT より小さくしない（10/29）
   const dense = rowH < 100 || s.rows.some((r) => r.sub?.includes("\n"));
-  const F = dense ? { label: 44, sub: MIN_FONT, value: 44, small: MIN_FONT } : { label: 52, sub: MIN_FONT, value: 56, small: MIN_FONT };
   const LH = dense ? 1.1 : 1.2;
+  // 上限を広げた配置（scale > 1）でも、ラベル＋補足1行・値＋在庫が行の高さに入る大きさまで（legacy では 44・52・56 のまま）
+  const fitRow = (px: number, lh: number) => (CARD.scale > 1 ? Math.max(MIN_FONT, Math.min(px, Math.floor((rowH - MIN_FONT * LH) / lh))) : px);
+  const F = dense
+    ? { label: fitRow(cap(44), LH), sub: MIN_FONT, value: fitRow(cap(44), 1.1), small: MIN_FONT }
+    : { label: fitRow(cap(52), LH), sub: MIN_FONT, value: fitRow(cap(56), 1.1), small: MIN_FONT };
   const DOT = 30;
   const MIN_H = MIN_FONT + 4;
   return (
@@ -330,10 +381,10 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
 }
 
 function Pairs({ s, t, reveal }: { s: PairsScene; t: number; reveal: Record<string, number> }) {
-  const LABEL = 170, DIFF = 250, VALUE = 250, GAP = 24;
+  const LABEL = cap(170), DIFF = cap(250), VALUE = cap(250), GAP = 24;
   const track = INNER_W - LABEL - DIFF - VALUE - GAP * 2;
   const max = axisMax(s.rows.flatMap((r) => [r.a, r.b]));
-  const rowH = Math.min(130, Math.floor(450 / s.rows.length));
+  const rowH = Math.min(cap(130), Math.floor(cap(450) / s.rows.length));
   const barH = Math.min(40, Math.floor((rowH - 24) / 2));
   const valueFont = MIN_FONT;
   if (barH + 6 < valueFont) report(`2本の棒の行が低すぎる（棒 ${barH}px・値は ${valueFont}px。行を減らす）`);
@@ -358,7 +409,7 @@ function Pairs({ s, t, reveal }: { s: PairsScene; t: number; reveal: Record<stri
         const diff = r.diffLabel ?? signed(r.b - r.a, s.unit);
         return (
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0, borderTop: i ? `2px solid ${C.line}` : "none" }}>
-            <div style={{ display: "flex", width: LABEL, fontSize: fit(r.label, LABEL - 10, 52, MIN_FONT, "2本の棒のラベル"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{r.label}</div>
+            <div style={{ display: "flex", width: LABEL, fontSize: fit(r.label, LABEL - 10, cap(52), MIN_FONT, "2本の棒のラベル"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{r.label}</div>
             <div style={{ ...col, width: track + VALUE, marginLeft: GAP }}>
               {[r.a, r.b].map((v, k) => (
                 <div key={k} style={{ ...row, height: barH + 6 }}>
@@ -367,7 +418,7 @@ function Pairs({ s, t, reveal }: { s: PairsScene; t: number; reveal: Record<stri
                 </div>
               ))}
             </div>
-            <div style={{ display: "flex", width: DIFF, marginLeft: GAP, justifyContent: "flex-end", fontSize: fit(diff, DIFF, 46, MIN_FONT, "差"), fontWeight: 900, color: C.red, opacity: p, whiteSpace: "nowrap" }}>{diff}</div>
+            <div style={{ display: "flex", width: DIFF, marginLeft: GAP, justifyContent: "flex-end", fontSize: fit(diff, DIFF, cap(46), MIN_FONT, "差"), fontWeight: 900, color: C.red, opacity: p, whiteSpace: "nowrap" }}>{diff}</div>
           </div>
         );
       })}
@@ -384,7 +435,7 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
   // 左の余白は列ごとに同じだけ取り、残りを文字の長さで分ける（幅だけを比で分けると、短い列ほど余白に食われて字が小さくなる）
   const textW = INNER_W - PADX * 2 * s.columns.length;
   const widths = ems.map((e) => PADX * 2 + Math.floor((textW * e) / sum));
-  const rowH = Math.min(104, Math.floor(bodyH(s.heading, s.note) / (s.rows.length + 1)));
+  const rowH = Math.min(cap(104), Math.floor(bodyH(s.heading, s.note) / (s.rows.length + 1)));
   // 文字の大きさは表の中でそろえる（いちばん窮屈なセルに合わせる。セルごとに縮めると大小がまざって読みにくい）。MIN_FONT に届かないセルは fontProblems が知らせる
   // 列の幅は文字の長さに比例するので、どのセルもほぼ textW / sum の大きさになる。届かなければ表ごとに1回だけ知らせる（各列のいちばん長いセルを添える）
   const need = Math.min(...s.columns.flatMap((_, j) => s.rows.map((r) => Math.floor((widths[j] - PADX * 2) / Math.max(0.1, textEm(r.cells[j] || "　"))))));
@@ -392,8 +443,8 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
     const longest = s.columns.map((_, j) => s.rows.map((r) => r.cells[j] ?? "").reduce((a, b) => (textEm(b) > textEm(a) ? b : a), ""));
     report(`表の文字が ${need}px になる（最小 ${MIN_FONT}px）。列のいちばん長い文字の合計 ${sum.toFixed(1)}em、${s.columns.length}列なら ${(textW / MIN_FONT).toFixed(1)}em まで。長い順: ${longest.map((c, j) => `「${c || s.columns[j]}」${ems[j].toFixed(1)}em`).join("・")}`);
   }
-  const cellFont = Math.max(MIN_FONT, Math.min(44, need, Math.floor(rowH / 1.2)));
-  const headFont = Math.min(...s.columns.map((c, j) => fit(c || "　", widths[j] - PADX * 2, 36, MIN_FONT, "表の見出し行")));
+  const cellFont = Math.max(MIN_FONT, Math.min(cap(44), need, Math.floor(rowH / 1.2)));
+  const headFont = Math.min(...s.columns.map((c, j) => fit(c || "　", widths[j] - PADX * 2, cap(36), MIN_FONT, "表の見出し行")));
   if (cellFont * 1.2 > rowH) report(`表の行が低すぎる（${s.rows.length}行・1行 ${rowH}px に ${cellFont}px の文字。行を減らす）`);
   return (
     <div style={{ ...col, width: INNER_W, height: "100%" }}>
@@ -423,8 +474,8 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
 }
 
 function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Record<string, number> }) {
-  const rowH = Math.min(150, Math.floor(480 / s.items.length));
-  const NUM = 76;
+  const rowH = Math.min(cap(150), Math.floor(cap(480) / s.items.length));
+  const NUM = cap(76);
   const textW = INNER_W - NUM - 32;
   return (
     <div style={{ ...col, width: INNER_W, height: "100%" }}>
@@ -433,10 +484,10 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
         const p = shown(reveal, `item:${i}`, t);
         return (
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p, borderTop: i ? `2px solid ${C.line}` : "none" }}>
-            <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: 44, fontWeight: 900, alignItems: "center", justifyContent: "center" }}>{String(i + 1)}</div>
+            <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: cap(44), fontWeight: 900, alignItems: "center", justifyContent: "center" }}>{String(i + 1)}</div>
             <div style={{ ...col, width: textW, marginLeft: 32 }}>
-              <div style={{ display: "flex", fontSize: fit(it.text, textW, 54, MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink }}>{it.text}</div>
-              {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, textW, 36, MIN_FONT, "リストの補足"), fontWeight: 500, color: C.sub }}>{it.sub}</div> : null}
+              <div style={{ display: "flex", fontSize: fit(it.text, textW, cap(54), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink }}>{it.text}</div>
+              {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, textW, cap(36), MIN_FONT, "リストの補足"), fontWeight: 500, color: C.sub }}>{it.sub}</div> : null}
             </div>
           </div>
         );
@@ -453,7 +504,7 @@ function EndScreen({ s }: { s: EndScreenScene }) {
   const oy = CARD.y + CARD.pad;
   return (
     <div style={{ display: "flex", position: "relative", width: INNER_W, height: CARD.h - CARD.pad * 2 }}>
-      <div style={{ display: "flex", position: "absolute", left: 0, top: 10, width: INNER_W, fontSize: fit(s.heading, INNER_W, 52, MIN_FONT, "見出し"), fontWeight: 900, color: C.ink }}>{s.heading}</div>
+      <div style={{ display: "flex", position: "absolute", left: 0, top: 10, width: INNER_W, fontSize: fit(s.heading, INNER_W, cap(52), MIN_FONT, "見出し"), fontWeight: 900, color: C.ink }}>{s.heading}</div>
       {s.note ? (
         <div style={{ display: "flex", position: "absolute", left: 0, top: END_SCREEN.videos[0].y - oy + END_SCREEN.videos[0].h + 22, width: INNER_W, fontSize: Math.max(MIN_FOOT, Math.min(28, Math.floor(INNER_W / textEm(s.note)))), fontWeight: 500, color: C.sub }}>{s.note}</div>
       ) : null}
@@ -520,14 +571,15 @@ export type ArtImage = { src: string; w: number; h: number };
 export type CharaArt = Partial<Record<Who, { closed: ArtImage; talk?: ArtImage }>>;
 
 /** 話し手の名前の札（話している人は塗り、もう1人は線だけ） */
-function NamePlate({ who, active }: { who: Who; active: boolean }) {
+function NamePlate({ who, active, style }: { who: Who; active: boolean; style?: CSSProperties }) {
   const color = SPEAKER_COLOR[who];
   return (
     <div
       style={{
-        display: "flex", width: SLOT.w - 28, marginBottom: 14, padding: "14px 0", justifyContent: "center", borderRadius: 14,
+        display: "flex", width: L.plate.w, marginBottom: 14, padding: "14px 0", justifyContent: "center", borderRadius: 14,
         background: active ? color : C.bg, border: `3px solid ${active ? color : C.onDarkSub}`,
-        color: active ? C.white : C.onDarkSub, fontSize: Math.min(34, Math.floor((SLOT.w - 60) / textEm(SPEAKER_NAME[who]))), fontWeight: 900,
+        color: active ? C.white : C.onDarkSub, fontSize: Math.min(L.plate.font, Math.floor((L.plate.w - 32) / textEm(SPEAKER_NAME[who]))), fontWeight: 900,
+        ...style,
       }}
     >
       {SPEAKER_NAME[who]}
@@ -536,22 +588,23 @@ function NamePlate({ who, active }: { who: Who; active: boolean }) {
 }
 
 /**
- * 話し手の枠。立ち絵があれば胸から上を高さ ART.imgH で下ぞろえ（枠からはみ出た左右は切る）、名前の札は絵の下に重ねる。
+ * 話し手の枠。立ち絵があれば高さ art.imgH で下ぞろえ（枠からはみ出た左右は切る）、名前の札は絵の下に重ねる。
  * 話している人は濃く、もう1人は 0.92 倍・暗く。口の開いた絵（*-talk.png）があり mouthOpen なら、話している人はそちらを使う。
  * 立ち絵がなければ名前の札だけ
  */
-function SpeakerSlot({ who, x, active, art, mouthOpen }: { who: Who; x: number; active: boolean; art?: CharaArt[Who]; mouthOpen?: boolean }) {
+function SpeakerSlot({ who, x, active, art, mouthOpen, plate }: { who: Who; x: number; active: boolean; art?: CharaArt[Who]; mouthOpen?: boolean; plate: boolean }) {
   const color = SPEAKER_COLOR[who];
+  const A = L.art;
   if (art) {
     const img = active && mouthOpen && art.talk ? art.talk : art.closed;
-    const h = Math.round(ART.imgH * (active ? 1 : 0.92));
+    const h = Math.round(A.imgH * (active ? 1 : 0.92));
     const w = Math.round((img.w * h) / img.h);
-    const left = x === SLOT.left ? ART.left : ART.right;
+    const left = x === SLOT.left ? A.left : A.right;
     return (
-      <div style={{ ...col, position: "absolute", left, top: SLOT.y, width: ART.w, height: ART.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden" }}>
+      <div style={{ ...col, position: "absolute", left, top: A.y, width: A.w, height: A.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden" }}>
         {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-        <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((ART.w - w) / 2), top: ART.h - h, width: w, height: h, opacity: active ? 1 : 0.5 }} />
-        <NamePlate who={who} active={active} />
+        <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((A.w - w) / 2), top: A.h - h, width: w, height: h, opacity: active ? 1 : 0.5 }} />
+        {plate ? <NamePlate who={who} active={active} /> : null}
       </div>
     );
   }
@@ -562,17 +615,39 @@ function SpeakerSlot({ who, x, active, art, mouthOpen }: { who: Who; x: number; 
   );
 }
 
-function Subtitle({ who, text }: { who: Who | null; text: string }) {
+/**
+ * 字幕の1行。edge のときは白い文字を話し手の色で縁取る（袋文字: 縁取りした文字の上に、縁なしの白い文字を重ねる。
+ * WebkitTextStroke は線の中心が字の輪郭で内側にも食い込むので、外へ出す太さの2倍の縁の層と、白の層を2枚重ねる）
+ */
+function SubLine({ text, who }: { text: string; who: Who | null }) {
+  const base: CSSProperties = { display: "flex", fontSize: SUB.font, lineHeight: SUB.lineHeight, fontWeight: 900, whiteSpace: "nowrap" };
+  if (!SUB.edge) return <div style={{ ...base, color: C.ink }}>{text}</div>;
+  const edge = who ? SPEAKER_COLOR[who] : C.bar;
   return (
-    <div style={{ ...row, position: "absolute", left: SUB.x, top: SUB.y, width: SUB.w, height: SUB.h, background: C.white, borderRadius: 20, borderLeft: `14px solid ${who ? SPEAKER_COLOR[who] : C.bar}` }}>
-      <div style={{ ...row, width: SUB.tag, justifyContent: "center", marginLeft: SUB.padX - 14 }}>
-        {who ? (
-          <div style={{ display: "flex", padding: "10px 18px", borderRadius: 12, background: SPEAKER_COLOR[who], color: C.white, fontSize: Math.min(32, Math.floor((SUB.tag - 36) / textEm(SPEAKER_NAME[who]))), fontWeight: 900 }}>{SPEAKER_NAME[who]}</div>
-        ) : null}
-      </div>
-      <div style={{ ...col, width: SUB_TEXT_W, marginLeft: SUB.gap }}>
+    <div style={{ display: "flex", position: "relative" }}>
+      <div style={{ ...base, color: edge, WebkitTextStroke: `${SUB.edge * 2}px ${edge}` }}>{text}</div>
+      <div style={{ ...base, position: "absolute", left: 0, top: 0, color: C.white }}>{text}</div>
+    </div>
+  );
+}
+
+function Subtitle({ who, text }: { who: Who | null; text: string }) {
+  // 帯の端の色の線: いつも左か、話している人の側（つむぎは右）
+  const right = SUB.edgeSide === "speaker" && who === "つむぎ";
+  const edgeLine = `14px solid ${who ? SPEAKER_COLOR[who] : C.bar}`;
+  const tag = SUB.tag === "always";
+  return (
+    <div style={{ ...row, position: "absolute", left: SUB.x, top: SUB.y, width: SUB.w, height: SUB.h, background: C.white, borderRadius: 20, borderLeft: right ? "none" : edgeLine, borderRight: right ? edgeLine : "none" }}>
+      {tag ? (
+        <div style={{ ...row, width: SUB.tagW, justifyContent: "center", marginLeft: SUB.padX - 14 }}>
+          {who ? (
+            <div style={{ display: "flex", padding: "10px 18px", borderRadius: 12, background: SPEAKER_COLOR[who], color: C.white, fontSize: Math.min(32, Math.floor((SUB.tagW - 36) / textEm(SPEAKER_NAME[who]))), fontWeight: 900 }}>{SPEAKER_NAME[who]}</div>
+          ) : null}
+        </div>
+      ) : null}
+      <div style={{ ...col, width: SUB_TEXT_W, marginLeft: tag ? SUB.gap : right ? SUB.padX : SUB.padX - 14 }}>
         {wrapSubtitle(text).map((l, i) => (
-          <div key={i} style={{ display: "flex", fontSize: SUB.font, lineHeight: SUB.lineHeight, fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{l}</div>
+          <SubLine key={i} text={l} who={who} />
         ))}
       </div>
     </div>
@@ -644,14 +719,14 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
       <ChapterBar ch={ch} count={tl.chapters.length} />
       <div style={{ display: "flex", position: "absolute", right: 48, top: HEADER.y + 16, fontSize: MIN_FONT, fontWeight: 900, color: C.url }}>used.gadelog.com</div>
-      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} />
-      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} />
+      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} />
+      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} />
       <div style={{ ...col, position: "absolute", left: CARD.x, top: CARD.y, width: CARD.w, height: CARD.h, padding: CARD.pad, background: C.white, borderRadius: 24 }}>
         <SceneBody ch={scene} t={local} />
       </div>
       {ch.scene.type === "endScreen" ? <EndScreenSlots s={ch.scene} /> : null}
       <Subtitle who={who} text={page?.text ?? ""} />
-      <div style={{ display: "flex", position: "absolute", left: SUB.x + 8, top: FOOT_Y, fontSize: 26, fontWeight: 500, color: C.onDarkSub }}>{`${date} 時点・大手中古ショップ${tl.shops}店の在庫から`}</div>
+      {FOOT_Y === null ? null : <div style={{ display: "flex", position: "absolute", left: SUB.x + 8, top: FOOT_Y, fontSize: 26, fontWeight: 500, color: C.onDarkSub }}>{`${date} 時点・大手中古ショップ${tl.shops}店の在庫から`}</div>}
     </div>
   );
 }
