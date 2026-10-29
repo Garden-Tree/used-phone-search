@@ -12,7 +12,6 @@
  * 色は lib/brandColors.ts だけ（白いカードの上は SITE、紺の地の上は ON_DARK）
  */
 import type { CSSProperties, ReactElement, ReactNode } from "react";
-import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { CHAPTER_LEAD, type Who } from "./script";
 import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, PairsScene, TableScene, Timeline, TimelineChapter } from "./types";
@@ -20,6 +19,31 @@ import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, PairsSc
 export const W = 1920;
 export const H = 1080;
 export const FPS = 30;
+
+/**
+ * 文字の最小（px・1920x1080。10/29 ユーザー指摘「5、6分あたりが文字小さい」「まとめも小さい」）。
+ * 本文（見出し・表のセルと見出し行・棒のラベルと値と補足・bigNumber のラベルと値・リストの補足）は MIN_FONT、
+ * 脚注（カード下の注記・最下行の日付と出典）は MIN_FOOT。
+ * 収まらないときは縮めずに fontProblems が知らせる（render.ts stills・video.tsx が止まる）。data.json の文字を短くして収める
+ */
+export const MIN_FONT = 34;
+export const MIN_FOOT = 22;
+
+/** fontProblems が中身を調べている間だけ、最小に届かない文字をここにためる */
+let probe: string[] | null = null;
+const report = (msg: string) => {
+  if (probe) probe.push(msg);
+};
+
+/**
+ * 1行に収まる文字の大きさ（px）。数え方は lib/ogFont.ts の fitFontSize と同じ。
+ * min に届かなければ min で描き（はみ出す）、fontProblems に知らせる
+ */
+function fit(text: string, maxWidth: number, maxSize: number, min = MIN_FONT, what = "文字"): number {
+  const need = Math.floor(maxWidth / Math.max(0.1, textEm(text)));
+  if (need < min) report(`${what}「${text}」は ${need}px にしないと入らない（最小 ${min}px・幅 ${Math.round(maxWidth)}px）`);
+  return Math.max(min, Math.min(maxSize, need));
+}
 
 const HEADER = { x: 40, y: 24, h: 72 };
 const CARD = { x: 290, y: 116, w: 1340, h: 676, pad: 52 };
@@ -182,35 +206,61 @@ function axisMax(values: number[]): number {
 
 const INNER_W = CARD.w - CARD.pad * 2;
 
-function Heading({ text, right }: { text: string; right?: ReactNode }) {
+function Heading({ text, rightW = 0, right }: { text: string; rightW?: number; right?: ReactNode }) {
   return (
     <div style={{ ...row, justifyContent: "space-between", width: INNER_W, marginBottom: 28 }}>
-      <div style={{ display: "flex", fontSize: fitFontSize(text, right ? INNER_W - 480 : INNER_W, 48), fontWeight: 900, color: C.ink }}>{text}</div>
+      <div style={{ display: "flex", fontSize: fit(text, INNER_W - rightW, 48, MIN_FONT, "見出し"), fontWeight: 900, color: C.ink }}>{text}</div>
       {right ?? null}
     </div>
   );
 }
 
+/** 脚注の大きさ（折り返してよい。最小 MIN_FOOT） */
+const noteFont = (text: string) => Math.max(MIN_FOOT, Math.min(28, Math.floor(INNER_W / textEm(text))));
+/** 脚注の高さ（px。行数は幅の目安から。行の高さは Noto Sans JP の 1.45 倍） */
+const noteH = (text?: string) => {
+  if (!text) return 0;
+  const w = textEm(text) * noteFont(text);
+  return (w <= INNER_W ? 1 : Math.ceil((w * 1.03) / INNER_W)) * Math.ceil(noteFont(text) * 1.45) + 8;
+};
+/** 見出し（Heading）の高さ（px。下の余白 28 を含む） */
+const headingH = (text: string, rightW = 0) => Math.ceil(Math.max(MIN_FONT, Math.min(48, Math.floor((INNER_W - rightW) / textEm(text)))) * 1.45) + 28;
+/**
+ * 見出しと脚注を除いた、表・棒に使える高さ（px）。脚注が長いと行が低くなる（10/29: 行の高さを決め打ちにしていて、3行の脚注がカードの外にはみ出た）
+ */
+const bodyH = (heading: string, note?: string, rightW = 0) => CARD.h - CARD.pad * 2 - headingH(heading, rightW) - noteH(note);
+
+/** 脚注 */
 function Note({ text }: { text?: string }) {
   if (!text) return null;
-  return <div style={{ display: "flex", marginTop: "auto", fontSize: fitFontSize(text, INNER_W, 28, 22), fontWeight: 500, color: C.sub }}>{text}</div>;
+  return <div style={{ display: "flex", marginTop: "auto", fontSize: noteFont(text), fontWeight: 500, color: C.sub }}>{text}</div>;
 }
 
 function BigNumber({ s, t, reveal }: { s: BigNumberScene; t: number; reveal: Record<string, number> }) {
   const colW = Math.floor(INNER_W / s.items.length);
+  // 値・単位・ラベルの大きさは全項目で同じ（いちばん窮屈な項目に合わせる。項目ごとに決めると値段の高さがそろわない。10/29 ユーザー指摘）
+  const valueFont = Math.min(150, ...s.items.map((it) => {
+    // 単位は値の 0.45 倍の大きさで横に並ぶ
+    const need = Math.floor((colW - 40) / (textEm(it.value) + (it.unit ? textEm(it.unit) * 0.45 : 0)));
+    if (need < MIN_FONT) report(`大きな数字「${it.value}${it.unit ?? ""}」は ${need}px にしないと入らない（最小 ${MIN_FONT}px）`);
+    return Math.max(MIN_FONT, need);
+  }));
+  const unitFont = Math.min(64, Math.floor(valueFont * 0.45));
+  const labels = s.items.map((it) => it.label).filter((l): l is string => !!l);
+  const labelFont = labels.length ? Math.min(...labels.map((l) => fit(l, colW - 40, 36, MIN_FONT, "数字のラベル"))) : 0;
   return (
     <div style={{ ...col, width: INNER_W, height: "100%", alignItems: "center" }}>
-      <div style={{ display: "flex", marginTop: 24, fontSize: fitFontSize(s.heading, INNER_W, 72), fontWeight: 900, color: C.ink }}>{s.heading}</div>
-      <div style={{ ...row, width: INNER_W, marginTop: 56, alignItems: "flex-start" }}>
+      <div style={{ display: "flex", marginTop: 24, fontSize: fit(s.heading, INNER_W, 72, MIN_FONT, "見出し"), fontWeight: 900, color: C.ink }}>{s.heading}</div>
+      {/* 下ぞろえ（ラベルのない項目があっても値の下の線がそろう） */}
+      <div style={{ ...row, width: INNER_W, marginTop: 56, alignItems: "flex-end" }}>
         {s.items.map((it, i) => {
           const p = shown(reveal, `item:${i}`, t);
-          const valueEm = textEm(it.value) + (it.unit ? textEm(it.unit) * 0.45 : 0);
           return (
-            <div key={i} style={{ ...col, width: colW, alignItems: "center", opacity: p, borderLeft: i ? `3px solid ${C.line}` : "none" }}>
-              {it.label ? <div style={{ display: "flex", fontSize: fitFontSize(it.label, colW - 40, 36, 24), fontWeight: 500, color: C.sub }}>{it.label}</div> : null}
+            <div key={i} style={{ ...col, width: colW, flexShrink: 0, alignItems: "center", opacity: p, borderLeft: i ? `3px solid ${C.line}` : "none" }}>
+              {it.label ? <div style={{ display: "flex", fontSize: labelFont, fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>{it.label}</div> : null}
               <div style={{ ...row, alignItems: "flex-end", marginTop: 8 }}>
-                <div style={{ display: "flex", fontSize: Math.min(150, Math.floor((colW - 60) / valueEm)), fontWeight: 900, color: C.red, lineHeight: 1.1 }}>{it.value}</div>
-                {it.unit ? <div style={{ display: "flex", fontSize: Math.min(64, Math.floor(((colW - 60) / valueEm) * 0.45)), fontWeight: 900, color: C.ink, marginLeft: 6, marginBottom: 14 }}>{it.unit}</div> : null}
+                <div style={{ display: "flex", fontSize: valueFont, fontWeight: 900, color: C.red, lineHeight: 1.1, whiteSpace: "nowrap" }}>{it.value}</div>
+                {it.unit ? <div style={{ display: "flex", fontSize: unitFont, fontWeight: 900, color: C.ink, marginLeft: 6, marginBottom: Math.round(valueFont * 0.1) }}>{it.unit}</div> : null}
               </div>
             </div>
           );
@@ -222,15 +272,16 @@ function BigNumber({ s, t, reveal }: { s: BigNumberScene; t: number; reveal: Rec
 }
 
 function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string, number> }) {
-  const LABEL = 300, VALUE = 330, GAP = 28;
+  const LABEL = 340, VALUE = 300, GAP = 28, PICK = 190;
   const track = INNER_W - LABEL - VALUE - GAP * 2;
   const max = axisMax(s.rows.flatMap((r) => [r.median, r.min ?? 0]));
-  const rowH = Math.min(150, Math.floor(440 / s.rows.length));
-  // 5行以上（1行 88px 以下）か、補足が2行（sub に改行）の行があれば文字を小さくして、次の行に重ならないように（10/24・10/25）
+  const rowH = Math.min(150, Math.floor(bodyH(s.heading, s.note) / s.rows.length));
+  // 1行 100px 未満か、補足が2行（sub に改行）の行があれば行の間を詰める（10/24・10/25）。補足・在庫も本文なので MIN_FONT より小さくしない（10/29）
   const dense = rowH < 100 || s.rows.some((r) => r.sub?.includes("\n"));
-  const F = dense ? { label: 44, sub: 22, value: 44, small: 22 } : { label: 52, sub: 28, value: 56, small: 28 };
+  const F = dense ? { label: 44, sub: MIN_FONT, value: 44, small: MIN_FONT } : { label: 52, sub: MIN_FONT, value: 56, small: MIN_FONT };
+  const LH = dense ? 1.1 : 1.2;
   const DOT = 30;
-  const MIN_H = dense ? 26 : 32;
+  const MIN_H = MIN_FONT + 4;
   return (
     <div style={{ ...col, width: INNER_W, height: "100%" }}>
       <Heading text={s.heading} />
@@ -238,15 +289,21 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
         const p = shown(reveal, `item:${i}`, t);
         const pm = r.min !== undefined ? shown(reveal, `min:${i}`, t) : 0;
         const w = Math.max(4, Math.round((track * r.median * p) / max));
+        const subs = (r.sub ?? "").split("\n").filter(Boolean);
+        const labelFont = fit(r.label, r.pick ? LABEL - PICK : LABEL - 10, F.label, MIN_FONT, "棒のラベル");
+        for (const line of subs) fit(line, LABEL - 10, F.sub, MIN_FONT, "棒の補足");
+        // 縦: ラベル＋補足・値＋在庫・棒＋最安が行の高さに入るか
+        const needH = Math.max(labelFont * LH + subs.length * F.sub * LH, F.value * 1.1 + (r.stock ? F.small * LH : 0), DOT + 8 + (r.min !== undefined ? MIN_H : 0));
+        if (needH > rowH + 2) report(`棒の行「${r.label}」は高さ ${Math.round(needH)}px 要るが ${rowH}px しかない（行を減らすか補足を短く）`);
         return (
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0, borderTop: i ? `2px solid ${C.line}` : "none" }}>
             <div style={{ ...col, width: LABEL }}>
               <div style={{ ...row }}>
-                <div style={{ display: "flex", fontSize: fitFontSize(r.label, r.pick ? LABEL - 150 : LABEL - 10, F.label), fontWeight: 900, color: C.ink, lineHeight: dense ? 1.15 : undefined }}>{r.label}</div>
-                {r.pick ? <div style={{ display: "flex", flexShrink: 0, marginLeft: 12, padding: "2px 12px", borderRadius: 8, background: C.red, color: C.white, fontSize: 24, fontWeight: 900 }}>おすすめ</div> : null}
+                <div style={{ display: "flex", fontSize: labelFont, fontWeight: 900, color: C.ink, lineHeight: LH, whiteSpace: "nowrap" }}>{r.label}</div>
+                {r.pick ? <div style={{ display: "flex", flexShrink: 0, marginLeft: 12, padding: "0 12px", borderRadius: 8, background: C.red, color: C.white, fontSize: MIN_FONT, fontWeight: 900 }}>おすすめ</div> : null}
               </div>
-              {(r.sub ?? "").split("\n").filter(Boolean).map((line, k) => (
-                <div key={k} style={{ display: "flex", fontSize: F.sub, fontWeight: 500, color: C.sub, lineHeight: dense ? 1.15 : undefined }}>{line}</div>
+              {subs.map((line, k) => (
+                <div key={k} style={{ display: "flex", fontSize: F.sub, fontWeight: 500, color: C.sub, lineHeight: LH, whiteSpace: "nowrap" }}>{line}</div>
               ))}
             </div>
             {/* 最安は赤い点の下に（右の列に3行並べると、5行の表で次の行の罫線に重なった。10/25） */}
@@ -261,8 +318,8 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
               ) : null}
             </div>
             <div style={{ ...col, width: VALUE, marginLeft: GAP, opacity: p }}>
-              <div style={{ display: "flex", fontSize: F.value, fontWeight: 900, color: C.ink, lineHeight: 1.1 }}>{money(r.median, s.unit)}</div>
-              {r.stock ? <div style={{ display: "flex", fontSize: F.small, fontWeight: 500, color: C.sub, lineHeight: dense ? 1.15 : undefined }}>{r.stock}</div> : null}
+              <div style={{ display: "flex", fontSize: fit(money(r.median, s.unit), VALUE, F.value, MIN_FONT, "棒の値"), fontWeight: 900, color: C.ink, lineHeight: 1.1, whiteSpace: "nowrap" }}>{money(r.median, s.unit)}</div>
+              {r.stock ? <div style={{ display: "flex", fontSize: F.small, fontWeight: 500, color: C.sub, lineHeight: LH }}>{r.stock}</div> : null}
             </div>
           </div>
         );
@@ -273,40 +330,44 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
 }
 
 function Pairs({ s, t, reveal }: { s: PairsScene; t: number; reveal: Record<string, number> }) {
-  const LABEL = 150, DIFF = 250, VALUE = 250, GAP = 24;
+  const LABEL = 170, DIFF = 250, VALUE = 250, GAP = 24;
   const track = INNER_W - LABEL - DIFF - VALUE - GAP * 2;
   const max = axisMax(s.rows.flatMap((r) => [r.a, r.b]));
   const rowH = Math.min(130, Math.floor(450 / s.rows.length));
   const barH = Math.min(40, Math.floor((rowH - 24) / 2));
+  const valueFont = MIN_FONT;
+  if (barH + 6 < valueFont) report(`2本の棒の行が低すぎる（棒 ${barH}px・値は ${valueFont}px。行を減らす）`);
   const colors = s.colors.map((k) => SITE[k]);
+  const LEG = MIN_FONT;
+  const legendW = s.legend.reduce((w, l) => w + 28 + LEG + 10 + Math.ceil(textEm(l) * LEG), 0);
   const legend = (
     <div style={{ ...row }}>
       {s.legend.map((l, i) => (
         <div key={i} style={{ ...row, marginLeft: 28 }}>
-          <div style={{ display: "flex", width: 28, height: 28, borderRadius: 6, background: colors[i] }} />
-          <div style={{ display: "flex", marginLeft: 10, fontSize: 28, fontWeight: 900, color: C.ink }}>{l}</div>
+          <div style={{ display: "flex", width: LEG, height: LEG, borderRadius: 6, background: colors[i] }} />
+          <div style={{ display: "flex", marginLeft: 10, fontSize: LEG, fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{l}</div>
         </div>
       ))}
     </div>
   );
   return (
     <div style={{ ...col, width: INNER_W, height: "100%" }}>
-      <Heading text={s.heading} right={legend} />
+      <Heading text={s.heading} rightW={legendW + 20} right={legend} />
       {s.rows.map((r, i) => {
         const p = shown(reveal, `item:${i}`, t);
         const diff = r.diffLabel ?? signed(r.b - r.a, s.unit);
         return (
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0, borderTop: i ? `2px solid ${C.line}` : "none" }}>
-            <div style={{ display: "flex", width: LABEL, fontSize: fitFontSize(r.label, LABEL - 10, 52), fontWeight: 900, color: C.ink }}>{r.label}</div>
+            <div style={{ display: "flex", width: LABEL, fontSize: fit(r.label, LABEL - 10, 52, MIN_FONT, "2本の棒のラベル"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{r.label}</div>
             <div style={{ ...col, width: track + VALUE, marginLeft: GAP }}>
               {[r.a, r.b].map((v, k) => (
                 <div key={k} style={{ ...row, height: barH + 6 }}>
                   <div style={{ display: "flex", width: Math.max(4, Math.round((track * v * p) / max)), height: barH, background: colors[k], borderRadius: 6 }} />
-                  <div style={{ display: "flex", marginLeft: 14, fontSize: Math.min(34, barH), fontWeight: 900, color: C.ink, opacity: p }}>{money(v, s.unit)}</div>
+                  <div style={{ display: "flex", marginLeft: 14, fontSize: fit(money(v, s.unit), VALUE - 14, valueFont, MIN_FONT, "2本の棒の値"), fontWeight: 900, color: C.ink, opacity: p, whiteSpace: "nowrap" }}>{money(v, s.unit)}</div>
                 </div>
               ))}
             </div>
-            <div style={{ display: "flex", width: DIFF, marginLeft: GAP, justifyContent: "flex-end", fontSize: fitFontSize(diff, DIFF, 46), fontWeight: 900, color: C.red, opacity: p }}>{diff}</div>
+            <div style={{ display: "flex", width: DIFF, marginLeft: GAP, justifyContent: "flex-end", fontSize: fit(diff, DIFF, 46, MIN_FONT, "差"), fontWeight: 900, color: C.red, opacity: p, whiteSpace: "nowrap" }}>{diff}</div>
           </div>
         );
       })}
@@ -319,19 +380,27 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
   // 列の幅は中身のいちばん長い文字に合わせて配る
   const ems = s.columns.map((c, j) => Math.max(textEm(c), ...s.rows.map((r) => textEm(r.cells[j] ?? "")), 3));
   const sum = ems.reduce((a, b) => a + b, 0);
-  const PADX = 28;
+  const PADX = 24;
   // 左の余白は列ごとに同じだけ取り、残りを文字の長さで分ける（幅だけを比で分けると、短い列ほど余白に食われて字が小さくなる）
   const textW = INNER_W - PADX * 2 * s.columns.length;
   const widths = ems.map((e) => PADX * 2 + Math.floor((textW * e) / sum));
-  const rowH = Math.min(104, Math.floor(470 / (s.rows.length + 1)));
-  // 文字の大きさは表の中でそろえる（いちばん窮屈なセルに合わせる。セルごとに縮めると大小がまざって読みにくい）
-  const cellFont = Math.min(...s.columns.flatMap((_, j) => s.rows.map((r) => fitFontSize(r.cells[j] || "　", widths[j] - PADX * 2, 44, 22))));
+  const rowH = Math.min(104, Math.floor(bodyH(s.heading, s.note) / (s.rows.length + 1)));
+  // 文字の大きさは表の中でそろえる（いちばん窮屈なセルに合わせる。セルごとに縮めると大小がまざって読みにくい）。MIN_FONT に届かないセルは fontProblems が知らせる
+  // 列の幅は文字の長さに比例するので、どのセルもほぼ textW / sum の大きさになる。届かなければ表ごとに1回だけ知らせる（各列のいちばん長いセルを添える）
+  const need = Math.min(...s.columns.flatMap((_, j) => s.rows.map((r) => Math.floor((widths[j] - PADX * 2) / Math.max(0.1, textEm(r.cells[j] || "　"))))));
+  if (need < MIN_FONT) {
+    const longest = s.columns.map((_, j) => s.rows.map((r) => r.cells[j] ?? "").reduce((a, b) => (textEm(b) > textEm(a) ? b : a), ""));
+    report(`表の文字が ${need}px になる（最小 ${MIN_FONT}px）。列のいちばん長い文字の合計 ${sum.toFixed(1)}em、${s.columns.length}列なら ${(textW / MIN_FONT).toFixed(1)}em まで。長い順: ${longest.map((c, j) => `「${c || s.columns[j]}」${ems[j].toFixed(1)}em`).join("・")}`);
+  }
+  const cellFont = Math.max(MIN_FONT, Math.min(44, need, Math.floor(rowH / 1.2)));
+  const headFont = Math.min(...s.columns.map((c, j) => fit(c || "　", widths[j] - PADX * 2, 36, MIN_FONT, "表の見出し行")));
+  if (cellFont * 1.2 > rowH) report(`表の行が低すぎる（${s.rows.length}行・1行 ${rowH}px に ${cellFont}px の文字。行を減らす）`);
   return (
     <div style={{ ...col, width: INNER_W, height: "100%" }}>
       <Heading text={s.heading} />
       <div style={{ ...row, width: INNER_W, height: rowH, background: C.bar, borderRadius: "12px 12px 0 0" }}>
         {s.columns.map((c, j) => (
-          <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX, fontSize: fitFontSize(c, widths[j] - PADX * 2, 36, 22), fontWeight: 900, color: C.white }}>{c}</div>
+          <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX, fontSize: headFont, fontWeight: 900, color: C.white, whiteSpace: "nowrap" }}>{c}</div>
         ))}
       </div>
       {s.rows.map((r, i) => {
@@ -342,7 +411,7 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
               const v = r.cells[j] ?? "";
               const em = (r.emphasis ?? s.emphasis)?.includes(j);
               return (
-                <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX, fontSize: cellFont, fontWeight: em ? 900 : 500, color: em ? C.red : C.ink }}>{v}</div>
+                <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX, fontSize: cellFont, fontWeight: em ? 900 : 500, color: em ? C.red : C.ink, whiteSpace: "nowrap" }}>{v}</div>
               );
             })}
           </div>
@@ -366,8 +435,8 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p, borderTop: i ? `2px solid ${C.line}` : "none" }}>
             <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: 44, fontWeight: 900, alignItems: "center", justifyContent: "center" }}>{String(i + 1)}</div>
             <div style={{ ...col, width: textW, marginLeft: 32 }}>
-              <div style={{ display: "flex", fontSize: fitFontSize(it.text, textW, 54), fontWeight: 900, color: C.ink }}>{it.text}</div>
-              {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fitFontSize(it.sub, textW, 32, 24), fontWeight: 500, color: C.sub }}>{it.sub}</div> : null}
+              <div style={{ display: "flex", fontSize: fit(it.text, textW, 54, MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink }}>{it.text}</div>
+              {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, textW, 36, MIN_FONT, "リストの補足"), fontWeight: 500, color: C.sub }}>{it.sub}</div> : null}
             </div>
           </div>
         );
@@ -384,9 +453,9 @@ function EndScreen({ s }: { s: EndScreenScene }) {
   const oy = CARD.y + CARD.pad;
   return (
     <div style={{ display: "flex", position: "relative", width: INNER_W, height: CARD.h - CARD.pad * 2 }}>
-      <div style={{ display: "flex", position: "absolute", left: 0, top: 10, width: INNER_W, fontSize: fitFontSize(s.heading, INNER_W, 52), fontWeight: 900, color: C.ink }}>{s.heading}</div>
+      <div style={{ display: "flex", position: "absolute", left: 0, top: 10, width: INNER_W, fontSize: fit(s.heading, INNER_W, 52, MIN_FONT, "見出し"), fontWeight: 900, color: C.ink }}>{s.heading}</div>
       {s.note ? (
-        <div style={{ display: "flex", position: "absolute", left: 0, top: END_SCREEN.videos[0].y - oy + END_SCREEN.videos[0].h + 22, width: INNER_W, fontSize: fitFontSize(s.note, INNER_W, 28, 22), fontWeight: 500, color: C.sub }}>{s.note}</div>
+        <div style={{ display: "flex", position: "absolute", left: 0, top: END_SCREEN.videos[0].y - oy + END_SCREEN.videos[0].h + 22, width: INNER_W, fontSize: Math.max(MIN_FOOT, Math.min(28, Math.floor(INNER_W / textEm(s.note)))), fontWeight: 500, color: C.sub }}>{s.note}</div>
       ) : null}
     </div>
   );
@@ -404,13 +473,13 @@ function EndScreenSlots({ s }: { s: EndScreenScene }) {
         const b = END_SCREEN.videos[i];
         return (
           <div key={i} style={{ ...col, position: "absolute", left: b.x, top: b.y, width: b.w, height: b.h, padding: "26px 30px", background: C.bg, borderRadius: 16, border: `4px dashed ${C.url}` }}>
-            <div style={{ display: "flex", fontSize: 28, fontWeight: 900, color: C.url }}>{i === 0 ? "次におすすめ" : "こちらもどうぞ"}</div>
+            <div style={{ display: "flex", fontSize: MIN_FONT, fontWeight: 900, color: C.url }}>{i === 0 ? "次におすすめ" : "こちらもどうぞ"}</div>
             <div style={{ display: "flex", marginTop: 14, width: b.w - 68, fontSize: 38, lineHeight: 1.35, fontWeight: 900, color: C.white }}>{v.title}</div>
           </div>
         );
       })}
       <div style={{ display: "flex", position: "absolute", left: sub.x, top: sub.y, width: sub.size, height: sub.size, borderRadius: 999, background: C.barFill, border: `6px dashed ${C.line}`, alignItems: "center", justifyContent: "center", color: C.white, fontSize: 56, fontWeight: 900 }}>登録</div>
-      <div style={{ display: "flex", position: "absolute", left: sub.x - 40, top: sub.y + sub.size + 16, width: sub.size + 80, justifyContent: "center", fontSize: 30, fontWeight: 900, color: C.url }}>チャンネル登録</div>
+      <div style={{ display: "flex", position: "absolute", left: sub.x - 40, top: sub.y + sub.size + 16, width: sub.size + 80, justifyContent: "center", fontSize: MIN_FONT, fontWeight: 900, color: C.url }}>チャンネル登録</div>
     </>
   );
 }
@@ -441,7 +510,7 @@ function ChapterBar({ ch, count }: { ch: TimelineChapter; count: number }) {
   return (
     <div style={{ ...row, position: "absolute", left: HEADER.x, top: HEADER.y, height: HEADER.h, background: C.bar, borderRadius: 14, paddingRight: 32 }}>
       <div style={{ ...row, height: HEADER.h, padding: "0 22px", background: C.red, borderRadius: "14px 0 0 14px", color: C.white, fontSize: 36, fontWeight: 900 }}>{`${num}/${count}`}</div>
-      <div style={{ display: "flex", marginLeft: 24, fontSize: fitFontSize(ch.title, 1200, 40), fontWeight: 900, color: C.white }}>{ch.title}</div>
+      <div style={{ display: "flex", marginLeft: 24, fontSize: fit(ch.title, 1200, 40, MIN_FONT, "章の帯"), fontWeight: 900, color: C.white }}>{ch.title}</div>
     </div>
   );
 }
@@ -458,7 +527,7 @@ function NamePlate({ who, active }: { who: Who; active: boolean }) {
       style={{
         display: "flex", width: SLOT.w - 28, marginBottom: 14, padding: "14px 0", justifyContent: "center", borderRadius: 14,
         background: active ? color : C.bg, border: `3px solid ${active ? color : C.onDarkSub}`,
-        color: active ? C.white : C.onDarkSub, fontSize: fitFontSize(SPEAKER_NAME[who], SLOT.w - 60, 34), fontWeight: 900,
+        color: active ? C.white : C.onDarkSub, fontSize: Math.min(34, Math.floor((SLOT.w - 60) / textEm(SPEAKER_NAME[who]))), fontWeight: 900,
       }}
     >
       {SPEAKER_NAME[who]}
@@ -498,7 +567,7 @@ function Subtitle({ who, text }: { who: Who | null; text: string }) {
     <div style={{ ...row, position: "absolute", left: SUB.x, top: SUB.y, width: SUB.w, height: SUB.h, background: C.white, borderRadius: 20, borderLeft: `14px solid ${who ? SPEAKER_COLOR[who] : C.bar}` }}>
       <div style={{ ...row, width: SUB.tag, justifyContent: "center", marginLeft: SUB.padX - 14 }}>
         {who ? (
-          <div style={{ display: "flex", padding: "10px 18px", borderRadius: 12, background: SPEAKER_COLOR[who], color: C.white, fontSize: fitFontSize(SPEAKER_NAME[who], SUB.tag - 36, 32), fontWeight: 900 }}>{SPEAKER_NAME[who]}</div>
+          <div style={{ display: "flex", padding: "10px 18px", borderRadius: 12, background: SPEAKER_COLOR[who], color: C.white, fontSize: Math.min(32, Math.floor((SUB.tag - 36) / textEm(SPEAKER_NAME[who]))), fontWeight: 900 }}>{SPEAKER_NAME[who]}</div>
         ) : null}
       </div>
       <div style={{ ...col, width: SUB_TEXT_W, marginLeft: SUB.gap }}>
@@ -535,6 +604,33 @@ export type FrameOpts = {
 /** 項目が出たか（instant のとき）。reveal は四捨五入してあるので 2ms の余裕を見る */
 export const revealedAt = (reveal: Record<string, number>, local: number) => Object.keys(reveal).filter((k) => local >= reveal[k] - 0.002);
 
+/** React の要素を、関数の部品を呼んで最後まで開く（描かずに fit の計算だけを走らせる） */
+function expand(node: ReactNode): void {
+  if (node == null || typeof node !== "object") return;
+  if (Array.isArray(node)) return node.forEach(expand);
+  const el = node as ReactElement<{ children?: ReactNode }>;
+  if (typeof el.type === "function") return expand((el.type as (p: unknown) => ReactNode)(el.props));
+  expand(el.props?.children);
+}
+
+/**
+ * 本文が MIN_FONT に届かない所・行の高さに入らない所の一覧（「3章「…」: 表のセル（2列目）「…」は 28px …」）。
+ * 空なら問題なし。render.ts stills・video.tsx はこれが空でなければ止まる（data.json の文字を短くする・行を減らす）
+ */
+export function fontProblems(tl: Timeline): string[] {
+  const out: string[] = [];
+  for (const ch of tl.chapters) {
+    probe = [];
+    try {
+      expand(frameAt(tl, ch.stillAt, { instant: true }));
+    } finally {
+      for (const p of new Set(probe)) out.push(`${ch.index}章「${ch.title}」: ${p}`);
+      probe = null;
+    }
+  }
+  return out;
+}
+
 /** t 秒（動画の頭から）のコマ */
 export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactElement {
   const { ch, line, page } = stateAt(tl, t);
@@ -547,7 +643,7 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
   return (
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
       <ChapterBar ch={ch} count={tl.chapters.length} />
-      <div style={{ display: "flex", position: "absolute", right: 48, top: HEADER.y + 18, fontSize: 30, fontWeight: 900, color: C.url }}>used.gadelog.com</div>
+      <div style={{ display: "flex", position: "absolute", right: 48, top: HEADER.y + 16, fontSize: MIN_FONT, fontWeight: 900, color: C.url }}>used.gadelog.com</div>
       <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} />
       <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} />
       <div style={{ ...col, position: "absolute", left: CARD.x, top: CARD.y, width: CARD.w, height: CARD.h, padding: CARD.pad, background: C.white, borderRadius: 24 }}>

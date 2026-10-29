@@ -26,7 +26,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
-import { END_SCREEN, FPS, H, W, chapterShownAt, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
+import { END_SCREEN, FPS, H, MIN_FONT, W, chapterShownAt, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, ThumbnailData, Timeline } from "./types";
 
@@ -437,6 +437,11 @@ async function check(dir: string, tl: Timeline) {
   if (mode === "check") return check(dir, tl);
   if (mode === "meta") return meta(dir, tl, art, artFiles);
 
+  const small = fontProblems(tl);
+  if (small.length) {
+    for (const p of small) console.error("文字が小さい:", p);
+    throw new Error(`本文が ${MIN_FONT}px に届かない所が ${small.length} か所あります（render.ts stills と同じ確かめ）。data.json を直して timeline.ts からやり直してください`);
+  }
   const bad = tl.chapters.flatMap((c) => c.lines).filter((l) => l.stale || l.estimated);
   if (bad.length) throw new Error(`古い声・見積もりの行が ${bad.length} 行あります。voice-draft.ts → timeline.ts をやり直してください`);
 
