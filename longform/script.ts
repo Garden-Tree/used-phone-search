@@ -57,6 +57,8 @@ export function forVoice(text: string): string {
     [/のうち(?!、)/g, "のうち、"], [/メモリ(\d)/g, "メモリ、$1"],
     // 「PROLED」を「プロエルイーディー」と読む（字幕は PROLED のまま。「PROLED XDR」は続けてエックスディーアール。10/29 ユーザー指示）
     [/PROLED/g, "プロエルイーディー"], [/\bXDR\b/g, "エックスディーアール"],
+    // 「その差は」がサハ・「何なのだ」がナニナノダ・「差し込み口」がサシコミコウ（MBP vs Air・10/29 ユーザー指示）
+    [/差は/g, "さわ"], [/何なの/g, "なんなの"], [/差し込み口/g, "さしこみぐち"],
   ];
   return words.reduce((t, [re, to]) => t.replace(re, to as string), text);
 }
