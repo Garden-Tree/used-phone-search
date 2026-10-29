@@ -6,8 +6,8 @@ import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import PcItemRow, { type PcRowItem } from "@/app/components/PcItemRow";
 import PcItemList from "@/app/components/PcItemList";
-import PcPriceMatrix from "@/app/components/PcPriceMatrix";
-import { getMacMatrix } from "@/lib/pcMac";
+import PcMatrixGroups from "@/app/components/PcMatrixGroups";
+import { getMacMatrix, MAC_GROUP_ORDER } from "@/lib/pcMac";
 import { affiliateLinkType, affiliateUrl } from "@/lib/affiliate";
 import { yen } from "@/lib/format";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -117,16 +117,16 @@ export default async function PcBudgetPage({ params }: Props) {
         {matrix.rows.length > 0 && (
           <section className="my-8">
             <h2 className="text-xl font-bold mb-1">{man(max)}以内の相場（CPU × メモリ）</h2>
-            <p className="text-xs text-ink-mute mb-3">縦が CPU、横がメモリ。マスの大きい数字は、この予算内の在庫の相場（中央値）です。</p>
-            <PcPriceMatrix m={matrix} />
+            <p className="text-xs text-ink-mute mb-3">CPU の系統ごとにまとめています。開くと、縦が世代・横がメモリの表です。マスの大きい数字は、この予算内の在庫の相場（中央値）です。</p>
+            <PcMatrixGroups m={matrix} />
           </section>
         )}
 
         {macMatrix.rows.length > 0 && (
           <section className="my-8">
             <h2 className="text-xl font-bold mb-1">{man(max)}以内で買える MacBook</h2>
-            <p className="text-xs text-ink-mute mb-3">中古MacBook のうち{yen(max)}以内の在庫の相場（機種 × メモリ）。機種名から、店ごとの在庫と最安値へ進めます。</p>
-            <PcPriceMatrix m={macMatrix} head="機種 ＼ メモリ" />
+            <p className="text-xs text-ink-mute mb-3">中古MacBook のうち{yen(max)}以内の在庫の相場を、シリーズと画面の大きさごとにまとめています。機種名から、店ごとの在庫と最安値へ進めます。</p>
+            <PcMatrixGroups m={macMatrix} head="機種 ＼ メモリ" order={MAC_GROUP_ORDER} />
           </section>
         )}
 

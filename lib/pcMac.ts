@@ -19,6 +19,9 @@ const BUCKETS: { min: number; label: string }[] = [
 ];
 const bucketOf = (mem: number) => [...BUCKETS].reverse().find((b) => mem >= b.min)?.min ?? BUCKETS[0].min;
 
+// MacBook のまとまり（行の group）の並び。安いシリーズ・小さい画面から（/pc・/pc/budget のアコーディオン）
+export const MAC_GROUP_ORDER = ["Neo", "Air 13インチ", "Air 15インチ", "Pro 13インチ", "Pro 14インチ", "Pro 16インチ"];
+
 export async function getMacMatrix(maxPrice?: number, minRowCount = 3): Promise<PcMatrix> {
   const base = { isSoldOut: false, modelName: { startsWith: "MacBook" }, memoryGB: { not: null }, ...(maxPrice ? { price: { lte: maxPrice } } : {}) };
   try {

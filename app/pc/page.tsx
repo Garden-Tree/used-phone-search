@@ -10,7 +10,7 @@ import { bestWithin, cpuMemoryMatrix, getPcItems, pcBudgetPath, PC_BUDGETS, PC_M
 import PcItemRow, { type PcRowItem } from "@/app/components/PcItemRow";
 import PcItemList from "@/app/components/PcItemList";
 import PcMatrixGroups from "@/app/components/PcMatrixGroups";
-import { getMacMatrix } from "@/lib/pcMac";
+import { getMacMatrix, MAC_GROUP_ORDER } from "@/lib/pcMac";
 
 // 中古パソコン（Windows のノート・デスクトップ）の最安値・相場（2026-10-27〜）。在庫はビルド（1日4回）のたびに更新
 export const dynamic = "force-static";
@@ -29,9 +29,6 @@ export async function generateMetadata(): Promise<Metadata> {
     ...(items.length < PC_MIN_INDEX_ITEMS ? { robots: { index: false, follow: true } } : {}),
   };
 }
-
-// MacBook のまとまりの並び（安いシリーズ・小さい画面から）
-const MAC_GROUP_ORDER = ["Neo", "Air 13インチ", "Air 15インチ", "Pro 13インチ", "Pro 14インチ", "Pro 16インチ"];
 
 const RANK_NOTE: Record<string, string> = { S: "未使用に近い", A: "美品", B: "良品", C: "並品", J: "訳あり" };
 
