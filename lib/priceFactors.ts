@@ -19,6 +19,8 @@ const BASE = ["iPhone 12", "iPhone 13", "iPhone 14", "iPhone 15", "iPhone 16", "
 const PRO = ["iPhone 12 Pro", "iPhone 13 Pro", "iPhone 14 Pro", "iPhone 15 Pro", "iPhone 16 Pro", "iPhone 17 Pro"];
 /** 古い順に、無印と Pro を交互に */
 const MODELS = BASE.flatMap((b, i) => [b, PRO[i]]);
+/** 「128GBで足りる？」で 128GB→256GB を比べる機種（128GB がある主な機種。横動画 longform/2026-11-02-storage と同じ） */
+const GAP128_MODELS = ["iPhone SE (第3世代)", "iPhone 13", "iPhone 13 Pro", "iPhone 14", "iPhone 14 Pro", "iPhone 15", "iPhone 15 Pro", "iPhone 16e", "iPhone 16", "iPhone 16 Pro"];
 
 type Where = Prisma.DeviceInventoryWhereInput;
 
@@ -35,7 +37,15 @@ export type BatteryFactor = { model: string; storage: number; hi: number; lo: nu
 export type RankFactor = { model: string; storage: number; a: number; b: number; c: number; diff: number };
 export type StorageFactor = { model: string; from: number; to: number; fromMedian: number; toMedian: number; diff: number };
 export type GenFactor = { newer: string; older: string; storage: number; newerMedian: number; olderMedian: number; diff: number };
-export type PriceFactors = { battery: BatteryFactor[]; rank: RankFactor[]; storage: StorageFactor[]; gen: GenFactor[] };
+/** 「128GBで足りる？」: iPhone の販売中の在庫の容量の内訳（ジャンクも含む・サイトの相場と同じ数え方） */
+export type StorageShare = { storage: number; count: number };
+export type PriceFactors = {
+  battery: BatteryFactor[]; rank: RankFactor[]; storage: StorageFactor[]; gen: GenFactor[];
+  /** 容量ごとの件数（容量の小さい順）と合計 */
+  share: StorageShare[]; shareTotal: number;
+  /** 128GB→256GB の中古の相場（中央値）の差。両方の在庫が5件以上の機種だけ */
+  gap128: StorageFactor[];
+};
 
 /** 冒頭のタイル（ページ・OG 画像で共通）: 各表の差の平均。行がなければ出さない。save＝節約の側（緑） */
 export type FactorTile = { label: string; value: string; tone: "save" | "keep"; note: string };
@@ -59,7 +69,7 @@ export function getPriceFactors(): Promise<PriceFactors> {
 }
 
 async function computePriceFactors(): Promise<PriceFactors> {
-  const out: PriceFactors = { battery: [], rank: [], storage: [], gen: [] };
+  const out: PriceFactors = { battery: [], rank: [], storage: [], gen: [], share: [], shareTotal: 0, gap128: [] };
   try {
     const side = new Map<string, { where: Where; c: Map<number, number> }>();
     for (const m of MODELS) {
@@ -105,6 +115,22 @@ async function computePriceFactors(): Promise<PriceFactors> {
         const [nm, om] = [(await medianPrice(at(newer, gb), a.get(gb)!))!, (await medianPrice(at(older, gb), b.get(gb)!))!];
         out.gen.push({ newer, older, storage: gb, newerMedian: nm, olderMedian: om, diff: nm - om });
       }
+    }
+
+    // 128GBで足りる？: iPhone 全体の容量の内訳（groupBy storage の1回）と、主な機種の 128GB→256GB の相場の差
+    const bySt = await prisma.deviceInventory.groupBy({ by: ["storage"], where: { isSoldOut: false, modelName: { startsWith: "iPhone" } }, _count: { _all: true } });
+    out.share = bySt.map((r) => ({ storage: r.storage, count: r._count._all })).sort((a, b) => a.storage - b.storage);
+    out.shareTotal = out.share.reduce((a, r) => a + r.count, 0);
+    for (const m of GAP128_MODELS) {
+      if (!side.has(m)) {
+        const where = await modelWhere(m);
+        side.set(m, { where, c: await counts(where) });
+      }
+      const { c } = side.get(m)!;
+      const [n128, n256] = [c.get(128) ?? 0, c.get(256) ?? 0];
+      if (n128 < MIN_COUNT || n256 < MIN_COUNT) continue;
+      const [f, t] = [(await medianPrice(at(m, 128), n128))!, (await medianPrice(at(m, 256), n256))!];
+      out.gap128.push({ model: m, from: 128, to: 256, fromMedian: f, toMedian: t, diff: t - f });
     }
   } catch (error) {
     rethrowDuringBuild(error);

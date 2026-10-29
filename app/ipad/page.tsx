@@ -104,6 +104,10 @@ export default async function IpadIndexPage() {
           <Link href="/ipad/ipad-mini-new-vs-used" className="font-bold text-brand-600 hover:underline underline-offset-4">新型iPad mini（A20 Pro）と中古の旧型、いくら違う？ &rarr;</Link>
         </p>
 
+        <p className="my-4">
+          <Link href="/ipad/how-long" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPadはいつまで使える？iPadOS 27 対応を機種別に &rarr;</Link>
+        </p>
+
         {/* 使い方別のおすすめを解説した横動画（10/24 公開） */}
         <VideoEmbed video={VIDEOS.ipadDore} heading="使い方別のおすすめを動画で見る" className="my-6" />
 

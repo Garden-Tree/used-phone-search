@@ -9,6 +9,7 @@ import { storageLabel, yen } from "@/lib/format";
 import { activeShops } from "@/lib/activeShops";
 import { APPLE_REPAIR_CHECKED, APPLE_REPAIR_SOURCE } from "@/lib/appleRepairPrices";
 import { factorTiles, getPriceFactors } from "@/lib/priceFactors";
+import { LAUNCH_PRICES, LAUNCH_PRICES_CHECKED } from "@/lib/launchPrices";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
@@ -54,6 +55,24 @@ export default async function PriceFactorsPage() {
   const summary = parts.length ? `${today}時点、同じ機種・同じ容量で比べると、中古iPhoneの相場は${parts.join("、")}なります（大手中古ショップ${shopNum}社の在庫の中央値）。` : null;
   const batteryCheaper = f.battery.filter((r) => r.repair !== null && r.diff < r.repair!);
 
+  // 128GBで足りる？: 容量の内訳（64・128・256・512・1TB以上・それ以外）と 128→256GB の差
+  const shareOf = (pred: (gb: number) => boolean) => f.share.filter((r) => pred(r.storage)).reduce((a, r) => a + r.count, 0);
+  const pct = (n: number) => (f.shareTotal ? Math.round((n / f.shareTotal) * 100) : 0);
+  const shareRows = [
+    { label: "64GB", count: shareOf((g) => g === 64) },
+    { label: "128GB", count: shareOf((g) => g === 128) },
+    { label: "256GB", count: shareOf((g) => g === 256) },
+    { label: "512GB", count: shareOf((g) => g === 512) },
+    { label: "1TB以上", count: shareOf((g) => g >= 1024) },
+    { label: "その他", count: shareOf((g) => ![64, 128, 256, 512].includes(g) && g < 1024) },
+  ].filter((r) => r.count > 0);
+  const gapUnder = f.gap128.filter((r) => r.diff < 10000);
+  // 新品が256GBからの機種（Apple Newsroom の発表時の値段。lib/launchPrices.ts）: 2025年秋以降の発表
+  const from256 = Object.entries(LAUNCH_PRICES).filter(([, l]) => l.date >= "2025-09-01" && l.storage === 256).map(([m]) => short(m));
+  const storageAnswer = f.gap128.length
+    ? `中古iPhoneの128GBと256GBの相場の差は、${f.gap128.length}機種中${gapUnder.length}機種で1万円未満です（${today}時点）。迷ったら256GB、写真をクラウドに置く人やアプリが少ない人は128GBでも足ります。`
+    : null;
+
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -64,7 +83,7 @@ export default async function PriceFactorsPage() {
         { "@type": "ListItem", position: 3, name: "値段は何で決まる？", item: `${SITE_URL}${PATH}` },
       ],
     },
-    ...(summary ? [{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, url: `${SITE_URL}${PATH}`, description: summary, dateModified: new Date().toISOString() }] : []),
+    ...(summary ? [{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, url: `${SITE_URL}${PATH}`, description: `${summary}${storageAnswer ?? ""}`, dateModified: new Date().toISOString() }] : []),
   ];
 
   return (
@@ -165,6 +184,57 @@ export default async function PriceFactorsPage() {
                 </tbody>
               </table>
             </div>
+          </section>
+        )}
+
+        {(f.gap128.length > 0 || f.shareTotal > 0) && (
+          <section id="128gb" className="flex flex-col gap-2 scroll-mt-16">
+            <h2 className="text-lg md:text-xl font-bold"><span className="text-brand-600 mr-1">Q.</span>128GBで足りる？</h2>
+            <p className="text-sm text-ink-sub">
+              <strong className="text-price mr-1">A.</strong>
+              {f.gap128.length > 0
+                ? <>128GBと256GBの相場の差は、{f.gap128.length}機種中<strong className="text-ink">{gapUnder.length}機種で1万円未満</strong>。<strong className="text-ink">迷ったら256GB</strong>。写真をクラウドに置く人・アプリが少ない人は128GBでも足ります。</>
+                : <>容量はあとから増やせません。迷ったら1つ上の容量を。</>}
+            </p>
+            {f.shareTotal > 0 && (
+              <div className={CARD}>
+                <table className="w-full text-sm">
+                  <caption className="text-left text-xs text-ink-mute px-4 pt-3 pb-1">販売中の中古iPhone {f.shareTotal.toLocaleString()}件の容量の内訳</caption>
+                  <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">容量</th><th className={TH}>在庫</th><th className={`${TH} pr-4`}>割合</th></tr></thead>
+                  <tbody>
+                    {shareRows.map((r) => (
+                      <tr key={r.label} className="border-t border-line-soft">
+                        <td className="pl-4 pr-2 py-2.5 font-bold">{r.label}</td>
+                        <td className={TD}>{r.count.toLocaleString()}件</td>
+                        <td className={`${TD} pr-4 ${r.label === "128GB" ? "font-bold" : ""}`}>{pct(r.count)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {f.gap128.length > 0 && (
+              <div className={CARD}>
+                <table className="w-full text-sm">
+                  <caption className="text-left text-xs text-ink-mute px-4 pt-3 pb-1">128GB→256GB の相場（中央値）の差</caption>
+                  <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">機種</th><th className={TH}>128GB</th><th className={TH}>256GB</th><th className={`${TH} pr-4`}>差</th></tr></thead>
+                  <tbody>
+                    {[...f.gap128].sort((a, b) => a.diff - b.diff).map((r) => (
+                      <tr key={r.model} className="border-t border-line-soft">
+                        <td className="pl-4 pr-2 py-2.5"><ModelLink model={r.model} /></td>
+                        <td className={TD}>{yen(r.fromMedian)}</td>
+                        <td className={TD}>{yen(r.toMedian)}</td>
+                        <td className={`${TD} pr-4 font-bold ${r.diff < 10000 ? "text-safe" : ""}`}>{r.diff >= 0 ? "+" : "−"}{Math.abs(r.diff).toLocaleString()}円</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <p className="text-xs text-ink-mute leading-relaxed">
+              容量の内訳はジャンク品も含む販売中の在庫。差は両方の容量の在庫が5件以上の機種だけ。
+              {from256.length > 0 && <>{from256.join("・")}は新品が256GBからで、128GBがありません（<a href="https://www.apple.com/jp/newsroom/" target="_blank" rel="noopener noreferrer" className="text-brand-600 underline underline-offset-2">Apple Newsroom</a> の発表時の値段・{LAUNCH_PRICES_CHECKED.replace(/-/g, "/")}確認）。</>}
+            </p>
           </section>
         )}
 

@@ -15,8 +15,7 @@
 
 ## 決定事項
 
-- **GA4**: 556047315・**ホスティング**: Cloudflare Pages（docs/）
-- **DB**: Neon（Launch）
+- **GA4**: 556047315・**ホスティング**: Cloudflare Pages（docs/）・**DB**: Neon（Launch）
 - **IndexNow**: 毎日全件
 - **デザイン**: `docs/design.md`・横動画は D1（longform/README）
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
@@ -30,8 +29,8 @@
 - **Yahoo! 7店**: VC（2025875）。もしもは否認
 - **収益の枠**: 回線（`SimTile`・2年の総額 `/sim`）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`。値動き速報 `price-alerts.ts`
-- **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。いつまで使える `/iphone/how-long`・実質いくら `/iphone/resale-value`
-- **YouTube の公開予約は最長2日後まで**（相場が動くため・10/29 ユーザー）
+- **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。いつまで使える `/iphone`・`/ipad`・`/pixel` の `/how-long`・実質いくら `/iphone/resale-value`
+- **YouTube の公開予約は最長2日後まで**（相場が動くため）
 - **X**: 返信の半分は見られている投稿へ・引用は1日1本・RTしない（x-ops）
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
 - **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit・PC next・Be-Stock は A8、ソフマップ・じゃんぱら・イオシスは楽天

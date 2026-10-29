@@ -263,12 +263,43 @@ export default async function WhereToBuyPage() {
               </p>
             </div>
             <div>
-              <h3 className="font-bold text-ink">保証と赤ロム保証</h3>
+              <h3 className="font-bold text-ink">保証は期間も中身も店ごとに違う</h3>
               <p>
-                保証は期間も中身（初期不良だけ・返品・返金・交換）も店ごとに違います。{longWarranty.length > 0 && "1年の返品・返金を付けている店もあります。"}赤ロム（ネットワーク利用制限が「×」になる）の保証は大手の多くが付けていて、フリマにはありません。
+                保証は期間も中身（初期不良だけ・返品・返金・交換）も店ごとに違います。{longWarranty.length > 0 && "1年の返品・返金を付けている店もあります。"}赤ロムの保証は下で説明します。
               </p>
             </div>
             <p><Link href="/iphone/price-factors" className="font-bold text-brand-600 hover:underline underline-offset-4">電池・状態ランク・容量・世代で、値段はいくら違う？ &rarr;</Link></p>
+          </div>
+        </section>
+
+        <section id="red-rom" className="flex flex-col gap-3 scroll-mt-16">
+          <h2 className="text-lg md:text-xl font-bold">SIMフリーとキャリア版、赤ロムの違い</h2>
+          <div className="flex flex-col gap-3 text-sm text-ink-sub leading-relaxed">
+            <div>
+              <h3 className="font-bold text-ink">SIMフリーとキャリア版</h3>
+              <p>
+                キャリア版はドコモ・au・ソフトバンクなどの携帯会社で売られた iPhone、SIMフリーは Apple などで売られた iPhone や、SIMロックを解除したキャリア版です。
+                SIMロックが残っていると使える SIM が限られるので、商品ページの「SIMフリー」「SIMロック解除済み」の表記を確認してください。
+                {w.total > 0 && <>{today}時点、このサイトの{n}店の iPhone の在庫のうち<strong className="text-ink">SIMフリー（解除済みを含む）は{w.simFree.toLocaleString()}件（{Math.round((w.simFree / w.total) * 100)}%）</strong>です。</>}
+              </p>
+            </div>
+            <div>
+              <h3 className="font-bold text-ink">赤ロム＝ネットワーク利用制限が「×」</h3>
+              <p>
+                キャリア版の iPhone には、携帯会社が付けるネットワーク利用制限の判定があります。
+                <strong className="text-ink">「○」</strong>は制限なし、<strong className="text-ink">「△」</strong>は今は使えるが元の持ち主の支払いが終わっていないなどで、あとから「×」になることがあるもの、<strong className="text-ink">「×」</strong>は制限中で通信できないもの（いわゆる赤ロム）です。
+                買う前に<strong className="text-ink">商品ページの判定（○・△・×）</strong>を確認してください。
+              </p>
+            </div>
+            <div>
+              <h3 className="font-bold text-ink">赤ロム保証がある店</h3>
+              <p>
+                {redRomShops.length > 0
+                  ? <>{n}店のうち{redRomShops.length}店が赤ロム保証を書いています（{redRomShops.map((s) => `${s.label}（${s.redRomShort.replace(/^赤ロム\s*/, "") || "保証"}）`).join("・")}）。「△」の個体は、こうした保証のある店で買うと安心です。フリマにはこの保証がありません。</>
+                  : "赤ロム保証の有無は店ごとに違います。フリマにはこの保証がありません。"}
+                {n > redRomShops.length && <>保証の記載が見つからない店は、上の表の「各店の公式で確認」から確かめてください。</>}
+              </p>
+            </div>
           </div>
         </section>
 

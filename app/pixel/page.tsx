@@ -100,6 +100,10 @@ export default async function PixelIndexPage() {
           </div>
         </section>
 
+        <p className="my-4">
+          <Link href="/pixel/how-long" className="font-bold text-brand-600 hover:underline underline-offset-4">中古Pixelはいつまで使える？アップデート保証の期限を機種別に &rarr;</Link>
+        </p>
+
         {/* Pixel の比較ページ */}
         <section className="my-6">
           <h2 className="text-lg font-bold mb-3">よく比較される Pixel</h2>

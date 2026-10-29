@@ -9,7 +9,7 @@ import { rethrowDuringBuild } from "@/lib/buildGuard";
  * 「中古iPhoneはどこで買う？」（/iphone/where-to-buy・2026-10-24〜）の数字。
  * 店ごとの iPhone の在庫数・最安になっている機種の数と、よく見る機種の店ごとの最安値。
  *
- * DB は groupBy（機種名 × 容量 × 店）の1回だけ（在庫の行は取らない。集計結果は数千行の小さな表）。
+ * DB は groupBy（機種名 × 容量 × 店 × SIMフリーか）の1回だけ（在庫の行は取らない。集計結果は数千行の小さな表）。
  * ジャンク品は除く（動作保証がないので「どこで買う」の比べ方に合わない）。別の売り場（ALIAS_SHOPS）は本店に合算する
  */
 
@@ -45,6 +45,8 @@ export type WhereToBuy = {
   modelsCompared: number;
   total: number;
   popular: PopularRow[];
+  /** total のうち SIMフリー（SIMロック解除済みを含む。DeviceInventory.simUnlocked）の件数 */
+  simFree: number;
 };
 
 const CHANNEL: Record<string, string> = { rakuten: "楽天市場", yahoo: "Yahoo!ショッピング", amazon: "Amazon" };
@@ -64,7 +66,7 @@ export function getWhereToBuy(): Promise<WhereToBuy> {
 }
 
 async function compute(): Promise<WhereToBuy> {
-  const out: WhereToBuy = { shops: [], modelsCompared: 0, total: 0, popular: [] };
+  const out: WhereToBuy = { shops: [], modelsCompared: 0, total: 0, popular: [], simFree: 0 };
   try {
     // DB の機種名 → ページの機種（表記ゆれは resolveModelNames と同じ照合）
     const nameToModel = new Map<string, string>();
@@ -72,7 +74,7 @@ async function compute(): Promise<WhereToBuy> {
       for (const n of (await resolveModelNames([m])) ?? []) if (!nameToModel.has(n)) nameToModel.set(n, m);
     }
     const rows = await prisma.deviceInventory.groupBy({
-      by: ["modelName", "storage", "shopName"],
+      by: ["modelName", "storage", "shopName", "simUnlocked"],
       where: { AND: [{ isSoldOut: false }, { modelName: { in: [...nameToModel.keys()] } }, NOT_JUNK, { price: { gt: 0 } }] },
       _min: { price: true },
       _count: { _all: true },
@@ -89,6 +91,7 @@ async function compute(): Promise<WhereToBuy> {
       if (!model || !shop || price <= 0) continue;
       const n = r._count._all;
       out.total += n;
+      if (r.simUnlocked) out.simFree += n;
       shopCount.set(shop, (shopCount.get(shop) ?? 0) + n);
       const byStorage = tree.get(model) ?? new Map<number, Map<Shop, Cell>>();
       tree.set(model, byStorage);
