@@ -164,6 +164,9 @@ export const LOOKS: Record<Script["theme"], Look> = {
   stockmac: { ...CONDITION, hook: "bars" },
   watchbudget: { ...BUDGET, hook: "chips" },
   mbpvsair: { ...PRO, hook: "split" },
+  // kaitorishop（10/29〜・買取価格の3店の差）: 見た目は5つまでなので新しく作らない。次に公開する2本が ④ CONDITION なので、比べる型の ③ VERSUS。
+  // つかみは「高い店 vs 安い店」の札（店の名前と買取価格）＋差額（split・答えから）
+  kaitorishop: { ...VERSUS, hook: "split" },
 };
 
 export const lookOf = (s: Script): Look => LOOKS[s.theme];

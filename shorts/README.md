@@ -43,6 +43,7 @@ npx tsx shorts/make-short.tsx stock plan --dir shorts/out/2026-10-29-stock      
 npx tsx shorts/make-short.tsx mbpvsair plan             # MacBook AirとPro、中古ならどっちが安い？（型 A だけ・10/29〜・青山龍星）
 npx tsx shorts/make-short.tsx watchbudget plan          # 予算ぴったりで買える中古Apple Watch（型 A だけ・10/29〜・つむぎ。--budgets・--pick も効く）
 npx tsx shorts/make-short.tsx stockmac plan             # 中古でいちばん多いMacBook・在庫数ランキング（型 A だけ・10/29〜・青山龍星）
+npx tsx shorts/make-short.tsx kaitorishop plan          # 同じiPhoneでも、売る店でいくら違う？買取価格の3店の差（型 A だけ・10/29〜・青山龍星）
 npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）
 npx tsx shorts/make-short.tsx fold render --tiktok  # TikTok 用の short-A-tiktok.mp4（BGM なし・締めは「used.gadelog.com で検索」）
 npx tsx shorts/make-short.tsx drops render --dir shorts/out/2026-10-17-drops --keep-frames
@@ -279,7 +280,7 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
 | --- | --- | --- | --- | --- | --- |
 | ① 値下がり DROPS | 紺 brand900 | 赤 price・左右いっぱい | 角丸28・縁なし | price | drops（1位の下がった額）・galaxybudget（予算の札）・pixelgen（カメラの帯のあるスマホの形＋最大の差額） |
 | ② 予算別 BUDGET | 明るい ground | 藍 brand600・角丸の箱 | 灰の縁＋影 | price（札は brand600） | budget・pixelbudget・macbudget・bigbudget（予算の札）・ipadbudget（予算の丸い札・淡い金）・overnew（新品と中古の割合の2本の棒）・minie（「無印 vs mini・e」。右の札は price）・ipadgen（縦のタブレットの形＋最大の差額） |
-| ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・plusvs・plusmax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」） |
+| ③ 比べる VERSUS | 紺 brand900 | 藍の札・左寄せ・左に緑の線 | 左に緑の線 | safe | newused・provs・promax・plusvs・plusmax・gen・storage（「A vs B」＋最大の差額）・fold（開いた折りたたみの形）・foldbudget（予算の札）・ios27line（スマホの形に「iOS 27 対応」）・kaitorishop（「高い店 vs 安い店」の札＋差額） |
 | ④ 状態の差 CONDITION | 生成り inspect50 | 墨 ink・角丸の箱 | 琥珀の線の縁＋影 | price | rank（A・B・C の札）・battery（縦の電池の形）・batteryswap（「中古＋電池交換＝1つ上」の札）・unused（「ランクA vs 未使用品」）・stock／stockandroid（横の棒3本・1位だけ「？？？」＋「最多 ○件」） |
 | ⑤ Pro の予算別 PRO | 墨 ink | 淡い金 inspectLine・丸い端（墨の文字） | 金の縁 | price（札は inspect700） | probudget（予算の札）・oldpro（「前のPro vs 無印」＋差 最大）・watchgen・macgen（時計・ノートの形＋最大の差額） |
 | ⑥ 広告の回 AD（5つの例外・10/26〜） | 明るい ground | 塗らない（墨の文字）・ピンク #D9005B の下線 | 灰の縁＋影 | ピンク #D9005B（札も） | rakutenmobile（料金の3段の階段＋2年で差）。左上に「PR」 |
@@ -302,6 +303,15 @@ YouTube の画面表示に隠れる上 220px・下 420px・右 140px には文�
 
 - 長さと配置は統一し、見た目はテーマごとに変える（`looks.ts`）。**テーマは毎週ローテーション**（値下がり → 予算 → 2機種比較 → 豆知識）。
 - **毎回、検品担当のひと言を人が書く**。テンプレートだけの繰り返し動画は収益化の対象外になりうる（ideas/youtube-shorts.md）。
+
+## kaitorishop（10/29〜・同じiPhoneでも、売る店でいくら違う？）
+
+- `kaitorishop`（`themes/kaitorishop.ts`・型 KaitoriShopScript・行 KaitoriShopRow）: 買取の3店（`lib/buybackPrices.ts` の BUYBACK_SHOPS: ネットオフ 美品・にこスマ 良品・モバステ 中古の上限＝「きれいな状態」）。DB は表 BuybackPrice を機種×容量×店の groupBy 1回だけ（在庫の表は読まない）
+- 選び方: 表にある iPhone すべて。容量は**3店すべてに価格がある容量のうちいちばん小さい容量**（1機種1行）。差＝最高値−最安値の大きい順・率は最高値に対して。同じ区分が2行あれば高い方を使い「★注意」を出す。画面・説明欄に買取価格の更新日（`updated`・出した3行の最新・週1回）
+- 場面は newused と同じ並び（hook → 3位・2位・伏せた1位 → 1位の3店の棒（高い順・店の名前の札）と「差 ○円」・率・「各店の公式・○/○更新」→ comment → outro）。行の下段は 容量・差・「○○が高い」
+- つかみは**答えから**（hookLines「同じ<機種>／<容量>でも、売る店で／買取価格が違う」＋高い店と安い店の札（店名と価格）＋「差 ○円」。声も差額まで言う）。hookStyle "answer" は付けない（札が「1位」になる）
+- 帯「同じiPhoneでも／売る店でいくら違う？」・上の行「毎週更新・買取価格は3店の公式」・注記「買取価格は各店の公式・○/○更新・きれいな状態／3店がそろういちばん小さい容量」。見た目 ③ VERSUS＋split（次の2本が ④ なので避けた）。声 青山龍星
+- 説明欄のリンクは /iphone/kaitori と トップ。utm の末尾 `_kaitorishop`・#中古iPhone #iPhone #買取。ひと言の下書き「売る前に／3店の買取を／比べましょう」・締めの問い「あなたは、どこで売りますか？」。関連動画の締めは買取の横動画が公開されてから（RELATED_LONG_THEMES に入れていない）
 
 ## mbpvsair・watchbudget・stockmac（10/29〜・iPhone 以外の3本）
 

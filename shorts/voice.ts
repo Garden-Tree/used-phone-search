@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { isNewVsOld, hasRelatedLong, isBudget, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type StockScript, type Script, type VoiceConfig } from "./types";
+import { isNewVsOld, hasRelatedLong, isBudget, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type StockScript, type KaitoriShopScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -79,7 +79,7 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
     : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s)
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
-    : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s) : s.theme === "mbpvsair" ? mbpVsAirNarration(s)
+    : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s) : s.theme === "mbpvsair" ? mbpVsAirNarration(s) : s.theme === "kaitorishop" ? kaitoriShopNarration(s)
     : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : isNewVsOld(s) ? (s.theme === "mbpnew" ? mbpNewNarration(s) : s.theme === "mbpproled" ? mbpProledNarration(s) : ipadMiniNarration(s))
     : s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen" ? deviceGenNarration(s)
     : isStock(s) ? stockNarration(s) : dropsNarration(s);
@@ -431,6 +431,25 @@ function minieNarration(s: MinieScript): Partial<Record<NarrationKey, string>> {
     reveal: `1位は${top.older}と${shortName(top.newer)}。弟分にすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%安くなります。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: `全機種の相場は、プロフィールのリンクから見られます。あなたは、${allMini ? "小さい・安い" : "安い"}弟分派？無印派？`,
+  };
+}
+
+/**
+ * kaitorishop の既定（10/29〜）: hook は答えから（「同じ<機種>、<容量>でも、売る店で、買取価格が<差>違います。」。意外な数字を1秒目に・battery small と同じ考え）/
+ * ranking 3位・2位を1文ずつ（「3位は<機種>、<容量>。店の差は<額>です。」。文頭の「○位は」で行を出す）/ reveal 1位の高い店と安い店の額と差 /
+ * comment ひと言の本文だけ / outro サイトへの誘導と問い
+ */
+function kaitoriShopNarration(s: KaitoriShopScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const hi = top.quotes[0];
+  const lo = top.quotes[top.quotes.length - 1];
+  return {
+    hook: `同じ${top.model}、${top.storage}でも、売る店で、買取価格が${yen(top.diff)}違います。`,
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、${items[i].storage}。店の差は${yen(items[i].diff)}です。`).join(""),
+    reveal: `1位は${top.model}。${hi.shop}は${yen(hi.price)}、${lo.shop}は${yen(lo.price)}。売る店で、${yen(top.diff)}違います。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "中古の相場と買取価格は、プロフィールのリンクから見られます。あなたは、どこで売りますか？",
   };
 }
 

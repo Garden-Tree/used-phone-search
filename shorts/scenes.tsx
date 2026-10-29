@@ -8,7 +8,7 @@ import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
 import { relatedThumb } from "./relatedLong";
-import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type Script } from "./types";
+import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type KaitoriShopScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -19,6 +19,7 @@ const HEADER = { top: 250, height: 320 };
 const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
 const HEAD_SUB = (s: Script) => s.theme === "rakutenmobile" ? `料金は公式・中古は大手中古ショップ${s.shopCount}店の相場`
+  : s.theme === "kaitorishop" ? `毎週更新・買取価格は${s.shopCount}店の公式`
   : `${s.theme === "drops" && s.period ? "毎日集計" : "毎週更新"}・大手中古ショップ${s.shopCount}店の相場`;
 const HEAD_TITLE = (s: Script) =>
   s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"] : s.theme === "probudget" ? ["予算ぴったりで買える", "中古iPhone Pro"] : s.theme === "foldbudget" ? ["予算ぴったりで買える", "中古折りたたみスマホ"] : s.theme === "galaxybudget" ? ["予算ぴったりで買える", "中古Galaxy"] : s.theme === "bigbudget" ? ["予算ぴったりで買える", "大きい画面の中古iPhone"]
@@ -33,6 +34,7 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "ipadgen" ? ["iPad", "1世代前でいくら安い？"] : s.theme === "pixelgen" ? ["Google Pixel", "1世代前でいくら安い？"]
     : s.theme === "stock" ? ["中古でいちばん多いiPhone", "在庫数ランキング"] : s.theme === "stockandroid" ? ["中古でいちばん多いAndroid", "在庫数ランキング"] : s.theme === "stockmac" ? ["中古でいちばん多いMacBook", "在庫数ランキング"]
     : s.theme === "watchbudget" ? ["予算ぴったりで買える", "中古Apple Watch"] : s.theme === "mbpvsair" ? ["MacBook ProとAir", "中古ならどっちが安い？"]
+    : s.theme === "kaitorishop" ? ["同じiPhoneでも", "売る店でいくら違う？"]
     : s.theme === "rakutenmobile" ? ["楽天モバイルは使った量で3段階", `中古${s.scenes.device.model}と2年でいくら？`]
     : s.theme === "minie" ? ["無印より安い“弟分”", "いくら安い？中古iPhone"] : s.theme === "unused" ? ["未使用品（ランクS）は", "中古よりいくら高い？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : [`${periodOf(s as DropsScript).name}の中古iPhone`, "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
@@ -42,6 +44,8 @@ const FOOT = (s: Script) =>
     : s.theme === "rakutenmobile" ? `${s.date.replace(/-/g, "/")}・料金は楽天モバイル公式（税込・割引なし）
 中古は${s.scenes.device.storage}の中央値`
     : s.theme === "unused" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記（S＝未使用品）・同じ容量の中央値`
+    : s.theme === "kaitorishop" ? `買取価格は各店の公式・${md(s.updated)}更新・きれいな状態
+3店がそろういちばん小さい容量`
     : s.theme === "minie" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値`
     : s.theme === "battery" ? `${s.date.replace(/-/g, "/")}・電池の%を数字で出す店・同じ容量の中央値`
     : s.theme === "gen" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値`
@@ -164,7 +168,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
   if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
     || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew" || isNewVsOld(s) || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen"
-    || s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "mbpvsair") return [
+    || s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "mbpvsair" || s.theme === "kaitorishop") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -1638,6 +1642,60 @@ function UnusedReveal({ s, t }: { s: UnusedScript; t: number }) {
   );
 }
 
+/** kaitorishop のランキング: 機種名、下段は 容量・店の差（額・大）・いちばん高い店 */
+function KaitoriShopRanking({ s, t, o }: { s: KaitoriShopScript; t: number; o: Scene["o"] }) {
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
+    model: it.model,
+    cells: [
+      { text: it.storage, w: 140, max: 44, color: C.muted },
+      { text: `差 ${n(it.diff)}円`, w: 300, max: 70, color: C.red },
+      { text: `${it.quotes[0].shop}が高い`, w: 240, max: 44, color: C.muted },
+    ],
+  }));
+  return <RankRows s={s} t={t} o={o} items={items} />;
+}
+
+/**
+ * kaitorishop の1位: 機種名・容量、3店の買取価格の3本の棒（高い順・最高値を幅いっぱいにした比。店の名前を札に）、差（大）と率（最高値に対して）、更新日。
+ * 棒は 0.8 秒から伸び、差は数え上げる（rank の1位と同じ形）
+ */
+function KaitoriShopReveal({ s, t }: { s: KaitoriShopScript; t: number }) {
+  const r = s.scenes.ranking.items[0];
+  const L = lookOf(s);
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const grow = prog(t, 0.8, 0.7);
+  const sub = `${r.storage}・買取価格（きれいな状態）`;
+  const LABEL = 230;
+  const BAR = CW - 60 - LABEL - 20;
+  const colors = [L.accent, C.silver, C.red];
+  const labelSize = Math.min(...r.quotes.map((q) => FIT(q.shop, LABEL, 48)));
+  const gapText = `差 ${n(r.diff)}円`;
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: 52, fontWeight: 900, lineHeight: 1.3, marginBottom: 22, opacity: prog(t, 0, 0.25) }}>1位は…</div>
+      <div style={{ ...card(L), width: CW, padding: "18px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 100), fontWeight: 900 }}>{r.model}</div>
+        <div style={{ ...row, fontSize: FIT(sub, CW - 60, 44), fontWeight: 900, color: C.muted, marginTop: 2 }}>{sub}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 14 }}>
+          {r.quotes.map((q, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 8 : 0 }}>
+              <div style={{ ...row, justifyContent: "flex-end", width: LABEL, fontSize: labelSize, fontWeight: 900, color: colors[i] ?? C.muted }}>{q.shop}</div>
+              <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
+                <div style={{ ...row, justifyContent: "flex-start", fontSize: FIT(`${n(q.price)}円`, BAR, 50), fontWeight: 900, color: colors[i] ?? C.muted }}>{`${n(q.price)}円`}</div>
+                <div style={{ display: "flex", width: Math.max(8, Math.round(((BAR * q.price) / r.max) * grow)), height: 26, background: colors[i] ?? C.muted, borderRadius: 12, marginTop: 2 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 12 }}>
+          <div style={{ ...row, fontSize: FIT(gapText, 620, 120), fontWeight: 900, color: C.red }}>{`差 ${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
+          <div style={{ ...row, fontSize: 56, fontWeight: 900, color: C.red, marginLeft: 14 }}>{`−${rate(r.pct)}%`}</div>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
 /** oldpro の安い方の短い名前（"iPhone 15 Pro" → "15 Pro"。diff ＝ 無印 − Pro が正なら Pro が安い） */
 const oldProCheaper = (r: OldProRow) => (r.diff > 0 ? r.olderShort ?? foldShort(r.older) : r.newerShort ?? foldShort(r.newer));
 
@@ -1964,6 +2022,23 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       case "comment": return <Comment s={s} t={t} o={sc.o} />;
       case "outro": return <Outro s={s} t={t} o={sc.o} />;
       default: throw new Error(`oldpro に場面 ${sc.id} はありません`);
+    }
+  }
+  if (s.theme === "kaitorishop") {
+    switch (sc.id) {
+      case "hook": {
+        // 答えから（hookLines「同じ<機種> <容量>でも／売る店で／<差>円違う」）。札は1位の高い店と安い店の買取価格
+        const r = s.scenes.ranking.items[0];
+        const hi = r.quotes[0];
+        const lo = r.quotes[r.quotes.length - 1];
+        return <SplitHook s={s} t={t} lines={["同じiPhoneでも、", "売る店で", "いくら違う？"]} teaser={`${n(r.diff)}円`} label="差"
+          left={{ label: hi.shop, sub: `${n(hi.price)}円`, fill: lookOf(s).chip }} right={{ label: lo.shop, sub: `${n(lo.price)}円`, fill: C.red }} />;
+      }
+      case "ranking": return <KaitoriShopRanking s={s} t={t} o={sc.o} />;
+      case "reveal": return <KaitoriShopReveal s={s} t={t} />;
+      case "comment": return <Comment s={s} t={t} o={sc.o} />;
+      case "outro": return <Outro s={s} t={t} o={sc.o} />;
+      default: throw new Error(`kaitorishop に場面 ${sc.id} はありません`);
     }
   }
   if (s.theme === "unused") {

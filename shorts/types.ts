@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini・watchgen・macgen・ipadgen・pixelgen・stock・stockandroid・stockmac・watchbudget・mbpvsair）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini・watchgen・macgen・ipadgen・pixelgen・stock・stockandroid・stockmac・watchbudget・mbpvsair・kaitorishop）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -425,7 +425,26 @@ export type StockScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | (OldProBody & { theme: "oldpro" }) | RakutenMobileScript | IpadMiniScript | DeviceGenScript | StockScript | MbpVsAirScript;
+/**
+ * kaitorishop の1行: 1機種の、3店すべてに買取価格がある最小の容量で、店ごとの買取価格（きれいな状態・lib/buybackPrices.ts の BUYBACK_SHOPS）（shorts/themes/kaitorishop.ts）。
+ * quotes は高い順。diff = 最高値 − 最安値、pct = diff / 最高値（%・小数1桁）
+ */
+export type KaitoriShopRow = { model: string; storage: string; storageGb: number; quotes: { shop: string; label: string; price: number }[]; max: number; min: number; diff: number; pct: number };
+
+/** テーマ kaitorishop「同じiPhoneでも、売る店でいくら違う？」（10/29〜・買取価格の3店の差） */
+export type KaitoriShopScript = Common & {
+  theme: "kaitorishop";
+  /** 買取価格の更新日（出した行の最新・JST・週1回） */
+  updated: string;
+  scenes: {
+    /** 場面 ranking（3位・2位・伏せた1位）と reveal（1位の3店の棒）。差額の大きい順（items[0] が1位） */
+    ranking: { items: KaitoriShopRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | (OldProBody & { theme: "oldpro" }) | RakutenMobileScript | IpadMiniScript | DeviceGenScript | StockScript | MbpVsAirScript | KaitoriShopScript;
 
 /**
  * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。
