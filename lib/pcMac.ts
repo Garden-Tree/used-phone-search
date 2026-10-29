@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { modelPagePath } from "@/lib/catalog";
-import { MAC_MODELS } from "@/lib/macCatalog";
+import { MAC_INFO, MAC_MODELS } from "@/lib/macCatalog";
 import { medianPrice } from "@/lib/modelInventory";
 import type { PcCell, PcMatrix } from "@/lib/pcInventory";
 
@@ -46,7 +46,10 @@ export async function getMacMatrix(maxPrice?: number, minRowCount = 3): Promise<
         const median = count > 1 ? ((await medianPrice({ ...base, modelName: model, memoryGB }, count)) ?? minPrice) : minPrice;
         cells.set(min, { count, minPrice, medianPrice: median });
       }
-      rows.push({ label: model.replace(/^MacBook /, ""), cells, count: totals.get(model) ?? 0, href: modelPagePath(model) });
+      const info = MAC_INFO[model];
+      // まとまりは「Air 13インチ」「Pro 16インチ」（Neo は1サイズだけなので「Neo」）
+      const group = info.family === "Neo" ? "Neo" : `${info.family} ${info.inch}インチ`;
+      rows.push({ label: model.replace(/^MacBook /, ""), cells, count: totals.get(model) ?? 0, href: modelPagePath(model), group });
     }
     return { memories, rows, memoryLabels: new Map(BUCKETS.map((b) => [b.min, b.label])) };
   } catch (e) {

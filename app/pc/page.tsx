@@ -9,7 +9,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { bestWithin, cpuMemoryMatrix, getPcItems, pcBudgetPath, PC_BUDGETS, PC_MIN_INDEX_ITEMS, pcShopLabels, type PcItem } from "@/lib/pcInventory";
 import PcItemRow, { type PcRowItem } from "@/app/components/PcItemRow";
 import PcItemList from "@/app/components/PcItemList";
-import PcPriceMatrix from "@/app/components/PcPriceMatrix";
+import PcMatrixGroups from "@/app/components/PcMatrixGroups";
 import { getMacMatrix } from "@/lib/pcMac";
 
 // 中古パソコン（Windows のノート・デスクトップ）の最安値・相場（2026-10-27〜）。在庫はビルド（1日4回）のたびに更新
@@ -29,6 +29,9 @@ export async function generateMetadata(): Promise<Metadata> {
     ...(items.length < PC_MIN_INDEX_ITEMS ? { robots: { index: false, follow: true } } : {}),
   };
 }
+
+// MacBook のまとまりの並び（安いシリーズ・小さい画面から）
+const MAC_GROUP_ORDER = ["Neo", "Air 13インチ", "Air 15インチ", "Pro 13インチ", "Pro 14インチ", "Pro 16インチ"];
 
 const RANK_NOTE: Record<string, string> = { S: "未使用に近い", A: "美品", B: "良品", C: "並品", J: "訳あり" };
 
@@ -119,8 +122,8 @@ export default async function PcIndexPage() {
           m.rows.length === 0 ? null : (
             <section key={title} className="my-8">
               <h2 className="text-xl font-bold mb-1">{title}</h2>
-              <p className="text-xs text-ink-mute mb-3">縦が CPU、横がメモリ。マスの大きい数字は相場（中央値）です。在庫が3件以上ある CPU だけ・訳あり品は除いています。</p>
-              <PcPriceMatrix m={m} />
+              <p className="text-xs text-ink-mute mb-3">CPU の系統ごとにまとめています。開くと、縦が世代・横がメモリの表です。マスの大きい数字は相場（中央値）。在庫が3件以上ある CPU だけ・訳あり品は除いています。</p>
+              <PcMatrixGroups m={m} />
             </section>
           ),
         )}
@@ -131,8 +134,8 @@ export default async function PcIndexPage() {
               <h2 className="text-xl font-bold">MacBook の相場（機種 × メモリ）</h2>
               <Link href="/mac" className="text-xs text-brand-600 hover:text-brand-800">MacBook の一覧 ›</Link>
             </div>
-            <p className="text-xs text-ink-mute mb-3">中古MacBook（Apple シリコン）の在庫から。機種名から、店ごとの在庫と最安値へ進めます。</p>
-            <PcPriceMatrix m={macMatrix} head="機種 ＼ メモリ" />
+            <p className="text-xs text-ink-mute mb-3">中古MacBook（Apple シリコン）の在庫から、シリーズと画面の大きさごとにまとめています。機種名から、店ごとの在庫と最安値へ進めます。</p>
+            <PcMatrixGroups m={macMatrix} head="機種 ＼ メモリ" order={MAC_GROUP_ORDER} />
           </section>
         )}
 

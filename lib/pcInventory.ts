@@ -90,7 +90,8 @@ export function bestWithin(items: PcItem[], formFactor: string, maxPrice: number
 export type PcCell = { count: number; minPrice: number; medianPrice: number };
 export type PcMatrix = {
   memories: number[];
-  rows: { label: string; cells: Map<number, PcCell>; count: number; href?: string }[];
+  /** group: アコーディオンのまとまり（Windows は CPU の系統「Core i5」、Mac は「Air 13インチ」。app/components/PcMatrixGroups.tsx） */
+  rows: { label: string; cells: Map<number, PcCell>; count: number; href?: string; group?: string }[];
   /** 列の見出し（省略時は「8GB」）。MacBook はメモリを幅でまとめる（lib/pcMac.ts） */
   memoryLabels?: Map<number, string>;
 };
@@ -121,6 +122,7 @@ export function cpuMemoryMatrix(items: PcItem[], formFactor: string, minRowCount
     memories,
     rows: kept.map((r) => ({
       label: r.label,
+      group: r.family,
       count: r.count,
       cells: new Map(
         [...r.prices.entries()].map(([mem, prices]) => {
