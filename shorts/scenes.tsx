@@ -22,7 +22,7 @@ const HEAD_SUB = (s: Script) => s.theme === "rakutenmobile" ? `料金は公式�
   : `${s.theme === "drops" && s.period ? "毎日集計" : "毎週更新"}・大手中古ショップ${s.shopCount}店の相場`;
 const HEAD_TITLE = (s: Script) =>
   s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"] : s.theme === "probudget" ? ["予算ぴったりで買える", "中古iPhone Pro"] : s.theme === "foldbudget" ? ["予算ぴったりで買える", "中古折りたたみスマホ"] : s.theme === "galaxybudget" ? ["予算ぴったりで買える", "中古Galaxy"] : s.theme === "bigbudget" ? ["予算ぴったりで買える", "大きい画面の中古iPhone"]
-    : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? ["電池90%台だと", "いくら高い？中古iPhone"]
+    : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? (s.order === "small" ? ["電池90%台と80%台", "差が小さい中古iPhone"] : ["電池90%台だと", "いくら高い？中古iPhone"])
     : s.theme === "gen" ? ["iPhone", "1世代前でいくら安い？"] : s.theme === "storage" ? ["容量を1つ上げると", "いくら高い？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
     : s.theme === "ios27line" ? ["iOS 27対応で", "いちばん安い中古iPhone"] : s.theme === "batteryswap" ? ["電池交換を足すと", "1つ上の世代と同じ値段？"] : s.theme === "overnew" ? ["中古なのに", "新品より高い？中古iPhone"]
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"] : s.theme === "plusmax" ? ["大画面はPlusとPro Max", "同じ容量でいくら違う？"]
@@ -497,6 +497,8 @@ function AbcHook({ s, t }: { s: RankScript; t: number }) {
 function BatteryHook({ s, t }: { s: BatteryScript; t: number }) {
   const L = lookOf(s);
   const r = s.scenes.ranking.items[0];
+  // small（差の小さい順）は答えから始める: 「同じ値段の中古iPhoneがある」＋「差 0円」
+  const small = s.order === "small";
   const BW = 230;
   const BH = 300;
   const cell = (label: string, level: number, fill: string) => (
@@ -509,13 +511,13 @@ function BatteryHook({ s, t }: { s: BatteryScript; t: number }) {
   );
   return (
     <Frame s={s}>
-      <Question lines={["電池が90%台だと、", "中古iPhoneは", "いくら高い？"]} max={74} />
+      <Question lines={s.hookLines ?? (small ? (r.diff === 0 ? ["電池90%台も80%台も", "同じ値段の", "中古iPhoneがある"] : ["電池90%台でも", `+${n(r.diff)}円だけの`, "中古iPhoneがある"]) : ["電池が90%台だと、", "中古iPhoneは", "いくら高い？"])} max={74} />
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", width: CW, marginTop: 40, transform: `scale(${pulseOf(t)})` }}>
         {cell("90%台", 0.95, SITE.safe)}
         <div style={{ ...row, width: 150, fontSize: 56, fontWeight: 900, lineHeight: 1, color: L.fg, paddingBottom: 110 }}>VS</div>
         {cell("80%台", 0.85, C.budget)}
       </div>
-      <Teaser s={s} label="最大" value={`+${n(r.diff)}円`} mt={36} />
+      <Teaser s={s} label={small ? "差" : "最大"} value={small ? `${n(r.diff)}円` : `+${n(r.diff)}円`} mt={36} />
     </Frame>
   );
 }
@@ -572,7 +574,7 @@ function BatteryRanking({ s, t, o }: { s: BatteryScript; t: number; o: Scene["o"
     model: it.model,
     cells: [
       { text: it.storage, w: 170, max: 44, color: C.muted },
-      { text: `+${n(it.diff)}円`, w: 320, max: 76, color: lookOf(s).accent },
+      { text: s.order === "small" ? `差 ${n(it.diff)}円` : `+${n(it.diff)}円`, w: 320, max: 76, color: lookOf(s).accent },
       { text: `+${rate(it.pct)}%`, w: 190, max: 50, color: lookOf(s).accent },
     ],
   }));
@@ -1186,8 +1188,8 @@ function BatteryReveal({ s, t }: { s: BatteryScript; t: number }) {
           ))}
         </div>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 8 }}>
-          <div style={{ ...row, fontSize: FIT(diffText, 600, 112), fontWeight: 900, color: lookOf(s).accent }}>{`+${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
-          <div style={{ ...row, fontSize: 64, fontWeight: 900, color: lookOf(s).accent, marginLeft: 16 }}>{`+${rate(r.pct)}%`}</div>
+          <div style={{ ...row, fontSize: FIT(diffText, 600, 112), fontWeight: 900, color: lookOf(s).accent }}>{s.order === "small" && r.diff === 0 ? "同じ値段" : `+${n(Math.round(r.diff * prog(t, 1.0, 0.9)))}円`}</div>
+          {r.diff > 0 && <div style={{ ...row, fontSize: 64, fontWeight: 900, color: lookOf(s).accent, marginLeft: 16 }}>{`+${rate(r.pct)}%`}</div>}
         </div>
         {r.repair && <div style={{ ...row, fontSize: 44, fontWeight: 900, color: C.muted, marginTop: 10, opacity: prog(t, 1.6, 0.3) }}>{`Appleの電池交換は ${n(r.repair)}円`}</div>}
       </div>

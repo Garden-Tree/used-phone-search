@@ -184,6 +184,17 @@ function rankNarration(s: RankScript): Partial<Record<NarrationKey, string>> {
 function batteryNarration(s: BatteryScript): Partial<Record<NarrationKey, string>> {
   const items = s.scenes.ranking.items;
   const top = items[0];
+  // small（差の小さい順・10/29〜）: 答えから始める。「同じ値段」「○円だけ」を先に言う
+  if (s.order === "small") {
+    const gap = (r: BatteryScript["scenes"]["ranking"]["items"][number]) => (r.diff === 0 ? "差は0円です。" : `差は${yen(r.diff)}だけです。`);
+    return {
+      hook: top.diff === 0 ? `電池90%台も80%台も、同じ値段の中古iPhoneがあります。` : `電池90%台でも、${yen(top.diff)}しか変わらない中古iPhoneがあります。`,
+      ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、${items[i].storage}。${gap(items[i])}`).join(""),
+      reveal: `1位は${top.model}。${top.diff === 0 ? `電池90%台も80%台も、同じ${yen(top.hiMedian)}です。` : `電池90%台にしても、${yen(top.diff)}しか変わりません。`}${top.repair ? `Appleの電池交換は、${yen(top.repair)}です。` : ""}`,
+      comment: commentSentence(s.scenes.comment.lines),
+      outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、同じ値段で、電池90%台を選びますか？",
+    };
+  }
   return {
     hook: "電池が90%台だと、中古iPhoneはいくら高い？",
     ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、${items[i].storage}。電池80%台より、${yen(items[i].diff)}高いです。`).join(""),

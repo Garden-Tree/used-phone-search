@@ -176,6 +176,8 @@ export type BatteryRow = { model: string; storage: string; storageGb: number; hi
 /** テーマ battery「電池90%台だと、中古iPhoneはいくら高い？」 */
 export type BatteryScript = Common & {
   theme: "battery";
+  /** small: 差の小さい順（「90%台も80%台も同じ値段」の回・plan --small・10/29〜）。なければ差の大きい順 */
+  order?: "small";
   scenes: {
     /** 場面 ranking（3位・2位・伏せた1位）と reveal（1位）。差額の大きい順（items[0] が1位） */
     ranking: { items: BatteryRow[] };
