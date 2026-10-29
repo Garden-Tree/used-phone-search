@@ -50,3 +50,4 @@
 - 横動画② Pro と Air: ユーザーの指摘で読みを直して書き出し直し（「その差は」→さわ・「何なのだ」→なんなのだ・「差し込み口」→さしこみぐち。longform/script.ts の forVoice）。8:14・-14.03 LUFS。上げるファイルは `ProとAir_8分14秒.mp4`、①は `MBP4択_8分29秒.mp4`（どちらも 10MB を超えるのでファイルの選択はユーザー）
 - 14時台: 予約のままだった3本を公開に切り替え（ユーザー「公開していいよ」）: promax ショート xDufjTBXQzU・折りたたみ横動画 bAVv69vtRlA・Android 在庫ショート RKFpgesscts。Studio の詳細の「公開設定」→ 公開 → 保存（X 用タブ 1268530262 で動いた）
 - 15時台: 横動画2本（ユーザーがファイルを選んでアップロード → Claude が題・説明・サムネ・設定・終了画面）。① 4択 **https://youtu.be/goOpevlUKTw** すぐ公開（utm long_20261029・終了画面は最新の動画からインポート → M6 横動画 iAzTGx6wsTs・iPad SHyQRQ8wAic・登録）。② Pro と Air **https://youtu.be/7NQettpZxHk** 10/30 18:00 予約（utm long_20261030・終了画面は ① から同じ3つ）。どちらもチェックで問題なし・子ども向けでない・改変「いいえ」。①を lib/videos.ts（MacBook Pro 14/16 M5 Pro の機種ページ）に。②は公開後に足す
+- 16時台: 固定コメント3本（Watch 予算別 cU-eYUP9ZV4「あなたの予算なら、どのApple Watchにしますか？」・promax xDufjTBXQzU「あなたは、Pro Max派？Pro派？」・stockandroid RKFpgesscts「あなたなら、どのAndroidを選びますか？」）。/shorts/<ID> のコメント欄から（手順はスキルに）。/pc/budget の表もアコーディオンに
