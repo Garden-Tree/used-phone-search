@@ -103,7 +103,7 @@ export async function buildBatteryScript(date: string, small = false): Promise<B
     ...items.map(rowText),
     ...(top.repair ? ["", `参考: ${top.model}の Apple 公式の電池交換は ${man(top.repair)}円（保証対象外・税込・${slash(APPLE_REPAIR_CHECKED)}確認 ${APPLE_REPAIR_SOURCE.battery}）。`] : []),
     "",
-    `選び方: iPhone 12〜16 の無印と Pro で、在庫がいちばん多い容量の、電池90〜99%と81〜89%の相場（中央値）を比べ、${small ? "差の小さい順（80%台の方が高い機種は除く）" : "差の大きい順"}（それぞれ在庫${min}件以上）。率は80%台の相場に対して。電池の%を数字で出している店（${exactShops.join("・")}）の在庫だけで比べています（「80%以上」とだけ書く店・100%は除く）。データ: 大手中古ショップ${shopCount}店の在庫（${slash(date)}時点）。`,
+    `選び方: iPhone 12〜16 の無印と Pro で、在庫がいちばん多い容量の、電池90〜99%と81〜89%の相場（中央値）を比べ、${small ? `差の小さい順（それぞれ在庫${min}件以上・80%台の方が高い機種は除く）` : `差の大きい順（それぞれ在庫${min}件以上）`}。率は80%台の相場に対して。電池の%を数字で出している店（${exactShops.join("・")}）の在庫だけで比べています（「80%以上」とだけ書く店・100%は除く）。データ: 大手中古ショップ${shopCount}店の在庫（${slash(date)}時点）。`,
     "",
     // utm で YouTube から来た人を GA で数える（canonical は印なしなので検索には影響しない）
     `${top.model}の電池別の在庫と最安値: https://used.gadelog.com${modelPagePath(top.model)}?${utm(date)}`,
