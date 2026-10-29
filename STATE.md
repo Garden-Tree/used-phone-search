@@ -18,7 +18,7 @@
 - **GA4**: 556047315・**ホスティング**: Cloudflare Pages（docs/）
 - **DB**: Neon（Launch）
 - **IndexNow**: 毎日全件
-- **デザイン**: `docs/design.md`・横動画の画面は D1（文字 本文34px・脚注22px。longform/README）
+- **デザイン**: `docs/design.md`・横動画は D1（longform/README）
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
 - **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。店の比較 `/iphone/where-to-buy`・新旧の比較（iPad mini・MBP M6）。横動画は同テーマのページに（`lib/videos.ts`）
 - **画面の店数は在庫がある店だけ**（`lib/activeShops.ts`）
