@@ -4,8 +4,9 @@
  *   npx tsx longform/thumb-ab3.tsx set2       # 10/26 に足した2本（iPad・大きい画面）と一覧 longform/thumb-ab3-contact2.png
  *   npx tsx longform/thumb-ab3.tsx set3       # 10/27 に足した3本（電池・新型 iPad mini・楽天モバイル）と一覧 longform/thumb-ab3-contact3.png
  *   npx tsx longform/thumb-ab3.tsx set4       # 10/28: 13本目（新型 MBP）と、楽天モバイルの B を楽天のピンクに。一覧 longform/thumb-ab3-contact4.png
+ *   npx tsx longform/thumb-ab3.tsx set5       # 10/29: 14本目（MBP 4択・A も作り直し）・15本目（Pro と Air）。一覧 longform/thumb-ab3-contact5.png
  *   npx tsx longform/thumb-ab3.tsx <フォルダ> # 1本だけ
- * 出力: <フォルダ>/thumb-B.png・thumb-C.png（1280x720）
+ * 出力: <フォルダ>/thumb-B.png・thumb-C.png（1280x720）。A がある案は thumb-A.png も
  *
  * 10/26 に「中古iPhone おすすめ／買ってはいけない／どこで買う／何世代」「iPhone Pro 無印 どっち」の検索結果（ログアウト）を見て決めた:
  * - B＝色帯の段（黒・赤・黄）＋端末の絵に ✓／✕（「やめとけ5台／正解3台」型。25.6万回・14.9万回）。キャラなし
@@ -137,7 +138,8 @@ const YELLOW_BG = `radial-gradient(circle at 65% 45%, #FFF7AE 0%, ${YELLOW} 45%,
 const PINK = "#D9005B";
 const DARKRED_BG = "radial-gradient(circle at 70% 40%, #8B1A1A 0%, #2A0A0A 70%)";
 
-type Plan = { id: string; B: () => ReactNode; C: () => ReactNode };
+/** A は省略可（省略すると今の thumbnail.png が A）。A を作るときは thumb-A.png に書き出し、Studio のサムネもそれに替える */
+type Plan = { id: string; A?: () => ReactNode; B: () => ReactNode; C: () => ReactNode };
 
 // 数字の出どころ（script.md）は各案の上に書く
 const PLANS: Record<string, Plan> = {
@@ -457,6 +459,97 @@ const PLANS: Record<string, Plan> = {
       </Frame>
     ),
   },
+  // 14本目 goOpevlUKTw（10/29 公開）。前の A（紺の地「MacBook Pro どれ買う？ 4択」）は言葉が弱いので、ユーザーの指示で A も作り直し（PROLED・M6 を入れる。10/29）
+  "2026-10-31-mbp-proled": {
+    id: "goOpevlUKTw",
+    // A: 左右に PROLED と M6（「0:00 結論」: どちらも 24GB・1TB で PROLED 499,800円・M6 375,800円）＋下に「今のモデル・中古も」
+    A: () => (
+      <Frame bg={`linear-gradient(100deg, #1E1B4B 0%, #1E1B4B 50%, ${NAVY} 50%, ${NAVY} 100%)`}>
+        <div style={{ position: "absolute", left: 0, top: 0, width: W, height: 150, display: "flex", alignItems: "center", justifyContent: "center", background: BLACK }}>
+          <Outlined text="新型MacBook Pro どれ買う？" size={fit("新型MacBook Pro どれ買う？", 1200, 104)} color={WHITE} spacing={-5} />
+        </div>
+        <div style={{ position: "absolute", left: 30, top: 168, display: "flex" }}><Outlined text="PROLED" size={124} color={YELLOW} outer={{ w: 8, c: BLACK }} spacing={-6} /></div>
+        <Laptop w={280} screen={["#0B0B0F", "#7C3AED"]} style={{ position: "absolute", left: 90, top: 315 }} />
+        <div style={{ position: "absolute", left: 790, top: 168, display: "flex" }}><Outlined text="M6" size={150} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-6} /></div>
+        <Laptop w={280} screen={SCREENS[3]} style={{ position: "absolute", left: 790, top: 315 }} />
+        <div style={{ position: "absolute", left: 560, top: 280, display: "flex", width: 160, height: 160, borderRadius: 160, background: RED, border: `8px solid ${WHITE}`, alignItems: "center", justifyContent: "center", color: WHITE, fontSize: 84, fontWeight: 900, fontStyle: "italic" }}>VS</div>
+        <div style={{ position: "absolute", left: 0, top: 560, height: 140, display: "flex", alignItems: "center", padding: "0 30px 0 36px", background: YELLOW, boxShadow: "8px 8px 0 rgba(0,0,0,0.35)" }}>
+          <div style={{ display: "flex", fontSize: 78, fontWeight: 900, color: BLACK, letterSpacing: -4, marginRight: 10 }}>今のモデル・中古と</div>
+          <Outlined text="4択" size={120} color={RED} inner={{ w: 6, c: WHITE }} outer={{ w: 5, c: BLACK }} spacing={-6} />
+        </div>
+      </Frame>
+    ),
+    // B: 色帯3段＋4台の値札（「0:00 結論」: 24GB・1TB で PROLED 499,800・今のミニLED 429,800・M6 375,800・中古 M5 Pro 相場 402,980）
+    B: () => (
+      <Frame bg={`linear-gradient(180deg, ${WHITE} 0%, #E5E7EB 100%)`}>
+        <Bands top={40} bands={[
+          { text: "新型PROLED", bg: BLACK, color: YELLOW, size: 112 },
+          { text: "新型M6", bg: RED, color: WHITE, size: 120 },
+          { text: "どれ買う？", bg: YELLOW, color: BLACK, size: 132 },
+        ]} />
+        {[
+          { x: 720, y: 30, label: "PROLED", price: "49.98万", screen: ["#0B0B0F", "#7C3AED"] as [string, string] },
+          { x: 990, y: 30, label: "今のモデル", price: "42.98万", screen: SCREENS[0] },
+          { x: 720, y: 300, label: "M6", price: "37.58万", screen: SCREENS[3] },
+          { x: 990, y: 300, label: "中古", price: "40.3万", screen: SCREENS[1] },
+        ].map((p) => (
+          <div key={p.label} style={{ position: "absolute", left: p.x, top: p.y, display: "flex", flexDirection: "column", alignItems: "center", width: 250 }}>
+            <div style={{ display: "flex", padding: "0 12px", marginBottom: 8, background: BLACK, color: WHITE, fontSize: 44, fontWeight: 900, lineHeight: 1.2, whiteSpace: "nowrap" }}>{p.label}</div>
+            <Laptop w={190} screen={p.screen} />
+            <div style={{ display: "flex", marginTop: 6 }}><Outlined text={p.price} size={fit(p.price, 250, 64)} color={RED} inner={{ w: 5, c: WHITE }} spacing={-3} /></div>
+          </div>
+        ))}
+        <div style={{ position: "absolute", left: 40, top: 600, display: "flex", fontSize: 46, fontWeight: 900, color: BLACK, letterSpacing: -1 }}>14インチ・24GB・1TBでそろえて</div>
+      </Frame>
+    ),
+    // C: 驚くつむぎ＋「PROLED？M6？」（「1:14」: 同じ M5 Pro でタッチの PROLED は今のモデルより +70,000円）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("tsumugi-surprised", { left: -30, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 68, fontWeight: 900, letterSpacing: -2 }}>新型MacBook Pro 2機種</div>
+        <div style={{ position: "absolute", left: 420, top: 140, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="PROLED？" size={fit("PROLED？", 820, 170)} color={RED} inner={{ w: 9, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-8} />
+          <div style={{ display: "flex", marginTop: 10 }}><Outlined text="M6？" size={180} color={NAVY} inner={{ w: 9, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-8} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 500, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 60, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>タッチ対応で ＋7万円</div>
+        <Bubble text={"どれが\n正解なの？"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
+  // 15本目 7NQettpZxHk（10/30 18:00 公開）。A＝紺の地「Pro と Air どっち？ 差 11.5万円」＋つむぎ
+  "2026-11-01-mbp-vs-mba": {
+    id: "7NQettpZxHk",
+    // B: 左右に割った VS（「1:18」: 新品 Air 13インチ M5 224,800円・Pro 14インチ M6 339,800円・差 115,000円）
+    B: () => (
+      <Frame bg={`linear-gradient(100deg, ${NAVY} 0%, ${NAVY} 50%, #E5E7EB 50%, #F8FAFC 100%)`}>
+        <div style={{ position: "absolute", left: 0, top: 0, width: W, height: 150, display: "flex", alignItems: "center", justifyContent: "center", background: BLACK }}>
+          <Outlined text="MacBook どっち買う？" size={112} color={WHITE} spacing={-6} />
+        </div>
+        <div style={{ position: "absolute", left: 120, top: 165, display: "flex" }}><Outlined text="Pro" size={150} color={YELLOW} outer={{ w: 8, c: BLACK }} spacing={-6} /></div>
+        <Laptop w={300} screen={["#312E81", "#A78BFA"]} style={{ position: "absolute", left: 90, top: 330 }} />
+        <div style={{ position: "absolute", left: 860, top: 165, display: "flex" }}><Outlined text="Air" size={150} color={BLACK} inner={{ w: 8, c: WHITE }} spacing={-6} /></div>
+        <Laptop w={280} screen={SCREENS[1]} style={{ position: "absolute", left: 840, top: 340 }} />
+        <div style={{ position: "absolute", left: 560, top: 270, display: "flex", width: 160, height: 160, borderRadius: 160, background: RED, border: `8px solid ${WHITE}`, alignItems: "center", justifyContent: "center", color: WHITE, fontSize: 84, fontWeight: 900, fontStyle: "italic" }}>VS</div>
+        <div style={{ position: "absolute", left: 0, top: 545, height: 165, display: "flex", alignItems: "center", padding: "0 30px 0 36px", background: YELLOW, boxShadow: "8px 8px 0 rgba(0,0,0,0.35)" }}>
+          <div style={{ display: "flex", fontSize: 88, fontWeight: 900, color: BLACK, letterSpacing: -4, marginRight: 8 }}>差は</div>
+          <Outlined text="11.5万円" size={140} color={RED} inner={{ w: 7, c: WHITE }} outer={{ w: 5, c: BLACK }} spacing={-8} />
+        </div>
+      </Frame>
+    ),
+    // C: ショックのずんだもん＋「ほとんどの人はAirで十分」（「0:00 結論」: ネット・動画・書類なら Air）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("zundamon-shock", { left: -40, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 70, fontWeight: 900, letterSpacing: -2 }}>MacBook Pro と Air</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="ほとんどの人は" size={110} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="Airで十分" size={fit("Airで十分", 800, 180)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-10} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 490, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 60, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>新品 Air 22.5万／Pro 34万</div>
+        <Bubble text={"Proいらない\nのだ!?"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
 };
 
 /** 一覧のまとまり（引数なし＝第3弾の4本、set2＝10/26 に足した2本、set3＝10/27 に足した3本、set4＝10/28） */
@@ -465,6 +558,7 @@ const GROUPS: Record<string, { keys: string[]; out: string }> = {
   set2: { keys: ["2026-10-23-ipad-dore", "2026-10-28-big-screen"], out: "thumb-ab3-contact2.png" },
   set3: { keys: ["2026-10-29-battery", "2026-10-30-ipad-mini", "2026-10-31-rakuten-mobile"], out: "thumb-ab3-contact3.png" },
   set4: { keys: ["2026-10-29-mbp-m6", "2026-10-31-rakuten-mobile"], out: "thumb-ab3-contact4.png" },
+  set5: { keys: ["2026-10-31-mbp-proled", "2026-11-01-mbp-vs-mba"], out: "thumb-ab3-contact5.png" },
 };
 
 /** 一覧: 動画ごとに A・B・C を 400x225 と、スマホの関連動画の大きさ 168x94 で並べる */
@@ -475,7 +569,7 @@ async function contact(dirs: string[], out: string, fonts: Awaited<ReturnType<ty
     <div style={{ width: 40 + 3 * (BW + 20), height: 20 + dirs.length * rowH, display: "flex", flexDirection: "column", padding: 20, background: "#F3F4F6", fontFamily: FONT }}>
       {dirs.map((d) => {
         const key = d.split("/").pop()!;
-        const files = [join(d, "thumbnail.png"), join(d, "thumb-B.png"), join(d, "thumb-C.png")];
+        const files = [join(d, PLANS[key].A ? "thumb-A.png" : "thumbnail.png"), join(d, "thumb-B.png"), join(d, "thumb-C.png")];
         return (
           <div key={d} style={{ display: "flex", flexDirection: "column", height: rowH }}>
             <div style={{ display: "flex", fontSize: 26, fontWeight: 900, color: BLACK, height: 44, alignItems: "center" }}>{`${key}（${PLANS[key].id}）  A／B／C`}</div>
@@ -510,8 +604,10 @@ async function contact(dirs: string[], out: string, fonts: Awaited<ReturnType<ty
     const plan = PLANS[key];
     if (!plan) throw new Error(`サムネの案がありません: ${key}`);
     const dir = join(__dirname, key);
-    for (const v of ["B", "C"] as const) {
-      const res = new ImageResponse(<>{plan[v]()}</>, { width: W, height: H, fonts });
+    for (const v of ["A", "B", "C"] as const) {
+      const draw = plan[v];
+      if (!draw) continue;
+      const res = new ImageResponse(<>{draw()}</>, { width: W, height: H, fonts });
       writeFileSync(join(dir, `thumb-${v}.png`), Buffer.from(await res.arrayBuffer()));
     }
     console.log(`B・C → ${dir}`);
