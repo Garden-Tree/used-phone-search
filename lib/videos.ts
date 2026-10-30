@@ -14,6 +14,8 @@ export const VIDEOS = {
   mbpM6: { id: "iAzTGx6wsTs", title: "新型MacBook Pro M6 買う？中古のM5・M4にする？差は5.3万〜7.9万円｜新旧の違いと中古の相場で比べた", minutes: 8, asOf: "2026-10-28", heading: "新型 M6 と中古の差を動画で見る" },
   // 10/29 公開（タッチ対応の PROLED 発表の翌日・4択は 24GB・1TB でそろえた）
   mbpProled: { id: "goOpevlUKTw", title: "MacBook Pro、どれ買う？新型PROLED・新型M6・今のモデル・中古の4択を値段と違いで比べた", minutes: 8, asOf: "2026-10-29", heading: "新型2つ・今のモデル・中古の4択を動画で見る" },
+  // 10/30 公開（新品の Air M5 と Pro M6 の違い・中古は Air M2 と M1 Pro）
+  mbpVsAir: { id: "7NQettpZxHk", title: "MacBook ProとAir、何が違う？新品で11.5万円差｜Proにしかない6つと、Airで十分な人", minutes: 8, asOf: "2026-10-29", heading: "ProとAirの違いを動画で見る" },
   howOld: { id: "T7ltgSB-4XM", title: "中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決めた", minutes: 9, asOf: "2026-10-25", heading: "何世代前まで買っていいかを動画で見る" },
 } satisfies Record<string, Video>;
 
@@ -27,6 +29,8 @@ export function videoForModel(model: string): Video | null {
   if (/^MacBook Pro 1[46]インチ M5 Pro$/.test(model)) return VIDEOS.mbpProled;
   // 新型 M6 の回で比べた MacBook Pro 14インチ（M5・M5 Pro・M4・M3・M1 Pro）
   if (/^MacBook Pro 14インチ (M5( Pro)?|M4|M3|M1 Pro)$/.test(model)) return VIDEOS.mbpM6;
+  // ProとAirの回で比べた Air（新品の M5・中古の M2）
+  if (/^MacBook Air 13インチ (M2|M5)$/.test(model)) return VIDEOS.mbpVsAir;
   if (/^iPhone (1[12]( mini| Pro( Max)?)?|X[SR]?( Max)?|SE \(第[23]世代\))$/.test(model)) return VIDEOS.howOld;
   return null;
 }

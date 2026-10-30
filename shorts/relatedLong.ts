@@ -33,6 +33,11 @@ const IPAD_MINI: RelatedLong = { id: "N2slZY_hJ9s", title: "新型iPad mini（A2
 // 横動画13本目（新型 MacBook Pro M6）。10/28 公開
 const MBP_M6: RelatedLong = { id: VIDEOS.mbpM6.id, title: VIDEOS.mbpM6.title, folder: "2026-10-29-mbp-m6" };
 
+// 横動画14本目（PROLED を含む4択）。10/29 公開
+const MBP_PROLED: RelatedLong = { id: VIDEOS.mbpProled.id, title: VIDEOS.mbpProled.title, folder: "2026-10-31-mbp-proled" };
+// 横動画「MacBook ProとAir、何が違う？」。10/30 公開
+const MBP_VS_AIR: RelatedLong = { id: VIDEOS.mbpVsAir.id, title: VIDEOS.mbpVsAir.title, folder: "2026-11-01-mbp-vs-mba" };
+
 export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   provs: PRO_OR_STANDARD, promax: PRO_OR_STANDARD, probudget: PRO_OR_STANDARD, plusvs: PRO_OR_STANDARD, minie: PRO_OR_STANDARD, plusmax: PRO_OR_STANDARD,
   budget: IPHONE_DORE, drops: IPHONE_DORE, newused: IPHONE_DORE, overnew: IPHONE_DORE,
@@ -45,8 +50,8 @@ export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   rakutenmobile: RAKUTEN_MOBILE,
   ipadmini: IPAD_MINI,
   mbpnew: MBP_M6,
-  // mbpproled（10/29〜）: PROLED の横動画（longform/2026-10-31-mbp-proled）はまだ公開前なので、公開済みの新型 M6 の回につなぐ。公開したら差し替える
-  mbpproled: MBP_M6,
+  mbpproled: MBP_PROLED,
+  mbpvsair: MBP_VS_AIR,
 };
 
 /** 締めに札を出す横動画（声で誘導するテーマだけ） */
