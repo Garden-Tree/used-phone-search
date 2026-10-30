@@ -1,0 +1,39 @@
+M1 MacBook Air、2026年でもまだ使える？中古8.4万円｜macOS 27対応と、買う前に知りたい弱点
+
+M1 MacBook Air は2026年でもまだ使えるのかを、Apple 公式の対応・仕様と、Mac を扱う大手中古ショップ5店の相場（2026/10/31時点・ジャンクを除く）で確かめました。
+結論: ネット・動画・書類なら、まだ使える。中古の相場は 8GB・256GB で 83,980円（M2 Air より 28,000円安い）。外部ディスプレイ1台・720p カメラ・MagSafe なしが気になる人は M2 以降を。
+
+・Apple 公式（10/31 確認）: macOS 27 Golden Gate は「Appleシリコン搭載MacBook Air（2020以降）」に対応／Apple Intelligence は「MacBook Air（M1以降）」／ヴィンテージ製品の一覧に M1 Air はない／保証対象外のバッテリー修理 26,800円（税込）／充放電回数の上限 1000回
+・M1 Air の仕様（Apple サポートの技術仕様）: 13.3インチ・400ニト／Thunderbolt / USB 4 ×2／外部ディスプレイ1台／720p カメラ／ワイヤレスインターネット最大15時間／1.29kg。発売時 104,800円（税別）
+・中古の相場（同じ構成の中央値）: M1 Air 8GB・256GB 83,980円／8GB・512GB 91,980円／16GB・512GB 99,800円／16GB・1TB 110,980円。M2 Air 8GB・256GB 111,980円・MacBook Neo（中古）104,980円・M4 Air 16GB・256GB 182,130円
+・電池（8GB・256GB）: 90%台 88,980円／85〜89% 86,980円／80〜84% 82,980円
+・ランク（8GB・256GB）: A 88,980円／B 82,980円／C 71,980円。ランクは各店の表記
+・MacBook Neo の新品（Apple 公式・税込）: 256GB 119,800円／512GB 137,800円
+
+相場＝同じ機種・同じメモリ・同じ SSD の中央値。件数が少ない構成は目安です。
+
+0:00 結論：ネット・動画・書類なら、まだ使える
+0:46 どうやって調べた？
+1:15 M1 Airの相場：8GB・256GBで8.4万円
+2:14 2026年でも使える理由
+3:00 M1 Airの弱いところ
+4:04 電池：在庫はみんな80%以上
+4:57 ランクと店で、こんなに違う
+6:08 M2・Neoと比べると
+7:17 M1 Airが合う人・合わない人
+8:07 まとめ
+8:42 次におすすめの動画
+
+MacBook Air M1: https://used.gadelog.com/mac/macbook-air-m1?utm_source=youtube&utm_medium=social&utm_campaign=long_20261103
+MacBook Air 13インチ M2: https://used.gadelog.com/mac/macbook-air-13-m2?utm_source=youtube&utm_medium=social&utm_campaign=long_20261103
+MacBook Neo: https://used.gadelog.com/mac/macbook-neo?utm_source=youtube&utm_medium=social&utm_campaign=long_20261103
+全機種の中古MacBookの相場: https://used.gadelog.com/mac?utm_source=youtube&utm_medium=social&utm_campaign=long_20261103
+
+VOICEVOX:春日部つむぎ
+VOICEVOX:ずんだもん
+BGM: Cyber Society by のる（OpenTracks）
+効果音：効果音ラボ
+立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)
+ずんだもん立ち絵：坂本アヒル様
+
+#MacBookAir #M1 #中古MacBook
