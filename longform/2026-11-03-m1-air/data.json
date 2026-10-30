@@ -1,0 +1,446 @@
+{
+  "date": "2026-10-31",
+  "shops": 5,
+  "source": "script.md の数字そのまま（2026/10/31 の集計・longform/2026-11-03-m1-air/data-query.ts → data-query.log。ジャンクを除く。相場＝同じ構成（機種・メモリ・SSD）の中央値）。仕様・対応・修理料金は Apple 公式（support.apple.com/ja-jp/111883・111867・122209・102772・102888・mac-laptops/repair、apple.com/jp/os/macos/・apple-intelligence/・macbook-neo/specs/・shop/buy-mac/macbook-neo。10/31 確認）",
+  "thumbnail": {
+    "lines": [
+      "M1 Air",
+      "まだ使える？"
+    ],
+    "badge": [
+      {
+        "text": "中古"
+      },
+      {
+        "text": "8.4万円",
+        "red": true
+      }
+    ],
+    "footer": "macOS 27 対応／M2 より 2.8万円安い"
+  },
+  "chapters": [
+    {
+      "title": "結論：ネット・動画・書類なら、まだ使える",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "中古の M1 Air と M2 Air（8GB・256GB）",
+        "items": [
+          {
+            "label": "M1 Air",
+            "value": "83,980",
+            "unit": "円",
+            "cue": "中古の相場は、8GB、256GBで"
+          },
+          {
+            "label": "M2 Air",
+            "value": "111,980",
+            "unit": "円",
+            "cue": "中古の相場は、8GB、256GBで"
+          },
+          {
+            "label": "差",
+            "value": "28,000",
+            "unit": "円",
+            "cue": "中古の相場は、8GB、256GBで"
+          }
+        ],
+        "note": "同じ構成（8GB・256GB）の中央値（2026/10/31）"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "どうやって調べた？",
+        "items": [
+          {
+            "label": "Mac の中古ショップ",
+            "value": "5",
+            "unit": "店",
+            "cue": "Macを扱う大手の中古ショップ5店"
+          },
+          {
+            "label": "MacBook の在庫",
+            "value": "2,013",
+            "unit": "台",
+            "cue": "Macを扱う大手の中古ショップ5店"
+          },
+          {
+            "label": "うち M1 Air",
+            "value": "549",
+            "unit": "台",
+            "cue": "549台"
+          }
+        ],
+        "note": "ジャンクを除く。相場＝同じ構成（機種・メモリ・SSD）の中央値。仕様と対応は Apple 公式（10/31 確認）"
+      }
+    },
+    {
+      "title": "M1 Airの相場：8GB・256GBで8.4万円",
+      "scene": {
+        "type": "bars",
+        "heading": "M1 MacBook Air の相場（メモリ・SSD ごと）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "8GB・256GB",
+            "median": 83980,
+            "min": 63980,
+            "stock": "277台",
+            "pick": true,
+            "cue": "いちばん多いのは、8GB、256GB",
+            "minCue": "6万3,980円"
+          },
+          {
+            "label": "8GB・512GB",
+            "median": 91980,
+            "stock": "92台",
+            "cue": "8GB、512GBで9万1,980円"
+          },
+          {
+            "label": "16GB・512GB",
+            "median": 99800,
+            "stock": "20台",
+            "cue": "16GB、512GBで9万9,800円"
+          },
+          {
+            "label": "16GB・1TB",
+            "median": 110980,
+            "stock": "31台",
+            "cue": "16GB、1TBなら"
+          }
+        ],
+        "note": "発売時（2020年）の Apple の値段は 104,800円（税別）から"
+      }
+    },
+    {
+      "title": "2026年でも使える理由",
+      "scene": {
+        "type": "checklist",
+        "heading": "M1 Air が今も使える理由（Apple 公式）",
+        "items": [
+          {
+            "text": "macOS 27 に対応",
+            "sub": "「Appleシリコン搭載MacBook Air（2020以降）」",
+            "cue": "1つ目。今のmacOS 27は"
+          },
+          {
+            "text": "Apple Intelligence に対応",
+            "sub": "「MacBook Air（M1以降）」",
+            "cue": "2つ目。Apple Intelligenceも"
+          },
+          {
+            "text": "ヴィンテージ製品の一覧に入っていない",
+            "sub": "ヴィンテージ＝供給が止まって5年以上（10/19 公開の一覧）",
+            "cue": "3つ目。Appleには"
+          }
+        ],
+        "note": "何年先まで対応するかは Apple は公表していない"
+      }
+    },
+    {
+      "title": "M1 Airの弱いところ",
+      "scene": {
+        "type": "table",
+        "heading": "M1 Air の弱いところ（Apple 公式の仕様）",
+        "columns": [
+          "",
+          "M1 Air",
+          "M2 Air",
+          "M4 Air"
+        ],
+        "emphasis": [
+          1
+        ],
+        "rows": [
+          {
+            "cells": [
+              "外部モニター",
+              "1台",
+              "1台",
+              "2台"
+            ],
+            "cue": "外のモニターは1台だけ"
+          },
+          {
+            "cells": [
+              "カメラ",
+              "720p",
+              "1080p",
+              "12MP"
+            ],
+            "cue": "2つ目、カメラが720p"
+          },
+          {
+            "cells": [
+              "画面の明るさ",
+              "400ニト",
+              "500ニト",
+              "500ニト"
+            ],
+            "cue": "3つ目、画面"
+          },
+          {
+            "cells": [
+              "MagSafe",
+              "なし",
+              "あり",
+              "あり"
+            ],
+            "cue": "4つ目、端子は2つだけ"
+          },
+          {
+            "cells": [
+              "重さ",
+              "1.29kg",
+              "1.24kg",
+              "1.24kg"
+            ],
+            "cue": "重さは1.29キロ"
+          }
+        ],
+        "note": "画面は M1 13.3インチ／M2・M4 13.6インチ。端子は M1 が Thunderbolt / USB 4 ×2 だけ"
+      }
+    },
+    {
+      "title": "電池：在庫はみんな80%以上",
+      "scene": {
+        "type": "bars",
+        "heading": "電池の%ごとの相場（M1 Air 8GB・256GB）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "90〜100%",
+            "median": 88980,
+            "stock": "106台",
+            "cue": "90%台が8万8,980円"
+          },
+          {
+            "label": "85〜89%",
+            "median": 86980,
+            "stock": "26台",
+            "cue": "90%台が8万8,980円"
+          },
+          {
+            "label": "80〜84%",
+            "median": 82980,
+            "stock": "17台",
+            "cue": "80%台の前半が"
+          }
+        ],
+        "note": "Apple のバッテリー修理 26,800円（M1 Air・保証対象外・税込）。充放電回数の上限 1000回（Apple 公式）"
+      }
+    },
+    {
+      "title": "ランクと店で、こんなに違う",
+      "scene": {
+        "type": "table",
+        "heading": "ランクと店の差（M1 Air 8GB・256GB）",
+        "columns": [
+          "",
+          "相場",
+          "在庫"
+        ],
+        "emphasis": [
+          1
+        ],
+        "rows": [
+          {
+            "cells": [
+              "ランクA",
+              "88,980円",
+              "67台"
+            ],
+            "cue": "ランクAが8万8,980円"
+          },
+          {
+            "cells": [
+              "ランクB",
+              "82,980円",
+              "183台"
+            ],
+            "cue": "ランクAが8万8,980円"
+          },
+          {
+            "cells": [
+              "ランクC",
+              "71,980円",
+              "27台"
+            ],
+            "cue": "ランクAが8万8,980円"
+          },
+          {
+            "cells": [
+              "イオシス",
+              "73,800円",
+              "20台"
+            ],
+            "cue": "イオシスが7万3,800円"
+          },
+          {
+            "cells": [
+              "ソフマップ",
+              "82,980円",
+              "102台"
+            ],
+            "cue": "イオシスが7万3,800円"
+          },
+          {
+            "cells": [
+              "じゃんぱら",
+              "86,980円",
+              "155台"
+            ],
+            "cue": "イオシスが7万3,800円"
+          }
+        ],
+        "note": "ランクは各店の表記。256GB の相場（メモリ込み）は 10/15 81,980円 → 10/31 83,980円"
+      }
+    },
+    {
+      "title": "M2・Neoと比べると",
+      "scene": {
+        "type": "bars",
+        "heading": "安い MacBook と比べると（8GB・256GB）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "M1 Air",
+            "sub": "中古",
+            "median": 83980,
+            "pick": true,
+            "cue": "ほかの安いMacとも"
+          },
+          {
+            "label": "M1 13インチ Pro",
+            "sub": "中古",
+            "median": 82980,
+            "cue": "13インチのM1 Proは"
+          },
+          {
+            "label": "MacBook Neo",
+            "sub": "中古",
+            "median": 104980,
+            "cue": "中古だと10万4,980円"
+          },
+          {
+            "label": "M2 Air",
+            "sub": "中古",
+            "median": 111980,
+            "cue": "まずM2のAir"
+          },
+          {
+            "label": "MacBook Neo",
+            "sub": "新品（Apple 公式）",
+            "median": 119800,
+            "cue": "Neoは、新品が11万9,800円"
+          }
+        ],
+        "note": "ネットの電池（Apple 公式）: M1 Air 最大15時間・Neo 最大11時間。Neo の端子は USB 3 と USB 2 が1つずつ"
+      }
+    },
+    {
+      "title": "M1 Airが合う人・合わない人",
+      "scene": {
+        "type": "table",
+        "heading": "使い方ごとのおすすめ",
+        "columns": [
+          "使い方",
+          "おすすめ",
+          "相場"
+        ],
+        "emphasis": [
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "ネット・動画・レポート",
+              "M1 Air 8GB",
+              "83,980円"
+            ],
+            "cue": "ネットと動画とレポートなら"
+          },
+          {
+            "cells": [
+              "長く使う・タブが多い",
+              "M1 Air 16GB",
+              "99,800円"
+            ],
+            "cue": "長く使うなら"
+          },
+          {
+            "cells": [
+              "オンライン授業",
+              "M2 Air",
+              "111,980円"
+            ],
+            "cue": "カメラが大事なら"
+          },
+          {
+            "cells": [
+              "新品の保証",
+              "MacBook Neo",
+              "119,800円"
+            ],
+            "cue": "カメラが大事なら"
+          },
+          {
+            "cells": [
+              "モニター2台",
+              "M4 Air",
+              "182,130円"
+            ],
+            "cue": "それはM4のAir"
+          }
+        ],
+        "note": "M1 Air 8GB は 256GB・16GB は 512GB。M2 Air 8GB・256GB／M4 Air 16GB・256GB は中古の相場。Neo は新品（Apple 公式）"
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "M1 MacBook Air、まだ使える？",
+        "items": [
+          {
+            "label": "中古 8GB・256GB",
+            "value": "83,980",
+            "unit": "円",
+            "cue": "まとめるのだ"
+          },
+          {
+            "label": "macOS 27・AI",
+            "value": "対応",
+            "cue": "macOS 27にもApple Intelligenceにも"
+          },
+          {
+            "label": "電池90%台",
+            "value": "+6,000",
+            "unit": "円",
+            "cue": "電池は90%台を選んで"
+          }
+        ],
+        "note": "毎日の相場: used.gadelog.com"
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          {
+            "id": "0mnQbnBO_dE",
+            "title": "【中古MacBook】いま買うならどれ？10万・12万・15万・20万円の正解を相場で選んだ（Air・Pro・Neo）"
+          },
+          {
+            "id": "7NQettpZxHk",
+            "title": "MacBook ProとAir、何が違う？新品で11.5万円差｜Proにしかない6つと、Airで十分な人"
+          }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com"
+      }
+    }
+  ]
+}
