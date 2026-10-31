@@ -48,6 +48,9 @@ const REPAIR: Record<string, [battery: number, screen: number]> = {
   "iPhone SE (第2世代)": [12000, 20800],
 };
 
+/** 料金が載っている機種（新しい順） */
+export const APPLE_REPAIR_MODELS = Object.keys(REPAIR);
+
 export type AppleRepair = { battery: number; screen: number };
 
 /** その機種の公式の修理料金。載っていなければ null */

@@ -18,6 +18,8 @@ export const VIDEOS = {
   mbpVsAir: { id: "7NQettpZxHk", title: "MacBook ProとAir、何が違う？新品で11.5万円差｜Proにしかない6つと、Airで十分な人", minutes: 8, asOf: "2026-10-29", heading: "ProとAirの違いを動画で見る" },
   // 10/31 12:00 公開（容量の回。/iphone/price-factors の「128GBで足りる？」の後に）
   storage128: { id: "6xT8CuQi0J4", title: "中古iPhone、128GBで足りる？256GBとの差は6,200円から｜買取価格まで10機種の相場で比べた", minutes: 9, asOf: "2026-10-31", heading: "128GBで足りるかを動画で見る" },
+  // 10/27 公開（電池の回。/iphone/battery に）
+  battery: { id: "GcXIO15l6fU", title: "中古iPhoneのバッテリー、何%なら買っていい？85%以上が正解の理由を3.7万件の相場で", minutes: 11, asOf: "2026-10-26", heading: "中古の電池は何%なら買っていいかを動画で見る" },
   howOld: { id: "T7ltgSB-4XM", title: "中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決めた", minutes: 9, asOf: "2026-10-25", heading: "何世代前まで買っていいかを動画で見る" },
 } satisfies Record<string, Video>;
 

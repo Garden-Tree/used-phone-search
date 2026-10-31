@@ -1,6 +1,6 @@
 # STATE ── 現在の決定と進行中の確認
 
-規則は CLAUDE.md・経緯 ideas・手順 docs。
+規則 CLAUDE.md・経緯 ideas・手順 docs
 
 ## 触ってはいけない（データ・計測の保護）
 
@@ -9,8 +9,8 @@
 | `app/layout.tsx` の `verification.google` | Search Console の所有権確認 |
 | ゲオ公式ECへのスクレイピング | Akamai が拒否。**回避策は取らない**。ゲオは楽天API経由のみ |
 | 楽天APIで取った商品のリンク先 | 規約上、楽天市場（楽天アフィリエイト）以外へは張らない。A8 等を付けない |
-| `rakuten-sync/config.php`・`RAKUTEN_INGEST_SECRET` | 秘密情報。Claude は扱わない |
-| 在庫の全件取得（`findMany`） | Neon の転送量（月5GB）。集計は DB 側で |
+| `rakuten-sync/config.php`・`RAKUTEN_INGEST_SECRET` | 秘密情報 |
+| 在庫の全件取得（`findMany`） | Neon の転送量。集計は DB 側で |
 | サーバーの cron（2:40/8:40/14:40/20:40・10:00） | 取り込みと監視 |
 
 ## 決定事項
@@ -28,9 +28,10 @@
   - 同じ会社の別の売り場は公式のカードに（イオシス⇔楽天・エムモバ⇔エムコム）
 - **Yahoo! 7店**: VC（2025875）。もしもは否認
 - **収益の枠**: 回線（`SimTile`・2年の総額 `/sim`）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`。修理と保険＝A8 素材と社名だけ）
+- **電池の判定** `/iphone/battery`: 交換（Apple・アイサポ）vs 中古−買取を1年あたり
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`。値動き速報 `price-alerts.ts`
 - **相場レポート**: `/iphone/report/<月>`（毎月1日に自動公開）。`/how-long`（iPhone・iPad・Pixel）・`/iphone/resale-value`
-- **YouTube の公開予約は最長2日後まで**（相場が動くため）
+- **YouTube の公開予約は最長2日後まで**
 - **X**: 返信の半分は見られている投稿へ・引用は1日1本・RTしない（x-ops）
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
 - **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit・PC next・Be-Stock は A8、ソフマップ・じゃんぱら・イオシスは楽天
@@ -42,7 +43,7 @@
 | **11/12** | 18 Pro 系のタイトル（10/31 は Google が旧形に） | だめなら「最安値・相場｜N店比較」 |
 | **11/7・11/9** | サムネの A/B テスト | 勝った型を次の回に |
 | **11/1** | 月次の横動画（`longform/2026-11-01-monthly`）を取り直して公開 | |
-| **11/16** | X 有料（月920円） | X 経由のにこスマ・買取・回線のクリック。2週で0→解約 |
+| **11/16** | X 有料（月920円） | X 経由の店クリック。2週で0→解約 |
 | **随時** | Duo・iPad mini A20・MBP M6・PROLED MBP（11/6発売）の中古在庫 | 出たら catalog へ |
 | **次の予算別ショート＋48h** | 出だしを「答え」に（ideas/10-30） | 問いの回と継続率 3pt 差 |
 | **11/10** | 10/27 改修の前後（ideas/10-27） | 引用減なら冒頭を戻す |

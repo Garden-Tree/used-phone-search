@@ -68,6 +68,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/iphone/how-long`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/iphone/resale-value`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/iphone/kaitori`, lastModified, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${SITE_URL}/iphone/battery`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/ipad/how-long`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/pixel/how-long`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/pixel`, lastModified, changeFrequency: "daily", priority: 0.8 },

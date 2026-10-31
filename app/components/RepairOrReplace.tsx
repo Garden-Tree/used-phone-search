@@ -2,7 +2,7 @@ import Link from "next/link";
 import { appleRepair, APPLE_REPAIR_CHECKED, APPLE_REPAIR_SOURCE } from "@/lib/appleRepairPrices";
 import { REPAIR_PROGRAMS } from "@/lib/buyback";
 import InsuranceLinks from "@/app/components/InsuranceLinks";
-import { modelPagePath } from "@/lib/catalog";
+import { modelPagePath, modelToSlug } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
 
 const SRC = "underline underline-offset-2 hover:text-brand-600";
@@ -64,6 +64,11 @@ export default function RepairOrReplace({ model, medianPrice, medianStorage, nex
         </ul>
       )}
       {hint && <p className="text-[12px] text-ink leading-snug">{hint}</p>}
+      {repair && (
+        <Link href={`/iphone/battery?model=${modelToSlug(model)}`} className="self-start text-[12px] font-bold text-brand-600 hover:text-brand-800">
+          電池の残り・使う年数で計算する（非正規の交換・2つ上の世代も） ›
+        </Link>
+      )}
       {repair && (
         <span className="text-[10px] text-ink-mute leading-snug">
           Apple 公式（<a href={APPLE_REPAIR_SOURCE.battery} target="_blank" rel="noopener" className={SRC}>電池</a>・

@@ -142,7 +142,10 @@ export default async function IphoneIndexPage() {
           <Link href="/iphone/how-long" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPhoneはいつまで使える？iOS 27・修理・バッテリー交換を機種別に &rarr;</Link>
         </p>
         <p className="text-sm mb-4">
-          <Link href="/iphone/kaitori" className="font-bold text-brand-600 hover:underline underline-offset-4">iPhoneの買取価格を3店で比較（機種ごとの一覧） &rarr;</Link>
+          <Link href="/iphone/battery" className="font-bold text-brand-600 hover:underline underline-offset-4">バッテリーは交換と買い替えどっちが得？1年あたりで計算 &rarr;</Link>
+        </p>
+        <p className="text-sm mb-4">
+          <Link href="/iphone/kaitori"className="font-bold text-brand-600 hover:underline underline-offset-4">iPhoneの買取価格を3店で比較（機種ごとの一覧） &rarr;</Link>
         </p>
         <p className="text-sm mb-4">
           <Link href="/iphone/resale-value" className="font-bold text-brand-600 hover:underline underline-offset-4">発売から何年でいくら下がる？発売時の値段と中古の相場 &rarr;</Link>
