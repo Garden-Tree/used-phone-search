@@ -5,7 +5,7 @@ import { aisapoBattery } from "@/lib/aisapoPrices";
 import type { MedianCell, TargetStorage } from "@/lib/batteryCalc";
 import { getModelBuyback } from "@/lib/buybackPrices";
 import { modelToSlug } from "@/lib/catalog";
-import { groupMinPrice, medianPrice, modelWhere } from "@/lib/modelInventory";
+import { medianPrice, modelWhere } from "@/lib/modelInventory";
 import { nextGeneration } from "@/lib/nextGeneration";
 
 /**
@@ -31,41 +31,57 @@ export type BatteryModel = {
 };
 export type BatteryData = { models: BatteryModel[]; targets: Record<string, TargetStorage[]> };
 
-async function median(where: Prisma.DeviceInventoryWhereInput): Promise<MedianCell> {
-  const count = await prisma.deviceInventory.count({ where });
+/** 帯ごとの件数から中央値のセル（件数が足りなければ null）。中央値は行を1件だけ取り出す */
+async function cell(where: Prisma.DeviceInventoryWhereInput, count: number): Promise<MedianCell> {
   if (count < MIN_COUNT) return null;
   const m = await medianPrice(where, count);
   return m === null ? null : { median: m, count };
 }
 
+/**
+ * 1機種の容量ごとの相場（全体・電池80%以上・85%以上）。
+ * 件数は容量×最大容量の groupBy 1回で数え、中央値の1件取りは並列に投げる（10/31: 1件ずつ順番に投げて書き出しが60秒を超えた）
+ */
 async function targetPrices(model: string): Promise<TargetStorage[]> {
   const where = await modelWhere(model);
-  const storages = (await groupMinPrice(where, "storage")).filter((g) => g.count >= MIN_COUNT).map((g) => Number(g.key)).sort((a, b) => a - b);
-  const out: TargetStorage[] = [];
-  for (const storage of storages) {
-    const at: Prisma.DeviceInventoryWhereInput = { AND: [where, { storage }] };
-    out.push({
-      storage,
-      all: await median(at),
-      b80: await median({ AND: [at, { batteryHealth: { gte: 80 } }] }),
-      b85: await median({ AND: [at, { batteryHealth: { gte: 85 } }] }),
-    });
+  const groups = await prisma.deviceInventory.groupBy({ by: ["storage", "batteryHealth"], where, _count: { _all: true } });
+  const counts = new Map<number, { all: number; b80: number; b85: number }>();
+  for (const g of groups) {
+    const c = counts.get(g.storage) ?? { all: 0, b80: 0, b85: 0 };
+    const n = g._count._all;
+    c.all += n;
+    if (g.batteryHealth !== null && g.batteryHealth >= 80) c.b80 += n;
+    if (g.batteryHealth !== null && g.batteryHealth >= 85) c.b85 += n;
+    counts.set(g.storage, c);
   }
-  return out;
+  const storages = [...counts].filter(([, c]) => c.all >= MIN_COUNT).sort((a, b) => a[0] - b[0]);
+  return Promise.all(
+    storages.map(async ([storage, c]) => {
+      const at: Prisma.DeviceInventoryWhereInput = { AND: [where, { storage }] };
+      const [all, b80, b85] = await Promise.all([
+        cell(at, c.all),
+        cell({ AND: [at, { batteryHealth: { gte: 80 } }] }, c.b80),
+        cell({ AND: [at, { batteryHealth: { gte: 85 } }] }, c.b85),
+      ]);
+      return { storage, all, b80, b85 };
+    }),
+  );
 }
 
 export async function getBatteryData(): Promise<BatteryData> {
-  const models: BatteryModel[] = [];
-  for (const model of APPLE_REPAIR_MODELS) {
-    const next1 = nextGeneration(model);
-    const next2 = next1 ? nextGeneration(next1) : null;
-    const buyback = (await getModelBuyback(model)).flatMap((r) => (r.best ? [{ storage: r.storage, price: r.best.price, shop: r.best.shop }] : []));
-    models.push({ model, slug: modelToSlug(model), apple: appleRepair(model)?.battery ?? null, aisapo: aisapoBattery(model), buyback, next1, next2 });
-  }
+  const models: BatteryModel[] = await Promise.all(
+    APPLE_REPAIR_MODELS.map(async (model) => {
+      const next1 = nextGeneration(model);
+      const next2 = next1 ? nextGeneration(next1) : null;
+      const buyback = (await getModelBuyback(model)).flatMap((r) => (r.best ? [{ storage: r.storage, price: r.best.price, shop: r.best.shop }] : []));
+      return { model, slug: modelToSlug(model), apple: appleRepair(model)?.battery ?? null, aisapo: aisapoBattery(model), buyback, next1, next2 };
+    }),
+  );
+  const names = [...new Set(models.flatMap((m) => [m.next1, m.next2]).filter((x): x is string => !!x))];
+  const rows = await Promise.all(names.map((t) => targetPrices(t)));
   const targets: Record<string, TargetStorage[]> = {};
-  for (const t of new Set(models.flatMap((m) => [m.next1, m.next2]).filter((x): x is string => !!x))) {
-    const rows = await targetPrices(t);
-    if (rows.length > 0) targets[t] = rows;
-  }
+  names.forEach((t, i) => {
+    if (rows[i].length > 0) targets[t] = rows[i];
+  });
   return { models, targets };
 }
