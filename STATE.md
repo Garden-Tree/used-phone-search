@@ -17,7 +17,7 @@
 
 - **GA4**: 556047315・**ホスティング**: Cloudflare Pages（docs/）・**DB**: Neon（Launch）
 - **IndexNow**: 毎日全件
-- **デザイン**: `docs/design.md`・横動画は D1（longform/README）
+- **デザイン**: `docs/design.md`・横動画は D1
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
 - **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索は noindex。横動画は同テーマのページに（`lib/videos.ts`）
 - **画面の店数は在庫がある店だけ**（`lib/activeShops.ts`）
@@ -54,7 +54,7 @@
 
 ## 進行中・外部条件待ち
 
-- **審査中**: A8 J:COM 他／VC 3件
+- **審査中**: A8 J:COM 他／VC 3件。**承認**: A8 モバイル保険（10/31・置き場所未定）
 
 ## 次にやる（順序）
 
