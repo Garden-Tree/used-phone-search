@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { appleRepair, APPLE_REPAIR_CHECKED, APPLE_REPAIR_SOURCE } from "@/lib/appleRepairPrices";
-import { REPAIR_PROGRAMS } from "@/lib/buyback";
+import { INSURANCE_PROGRAMS, REPAIR_PROGRAMS } from "@/lib/buyback";
 import { modelPagePath } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
 
@@ -15,6 +15,7 @@ const man = (n: number) => `約${(Math.abs(n) / 10000).toFixed(1)}万円`;
  * 上: Apple 公式の保証対象外修理の料金（lib/appleRepairPrices.ts で確かめた機種だけ。ない料金の行は出さない）と、
  *     この機種・1つ上の世代（lib/nextGeneration.ts。同じ容量の在庫があるときだけ）の中古の相場を並べ、差額を1行で添える。
  * 下: 修理の A8 リンク（「修理で済ませるなら」＋PR の表示・rel・data-shop-click は前の枠と同じ。1x1 の計測画像はページ側で1回だけ）
+ *     と、スマホの保険の A8 リンク（10/31〜。A8 の文言そのままと会社名だけ。補償の中身・おすすめは書かない＝保険業法・A8 の禁止事項）
  */
 export default function RepairOrReplace({ model, medianPrice, medianStorage, next }: {
   model: string;
@@ -84,6 +85,26 @@ export default function RepairOrReplace({ model, medianPrice, medianStorage, nex
           >
             <span className="text-[13px] font-bold text-ink">{p.name} <span className="text-ink-mute" aria-hidden="true">›</span></span>
           </a>
+        ))}
+      </div>
+      <div className="pt-1.5 border-t border-line-soft flex flex-col gap-0.5">
+        <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">スマホの保険 {PR_BADGE}</span>
+        {INSURANCE_PROGRAMS.map((p) => (
+          <div key={p.name} className="flex flex-col">
+            <a
+              href={p.href}
+              target="_blank"
+              rel="sponsored nofollow noopener"
+              data-shop-click=""
+              data-shop={`${p.name}（保険）`}
+              data-model={model}
+              data-link-type="a8"
+              className="block py-1 hover:bg-ground rounded"
+            >
+              <span className="text-[13px] font-bold text-ink">{p.text} <span className="text-ink-mute" aria-hidden="true">›</span></span>
+            </a>
+            <span className="text-[10px] text-ink-mute leading-snug">{p.company}</span>
+          </div>
         ))}
       </div>
     </div>

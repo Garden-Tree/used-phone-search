@@ -59,7 +59,7 @@ import BuybackPrices from "@/app/components/BuybackPrices";
 import { getModelBuyback } from "@/lib/buybackPrices";
 import IpadGuide from "@/app/components/IpadGuide";
 import { buildFaq, buildSummary, modelDescription } from "@/lib/modelFaq";
-import { BUYBACK_PROGRAMS, REPAIR_PROGRAMS } from "@/lib/buyback";
+import { BUYBACK_PROGRAMS, INSURANCE_PROGRAMS, REPAIR_PROGRAMS } from "@/lib/buyback";
 import ModelGuide, { type SourceItem } from "@/app/components/ModelGuide";
 import PriceWeeklyTable from "@/app/components/PriceWeeklyTable";
 import StorageMedianTable from "@/app/components/StorageMedianTable";
@@ -1018,6 +1018,10 @@ export default async function ModelPage({ params }: Props) {
               <img key={p.name} src={p.imgSrc} width={1} height={1} alt="" />
             ))}
             {showRepair && REPAIR_PROGRAMS.map((p) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={p.name} src={p.imgSrc} width={1} height={1} alt="" />
+            ))}
+            {showRepair && INSURANCE_PROGRAMS.map((p) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img key={p.name} src={p.imgSrc} width={1} height={1} alt="" />
             ))}

@@ -62,3 +62,15 @@ export const REPAIR_PROGRAMS: BuybackProgram[] = [
     imgSrc: "https://www12.a8.net/0.gif?a8mat=4BELTJ+BNQN16+36GA+5YJRM",
   },
 ];
+
+// スマホの保険（A8・10/29 提携・s00000019424001・新規契約 2,500円）。iPhone の「直す？買い替える？」の枠だけに出す（10/31〜）。
+// 保険業法・A8 の禁止事項により、載せるのは A8 の素材（文言そのまま）と会社名だけ。補償の中身・おすすめ・他の補償との比較は書かない（ideas/2026-10-30.md）
+export const INSURANCE_PROGRAMS: (BuybackProgram & { company: string })[] = [
+  {
+    name: "モバイル保険",
+    text: "あらゆるスマホに対応【モバイル保険】",
+    company: "広告主 さくらリビングサービス株式会社・引受 さくら少額短期保険株式会社",
+    href: "https://px.a8.net/svt/ejp?a8mat=4BELTK+2DRYY+45VK+6GJWY",
+    imgSrc: "https://www17.a8.net/0.gif?a8mat=4BELTK+2DRYY+45VK+6GJWY",
+  },
+];
