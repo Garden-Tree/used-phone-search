@@ -49,6 +49,7 @@ export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   battery: BATTERY, batteryswap: BATTERY, storage: STORAGE_128, rank: DONT_BUY, unused: DONT_BUY,
   gen: HOW_OLD, ios27line: HOW_OLD, oldpro: HOW_OLD,
   ipadbudget: IPAD_DORE,
+  stockipad: IPAD_DORE,
   bigbudget: BIG_SCREEN,
   rakutenmobile: RAKUTEN_MOBILE,
   ipadmini: IPAD_MINI,
