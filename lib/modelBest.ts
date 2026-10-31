@@ -38,3 +38,14 @@ export const getGoodDevice = cache(async (model: string, withBattery: boolean) =
   const and = [where, { conditionRank: { in: ["S", "A", "B", "s", "a", "b"] } }, ...(withBattery ? [minBatteryWhere(85)] : [])];
   return prisma.deviceInventory.findFirst({ where: { AND: and }, orderBy: [{ price: "asc" }, { id: "asc" }] });
 });
+
+/**
+ * 予算別ページ用（2026-10-31〜）: getGoodDevice と同じ条件（ランクB以上・バッテリー85%以上）で、予算（max 円）以下でいちばん安い在庫の行。DB で1件だけ
+ */
+export const getGoodDeviceUnder = cache(async (model: string, max: number) => {
+  const where = await modelWhere(model);
+  return prisma.deviceInventory.findFirst({
+    where: { AND: [where, { conditionRank: { in: ["S", "A", "B", "s", "a", "b"] } }, minBatteryWhere(85), { price: { lte: max } }] },
+    orderBy: [{ price: "asc" }, { id: "asc" }],
+  });
+});

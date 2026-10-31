@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import DeviceCard, { DeviceList } from "@/app/components/DeviceCard";
+import GoodPicks from "@/app/components/GoodPicks";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
@@ -236,6 +237,11 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
               {picks.map((d) => <DeviceCard key={d.id} device={d} />)}
             </DeviceList>
           </section>
+        )}
+
+        {/* Pixel・Galaxy は「ランクB以上・電池85%以上で選ぶなら」の1台も（10/31〜。電池の%を書く店が少なく にこスマ が出やすい） */}
+        {(device === "pixel" || device === "galaxy") && supported.length > 0 && (
+          <GoodPicks models={supported.slice(0, 10).map((r) => r.model)} max={max} placement="good_pick_budget" />
         )}
 
         {/* 回線のタイル（PR）。スマホの予算ページだけ（iPad には出さない） */}

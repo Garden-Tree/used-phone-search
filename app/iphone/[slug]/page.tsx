@@ -706,7 +706,7 @@ export default async function ModelPage({ params }: Props) {
                       <p className="px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe border-t border-line">
                         {mac || watch ? "ランクB以上でいちばん安い1台" : "ランクB以上・バッテリー85%以上でいちばん安い1台"}
                       </p>
-                      <DeviceCard device={goodDevice} showModel={false} />
+                      <div data-placement="good_pick"><DeviceCard device={goodDevice} showModel={false} /></div>
                     </>
                   )}
                   <Link href={searchHref(model)} rel="nofollow" className={`flex items-center justify-center h-12 text-sm font-bold ${LINK}`}>

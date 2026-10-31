@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
+import GoodPicks from "@/app/components/GoodPicks";
 import { getModelMarket } from "@/lib/marketStats";
 import { hubSummary, hubWebPage, hubTitle } from "@/lib/hubSummary";
 import { modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
-import { PIXEL_CATALOG, PIXEL_INFO, PIXEL_MODELS, isPixel, jaMonth, updateUntil } from "@/lib/pixelCatalog";
+import { PIXEL_CATALOG, PIXEL_INFO, PIXEL_MODELS, isPixel, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { PIXEL_SPECS } from "@/lib/pixelSpecs";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { medianLabel, yen } from "@/lib/format";
@@ -41,6 +42,10 @@ export default async function PixelIndexPage() {
   // 相場（中央値）・最安値・件数。/iphone・/ipad・機種ページと同じ集計
   const stats = await getModelMarket(PIXEL_MODELS);
   const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
+  // 「ランクB以上・電池85%以上で選ぶなら」の候補: アップデート保証が残っている機種を在庫の多い順に（10/31〜）
+  const nowYm = new Date().toISOString().slice(0, 7);
+  const pickModels = PIXEL_MODELS.filter((m) => (updateYearsLeft(m, nowYm) ?? 0) > 0)
+    .sort((a, b) => (stats.get(b)?.count ?? 0) - (stats.get(a)?.count ?? 0));
 
   // 冒頭の1文（/iphone と同じ形。AI の概要・「Pixel 中古 相場」の検索向け。10/28〜）
   const summary = hubSummary("Pixel", PIXEL_MODELS, stats, shops.length);
@@ -116,6 +121,8 @@ export default async function PixelIndexPage() {
             ))}
           </div>
         </section>
+
+        <GoodPicks models={pickModels} placement="good_pick_list" />
 
         {PIXEL_CATALOG.map((series) => (
           <section key={series.series} className="my-8">

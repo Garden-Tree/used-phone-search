@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
+import GoodPicks from "@/app/components/GoodPicks";
 import { getModelMarket } from "@/lib/marketStats";
 import { hubSummary, hubWebPage, hubTitle } from "@/lib/hubSummary";
 import { modelPagePath } from "@/lib/catalog";
@@ -41,6 +42,8 @@ export default async function GalaxyIndexPage() {
   const shops = await activeShops(GALAXY_SHOPS);
   // 相場（中央値）・最安値・件数。/iphone・/ipad・/pixel・機種ページと同じ集計
   const stats = await getModelMarket(GALAXY_MODELS);
+  // 「ランクB以上・電池85%以上で選ぶなら」の候補: 在庫の多い順に（10/31〜）
+  const pickModels = [...GALAXY_MODELS].sort((a, b) => (stats.get(b)?.count ?? 0) - (stats.get(a)?.count ?? 0));
   const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
 
   // 冒頭の1文（/iphone と同じ形。AI の概要・「Galaxy 中古 相場」の検索向け。10/28〜）
@@ -105,6 +108,8 @@ export default async function GalaxyIndexPage() {
             ))}
           </div>
         </section>
+
+        <GoodPicks models={pickModels} placement="good_pick_list" />
 
         {GALAXY_CATALOG.map((series) => (
           <section key={series.series} className="my-8">

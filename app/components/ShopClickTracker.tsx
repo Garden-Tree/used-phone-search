@@ -26,6 +26,8 @@ export default function ShopClickTracker() {
         condition_rank: d.rank ?? "",
         price: Number(d.price) || 0,
         link_type: d.linkType ?? "",
+        // 枠ごとのクリック（10/31〜）: 近くの data-placement（例 good_pick＝ランクB以上・電池85%以上の1台）。なければ空
+        placement: link.closest<HTMLElement>("[data-placement]")?.dataset.placement ?? "",
       });
     };
     // 中クリック（新しいタブ）も拾う

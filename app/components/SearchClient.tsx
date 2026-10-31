@@ -373,7 +373,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
                         <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1 py-px leading-none">PR</span>
                       )}
                     </p>
-                    <DeviceCard device={goodPick} showModel={models.length !== 1} />
+                    <div data-placement="good_pick_search"><DeviceCard device={goodPick} showModel={models.length !== 1} /></div>
                     <button type="button" onClick={applyGood}
                       className="w-full h-11 text-sm font-bold text-brand-600 hover:bg-ground flex items-center justify-center">
                       この条件で絞り込む ›
