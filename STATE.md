@@ -19,7 +19,7 @@
 - **IndexNow**: 毎日全件
 - **デザイン**: `docs/design.md`・横動画は D1（longform/README）
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
-- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索ページは noindex。店の比較 `/iphone/where-to-buy`・新旧の比較（iPad mini・MBP M6）。横動画は同テーマのページに（`lib/videos.ts`）
+- **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索は noindex。横動画は同テーマのページに（`lib/videos.ts`）
 - **画面の店数は在庫がある店だけ**（`lib/activeShops.ts`）
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**
 - **スペック・保証期限・発売年月・Apple 修理料金・Pencil 対応は公式で確かめた値だけ**（`lib/*Specs.ts`・`*Catalog.ts`・`appleRepairPrices.ts`・`ipadPencil.ts`）
@@ -29,7 +29,7 @@
 - **Yahoo! 7店**: VC（2025875）。もしもは否認
 - **収益の枠**: 回線（`SimTile`・2年の総額 `/sim`）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`。値動き速報 `price-alerts.ts`
-- **相場レポート**: `/iphone/report/<月>`（`lib/monthlyReport.ts`）。終わった月を毎月1日に自動公開。いつまで使える `/iphone`・`/ipad`・`/pixel` の `/how-long`・実質いくら `/iphone/resale-value`
+- **相場レポート**: `/iphone/report/<月>`（毎月1日に自動公開）。`/how-long`（iPhone・iPad・Pixel）・`/iphone/resale-value`
 - **YouTube の公開予約は最長2日後まで**（相場が動くため）
 - **X**: 返信の半分は見られている投稿へ・引用は1日1本・RTしない（x-ops）
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
@@ -42,9 +42,9 @@
 | **再クロールの2週後** | 18 Pro 系のタイトル（10/23〜・ideas/10-28-ai） | だめなら「最安値・相場｜N店比較」 |
 | **11/7・11/9** | サムネの A/B テスト | 勝った型を次の回に |
 | **11/1** | 横動画9本目（月次・`longform/2026-11-01-monthly`）を取り直して公開 | 毎月 |
-| **11/16** | X 有料: 返信の表示・流入（10/31 は継続: 平均236・流入34/週） | 返信平均50か流入週5。未達→解約 |
+| **11/16** | X 有料（10/31 は継続） | 返信平均50か流入週5。未達→解約 |
 | **随時** | Duo・iPad mini A20・MBP M6・PROLED MBP（11/6発売）の中古在庫 | 出たら catalog へ |
-| **11/1 夜** | ショートの声 ipadgen（17.2%）↔pixelgen（維持率の処理待ち）・出だし H2 promax（処理待ち）↔ipadmini（24.2%） | 継続率 3pt 差。V1 は引き分け（ideas/10-30） |
+| **11/1 夜** | ショートの声 ipadgen↔pixelgen・出だし H2 promax↔ipadmini（ideas/10-30） | 継続率 3pt 差 |
 | **11/10** | 10/27 改修の前後（ideas/10-27） | 引用減なら冒頭を戻す |
 | **11/11** | 予算別・種類別一覧のタイトルに最安値と機種（10/28〜） | CTR 0〜1% →3%以上 |
 | **12/1** | ahamo 段階制 → `lib/simPlans.ts` | |
