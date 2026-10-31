@@ -5,6 +5,7 @@
  *   npx tsx longform/thumb-ab3.tsx set3       # 10/27 に足した3本（電池・新型 iPad mini・楽天モバイル）と一覧 longform/thumb-ab3-contact3.png
  *   npx tsx longform/thumb-ab3.tsx set4       # 10/28: 13本目（新型 MBP）と、楽天モバイルの B を楽天のピンクに。一覧 longform/thumb-ab3-contact4.png
  *   npx tsx longform/thumb-ab3.tsx set5       # 10/29: 14本目（MBP 4択・A も作り直し）・15本目（Pro と Air）。一覧 longform/thumb-ab3-contact5.png
+ *   npx tsx longform/thumb-ab3.tsx set6       # 10/31: 16〜20本目（予算別 MacBook・128GB・Duo か大きい画面・M1 Air・折りたたみ）。一覧 longform/thumb-ab3-contact6.png
  *   npx tsx longform/thumb-ab3.tsx <フォルダ> # 1本だけ
  * 出力: <フォルダ>/thumb-B.png・thumb-C.png（1280x720）。A がある案は thumb-A.png も
  *
@@ -550,6 +551,200 @@ const PLANS: Record<string, Plan> = {
       </Frame>
     ),
   },
+  // 16本目 0mnQbnBO_dE。A＝紺の地「中古MacBook いま買うならどれ？ 12万円→Neo」＋つむぎ
+  "2026-11-02-macbook": {
+    id: "0mnQbnBO_dE",
+    // B: 色帯3段＋予算別の4台（「0:00 結論」: 10万 Pro 13インチ M1 8.8万・12万 Neo 11.7万・15万 Air M3 14.4万・20万 Air M4 17.7万）
+    B: () => (
+      <Frame bg={`linear-gradient(180deg, ${WHITE} 0%, #E5E7EB 100%)`}>
+        <Bands top={40} bands={[
+          { text: "中古MacBook", bg: BLACK, color: YELLOW, size: 112 },
+          { text: "予算別", bg: RED, color: WHITE, size: 132 },
+          { text: "4台の正解", bg: YELLOW, color: BLACK, size: 132 },
+        ]} />
+        {[
+          { x: 720, y: 30, label: "10万円", name: "Pro M1", screen: ["#312E81", "#A78BFA"] as [string, string] },
+          { x: 990, y: 30, label: "12万円", name: "Neo", screen: SCREENS[2] },
+          { x: 720, y: 300, label: "15万円", name: "Air M3", screen: SCREENS[1] },
+          { x: 990, y: 300, label: "20万円", name: "Air M4", screen: SCREENS[3] },
+        ].map((p) => (
+          <div key={p.label} style={{ position: "absolute", left: p.x, top: p.y, display: "flex", flexDirection: "column", alignItems: "center", width: 250 }}>
+            <div style={{ display: "flex", padding: "0 12px", marginBottom: 8, background: RED, color: WHITE, fontSize: 48, fontWeight: 900, lineHeight: 1.2, whiteSpace: "nowrap" }}>{p.label}</div>
+            <Laptop w={190} screen={p.screen} />
+            <div style={{ display: "flex", marginTop: 6 }}><Outlined text={p.name} size={fit(p.name, 250, 60)} color={BLACK} inner={{ w: 5, c: WHITE }} spacing={-2} /></div>
+          </div>
+        ))}
+        <div style={{ position: "absolute", left: 40, top: 600, display: "flex", fontSize: 46, fontWeight: 900, color: BLACK, letterSpacing: -1 }}>3店・1,990件の相場で選んだ</div>
+      </Frame>
+    ),
+    // C: 驚くずんだもん＋「10万円でProが買える」（「1:43」: Pro 13インチ M1 512GB の相場 87,800円）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("zundamon-surprised", { left: -40, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 76, fontWeight: 900, letterSpacing: -2 }}>中古MacBook 予算別</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="10万円で" size={150} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="Proが買える" size={fit("Proが買える", 820, 170)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-8} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 500, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 60, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>Pro 13インチ M1 8.8万円</div>
+        <Bubble text={"Proなのに\n10万円以下!?"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
+  // 17本目 6xT8CuQi0J4（10/31 12:00 公開）。A＝紺の地「128GBで足りる？ 256GBとの差 6,200円」＋つむぎ
+  "2026-11-02-storage": {
+    id: "6xT8CuQi0J4",
+    // B: 左右に割った VS（「0:00 結論」: 中古の 13 Pro は 128→256GB で +6,200円）
+    B: () => (
+      <Frame bg={`linear-gradient(100deg, ${NAVY} 0%, ${NAVY} 50%, #E5E7EB 50%, #F8FAFC 100%)`}>
+        <div style={{ position: "absolute", left: 0, top: 0, width: W, height: 150, display: "flex", alignItems: "center", justifyContent: "center", background: BLACK }}>
+          <Outlined text="中古iPhone 容量どっち？" size={108} color={WHITE} spacing={-6} />
+        </div>
+        <div style={{ position: "absolute", left: 40, top: 180, display: "flex" }}><Outlined text="128GB" size={110} color={YELLOW} outer={{ w: 8, c: BLACK }} spacing={-6} /></div>
+        <Phone w={120} h={230} screen={SCREENS[0]} style={{ position: "absolute", left: 440, top: 200 }} />
+        <div style={{ position: "absolute", left: 700, top: 180, display: "flex" }}><Outlined text="256GB" size={110} color={BLACK} inner={{ w: 8, c: WHITE }} spacing={-6} /></div>
+        <Phone w={120} h={230} screen={SCREENS[1]} style={{ position: "absolute", left: 1110, top: 200 }} />
+        <div style={{ position: "absolute", left: 560, top: 240, display: "flex", width: 160, height: 160, borderRadius: 160, background: RED, border: `8px solid ${WHITE}`, alignItems: "center", justifyContent: "center", color: WHITE, fontSize: 84, fontWeight: 900, fontStyle: "italic" }}>VS</div>
+        <div style={{ position: "absolute", left: 0, top: 470, height: 200, display: "flex", alignItems: "center", padding: "0 30px 0 36px", background: YELLOW, boxShadow: "8px 8px 0 rgba(0,0,0,0.35)" }}>
+          <div style={{ display: "flex", fontSize: 96, fontWeight: 900, color: BLACK, letterSpacing: -4, marginRight: 8 }}>差はたった</div>
+          <Outlined text="6,200円" size={150} color={RED} inner={{ w: 7, c: WHITE }} outer={{ w: 5, c: BLACK }} spacing={-8} />
+        </div>
+      </Frame>
+    ),
+    // C: 驚くずんだもん＋「迷ったら256GB」（「0:00 結論」: 10機種のうち8機種は +1万円未満）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("zundamon-surprised", { left: -40, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 76, fontWeight: 900, letterSpacing: -2 }}>中古iPhone 10機種</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="迷ったら" size={150} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="256GB" size={fit("256GB", 820, 200)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-8} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 525, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 60, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>8機種は +1万円未満</div>
+        <Bubble text={"倍なのに\n6,200円!?"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
+  // 18本目 Foz4YDEnV1U。A＝紺の地「大きい画面なら Duoでなくていい？ 16万〜28万円安い」＋つむぎ
+  "2026-11-03-duo-vs-mini": {
+    id: "Foz4YDEnV1U",
+    // B: 左右に割った VS（「0:00 結論」: Duo 256GB 新品 364,800円・中古 15 Pro Max 256GB 146,980円・約21.8万円安い）
+    B: () => (
+      <Frame bg={`linear-gradient(100deg, ${NAVY} 0%, ${NAVY} 50%, #E5E7EB 50%, #F8FAFC 100%)`}>
+        <div style={{ position: "absolute", left: 0, top: 0, width: W, height: 150, display: "flex", alignItems: "center", justifyContent: "center", background: BLACK }}>
+          <Outlined text="大きい画面 どっち買う？" size={108} color={WHITE} spacing={-6} />
+        </div>
+        <div style={{ position: "absolute", left: 50, top: 170, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="Duo" size={150} color={YELLOW} outer={{ w: 8, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 6, fontSize: 56, fontWeight: 900, color: WHITE }}>新品 36.5万</div>
+        </div>
+        <Phone w={190} h={190} screen={["#312E81", "#A78BFA"]} bare style={{ position: "absolute", left: 380, top: 200 }} />
+        <div style={{ position: "absolute", left: 720, top: 170, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="Pro Max" size={92} color={BLACK} inner={{ w: 8, c: WHITE }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 6, fontSize: 56, fontWeight: 900, color: BLACK }}>中古 14.7万</div>
+        </div>
+        <Phone w={140} h={260} screen={SCREENS[1]} style={{ position: "absolute", left: 1110, top: 180 }} />
+        <div style={{ position: "absolute", left: 590, top: 380, display: "flex", width: 140, height: 140, borderRadius: 140, background: RED, border: `8px solid ${WHITE}`, alignItems: "center", justifyContent: "center", color: WHITE, fontSize: 72, fontWeight: 900, fontStyle: "italic" }}>VS</div>
+        <div style={{ position: "absolute", left: 0, top: 535, height: 165, display: "flex", alignItems: "center", padding: "0 30px 0 36px", background: YELLOW, boxShadow: "8px 8px 0 rgba(0,0,0,0.35)" }}>
+          <div style={{ display: "flex", fontSize: 84, fontWeight: 900, color: BLACK, letterSpacing: -4, marginRight: 8 }}>中古なら</div>
+          <Outlined text="21.8万円" size={140} color={RED} inner={{ w: 7, c: WHITE }} outer={{ w: 5, c: BLACK }} spacing={-8} />
+          <div style={{ display: "flex", fontSize: 84, fontWeight: 900, color: BLACK, letterSpacing: -4, marginLeft: 8 }}>安い</div>
+        </div>
+      </Frame>
+    ),
+    // C: 驚くつむぎ＋「Duoじゃなくていいかも」（「0:00 結論」: 家で読む・観るなら中古の iPad mini A17 Pro 83,980円）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("tsumugi-surprised", { left: -30, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 76, fontWeight: 900, letterSpacing: -2 }}>大きい画面がほしいだけ</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="Duoじゃなくて" size={fit("Duoじゃなくて", 820, 130)} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="いいかも" size={190} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-8} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 500, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 60, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>中古iPad mini 8.4万円</div>
+        <Bubble text={"たたまなくて\nよくない？"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
+  // 19本目 lmlZcklod7E（11/1 18:00 公開予約）。A＝紺の地「M1 Air まだ使える？ 中古8.4万円」＋つむぎ
+  "2026-11-03-m1-air": {
+    id: "lmlZcklod7E",
+    // B: 左右に割った VS（「0:00 結論」: 8GB・256GB で M1 Air 83,980円・M2 Air 111,980円・差 28,000円）
+    B: () => (
+      <Frame bg={`linear-gradient(100deg, ${NAVY} 0%, ${NAVY} 50%, #E5E7EB 50%, #F8FAFC 100%)`}>
+        <div style={{ position: "absolute", left: 0, top: 0, width: W, height: 150, display: "flex", alignItems: "center", justifyContent: "center", background: BLACK }}>
+          <Outlined text="中古MacBook Air どっち？" size={100} color={WHITE} spacing={-6} />
+        </div>
+        <div style={{ position: "absolute", left: 60, top: 165, display: "flex", alignItems: "flex-end" }}>
+          <Outlined text="M1" size={150} color={YELLOW} outer={{ w: 8, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginLeft: 16, marginBottom: 14, fontSize: 64, fontWeight: 900, color: WHITE }}>8.4万</div>
+        </div>
+        <Laptop w={280} screen={SCREENS[1]} style={{ position: "absolute", left: 90, top: 340 }} />
+        <div style={{ position: "absolute", left: 780, top: 165, display: "flex", alignItems: "flex-end" }}>
+          <Outlined text="M2" size={150} color={BLACK} inner={{ w: 8, c: WHITE }} spacing={-6} />
+          <div style={{ display: "flex", marginLeft: 16, marginBottom: 14, fontSize: 64, fontWeight: 900, color: BLACK }}>11.2万</div>
+        </div>
+        <Laptop w={280} screen={SCREENS[3]} style={{ position: "absolute", left: 840, top: 340 }} />
+        <div style={{ position: "absolute", left: 560, top: 270, display: "flex", width: 160, height: 160, borderRadius: 160, background: RED, border: `8px solid ${WHITE}`, alignItems: "center", justifyContent: "center", color: WHITE, fontSize: 84, fontWeight: 900, fontStyle: "italic" }}>VS</div>
+        <div style={{ position: "absolute", left: 0, top: 545, height: 165, display: "flex", alignItems: "center", padding: "0 30px 0 36px", background: YELLOW, boxShadow: "8px 8px 0 rgba(0,0,0,0.35)" }}>
+          <div style={{ display: "flex", fontSize: 88, fontWeight: 900, color: BLACK, letterSpacing: -4, marginRight: 8 }}>M1なら</div>
+          <Outlined text="2.8万円" size={140} color={RED} inner={{ w: 7, c: WHITE }} outer={{ w: 5, c: BLACK }} spacing={-8} />
+          <div style={{ display: "flex", fontSize: 88, fontWeight: 900, color: BLACK, letterSpacing: -4, marginLeft: 8 }}>安い</div>
+        </div>
+      </Frame>
+    ),
+    // C: 驚くつむぎ＋「2026年でもまだ使える」（「0:00 結論」: macOS 27 対応・中古 8GB・256GB 83,980円）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("tsumugi-surprised", { left: -30, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 76, fontWeight: 900, letterSpacing: -2 }}>M1 MacBook Air</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="2026年でも" size={140} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="まだ使える" size={fit("まだ使える", 820, 180)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-8} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 500, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 56, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>macOS 27対応・中古8.4万円</div>
+        <Bubble text={"2020年の\nMacなのに!?"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
+  // 20本目 bAVv69vtRlA。A＝紺の地「折りたたみスマホ どれを買う？ 中古なら17.3万円」＋つむぎ
+  "2026-11-04-foldables": {
+    id: "bAVv69vtRlA",
+    // B: 色帯3段＋2台の値札（「0:00 結論」: Duo 新品 256GB 364,800円・中古 Pixel 10 Pro Fold 172,800円）
+    B: () => (
+      <Frame bg={`linear-gradient(180deg, ${WHITE} 0%, #E5E7EB 100%)`}>
+        <Bands top={40} bands={[
+          { text: "折りたたみ", bg: BLACK, color: YELLOW, size: 120 },
+          { text: "中古なら", bg: RED, color: WHITE, size: 132 },
+          { text: "半額以下", bg: YELLOW, color: BLACK, size: 150 },
+        ]} />
+        {[
+          { x: 690, label: "Duo 新品", price: "36.5万", ok: false, screen: ["#312E81", "#A78BFA"] as [string, string] },
+          { x: 980, label: "Pixel 中古", price: "17.3万", ok: true, screen: SCREENS[1] },
+        ].map((p) => (
+          <div key={p.label} style={{ position: "absolute", left: p.x, top: 60, display: "flex", flexDirection: "column", alignItems: "center", width: 270 }}>
+            <div style={{ display: "flex", padding: "0 12px", marginBottom: 10, background: p.ok ? RED : BLACK, color: WHITE, fontSize: 46, fontWeight: 900, lineHeight: 1.2, whiteSpace: "nowrap" }}>{p.label}</div>
+            <Phone w={240} h={240} screen={p.screen} bare />
+            <div style={{ display: "flex", marginTop: 10 }}><Outlined text={p.price} size={fit(p.price, 270, 84)} color={p.ok ? RED : BLACK} inner={{ w: 5, c: WHITE }} spacing={-3} /></div>
+          </div>
+        ))}
+        <div style={{ position: "absolute", left: 40, top: 600, display: "flex", fontSize: 46, fontWeight: 900, color: BLACK, letterSpacing: -1 }}>Pixel 10 Pro Fold・Duo は 256GB</div>
+      </Frame>
+    ),
+    // C: ショックのずんだもん＋「Duoの値段で中古が2台」（「0:00 結論」: Pixel 10 Pro Fold 2台で 345,600円）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("zundamon-shock", { left: -40, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 76, fontWeight: 900, letterSpacing: -2 }}>折りたたみスマホ</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="Duoの値段で" size={fit("Duoの値段で", 820, 140)} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="中古が2台" size={fit("中古が2台", 820, 180)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-8} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 500, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 52, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>Pixel 10 Pro Fold 2台で34.6万</div>
+        <Bubble text={"2台も\n買えるのだ!?"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
 };
 
 /** 一覧のまとまり（引数なし＝第3弾の4本、set2＝10/26 に足した2本、set3＝10/27 に足した3本、set4＝10/28） */
@@ -559,6 +754,7 @@ const GROUPS: Record<string, { keys: string[]; out: string }> = {
   set3: { keys: ["2026-10-29-battery", "2026-10-30-ipad-mini", "2026-10-31-rakuten-mobile"], out: "thumb-ab3-contact3.png" },
   set4: { keys: ["2026-10-29-mbp-m6", "2026-10-31-rakuten-mobile"], out: "thumb-ab3-contact4.png" },
   set5: { keys: ["2026-10-31-mbp-proled", "2026-11-01-mbp-vs-mba"], out: "thumb-ab3-contact5.png" },
+  set6: { keys: ["2026-11-02-macbook", "2026-11-02-storage", "2026-11-03-duo-vs-mini", "2026-11-03-m1-air", "2026-11-04-foldables"], out: "thumb-ab3-contact6.png" },
 };
 
 /** 一覧: 動画ごとに A・B・C を 400x225 と、スマホの関連動画の大きさ 168x94 で並べる */
