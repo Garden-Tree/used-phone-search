@@ -72,10 +72,10 @@ export function forTikTok(s: Script): Script {
 }
 
 // provs・promax・plusvs・plusmax は同じ台本の型（ProVsScript）
-const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax";
+const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "ultravs";
 
 function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
-  return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : isProVs(s) ? (s.theme === "promax" ? proMaxNarration(s) : s.theme === "plusvs" ? plusVsNarration(s) : s.theme === "plusmax" ? plusMaxNarration(s) : proVsNarration(s))
+  return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : isProVs(s) ? (s.theme === "promax" ? proMaxNarration(s) : s.theme === "plusvs" ? plusVsNarration(s) : s.theme === "plusmax" ? plusMaxNarration(s) : s.theme === "ultravs" ? ultraVsNarration(s) : proVsNarration(s))
     : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s)
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
@@ -281,11 +281,13 @@ function deviceGenNarration(s: DeviceGenScript): Partial<Record<NarrationKey, st
 function stockNarration(s: StockScript): Partial<Record<NarrationKey, string>> {
   const items = s.scenes.ranking.items;
   const top = items[0];
-  const scope = s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : "Androidスマホ";
+  const scope = s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : "Androidスマホ";
+  // stockipad・stockwatch（11/2〜）: iPad の「(M4)」は読点に（spokenModel）。Watch は問いで「Apple Watch」と言うので行では「Series 9」だけ読む
+  const say = (model: string) => (s.theme === "stockwatch" ? model.replace(/^Apple Watch\s+/, "") : s.theme === "stockipad" ? spokenModel(model) : model);
   return {
     hook: `中古でいちばん出回っている${scope}は…？`,
-    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、在庫${items[i].count.toLocaleString()}件。相場は${yen(items[i].median)}です。`).join(""),
-    reveal: `1位は${top.model}。在庫は${top.count.toLocaleString()}件で、${s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : "Android"}全体の、およそ${Math.round(top.share)}%です。相場は${top.storage}で、${yen(top.median)}です。`,
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${say(items[i].model)}、在庫${items[i].count.toLocaleString()}件。相場は${yen(items[i].median)}です。`).join(""),
+    reveal: `1位は${say(top.model)}。在庫は${top.count.toLocaleString()}件で、${scope === "Androidスマホ" ? "Android" : scope}全体の、およそ${Math.round(top.share)}%です。相場は${s.theme === "stockwatch" ? "ケース" : ""}${top.storage}で、${yen(top.median)}です。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、どの機種にしますか？",
   };
@@ -356,6 +358,23 @@ function plusVsNarration(s: ProVsScript): Partial<Record<NarrationKey, string>> 
     reveal: `1位は${top.base}と${shortName(top.pro)}。Plusにすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%高くなります。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、大きい画面のPlus派？無印派？",
+  };
+}
+
+/**
+ * ultravs の既定（11/2〜。base＝Series・pro＝Ultra。同じ年に出た組）: ranking「3位はUltra 3とSeries 11。差は<額>です。」（ケースのサイズは読まない。watchgen と同じ）/
+ * reveal「Ultraにすると、約○.○万円、およそ○%高くなります。」
+ */
+const watchName = (model: string) => model.replace(/^Apple Watch\s+/, "");
+function ultraVsNarration(s: ProVsScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  return {
+    hook: "Apple Watch、UltraとSeries、中古ならいくら違う？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${watchName(items[i].pro)}と${watchName(items[i].base)}。差は${yen(items[i].diff)}です。`).join(""),
+    reveal: `1位は${watchName(top.pro)}と${watchName(top.base)}。Ultraにすると、約${(Math.round(top.diff / 1000) / 10).toFixed(1)}万円、およそ${Math.round(top.pct)}%高くなります。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたは、Ultra派？Series派？",
   };
 }
 
@@ -655,6 +674,8 @@ export function speakable(text: string): string {
     [/iPhone/g, "アイフォン"], [/iPad/g, "アイパッド"], [/MacBook/g, "マックブック"], [/Apple Watch/g, "アップルウォッチ"],
     // watchgen・macgen（10/27）: Watch 単独・Series・Ultra の世代（Apple の読みに合わせ英語の数）・M チップ（エムワン〜）・ケースの mm
     [/\bWatch\b/g, "ウォッチ"], [/\bSeries\b/g, "シリーズ"], [/\bUltra\s*2\b/g, "ウルトラツー"], [/\bUltra\s*3\b/g, "ウルトラスリー"], [/\bUltra\s*4\b/g, "ウルトラフォー"],
+    // stockwatch（11/2）: Apple Watch SE 3 を「エスイイサン」と読んだので Ultra と同じ英語の数に
+    [/\bSE\s*3\b/g, "エスイースリー"],
     [/\bM1\b/g, "エムワン"], [/\bM2\b/g, "エムツー"], [/\bM3\b/g, "エムスリー"], [/\bM4\b/g, "エムフォー"], [/\bM5\b/g, "エムファイブ"], [/\bM6\b/g, "エムシックス"], [/(\d+)\s*mm\b/g, "$1ミリ"],
     // stockandroid（10/27）: Android・Xperia（「Xperia 10 V」＝テン マークファイブ。Sony の読み）・AQUOS（sense センス・wish ウィッシュ・R アール・pro プロ・plus プラス）
     [/Android/g, "アンドロイド"],

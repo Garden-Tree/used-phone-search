@@ -31,6 +31,9 @@ const BASE_TAGS: Partial<Record<Script["theme"], string[]>> = {
   stockmac: ["#中古Mac", "#MacBook", "#中古パソコン"],
   watchbudget: ["#AppleWatch", "#中古", "#スマートウォッチ"],
   mbpvsair: ["#中古Mac", "#MacBookPro", "#MacBookAir"],
+  stockipad: ["#中古iPad", "#iPad", "#タブレット"],
+  stockwatch: ["#AppleWatch", "#中古", "#スマートウォッチ"],
+  ultravs: ["#AppleWatch", "#AppleWatchUltra", "#中古"],
 };
 const IPHONE_TAGS = ["#中古iPhone", "#iPhone", "#中古スマホ"];
 /** テーマの切り口のハッシュタグ（1個） */
@@ -53,6 +56,8 @@ const THEME_TAG: Partial<Record<Script["theme"], string>> = {
   stockmac: "#ランキング",
   watchbudget: "#予算別",
   kaitorishop: "#買取",
+  stockipad: "#ランキング",
+  stockwatch: "#ランキング",
 };
 
 const dir = process.argv[2]?.replace(/[\\/]+$/, "");

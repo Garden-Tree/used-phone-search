@@ -8,7 +8,7 @@ import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
 import { relatedThumb } from "./relatedLong";
-import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type KaitoriShopScript, type Script } from "./types";
+import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type ProVsRow, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type KaitoriShopScript, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -33,6 +33,8 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "watchgen" ? ["Apple Watch", "1世代前でいくら安い？"] : s.theme === "macgen" ? ["MacBook Air", "1世代前でいくら安い？"]
     : s.theme === "ipadgen" ? ["iPad", "1世代前でいくら安い？"] : s.theme === "pixelgen" ? ["Google Pixel", "1世代前でいくら安い？"]
     : s.theme === "stock" ? ["中古でいちばん多いiPhone", "在庫数ランキング"] : s.theme === "stockandroid" ? ["中古でいちばん多いAndroid", "在庫数ランキング"] : s.theme === "stockmac" ? ["中古でいちばん多いMacBook", "在庫数ランキング"]
+    : s.theme === "stockipad" ? ["中古でいちばん多いiPad", "在庫数ランキング"] : s.theme === "stockwatch" ? ["中古でいちばん多いApple Watch", "在庫数ランキング"]
+    : s.theme === "ultravs" ? ["Apple Watch UltraとSeries", "中古ならいくら違う？"]
     : s.theme === "watchbudget" ? ["予算ぴったりで買える", "中古Apple Watch"] : s.theme === "mbpvsair" ? ["MacBook ProとAir", "中古ならどっちが安い？"]
     : s.theme === "kaitorishop" ? ["同じiPhoneでも", "売る店でいくら違う？"]
     : s.theme === "rakutenmobile" ? ["楽天モバイルは使った量で3段階", `中古${s.scenes.device.model}と2年でいくら？`]
@@ -58,8 +60,12 @@ const FOOT = (s: Script) =>
 watchOS 27対応はApple公式`
     : s.theme === "mbpvsair" ? `${s.date.replace(/-/g, "/")}・新品はApple公式（同じ16GB・1TB）
 中古は同じメモリ・SSDの中央値`
-    : s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" ? `${s.date.replace(/-/g, "/")}・件数はジャンク品を除く販売中の在庫
+    : s.theme === "stockwatch" ? `${s.date.replace(/-/g, "/")}・件数はジャンク品を除く販売中の在庫
+相場は在庫がいちばん多いケースのサイズの中央値`
+    : isStock(s) ? `${s.date.replace(/-/g, "/")}・件数はジャンク品を除く販売中の在庫
 相場は在庫がいちばん多い容量の中央値`
+    : s.theme === "ultravs" ? `${s.date.replace(/-/g, "/")}・同じ年に出たUltraとSeries
+ケースは在庫がいちばん多いサイズの中央値`
     : s.theme === "pixelbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・アップデートはGoogle公式`
     : s.theme === "ipadbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値・PencilはApple公式`
     : s.theme === "macbudget" ? `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`
@@ -168,7 +174,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
   if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
     || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew" || isNewVsOld(s) || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen"
-    || s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "mbpvsair" || s.theme === "kaitorishop") return [
+    || s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "ultravs" || s.theme === "mbpvsair" || s.theme === "kaitorishop") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -558,11 +564,13 @@ function NewUsedRanking({ s, t, o }: { s: NewUsedScript; t: number; o: Scene["o"
 
 /** "iPhone 16" と "iPhone 16 Pro" → "iPhone 16／16 Pro"（行と1位の機種名） */
 const pairName = (base: string, pro: string) => `${base}／${pro.replace(/^iPhone\s+/, "")}`;
+/** ultravs（11/2〜）: "Apple Watch Series 9" と "Apple Watch Ultra 2" → "Ultra 2／Series 9"（Ultra を先に。ケースのサイズ「49／45mm」と同じ順） */
+const proVsName = (s: ProVsScript, r: ProVsRow) => (s.theme === "ultravs" ? `${r.pro.replace(/^Apple Watch\s+/, "")}／${r.base.replace(/^Apple Watch\s+/, "")}` : pairName(r.base, r.pro));
 
 /** provs のランキング: 機種名は「無印／Pro」、下段は 容量・Pro との差（額・大）・率 */
 function ProVsRanking({ s, t, o }: { s: ProVsScript; t: number; o: Scene["o"] }) {
   const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
-    model: pairName(it.base, it.pro),
+    model: proVsName(s, it),
     cells: [
       { text: it.storage, w: 170, max: 44, color: C.muted },
       { text: `+${n(it.diff)}円`, w: 320, max: 76, color: lookOf(s).accent },
@@ -1115,14 +1123,15 @@ function ProVsReveal({ s, t }: { s: ProVsScript; t: number }) {
   const u = s.scenes.upgrade;
   const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
   const grow = prog(t, 0.8, 0.7);
-  const name = pairName(r.base, r.pro);
+  const name = proVsName(s, r);
   const diffText = `+${n(r.diff)}円`;
   const sub = `${r.storage}・中古の相場`;
   // promax は base＝Pro・pro＝Pro Max、plusvs は base＝無印・pro＝Plus（棒の札と容量の注記の呼び方だけ変える）
   // plusmax は base＝Plus・pro＝Pro Max
-  const [baseLabel, proLabel] = s.theme === "promax" ? ["Pro", "Pro Max"] : s.theme === "plusvs" ? ["無印", "Plus"] : s.theme === "plusmax" ? ["Plus", "Pro Max"] : ["無印", "Pro"];
+  // ultravs は base＝Series・pro＝Ultra
+  const [baseLabel, proLabel] = s.theme === "promax" ? ["Pro", "Pro Max"] : s.theme === "plusvs" ? ["無印", "Plus"] : s.theme === "plusmax" ? ["Plus", "Pro Max"] : s.theme === "ultravs" ? ["Series", "Ultra"] : ["無印", "Pro"];
   const note = u ? `${baseLabel}を${u.to}にするなら +${n(u.diff)}円` : "";
-  const LABEL = s.theme === "promax" || s.theme === "plusmax" ? 210 : 150;
+  const LABEL = s.theme === "promax" || s.theme === "plusmax" || s.theme === "ultravs" ? 210 : 150;
   const BAR = CW - 60 - LABEL - 20;
   const bars = [
     { label: baseLabel, price: r.baseMedian, color: C.budget, w: Math.round((BAR * r.baseMedian) / r.proMedian) },
@@ -1865,7 +1874,7 @@ function TierTotals({ s, t }: { s: RakutenMobileScript; t: number }) {
  * stock・stockandroid（10/27〜・在庫数ランキング）の名前。行・1位・棒の札で使う（長い Android の名前は幅に合わせて縮む）
  * "iPhone SE (第3世代)" はそのまま（行の幅で縮む）
  */
-const stockScope = (s: StockScript) => (s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : "Android");
+const stockScope = (s: StockScript) => (s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : "Android");
 
 /** stock・stockandroid: 問い＋在庫の数の横の棒3本（1位・2位・3位。機種は伏せ、1位の棒だけ強調色）＋「最多 ○件」 */
 function StockHook({ s, t }: { s: StockScript; t: number }) {
@@ -2135,12 +2144,15 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
     const pm = s.theme === "promax";
     const pl = s.theme === "plusvs";
     const px = s.theme === "plusmax";
-    const [baseLabel, proLabel] = pm ? ["Pro", "Pro Max"] : pl ? ["無印", "Plus"] : px ? ["Plus", "Pro Max"] : ["無印", "Pro"];
+    const uv = s.theme === "ultravs";
+    const [baseLabel, proLabel] = pm ? ["Pro", "Pro Max"] : pl ? ["無印", "Plus"] : px ? ["Plus", "Pro Max"] : uv ? ["Series", "Ultra"] : ["無印", "Pro"];
     switch (sc.id) {
       case "hook": {
         const r = s.scenes.ranking.items[0];
-        return <SplitHook s={s} t={t} lines={[pm ? "Pro MaxとPro、" : px ? "PlusとPro Max、" : `${proLabel}と無印、`, "同じ容量だと", "いくら違う？"]} teaser={`+${n(r.diff)}円`}
-          left={{ label: baseLabel, sub: r.storage, fill: C.budget }} right={{ label: proLabel, sub: r.storage, fill: lookOf(s).chip }} />;
+        // ultravs: 札の下はケースのサイズ（Series は1位の組のサイズ・Ultra は 49mm）。storage は「49／45mm」
+        const [proSub, baseSub] = uv && r.storage.includes("／") ? [`${r.storage.split("／")[0]}mm`, r.storage.split("／")[1]] : [r.storage, r.storage];
+        return <SplitHook s={s} t={t} lines={uv ? ["Apple Watch", "UltraとSeries、", "中古ならいくら違う？"] : [pm ? "Pro MaxとPro、" : px ? "PlusとPro Max、" : `${proLabel}と無印、`, "同じ容量だと", "いくら違う？"]} teaser={`+${n(r.diff)}円`}
+          left={{ label: baseLabel, sub: baseSub, fill: C.budget }} right={{ label: proLabel, sub: proSub, fill: lookOf(s).chip }} />;
       }
       case "ranking": return <ProVsRanking s={s} t={t} o={sc.o} />;
       case "reveal": return <ProVsReveal s={s} t={t} />;

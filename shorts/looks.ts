@@ -167,6 +167,11 @@ export const LOOKS: Record<Script["theme"], Look> = {
   // kaitorishop（10/29〜・買取価格の3店の差）: 見た目は5つまでなので新しく作らない。次に公開する2本が ④ CONDITION なので、比べる型の ③ VERSUS。
   // つかみは「高い店 vs 安い店」の札（店の名前と買取価格）＋差額（split・答えから）
   kaitorishop: { ...VERSUS, hook: "split" },
+  // stockipad・stockwatch・ultravs（11/2〜）: 見た目は5つまでなので新しく作らない。在庫数ランキングの2本は stock と同じ ④ CONDITION＋横の棒（bars）、
+  // ultravs は2つを比べる型の ③ VERSUS＋「Series vs Ultra」の札（split）
+  stockipad: { ...CONDITION, hook: "bars" },
+  stockwatch: { ...CONDITION, hook: "bars" },
+  ultravs: { ...VERSUS, hook: "split" },
 };
 
 export const lookOf = (s: Script): Look => LOOKS[s.theme];

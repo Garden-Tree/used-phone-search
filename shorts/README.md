@@ -43,6 +43,9 @@ npx tsx shorts/make-short.tsx stock plan --dir shorts/out/2026-10-29-stock      
 npx tsx shorts/make-short.tsx mbpvsair plan             # MacBook AirとPro、中古ならどっちが安い？（型 A だけ・10/29〜・青山龍星）
 npx tsx shorts/make-short.tsx watchbudget plan          # 予算ぴったりで買える中古Apple Watch（型 A だけ・10/29〜・つむぎ。--budgets・--pick も効く）
 npx tsx shorts/make-short.tsx stockmac plan             # 中古でいちばん多いMacBook・在庫数ランキング（型 A だけ・10/29〜・青山龍星）
+npx tsx shorts/make-short.tsx stockipad plan            # 中古でいちばん多いiPad・在庫数ランキング（型 A だけ・11/2〜・ずんだもん）
+npx tsx shorts/make-short.tsx stockwatch plan           # 中古でいちばん多いApple Watch・在庫数ランキング（型 A だけ・11/2〜・ずんだもん）
+npx tsx shorts/make-short.tsx ultravs plan              # Apple Watch Ultra と Series、中古ならいくら違う？（型 A だけ・11/2〜・青山龍星）
 npx tsx shorts/make-short.tsx kaitorishop plan          # 同じiPhoneでも、売る店でいくら違う？買取価格の3店の差（型 A だけ・10/29〜・青山龍星）
 npx tsx shorts/make-short.tsx fold render --no-bgm  # BGM なし（声と効果音だけ）の short-A-nobgm.mp4 と youtube-nobgm.txt（BGM のクレジットなし）
 npx tsx shorts/make-short.tsx fold render --tiktok  # TikTok 用の short-A-tiktok.mp4（BGM なし・締めは「used.gadelog.com で検索」）
@@ -312,6 +315,11 @@ YouTube の画面表示に隠れる上 220px・下 420px・右 140px には文�
 - つかみは**答えから**（hookLines「同じ<機種>／<容量>でも、売る店で／買取価格が違う」＋高い店と安い店の札（店名と価格）＋「差 ○円」。声も差額まで言う）。hookStyle "answer" は付けない（札が「1位」になる）
 - 帯「同じiPhoneでも／売る店でいくら違う？」・上の行「毎週更新・買取価格は3店の公式」・注記「買取価格は各店の公式・○/○更新・きれいな状態／3店がそろういちばん小さい容量」。見た目 ③ VERSUS＋split（次の2本が ④ なので避けた）。声 青山龍星
 - 説明欄のリンクは /iphone/kaitori と トップ。utm の末尾 `_kaitorishop`・#中古iPhone #iPhone #買取。ひと言の下書き「売る前に／3店の買取を／比べましょう」・締めの問い「あなたは、どこで売りますか？」。関連動画の締めは買取の横動画が公開されてから（RELATED_LONG_THEMES に入れていない）
+
+## stockipad・stockwatch・ultravs（11/2〜）
+
+- `stockipad`・`stockwatch`（`themes/stock.ts` の kind "ipad"・"watch"）: stock の iPad・Apple Watch 版。groupBy 1回（モデル名の頭 "iPad"／"Apple Watch"）。Watch の相場は在庫がいちばん多いケースのサイズ（mm）の中央値。声 ずんだもん・④ CONDITION＋bars
+- `ultravs`（`themes/ultravs.ts`・ProVsScript で base＝Series・pro＝Ultra）: 同じ年に発表された Ultra と Series の組（出典は Apple Newsroom・ファイルの頭）。ケースは watchgen の `side`（在庫がいちばん多いサイズ・5件以上）。差0以下は「★注意」で外す。声 青山龍星・③ VERSUS＋split
 
 ## mbpvsair・watchbudget・stockmac（10/29〜・iPhone 以外の3本）
 

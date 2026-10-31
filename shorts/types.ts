@@ -1,4 +1,4 @@
-/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini・watchgen・macgen・ipadgen・pixelgen・stock・stockandroid・stockmac・watchbudget・mbpvsair・kaitorishop）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
+/** 台本 JSON（script.json）の型。テーマ（drops・budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget・newused・provs・promax・plusvs・plusmax・oldpro・minie・fold・rank・unused・battery・gen・storage・ios27line・batteryswap・overnew・rakutenmobile・ipadmini・watchgen・macgen・ipadgen・pixelgen・stock・stockandroid・stockmac・watchbudget・mbpvsair・kaitorishop・stockipad・stockwatch・ultravs）ごとに場面のデータは違うが、comment・outro・youtube・声の設定は共通 */
 export type RankItem = { model: string; storage: string; before: number; after: number; drop: number; rate: number };
 export type TrendPoint = { date: string; median: number };
 
@@ -115,7 +115,7 @@ export type ProVsUpgrade = { model: string; from: string; to: string; fromMedian
 
 /** テーマ provs「Proと無印、同じ容量でいくら違う？」・promax「Pro MaxとPro、同じ容量でいくら違う？」（base＝Pro・pro＝Pro Max。shorts/themes/promax.ts）・plusvs「Plusと無印、同じ容量でいくら違う？」（base＝無印・pro＝Plus。shorts/themes/plusvs.ts）・plusmax「大画面はPlusとPro Max、同じ容量でいくら違う？」（base＝Plus・pro＝Pro Max。shorts/themes/plusmax.ts） */
 export type ProVsScript = Common & {
-  theme: "provs" | "promax" | "plusvs" | "plusmax";
+  theme: "provs" | "promax" | "plusvs" | "plusmax" | "ultravs";
   scenes: {
     /** 場面 ranking（3位・2位・伏せた1位）と reveal（1位）。差額の大きい順（items[0] が1位） */
     ranking: { items: ProVsRow[] };
@@ -413,7 +413,7 @@ export type StockRow = { model: string; count: number; share: number; storage: s
 
 /** テーマ stock「中古でいちばん出回っているiPhoneは？在庫数ランキング」・stockandroid（同じ Android 版。Pixel・Galaxy・Xperia・AQUOS）（10/27〜。shorts/themes/stock.ts） */
 export type StockScript = Common & {
-  theme: "stock" | "stockandroid" | "stockmac";
+  theme: "stock" | "stockandroid" | "stockmac" | "stockipad" | "stockwatch";
   scenes: {
     /** 範囲の全機種の件数の合計（割合の分母）と機種の数 */
     total: number;
@@ -459,8 +459,8 @@ export const hasRelatedLong = (s: Script) => !s.tiktok && RELATED_LONG_THEMES.ha
 /** budget・pixelbudget・ipadbudget・macbudget・probudget・foldbudget・galaxybudget・bigbudget（予算の4行・注目の1機種の場面を共有） */
 export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" || s.theme === "pixelbudget" || s.theme === "ipadbudget" || s.theme === "macbudget" || s.theme === "probudget" || s.theme === "foldbudget" || s.theme === "galaxybudget" || s.theme === "bigbudget" || s.theme === "watchbudget";
 /** provs・promax・plusvs・plusmax（2機種の差のランキング・場面を共有） */
-export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax";
+export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "ultravs";
 /** stock・stockandroid・stockmac（在庫数ランキング・場面を共有） */
-export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac";
+export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch";
 /** ipadmini・mbpnew・mbpproled（新型と中古の旧型・場面を共有） */
 export const isNewVsOld = (s: Script): s is IpadMiniScript => s.theme === "ipadmini" || s.theme === "mbpnew" || s.theme === "mbpproled";
