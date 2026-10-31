@@ -20,6 +20,7 @@
 - **デザイン**: `docs/design.md`・横動画は D1
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
 - **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索は noindex。横動画は同テーマのページに（`lib/videos.ts`）
+- **店クリックの判定は28日・押した人数で**（GA に placement 11/1〜）
 - **画面の店数は在庫がある店だけ**（`lib/activeShops.ts`）
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**
 - **スペック・保証期限・発売年月・Apple 修理料金・Pencil 対応は公式で確かめた値だけ**（`lib/*Specs.ts`・`*Catalog.ts`・`appleRepairPrices.ts`・`ipadPencil.ts`）
