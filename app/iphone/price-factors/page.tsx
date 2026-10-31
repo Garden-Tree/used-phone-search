@@ -238,6 +238,9 @@ export default async function PriceFactorsPage() {
           </section>
         )}
 
+        {/* 容量の横動画（10/31 公開）。「128GBで足りる？」の後に */}
+        <VideoEmbed video={VIDEOS.storage128} />
+
         {f.battery.length > 0 && (
           <section className="flex flex-col gap-2">
             <h2 className="text-lg md:text-xl font-bold"><span className="text-brand-600 mr-1">Q.</span>電池90%台と80%台で、いくら違う？</h2>

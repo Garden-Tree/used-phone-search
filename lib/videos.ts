@@ -16,6 +16,8 @@ export const VIDEOS = {
   mbpProled: { id: "goOpevlUKTw", title: "MacBook Pro、どれ買う？新型PROLED・新型M6・今のモデル・中古の4択を値段と違いで比べた", minutes: 8, asOf: "2026-10-29", heading: "新型2つ・今のモデル・中古の4択を動画で見る" },
   // 10/30 公開（新品の Air M5 と Pro M6 の違い・中古は Air M2 と M1 Pro）
   mbpVsAir: { id: "7NQettpZxHk", title: "MacBook ProとAir、何が違う？新品で11.5万円差｜Proにしかない6つと、Airで十分な人", minutes: 8, asOf: "2026-10-29", heading: "ProとAirの違いを動画で見る" },
+  // 10/31 12:00 公開（容量の回。/iphone/price-factors の「128GBで足りる？」の後に）
+  storage128: { id: "6xT8CuQi0J4", title: "中古iPhone、128GBで足りる？256GBとの差は6,200円から｜買取価格まで10機種の相場で比べた", minutes: 9, asOf: "2026-10-31", heading: "128GBで足りるかを動画で見る" },
   howOld: { id: "T7ltgSB-4XM", title: "中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決めた", minutes: 9, asOf: "2026-10-25", heading: "何世代前まで買っていいかを動画で見る" },
 } satisfies Record<string, Video>;
 

@@ -38,12 +38,15 @@ const MBP_PROLED: RelatedLong = { id: VIDEOS.mbpProled.id, title: VIDEOS.mbpProl
 // 横動画「MacBook ProとAir、何が違う？」。10/30 公開
 const MBP_VS_AIR: RelatedLong = { id: VIDEOS.mbpVsAir.id, title: VIDEOS.mbpVsAir.title, folder: "2026-11-01-mbp-vs-mba" };
 
+// 横動画「128GBで足りる？」。10/31 12:00 公開
+const STORAGE_128: RelatedLong = { id: VIDEOS.storage128.id, title: VIDEOS.storage128.title, folder: "2026-11-02-storage" };
+
 export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   provs: PRO_OR_STANDARD, promax: PRO_OR_STANDARD, probudget: PRO_OR_STANDARD, plusvs: PRO_OR_STANDARD, minie: PRO_OR_STANDARD, plusmax: PRO_OR_STANDARD,
   budget: IPHONE_DORE, drops: IPHONE_DORE, newused: IPHONE_DORE, overnew: IPHONE_DORE,
   // stock（10/27〜・在庫数ランキングの iPhone 版）: 「いま買うならどれ」につなぐ。stockandroid は Android なので入れない
   stock: IPHONE_DORE,
-  battery: BATTERY, batteryswap: BATTERY, storage: DONT_BUY, rank: DONT_BUY, unused: DONT_BUY,
+  battery: BATTERY, batteryswap: BATTERY, storage: STORAGE_128, rank: DONT_BUY, unused: DONT_BUY,
   gen: HOW_OLD, ios27line: HOW_OLD, oldpro: HOW_OLD,
   ipadbudget: IPAD_DORE,
   bigbudget: BIG_SCREEN,
