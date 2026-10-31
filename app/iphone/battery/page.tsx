@@ -99,7 +99,7 @@ export default async function BatteryPage() {
 
         <section className="flex flex-col gap-2">
           <h2 className="text-lg md:text-xl font-bold">1年あたりの費用を計算する</h2>
-          <BatteryCalc models={models} targets={targets} paths={paths} aisapoHref={aisapo.href} defaultSlug={models.find((m) => m.model === DEFAULT_MODEL)?.slug ?? models[0].slug} />
+          <BatteryCalc models={models} targets={targets} paths={paths} aisapoHref={aisapo.href} appleHref={APPLE_REPAIR_SOURCE.battery} defaultSlug={models.find((m) => m.model === DEFAULT_MODEL)?.slug ?? models[0].slug} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={aisapo.imgSrc} width={1} height={1} alt="" className="absolute" />
           <p className="text-[11px] text-ink-mute leading-relaxed">中古＝同じ容量の中央値（1日4回更新）・売る＝3店の買取の上限・使い終わった後に売る額は入れていません</p>
