@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { appleRepair, APPLE_REPAIR_CHECKED, APPLE_REPAIR_SOURCE } from "@/lib/appleRepairPrices";
-import { INSURANCE_PROGRAMS, REPAIR_PROGRAMS } from "@/lib/buyback";
+import { REPAIR_PROGRAMS } from "@/lib/buyback";
+import InsuranceLinks from "@/app/components/InsuranceLinks";
 import { modelPagePath } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
 
@@ -88,24 +89,7 @@ export default function RepairOrReplace({ model, medianPrice, medianStorage, nex
         ))}
       </div>
       <div className="pt-1.5 border-t border-line-soft flex flex-col gap-0.5">
-        <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">スマホの保険 {PR_BADGE}</span>
-        {INSURANCE_PROGRAMS.map((p) => (
-          <div key={p.name} className="flex flex-col">
-            <a
-              href={p.href}
-              target="_blank"
-              rel="sponsored nofollow noopener"
-              data-shop-click=""
-              data-shop={`${p.name}（保険）`}
-              data-model={model}
-              data-link-type="a8"
-              className="block py-1 hover:bg-ground rounded"
-            >
-              <span className="text-[13px] font-bold text-ink">{p.text} <span className="text-ink-mute" aria-hidden="true">›</span></span>
-            </a>
-            <span className="text-[10px] text-ink-mute leading-snug">{p.company}</span>
-          </div>
-        ))}
+        <InsuranceLinks model={model} />
       </div>
     </div>
   );

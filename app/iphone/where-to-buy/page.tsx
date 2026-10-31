@@ -4,6 +4,7 @@ import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import VideoEmbed from "@/app/components/VideoEmbed";
 import SimTile from "@/app/components/SimTile";
+import InsuranceLinks from "@/app/components/InsuranceLinks";
 import { VIDEOS } from "@/lib/videos";
 import { modelPagePath } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
@@ -271,6 +272,13 @@ export default async function WhereToBuyPage() {
             <p><Link href="/iphone/price-factors" className="font-bold text-brand-600 hover:underline underline-offset-4">電池・状態ランク・容量・世代で、値段はいくら違う？ &rarr;</Link></p>
           </div>
         </section>
+
+        {/* スマホの保険（PR・10/31〜）。保証の節の後に、本文と分けた枠で。A8 の素材と会社名だけ（InsuranceLinks） */}
+        {n > 0 && (
+          <div className="md:max-w-md bg-white border border-line rounded-xl p-3 flex flex-col gap-0.5">
+            <InsuranceLinks withPixel />
+          </div>
+        )}
 
         <section id="red-rom" className="flex flex-col gap-3 scroll-mt-16">
           <h2 className="text-lg md:text-xl font-bold">SIMフリーとキャリア版、赤ロムの違い</h2>
