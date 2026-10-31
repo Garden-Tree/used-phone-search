@@ -32,6 +32,7 @@
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`。値動き速報 `price-alerts.ts`
 - **相場レポート**: `/iphone/report/<月>`（毎月1日に自動公開）。`/how-long`（iPhone・iPad・Pixel）・`/iphone/resale-value`
 - **YouTube の公開予約は最長2日後まで**・ショートの声はずんだもん（比べる型は青山）
+- **TikTok は 11/1 停止**（5本とも再生0〜1）
 - **X**: 返信の半分は見られている投稿へ・引用は1日1本・RTしない（x-ops）
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
 - **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit・PC next・Be-Stock は A8、ソフマップ・じゃんぱら・イオシスは楽天
@@ -44,7 +45,7 @@
 | **11/7・11/9** | サムネの A/B テスト | 勝った型を次に |
 | **11/1** | 月次の横動画（`longform/2026-11-01-monthly`）を取り直して公開 | |
 | **11/16** | X 有料（月920円） | 店クリック2週で0→解約 |
-| **随時** | Duo・mini A20・M6・PROLED の中古在庫 | 出たら catalog へ |
+| **随時** | Duo・mini A20・M6・PROLED の中古 | 出たら catalog へ |
 | **11/2 夜** | 予算別（答えの出だし） | 問いの回と 3pt 差 |
 | **11/2** | stockwatch を取り直して 11/3 に予約・stockipad と ultravs に固定コメント | 2位と3位の差 |
 | **11/10** | 10/27 改修の前後 | 引用減なら冒頭を戻す |
