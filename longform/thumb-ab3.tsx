@@ -592,6 +592,38 @@ const PLANS: Record<string, Plan> = {
     ),
   },
   // 17本目 6xT8CuQi0J4（10/31 12:00 公開）。A＝紺の地「128GBで足りる？ 256GBとの差 6,200円」＋つむぎ
+  // 9本目（月次・11/1 の数字）。A＝紺の地「中古iPhone／おすすめBEST5」＋「2026年11月」＋つむぎ
+  "2026-11-01-monthly": {
+    id: "（未公開）",
+    // B: 色帯＋予算→機種の5行（「0:00 結論」: 4万円 12・5万円 13 mini・7万円 14・10万円 15・15万円 17）
+    B: () => (
+      <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>
+        <Bands bands={[{ text: "中古iPhone", bg: WHITE, color: BLACK, size: 116 }, { text: "11月の", bg: RED, color: WHITE, size: 130 }, { text: "BEST5", bg: YELLOW, color: BLACK, size: 170 }]} />
+        <div style={{ position: "absolute", left: 690, top: 34, width: 560, display: "flex", flexDirection: "column", padding: "10px 24px", background: WHITE, borderRadius: 24, boxShadow: "10px 10px 0 rgba(0,0,0,0.35)" }}>
+          {([["4万円", "12"], ["5万円", "13 mini"], ["7万円", "14"], ["10万円", "15"], ["15万円", "17"]] as const).map(([b, m]) => (
+            <div key={b} style={{ display: "flex", alignItems: "center", height: 96 }}>
+              <div style={{ display: "flex", width: 236, flexShrink: 0, fontSize: 62, fontWeight: 900, color: BLACK, letterSpacing: -3, lineHeight: 1, whiteSpace: "nowrap" }}>{b}</div>
+              <div style={{ display: "flex", flexShrink: 0, fontSize: 76, fontWeight: 900, color: RED, letterSpacing: -4, lineHeight: 1, whiteSpace: "nowrap" }}>{m}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", left: 34, top: 590, display: "flex", fontSize: 72, fontWeight: 900, color: WHITE, letterSpacing: -2 }}>予算別に1台ずつ</div>
+      </Frame>
+    ),
+    // C: 驚くずんだもん＋「7万円なら iPhone 14」（「3:35」: 14 128GB 相場 65,980円・電池85%以上 806件）
+    C: () => (
+      <Frame bg={YELLOW_BG}>
+        {chara("zundamon-surprised", { left: -40, top: 150, height: 640 })}
+        <div style={{ position: "absolute", left: 420, top: 24, display: "flex", padding: "4px 24px", background: BLACK, color: WHITE, fontSize: 76, fontWeight: 900, letterSpacing: -2 }}>中古iPhone 11月</div>
+        <div style={{ position: "absolute", left: 420, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="7万円なら" size={150} color={WHITE} outer={{ w: 9, c: BLACK }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 14 }}><Outlined text="iPhone 14" size={fit("iPhone 14", 820, 200)} color={RED} inner={{ w: 10, c: WHITE }} outer={{ w: 8, c: BLACK }} spacing={-8} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 440, top: 525, display: "flex", padding: "4px 22px", background: WHITE, border: `6px solid ${BLACK}`, fontSize: 60, fontWeight: 900, color: BLACK, letterSpacing: -2 }}>電池85%以上が806件</div>
+        <Bubble text={"10万円なら\n15なのだ"} size={52} style={{ left: 20, top: 20 }} />
+      </Frame>
+    ),
+  },
   "2026-11-02-storage": {
     id: "6xT8CuQi0J4",
     // B: 左右に割った VS（「0:00 結論」: 中古の 13 Pro は 128→256GB で +6,200円）
