@@ -47,6 +47,8 @@ export type Shop = {
   alias?: string;
   /** API 経由の売り場。楽天・Yahoo!ショッピング・Amazon（Amazon は価格の取得時刻を添える。DeviceCard.tsx） */
   marketplace?: "rakuten" | "yahoo" | "amazon";
+  /** 保証が1年ある店（返品・交換・返金。warranty の中身）。機種ページの「＋保証1年の店」の行に使う（2026-11-01〜） */
+  yearWarranty?: boolean;
 };
 
 export const SHOPS: Shop[] = [
@@ -105,10 +107,10 @@ export const SHOPS: Shop[] = [
     guaranteeUrl: "https://www.amazon.co.jp/b?node=8130460051", marketplace: "amazon" },
   { name: "にこスマ", label: "にこスマ", galaxy: true, pixel: true, ipad: true, battery: "exact",
     warranty: "1年間の返品・交換", redRom: "永久保証", warrantyShort: "返品・交換1年", redRomShort: "赤ロム永久",
-    guaranteeUrl: "https://www.nicosuma.com/about/shopping-guide" },
+    guaranteeUrl: "https://www.nicosuma.com/about/shopping-guide", yearWarranty: true },
   { name: "ダイワンテレコム", label: "ダイワンテレコム", galaxy: true, pixel: true, ipad: false, battery: "over80",
     warranty: "1年間の全額返金（不具合時）", redRom: "無期限で同等品と交換", warrantyShort: "1年返金", redRomShort: "赤ロム無期限",
-    guaranteeUrl: "https://www.dai-one.jp/guide/warranty/" },
+    guaranteeUrl: "https://www.dai-one.jp/guide/warranty/", yearWarranty: true },
   { name: "エムモバ", label: "エムモバ", ipad: false, battery: "none",
     warranty: "1ヶ月（レビュー投稿で1年に延長。延長分は代金の30%返金）", redRom: "保証期間に関わらず交換・返金", warrantyShort: "保証1ヶ月", redRomShort: "赤ロム保証",
     guaranteeUrl: "https://ec.emcom.site/pages/guarantee" },
@@ -141,6 +143,9 @@ export const MAC_ONLY_SHOPS: Shop[] = [
     warranty: "12カ月（訳あり品は出荷日から10日間）", redRom: "対象外（パソコン）", warrantyShort: "保証12ヶ月", redRomShort: "",
     guaranteeUrl: "https://www.yrl-qualit.com/html/info.html" },
 ];
+
+/** 保証が1年ある店（にこスマ・ダイワンテレコム） */
+export const YEAR_WARRANTY_SHOPS = SHOPS.filter((s) => s.yearWarranty);
 
 export const IPAD_SHOPS = SHOPS.filter((s) => s.ipad);
 

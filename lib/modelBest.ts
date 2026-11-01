@@ -2,6 +2,7 @@ import { cache } from "react";
 import prisma from "@/lib/prisma";
 import { modelWhere } from "@/lib/modelInventory";
 import { minBatteryWhere } from "@/lib/deviceSearch";
+import { YEAR_WARRANTY_SHOPS } from "@/lib/shops";
 
 /**
  * 機種ページの結論用: ランクB以上（S・A・B）でバッテリー85%以上（ランクSは表記がなくても含める。検索の絞り込みと同じ）の最安値。
@@ -48,4 +49,14 @@ export const getGoodDeviceUnder = cache(async (model: string, max: number) => {
     where: { AND: [where, { conditionRank: { in: ["S", "A", "B", "s", "a", "b"] } }, minBatteryWhere(85), { price: { lte: max } }] },
     orderBy: [{ price: "asc" }, { id: "asc" }],
   });
+});
+
+/**
+ * 機種ページの「＋保証1年の店」の行（2026-11-01〜）: getGoodDevice と同じ条件で、保証が1年ある店（lib/shops.ts の yearWarranty）のうちいちばん安い在庫の行。DB で1件だけ
+ */
+export const getYearWarrantyDevice = cache(async (model: string, withBattery: boolean) => {
+  const where = await modelWhere(model);
+  const and = [where, { conditionRank: { in: ["S", "A", "B", "s", "a", "b"] } }, ...(withBattery ? [minBatteryWhere(85)] : []),
+    { shopName: { in: YEAR_WARRANTY_SHOPS.map((s) => s.name) } }];
+  return prisma.deviceInventory.findFirst({ where: { AND: and }, orderBy: [{ price: "asc" }, { id: "asc" }] });
 });

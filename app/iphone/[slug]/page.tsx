@@ -44,7 +44,8 @@ import ShopBars from "@/app/components/ShopBars";
 import StackedBar from "@/app/components/StackedBar";
 import Sparkline, { recentPoints } from "@/app/components/Sparkline";
 import InspectionTips, { inspectionTips } from "@/app/components/InspectionTips";
-import { getGoodDevice } from "@/lib/modelBest";
+import { getGoodDevice, getYearWarrantyDevice } from "@/lib/modelBest";
+import PickSummary from "@/app/components/PickSummary";
 import { getBuyNowStats } from "@/lib/buyNow";
 import { getBreakdown, getRankSMax, getShopBars, type Breakdown, type ShopBarRow } from "@/lib/modelBreakdown";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -232,7 +233,7 @@ export default async function ModelPage({ params }: Props) {
   // Xperia・AQUOS・Apple Watch（2026-10-15〜）も予算別ページはまだない
   const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || device === "watch" ? null : device;
   const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
-  const [stats, history, batteryRows, storageRows, matrix, macMatrix, budget, goodDevice, statTiles] = await Promise.all([
+  const [stats, history, batteryRows, storageRows, matrix, macMatrix, budget, goodDevice, statTiles, yearDevice] = await Promise.all([
     getModelStats(model),
     getPriceHistory(slug),
     getBatteryRows(model),
@@ -242,6 +243,7 @@ export default async function ModelPage({ params }: Props) {
     budgetDevice ? smallestBudgetFor(model, budgetDevice) : Promise.resolve(null),
     getGoodDevice(model, !(mac || watch)),
     getBuyNowStats(model),
+    getYearWarrantyDevice(model, !(mac || watch)),
   ]);
   const goodMin = goodDevice?.price ?? null;
   // 図の集計（在庫があるときだけ。どれも DB 側の groupBy / aggregate）
@@ -698,15 +700,30 @@ export default async function ModelPage({ params }: Props) {
                     </Link>
                   ))}
                 </div>
+                {/* 条件を上げるといくら足すか（11/1〜・C 案）。保証が1年ある店の在庫があるときだけ */}
+                {cheapestDevice && yearDevice && (
+                  <PickSummary rows={[
+                    { label: "どれでも", device: cheapestDevice },
+                    ...(goodDevice ? [{ label: mac || watch ? "ランクB以上" : "ランクB以上・電池85%以上", device: goodDevice, href: cheapest5.some((d) => d.id === goodDevice.id) ? undefined : "#pick-good" }] : []),
+                    { label: "＋保証1年の店", device: yearDevice, href: cheapest5.some((d) => d.id === yearDevice.id) ? undefined : yearDevice.id === goodDevice?.id ? "#pick-good" : "#pick-year" },
+                  ]} />
+                )}
                 <DeviceList>
                   {cheapest5.map((d) => <DeviceCard key={d.id} device={d} showModel={false} />)}
                   {/* 安い5件に「ランクB以上・バッテリー85%以上」の在庫がなければ、その条件でいちばん安い1台を添える（10/23〜） */}
                   {goodDevice && !cheapest5.some((d) => d.id === goodDevice.id) && (
                     <>
-                      <p className="px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe border-t border-line">
+                      <p id="pick-good" className="scroll-mt-16 px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe border-t border-line">
                         {mac || watch ? "ランクB以上でいちばん安い1台" : "ランクB以上・バッテリー85%以上でいちばん安い1台"}
                       </p>
                       <div data-placement="good_pick"><DeviceCard device={goodDevice} showModel={false} /></div>
+                    </>
+                  )}
+                  {/* 保証が1年ある店（にこスマ・ダイワンテレコム）で、同じ条件でいちばん安い1台（11/1〜・PickSummary の3行目） */}
+                  {yearDevice && !cheapest5.some((d) => d.id === yearDevice.id) && yearDevice.id !== goodDevice?.id && (
+                    <>
+                      <p id="pick-year" className="scroll-mt-16 px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe border-t border-line">保証が1年ある店でいちばん安い1台</p>
+                      <div data-placement="warranty_pick"><DeviceCard device={yearDevice} showModel={false} /></div>
                     </>
                   )}
                   <Link href={searchHref(model)} rel="nofollow" className={`flex items-center justify-center h-12 text-sm font-bold ${LINK}`}>
