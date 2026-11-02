@@ -40,7 +40,7 @@ export const PC_MIN_INDEX_ITEMS = 20;
 /** 在庫のある中古パソコン。表がまだない（取り込み前）・DB に届かないときは空（ページは「準備中」で noindex） */
 export async function getPcItems(): Promise<PcItem[]> {
   try {
-    return await prisma.pcInventory.findMany({
+    const items = await prisma.pcInventory.findMany({
       where: { isSoldOut: false },
       select: {
         shopName: true, formFactor: true, maker: true, productName: true, cpu: true, cpuFamily: true, cpuGen: true,
@@ -49,6 +49,8 @@ export async function getPcItems(): Promise<PcItem[]> {
       },
       orderBy: { price: "asc" },
     });
+    // 店の商品名がメーカー名から始まり、取り込みでもメーカー名を前に付けて「HP HP 250 G9」「Lenovo Lenovo …」となった行を1つに（11/2）
+    return items.map((p) => ({ ...p, productName: p.productName.replace(/^(\S+)\s+\1(?=\s)/i, "$1") }));
   } catch (e) {
     console.warn("PcInventory を読めませんでした（取り込み前か DB の障害）", e);
     return [];

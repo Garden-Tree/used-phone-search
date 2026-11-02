@@ -177,9 +177,10 @@ export default async function ResaleValuePage() {
             <p className="text-[13px] text-ink-sub leading-relaxed">
               {slash(drop.startDate)}〜{slash(drop.endDate)}の相場（在庫がいちばん多い容量の中央値）の変化。平均{pctText(drop.avgPct)}（{yenDiff(drop.avgDiff)}）・{drop.rows.length}機種。
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {/* PC は年数の区分（5つ）を1列に並べる（3列だと3枚＋2枚に割れた。11/2） */}
+            <div className="grid grid-cols-2 md:flex gap-2">
               {drop.groups.map((g) => (
-                <div key={g.label} className={`${CARD} px-3 py-2.5 flex flex-col gap-0.5`}>
+                <div key={g.label} className={`${CARD} md:flex-1 px-3 py-2.5 flex flex-col gap-0.5`}>
                   <span className="text-[11px] text-ink-mute">{g.label}</span>
                   <span className={`text-lg font-bold tabular-nums ${g.avgPct < 0 ? "text-safe" : g.avgPct > 0 ? "text-price" : "text-ink-mute"}`}>{pctText(g.avgPct)}</span>
                   <span className="text-[10px] text-ink-mute">平均{yenDiff(g.avgDiff)}・{g.rows.length}機種</span>

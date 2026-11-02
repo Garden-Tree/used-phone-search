@@ -48,8 +48,14 @@ export async function SumahoBudgetView({ max }: { max: number }) {
   // 冒頭の1文（10/27〜 機種ページ・予算別ページと同じ形: 日付・機種数・件数・いちばん新しい機種と最安）。画面と JSON-LD に同じ文
   const today = new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
   const newest = main[0];
+  // 「中古スマホ おすすめ 2万円以下」のように iPhone か Android かを決めずに探す人へ、両方の答えを1文で（11/2〜。AI の問いの週次）
+  const newestIphone = main.find((r) => r.brand === "iPhone");
+  const newestAndroid = main.find((r) => r.brand !== "iPhone");
+  const newestText = newestIphone && newestAndroid
+    ? `いちばん新しい機種は ${newestIphone.model}（${yen(newestIphone.minPrice)}〜）と、Android の${newestAndroid.model}（${yen(newestAndroid.minPrice)}〜）。`
+    : newest ? `いちばん新しいのは${newest.model}（${yen(newest.minPrice)}〜）。` : "";
   const lead = rows.length > 0
-    ? `${today}時点、${label}以下で買える中古スマホは iPhone・Pixel・Galaxy・Xperia・AQUOS から${rows.length}機種・${totalCount.toLocaleString()}件（ジャンク品を除く）。${newest ? `いちばん新しいのは${newest.model}（${yen(newest.minPrice)}〜）。` : ""}`
+    ? `${today}時点、${label}以下で買える中古スマホは iPhone・Pixel・Galaxy・Xperia・AQUOS から${rows.length}機種・${totalCount.toLocaleString()}件（ジャンク品を除く）。${newestText}`
     : `${today}時点、${label}以下の中古スマホの在庫はありません。`;
   const webPage = {
     "@context": "https://schema.org",
