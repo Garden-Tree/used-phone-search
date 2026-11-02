@@ -39,7 +39,7 @@ export function specDiffSentence(a: string, b: string): string {
 export function specDiffBrief(a: string, b: string): string {
   const diffs = specDiffs(a, b);
   if (!diffs || diffs.length === 0) return "";
-  return `違いは${diffs.slice(0, 2).map((d) => `${d.label}（${d.va}と${d.vb}）`).join("と")}など。`;
+  return `違いは${diffs.slice(0, 2).map((d) => `${d.label}（${d.va}と${d.vb}）`).join("と")}${diffs.length > 2 ? "など" : ""}。`;
 }
 
 /** 発売の年月（lib/*Specs.ts の released＝公式で確かめた値。"2025年" か "2024年8月"）。無ければ undefined */
