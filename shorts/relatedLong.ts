@@ -41,6 +41,9 @@ const MBP_VS_AIR: RelatedLong = { id: VIDEOS.mbpVsAir.id, title: VIDEOS.mbpVsAir
 // 横動画「128GBで足りる？」。10/31 12:00 公開
 const STORAGE_128: RelatedLong = { id: VIDEOS.storage128.id, title: VIDEOS.storage128.title, folder: "2026-11-02-storage" };
 
+// 横動画「M1 MacBook Air、2026年でもまだ使える？」。11/1 18:00 公開
+const M1_AIR: RelatedLong = { id: VIDEOS.m1Air.id, title: VIDEOS.m1Air.title, folder: "2026-11-03-m1-air" };
+
 export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   provs: PRO_OR_STANDARD, promax: PRO_OR_STANDARD, probudget: PRO_OR_STANDARD, plusvs: PRO_OR_STANDARD, minie: PRO_OR_STANDARD, plusmax: PRO_OR_STANDARD,
   budget: IPHONE_DORE, drops: IPHONE_DORE, newused: IPHONE_DORE, overnew: IPHONE_DORE,
@@ -56,6 +59,8 @@ export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   mbpnew: MBP_M6,
   mbpproled: MBP_PROLED,
   mbpvsair: MBP_VS_AIR,
+  // 在庫数ランキングの MacBook 版（1位が M1 Air）
+  stockmac: M1_AIR,
 };
 
 /** 締めに札を出す横動画（声で誘導するテーマだけ） */

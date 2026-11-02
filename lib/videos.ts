@@ -20,6 +20,8 @@ export const VIDEOS = {
   storage128: { id: "6xT8CuQi0J4", title: "中古iPhone、128GBで足りる？256GBとの差は6,200円から｜買取価格まで10機種の相場で比べた", minutes: 9, asOf: "2026-10-31", heading: "128GBで足りるかを動画で見る" },
   // 10/27 公開（電池の回。/iphone/battery に）
   battery: { id: "GcXIO15l6fU", title: "中古iPhoneのバッテリー、何%なら買っていい？85%以上が正解の理由を3.7万件の相場で", minutes: 11, asOf: "2026-10-26", heading: "中古の電池は何%なら買っていいかを動画で見る" },
+  // 11/1 18:00 公開（M1 Air は 2026年でもまだ使えるか。/mac/macbook-air-m1 に）
+  m1Air: { id: "lmlZcklod7E", title: "M1 MacBook Air、2026年でもまだ使える？中古8.4万円｜macOS 27対応と、買う前に知りたい弱点", minutes: 9, asOf: "2026-10-31", heading: "M1 Airがまだ使えるかを動画で見る" },
   howOld: { id: "T7ltgSB-4XM", title: "中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決めた", minutes: 9, asOf: "2026-10-25", heading: "何世代前まで買っていいかを動画で見る" },
 } satisfies Record<string, Video>;
 
@@ -35,6 +37,7 @@ export function videoForModel(model: string): Video | null {
   if (/^MacBook Pro 14インチ (M5( Pro)?|M4|M3|M1 Pro)$/.test(model)) return VIDEOS.mbpM6;
   // ProとAirの回で比べた Air（新品の M5・中古の M2）
   if (/^MacBook Air 13インチ (M2|M5)$/.test(model)) return VIDEOS.mbpVsAir;
+  if (model === "MacBook Air M1") return VIDEOS.m1Air;
   if (/^iPhone (1[12]( mini| Pro( Max)?)?|X[SR]?( Max)?|SE \(第[23]世代\))$/.test(model)) return VIDEOS.howOld;
   return null;
 }
