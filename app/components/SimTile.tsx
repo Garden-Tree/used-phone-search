@@ -6,11 +6,12 @@ import { SIM_PLANS, SIM_PRICES_CHECKED } from "@/lib/simPlans";
 // GA4: data-shop-click の shop_name は「<name>（回線）」。model は data-model（機種が決まらないページでは付けない）
 export default function SimTile({ model, className = "" }: { model?: string; className?: string }) {
   return (
-    <div className={`bg-white border border-line rounded-xl p-3 flex flex-col gap-2 ${className}`.trim()}>
+    // 置き場所の幅で並びを変える（コンテナクエリ・11/2〜）: 幅 32rem 以上なら 1×4、狭ければ 2×2
+    <div className={`@container bg-white border border-line rounded-xl p-3 flex flex-col gap-2 ${className}`.trim()}>
       <span className="flex items-center gap-1.5 text-[10px] text-ink-mute">
         回線も見直す <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1 py-px leading-none">PR</span>
       </span>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 @lg:grid-cols-4 gap-2">
         {SIM_PLANS.map((p) => (
           <a
             key={p.name}

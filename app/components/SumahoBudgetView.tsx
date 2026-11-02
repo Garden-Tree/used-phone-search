@@ -115,7 +115,7 @@ export async function SumahoBudgetView({ max }: { max: number }) {
         )}
 
         {/* 回線のタイル（PR） */}
-        {(main.length > 0 || sub.length > 0) && <SimTile className="mb-10 md:max-w-md" />}
+        {(main.length > 0 || sub.length > 0) && <SimTile className="mb-10 md:max-w-2xl" />}
 
         {sub.length > 0 && (
           <section className="mb-10">

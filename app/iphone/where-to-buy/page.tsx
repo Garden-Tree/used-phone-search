@@ -315,7 +315,7 @@ export default async function WhereToBuyPage() {
         <VideoEmbed video={VIDEOS.whereToBuy} />
 
         {/* 回線のタイル（PR）。本文の終わり・出典の前 */}
-        {n > 0 && <SimTile className="md:max-w-md" />}
+        {n > 0 && <SimTile className="md:max-w-2xl" />}
 
         <section className="flex flex-col gap-2 text-sm text-ink-sub">
           <h2 className="text-lg font-bold text-ink">データの出典</h2>

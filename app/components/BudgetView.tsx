@@ -245,7 +245,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
         )}
 
         {/* 回線のタイル（PR）。スマホの予算ページだけ（iPad には出さない） */}
-        {device !== "ipad" && (supported.length > 0 || picks.length > 0) && <SimTile className="mb-10 md:max-w-md" />}
+        {device !== "ipad" && (supported.length > 0 || picks.length > 0) && <SimTile className="mb-10 md:max-w-2xl" />}
 
         {legacy.length > 0 && (
           <section className="mb-10">

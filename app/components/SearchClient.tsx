@@ -408,7 +408,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
               )}
               {/* 検索条件が変わったら作り直して、表示件数を最初に戻す */}
               <ClientDeviceList key={params.toString()} devices={devices} showModel={models.length !== 1}
-                sim={phoneView ? <SimTile model={pageModel ?? (models.length === 1 ? models[0] : undefined)} className="my-2 md:max-w-md" /> : null} />
+                sim={phoneView ? <SimTile model={pageModel ?? (models.length === 1 ? models[0] : undefined)} className="my-2 md:max-w-2xl" /> : null} />
             </>
           )}
         </div>

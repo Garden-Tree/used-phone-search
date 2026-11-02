@@ -425,7 +425,7 @@ export default async function ComparePage({ params }: Props) {
         {hasDiffBox && priceReadingSentence(a, b, sideA, sideB) && (
           <p className="text-sm text-ink-sub mb-6 leading-relaxed">{priceReadingSentence(a, b, sideA, sideB)}</p>
         )}
-        {bothPhones && <SimTile className="mb-6 md:max-w-md" />}
+        {bothPhones && <SimTile className="mb-6 md:max-w-2xl" />}
 
         <CompareTable title="容量別の最安値" rows={storageRows} labelOf={storageLabel} a={a} b={b} />
         <CompareTable title="状態ランク別の最安値" rows={rankRows} labelOf={(k) => `ランク ${k}`} a={a} b={b} />
