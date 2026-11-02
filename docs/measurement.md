@@ -60,7 +60,7 @@
 - **店へのクリックの判定は28日分と「押したユーザー数」で見る**（2026-11-01〜）。1週に押す人は10人前後で、数人が十数回押すだけで週の回数が倍・半分に動く（10/18〜24 のにこスマ 39回のうち22回は5人。ideas/2026-11-01-analysis.md）
 - 買取リンク（モデルページの「今のスマホを売るなら」。`lib/buyback.ts`）のクリックも同じ `shop_click`。`shop_name` は「モバゾウ（買取）」のように末尾に **（買取）** が付き、`link_type` は `a8`、`model_name` は表示中の機種（容量・ランク・価格は空／0）
 - 回線リンク（スマホの機種ページの「回線も見直すなら」。`lib/simPlans.ts`・2026-10-15〜）も `shop_click`。`shop_name` は「ahamo（回線）」「楽天モバイル（回線）」、`link_type` は `a8`／`rakuten`
-- **枠の印 `placement`**（10/31〜）: リンクの近くの `data-placement` を送る。`good_pick`（機種ページの「ランクB以上・電池85%以上でいちばん安い1台」）・`good_pick_search`（/search の同じ1台）・`good_pick_list`（/pixel・/galaxy）・`good_pick_budget`（Pixel・Galaxy の予算別）・`warranty_pick`（機種ページの「保証が1年ある店でいちばん安い1台」。11/1〜）。ほかの枠は空。GA の管理 → カスタム定義でイベントスコープのディメンション `placement` を登録すると、レポートで分けられる
+- **枠の印 `placement`**（10/31〜）: リンクの近くの `data-placement` を送る。`good_pick`（機種ページの「ランクB以上・電池85%以上でいちばん安い1台」）・`good_pick_search`（/search の同じ1台）・`good_pick_list`（/pixel・/galaxy）・`good_pick_budget`（Pixel・Galaxy の予算別）・`warranty_pick`（機種ページの「保証が1年ある店でいちばん安い1台」。11/1〜）・`warranty_pick_search`（/search の同じ1台。11/2〜）。ほかの枠は空。GA の管理 → カスタム定義でイベントスコープのディメンション `placement` を登録すると、レポートで分けられる
 - 見方: レポート → エンゲージメント → イベント → `shop_click`、または探索で 行=shop_name／link_type／ページパス、値=イベント数
 - アフィリエイト側の数字（A8 のサイト別「中古スマホ一括検索」・楽天アフィリエイト）とも突き合わせる。楽天のアフィリエイト ID はブログと共通なので、楽天側ではサイトを分けられない
 - 拡張計測の「離脱クリック」（`click`・リンクドメイン）も引き続き取れるが、楽天とブログが混ざる・店が分からないので、店ごとの判断は shop_click で行う

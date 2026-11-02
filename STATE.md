@@ -15,27 +15,26 @@
 
 ## 決定事項
 
-- **GA4**: 556047315・**ホスティング**: Cloudflare Pages（docs/）・**DB**: Neon（Launch）
-- **IndexNow**: 毎日
+- **GA4**: 556047315・**ホスティング**: Cloudflare Pages（docs/）・**DB**: Neon（Launch）・**IndexNow** 毎日
 - **デザイン**: `docs/design.md`・横動画は D1
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）
 - **ページ方針**: 全ページ静的（1日4回）。budget/under-N は本表3機種未満・検索は noindex。横動画は同テーマのページに（`lib/videos.ts`）
 - **店クリックの判定は28日・押した人数で**
-- **機種ページの最安3行**（どれでも／B・85%／＋保証1年の店。`PickSummary`・`warranty_pick`）
+- **保証1年の店の1台**: 機種ページの最安3行（`PickSummary`・`warranty_pick`）と /search（`warranty_pick_search`・11/2〜）
 - **画面の店数は在庫がある店だけ**（`lib/activeShops.ts`）
 - **店の一覧・バッテリー表記の種類は `lib/shops.ts` だけに書く**
-- **スペック・保証期限・発売年月・Apple 修理料金・Pencil 対応は公式で確かめた値だけ**（`lib/*Specs.ts`・`*Catalog.ts`・`appleRepairPrices.ts`・`ipadPencil.ts`）
-- **新品価格は公式で確かめた値だけ**（`lib/applePrices.ts`・`lib/officialPrices.ts`・毎月1日に見直し）
+- **スペック・保証・発売・修理料金・Pencil・新品価格は公式で確かめた値だけ**（`lib/*Specs`・`*Catalog`・`appleRepairPrices`・`ipadPencil`・`applePrices`・`officialPrices`。毎月1日に見直し）
 - **楽天の店**: ゲオ・じゃんぱら・ソフマップ・ニューズド・キタムラ・イオシス・MTM
   - 同じ会社の別の売り場は公式のカードに（イオシス⇔楽天・エムモバ⇔エムコム）
 - **Yahoo! 7店**: VC（2025875）。もしもは否認
 - **収益の枠**: 回線（`SimTile`・2年の総額 `/sim`）・買取・iPhone の「直す？買い替える？」（`RepairOrReplace.tsx`。修理と保険＝A8 素材と社名だけ）
 - **電池の判定** `/iphone/battery`: 交換（Apple・アイサポ）vs 中古−買取を1年あたり
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`。値動き速報 `price-alerts.ts`
-- **相場レポート**: `/iphone/report/<月>`（毎月1日に自動公開）。`/how-long`（iPhone・iPad・Pixel）・`/iphone/resale-value`
+- **相場レポート** `/iphone/report/<月>`（毎月1日）・`/how-long`・`/iphone/resale-value`
 - **YouTube の公開予約は最長2日後まで**・ショートの声はずんだもん（比べる型は青山）
 - **TikTok は 11/1 停止**（5本とも再生0〜1）
-- **X**: 返信の半分は見られている投稿へ・引用は1日1本・RTしない（x-ops）
+- **X**: 返信の2/3は見られている投稿へ・速報は1日1本（チェックリストと表を優先）・引用は1日1本・RTしない（x-ops）
+- **ショート**: 1日2本（7〜8時・19〜21時）。在庫数と電池の型を優先・予算別は週1
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
 - **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit・PC next・Be-Stock は A8、ソフマップ・じゃんぱら・イオシスは楽天
 
@@ -45,15 +44,13 @@
 | --- | --- | --- |
 | **11/12** | 18 Pro 系のタイトル | だめなら「最安値・相場｜N店比較」 |
 | **11/7・11/9** | サムネの A/B | 勝った型を次に |
-| **11/2** | 月次の横動画（書き出し済み）→予約 | |
 | **11/16** | X 有料（月920円） | 店クリック2週で0→解約 |
+| **11/16** | 11/2 の打ち手（/search 保証1年・X の型・ショート1日2本） | にこスマ 14→30回/週・X 自分の投稿 2倍・28日再生 4万 |
 | **随時** | Duo・mini A20・M6・PROLED の中古 | 出たら catalog へ |
 | **11/2 夜** | 予算別（答えの出だし） | 問いの回と 3pt 差 |
-| **11/2** | stockwatch（2・3位差8件）→11/3 予約・固定コメント2本 | |
 | **11/10** | 10/27 改修の前後 | 引用減なら冒頭を戻す |
 | **11/11** | 予算別・種類別一覧のタイトル（10/28〜） | CTR 0〜1% →3%以上 |
-| **12/1** | ahamo 段階制 → `lib/simPlans.ts` | |
-| **12/1** | Neon 11月の転送量 | 4GB 未満なら Free |
+| **12/1** | ahamo 段階制（`simPlans.ts`）・Neon 11月 | 4GB 未満なら Free |
 | **毎月1日** | 出典の開き直し・相場レポート | 出ていなければログ |
 | **毎週月曜** | AI の問い（docs/measurement.md） | 2週続いて答えがなければ作る |
 | **毎朝** | GSC 登録 約10件 | |

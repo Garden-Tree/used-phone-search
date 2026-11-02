@@ -12,7 +12,7 @@ import SimTile from '@/app/components/SimTile';
 import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from '@/lib/catalog';
 import { SEARCH_DEVICES, findSearchDevice, matchesModel, splitModelQuery } from '@/lib/modelMatch';
 import type { InventoryFile, InventoryIndex } from '@/lib/searchData';
-import { findShop } from '@/lib/shops';
+import { findShop, YEAR_WARRANTY_SHOPS } from '@/lib/shops';
 import { affiliateUrl, isAffiliateUrl } from '@/lib/affiliate';
 import { BUILD_TIME } from '@/lib/buildTime';
 import { ranksAtLeast } from '@/lib/rankFilter';
@@ -249,6 +249,17 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
     }
     return best && best.price > minShown ? best : null;
   }, [devices, goodAlreadyApplied, goodWithBattery, minShown]);
+  // 保証が1年ある店（にこスマ・ダイワンテレコム）で、同じ条件でいちばん安い1台（11/2〜・機種ページの「＋保証1年の店」と同じ）。
+  // 店へのクリックの3分の2はこのページで起きるのに、にこスマが出る枠が機種ページにしかなかった（ideas/2026-11-02-analysis.md）。
+  // いちばん安い在庫・上の1台と同じ行になるときは出さない
+  const yearPick = useMemo(() => {
+    if (minShown === null) return null;
+    let best: Device | null = null;
+    for (const d of devices) {
+      if (YEAR_WARRANTY_SHOPS.some((s) => s.name === d.shopName) && isGoodDevice(d, goodWithBattery) && (best === null || d.price < best.price)) best = d;
+    }
+    return best && best.price > minShown && best.id !== goodPick?.id ? best : null;
+  }, [devices, goodWithBattery, minShown, goodPick]);
   const goodLabel = goodWithBattery ? 'ランクB以上・バッテリー85%以上でいちばん安い1台' : 'ランクB以上でいちばん安い1台';
   const applyGood = () => updateParams(goodWithBattery ? { minRank: 'B', minBattery: '85', rank: null } : { minRank: 'B', rank: null });
 
@@ -363,9 +374,10 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
             </div>
           ) : (
             <>
-              {goodPick && (
-                <section aria-label={goodLabel} className="mb-2">
+              {(goodPick || yearPick) && (
+                <section aria-label={goodPick ? goodLabel : '保証が1年ある店でいちばん安い1台'} className="mb-2">
                   <DeviceList>
+                    {goodPick && (<>
                     <p className="px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe flex items-center gap-1.5">
                       {goodLabel}
                       {/* アフィリエイト経由のリンクには PR を添える（機種ページの PR タイルと同じ印） */}
@@ -378,6 +390,19 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
                       className="w-full h-11 text-sm font-bold text-brand-600 hover:bg-ground flex items-center justify-center">
                       この条件で絞り込む ›
                     </button>
+                    </>)}
+                    {yearPick && (
+                      <>
+                        <p className={`px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe flex items-center gap-1.5 ${goodPick ? 'border-t border-line' : ''}`}>
+                          保証1年の店でいちばん安い1台
+                          {minShown !== null && <span className="text-[11px] font-normal text-ink-mute">最安 +{(yearPick.price - minShown).toLocaleString()}円</span>}
+                          {isAffiliateUrl(affiliateUrl(yearPick.shopName, yearPick.url)) && (
+                            <span className="text-[10px] font-normal text-ink-mute border border-line rounded px-1 py-px leading-none">PR</span>
+                          )}
+                        </p>
+                        <div data-placement="warranty_pick_search"><DeviceCard device={yearPick} showModel={models.length !== 1} /></div>
+                      </>
+                    )}
                   </DeviceList>
                 </section>
               )}
