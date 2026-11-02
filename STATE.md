@@ -31,8 +31,8 @@
 - **電池の判定** `/iphone/battery`: 交換（Apple・アイサポ）vs 中古−買取を1年あたり
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`。値動き速報 `price-alerts.ts`
 - **相場レポート** `/iphone/report/<月>`（毎月1日）・`/how-long`・`/iphone/resale-value`
-- **YouTube の公開予約は最長2日後まで**・ショートの声はずんだもん（比べる型は青山）
-- **TikTok は 11/1 停止**（5本とも再生0〜1）
+- **YouTube 予約は2日後まで**・声はずんだもん（比べる型は青山）
+- **TikTok 停止**（11/1）
 - **X**: 返信の2/3は見られている投稿へ・速報は1日1本（チェックリストと表を優先）・引用は1日1本・RTしない（x-ops）
 - **ショート**: 1日2本（7〜8時・19〜21時）。在庫数と電池の型を優先・予算別は週1
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
