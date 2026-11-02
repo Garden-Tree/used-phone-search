@@ -41,12 +41,15 @@ const MBP_VS_AIR: RelatedLong = { id: VIDEOS.mbpVsAir.id, title: VIDEOS.mbpVsAir
 // 横動画「128GBで足りる？」。10/31 12:00 公開
 const STORAGE_128: RelatedLong = { id: VIDEOS.storage128.id, title: VIDEOS.storage128.title, folder: "2026-11-02-storage" };
 
+// 横動画 月次の BEST5（11月・予算別）。11/2 18:00 公開。予算別のショートはこちらへ（11/2〜。それまでは「いま買うならどれ」）
+const MONTHLY_202611: RelatedLong = { id: VIDEOS.monthly202611.id, title: VIDEOS.monthly202611.title, folder: "2026-11-01-monthly" };
+
 // 横動画「M1 MacBook Air、2026年でもまだ使える？」。11/1 18:00 公開
 const M1_AIR: RelatedLong = { id: VIDEOS.m1Air.id, title: VIDEOS.m1Air.title, folder: "2026-11-03-m1-air" };
 
 export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   provs: PRO_OR_STANDARD, promax: PRO_OR_STANDARD, probudget: PRO_OR_STANDARD, plusvs: PRO_OR_STANDARD, minie: PRO_OR_STANDARD, plusmax: PRO_OR_STANDARD,
-  budget: IPHONE_DORE, drops: IPHONE_DORE, newused: IPHONE_DORE, overnew: IPHONE_DORE,
+  budget: MONTHLY_202611, drops: IPHONE_DORE, newused: IPHONE_DORE, overnew: IPHONE_DORE,
   // stock（10/27〜・在庫数ランキングの iPhone 版）: 「いま買うならどれ」につなぐ。stockandroid は Android なので入れない
   stock: IPHONE_DORE,
   battery: BATTERY, batteryswap: BATTERY, storage: STORAGE_128, rank: DONT_BUY, unused: DONT_BUY,

@@ -22,6 +22,8 @@ export const VIDEOS = {
   battery: { id: "GcXIO15l6fU", title: "中古iPhoneのバッテリー、何%なら買っていい？85%以上が正解の理由を3.7万件の相場で", minutes: 11, asOf: "2026-10-26", heading: "中古の電池は何%なら買っていいかを動画で見る" },
   // 11/1 18:00 公開（M1 Air は 2026年でもまだ使えるか。/mac/macbook-air-m1 に）
   m1Air: { id: "lmlZcklod7E", title: "M1 MacBook Air、2026年でもまだ使える？中古8.4万円｜macOS 27対応と、買う前に知りたい弱点", minutes: 9, asOf: "2026-10-31", heading: "M1 Airがまだ使えるかを動画で見る" },
+  // 月次の BEST5（11月）。iPhone の予算別ページに出す。11/2 18:00 公開
+  monthly202611: { id: "FJ18j4Nw22I", title: "中古iPhoneおすすめBEST5【2026年11月】4万・5万・7万・10万・15万円の正解を3.7万件の相場で", minutes: 10, asOf: "2026-11-01", heading: "予算別のBEST5を動画で見る" },
   howOld: { id: "T7ltgSB-4XM", title: "中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決めた", minutes: 9, asOf: "2026-10-25", heading: "何世代前まで買っていいかを動画で見る" },
 } satisfies Record<string, Video>;
 
