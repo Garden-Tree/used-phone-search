@@ -39,6 +39,17 @@ function mergeUpper(rows: PriceRow[]): PriceRow[] {
   return [...map.values()];
 }
 
+/** 店・容量・色・ランク・電池・回線・値段がすべて同じ在庫は、画面では見分けがつかないので先頭の1台だけ残す */
+function uniqueDevices(devices: Device[]): Device[] {
+  const seen = new Set<string>();
+  return devices.filter((d) => {
+    const key = [d.shopName, d.storage, d.color, d.conditionRank, d.batteryHealth, d.networkStatus, d.simUnlocked, d.carrier, d.memoryGB, d.price].join("|");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 /**
  * モデル別ページ用の集計。売り切れを除いた在庫を対象にする（集計は DB 側。lib/modelInventory.ts の説明を参照）。
  * DBエラーは呼び出し側に投げる（ISRでは前回の正常なページが配信され続ける）
@@ -56,7 +67,8 @@ export const getModelStats = cache(async (model: string): Promise<ModelStats> =>
     groupMinPrice(where, "storage"),
     groupMinPrice(where, "conditionRank"),
     groupMinPrice(where, "shopName"),
-    prisma.deviceInventory.findMany({ where, orderBy: [{ price: "asc" }, { id: "asc" }], take: 6 }),
+    // 同じ店が同じ条件・同じ値段で何台も出していると同じ行が並ぶ（iPad 第9世代の Be-Stock が5行。11/2）ので、多めに取って1行にまとめる
+    prisma.deviceInventory.findMany({ where, orderBy: [{ price: "asc" }, { id: "asc" }], take: 30 }),
   ]);
   const count = agg._count._all;
   const primary = count > 0 ? await primaryMedian(where, byStorage) : null;
@@ -75,7 +87,7 @@ export const getModelStats = cache(async (model: string): Promise<ModelStats> =>
       (a, b) => (RANK_ORDER.indexOf(a.key) + 99) % 99 - (RANK_ORDER.indexOf(b.key) + 99) % 99,
     ),
     byShop: byShop.sort((a, b) => a.minPrice - b.minPrice),
-    cheapest,
+    cheapest: uniqueDevices(cheapest).slice(0, 6),
   };
 });
 

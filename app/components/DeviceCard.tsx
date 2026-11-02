@@ -156,7 +156,7 @@ export default function DeviceCard({ device, showModel = true }: { device: Devic
           )}
           <span className="flex justify-between gap-2 text-[11px] text-ink-mute">
             <span className="min-w-0 break-words">{shopLabel(device.shopName)}</span>
-            <span className="text-right shrink-0 max-w-[55%]">{tag}</span>
+            <span className="text-right shrink-0 max-w-[55%]">{tag.split('・').map((t, i) => <span key={i} className="whitespace-nowrap">{i > 0 && '・'}{t}</span>)}</span>
           </span>
           {/* Amazon の価格は取得時点を添える（Creators API の規約。時刻はサイトを書き出した時刻） */}
           {shop?.marketplace === 'amazon' && <span className="text-[11px] text-ink-mute">価格は {BUILD_TIME} 時点</span>}

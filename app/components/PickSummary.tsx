@@ -21,12 +21,12 @@ export default function PickSummary({ rows }: { rows: Row[] }) {
         const d = r.device;
         const shop = findShop(d.shopName);
         const meta = [shop?.label ?? d.shopName, sameStorage ? null : storageLabel(d.storage, d.modelName), `ランク${d.conditionRank.toUpperCase()}`, d.batteryHealth ? `電池${d.batteryHealth}%` : null]
-          .filter(Boolean).join("・");
+          .filter(Boolean) as string[];
         const body = (
           <>
             <span className="flex flex-col min-w-0">
               <span className="text-[13px] font-bold leading-tight">{r.label}</span>
-              <span className="text-[11px] text-ink-mute truncate">{meta}</span>
+              <span className="text-[11px] text-ink-mute leading-snug">{meta.map((m, j) => <span key={j} className="whitespace-nowrap">{j > 0 && "・"}{m}</span>)}</span>
             </span>
             <b className="text-price text-base tabular-nums">{d.price.toLocaleString()}</b>
             <span className="text-[11px] text-ink-mute tabular-nums min-w-[56px] text-right">{i === 0 ? "最安" : `+${(d.price - base).toLocaleString()}`}{r.href && <span className="text-brand-600 font-bold"> ›</span>}</span>

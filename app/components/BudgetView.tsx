@@ -254,7 +254,7 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
             <div className="flex flex-wrap gap-2">
               {legacy.map((r) => (
                 <Link key={r.model} href={modelPagePath(r.model)}
-                  className="px-3.5 min-h-10 inline-flex items-center rounded-full text-sm bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
+                  className="px-3.5 min-h-10 inline-flex items-center gap-1.5 rounded-full text-sm bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
                   {r.model} <span className="font-bold text-price">{yen(r.minPrice)}〜</span>
                 </Link>
               ))}

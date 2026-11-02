@@ -326,7 +326,7 @@ export default async function Home() {
               <div className={`${card} px-3.5 py-3 flex flex-col gap-[9px]`}>
                 {dropRows.map((d) => (
                   <Link key={d.modelSlug} href={modelPagePath(d.model)} className="grid grid-cols-[120px_1fr_52px] items-center gap-2 text-ink">
-                    <span className="text-xs font-bold truncate">{d.model}</span>
+                    <span className="text-xs font-bold leading-tight">{d.model}</span>
                     <span className="flex h-3 rounded-md overflow-hidden bg-line-soft">
                       <span className="bg-safe" style={{ width: `${(d.rate / maxRate) * 100}%` }} />
                     </span>

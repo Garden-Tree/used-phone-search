@@ -88,7 +88,17 @@ export default async function AboutPage() {
         <Section id="notation" title="ショップごとの表記の違い">
           <p>状態ランク（S・A・B・C など）の基準は店ごとに異なります。ランクは各店の表記をそのまま載せています。</p>
           <p>バッテリー最大容量は、店によって載せ方が違います。</p>
-          <div className="overflow-x-auto bg-white border border-line rounded-xl">
+          {/* スマホは店ごとに縦に積む（表だとバッテリーの列が4文字ずつ折れた。11/2） */}
+          <ul className="md:hidden bg-white border border-line rounded-xl divide-y divide-line-soft">
+            {SHOPS.map((s) => (
+              <li key={s.name} className="px-3 py-2.5">
+                <p className="font-bold">{s.label}{s.note && <span className="ml-1.5 text-[10px] font-normal text-ink-mute">{s.note}</span>}</p>
+                <p className="text-ink-sub">{BATTERY_TEXT[s.battery]}</p>
+                <p className="text-xs text-ink-mute">iPad {s.ipad ? "あり" : "なし"}・Pixel {s.pixel ? "あり" : "なし"}・Galaxy {s.galaxy ? "あり" : "なし"}</p>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden md:block overflow-x-auto bg-white border border-line rounded-xl">
             <table className="w-full text-sm">
               <thead className="bg-ground text-ink-mute text-xs">
                 <tr>
@@ -114,7 +124,21 @@ export default async function AboutPage() {
           </div>
           <p>バッテリーで絞り込むと、数値の載っていない店の在庫は（未使用品を除いて）対象外になります。</p>
           <p className="pt-2">保証（故障・初期不良）と、ネットワーク利用制限（赤ロム）になった場合の扱いも店ごとに違います。各店の公式ページで確認した内容です（2026年9月28日時点）。</p>
-          <div className="overflow-x-auto bg-white border border-line rounded-xl">
+          <ul className="md:hidden bg-white border border-line rounded-xl divide-y divide-line-soft">
+            {SHOPS.map((s) => (
+              <li key={s.name} className="px-3 py-2.5">
+                <p className="font-bold">
+                  <a href={s.guaranteeUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-800">{s.label}</a>
+                  {s.note && <span className="ml-1.5 text-[10px] font-normal text-ink-mute">{s.note}</span>}
+                </p>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 mt-1 text-ink-sub">
+                  <dt className="text-xs text-ink-mute pt-0.5">保証</dt><dd>{s.warranty}</dd>
+                  <dt className="text-xs text-ink-mute pt-0.5">赤ロム</dt><dd>{s.redRom}</dd>
+                </dl>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden md:block overflow-x-auto bg-white border border-line rounded-xl">
             <table className="w-full text-sm">
               <thead className="bg-ground text-ink-mute text-xs">
                 <tr>

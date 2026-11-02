@@ -24,7 +24,7 @@ export default function ShopBars({ rows, hrefOf }: { rows: ShopBarRow[]; hrefOf:
         const w = Math.max(6, Math.round(((r.minPrice - lo) / span) * 100));
         return (
           <Link key={r.label} href={hrefOf(r.shopName)} rel={searchRel(hrefOf(r.shopName))} className="grid grid-cols-[84px_minmax(0,1fr)_64px_44px] items-center gap-1.5 text-ink tabular-nums hover:bg-ground rounded">
-            <span className={`text-[11px] md:text-xs font-bold truncate ${few ? "text-[#9CA3AF]" : ""}`}>{r.label}</span>
+            <span className={`text-[11px] md:text-xs font-bold leading-tight break-words ${few ? "text-[#9CA3AF]" : ""}`}>{r.label}</span>
             <span className="h-3.5 bg-line-soft rounded-[7px] overflow-hidden flex" aria-hidden="true">
               <span className={best ? "bg-price" : few ? "bg-[#D1D5DB]" : "bg-[#818CF8]"} style={{ width: `${w}%` }} />
             </span>

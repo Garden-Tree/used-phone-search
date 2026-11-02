@@ -78,7 +78,7 @@ export default function StackedBar({ breakdown, rankMin, rankHref }: {
     <section className="bg-white border border-line rounded-xl p-3.5 md:px-4 flex flex-col gap-3">
       <div className="flex flex-col gap-2">
         <h2 className="text-[15px] md:text-base font-bold">
-          状態ランクの内訳 <span className="text-[11px] font-normal text-ink-mute">{total.toLocaleString()}件</span>
+          状態ランクの内訳 <span className="text-[11px] font-normal text-ink-mute whitespace-nowrap">{total.toLocaleString()}件</span>
         </h2>
         <Bar segs={rankSegs} total={total} name="状態ランク" />
         <div className="grid gap-1.5 text-[10px] md:text-[11px]" style={{ gridTemplateColumns: `repeat(${main.length + (showOther ? 1 : 0)}, minmax(0, 1fr))` }}>
@@ -88,14 +88,14 @@ export default function StackedBar({ breakdown, rankMin, rankHref }: {
             return (
               <Link key={r.key} href={rankHref(r.key)} rel={searchRel(rankHref(r.key))} className="flex flex-col text-ink">
                 <span className={`font-bold ${m.text}`}>{r.key} {m.hint}</span>
-                <span>{price ? `${price.toLocaleString()}円〜` : "-"}</span>
+                <span className="whitespace-nowrap">{price ? `${price.toLocaleString()}円〜` : "-"}</span>
               </Link>
             );
           })}
           {showOther && (
             <div className="flex flex-col text-ink">
               <span className="font-bold text-ink-sub">その他</span>
-              <span>{Math.min(...otherMin).toLocaleString()}円〜</span>
+              <span className="whitespace-nowrap">{Math.min(...otherMin).toLocaleString()}円〜</span>
             </div>
           )}
         </div>

@@ -99,19 +99,19 @@ export default async function AndroidIndexView({ kind }: { kind: AndroidKind }) 
                   <Link
                     key={model}
                     href={modelPagePath(model)}
-                    className={`grid grid-cols-[1fr_auto_auto_auto] gap-x-4 px-5 py-3 hover:bg-ground items-center ${i > 0 ? "border-t border-line-soft" : ""}`}
+                    className={`grid grid-cols-[auto_auto_1fr] md:grid-cols-[1fr_8.5rem_7.5rem_4.5rem] gap-x-5 gap-y-1.5 px-5 py-3 hover:bg-ground items-center ${i > 0 ? "border-t border-line-soft" : ""}`}
                   >
-                    <span className="min-w-0">
+                    <span className="min-w-0 col-span-3 md:col-span-1">
                       <span className="block font-bold text-ink">{model} <span className="text-gray-300">›</span></span>
                       {released && <span className="block text-[11px] text-ink-mute">{released}</span>}
                     </span>
-                    <span className="text-right">
+                    <span className="whitespace-nowrap md:text-right">
                       {s && <><span className="block text-[10px] text-ink-mute">{medianLabel(s.medianStorage, model)}</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
                     </span>
-                    <span className="text-right">
+                    <span className="whitespace-nowrap md:text-right">
                       {s ? <><span className="block text-[10px] text-ink-mute">最安値</span><span className="font-bold text-price">{yen(s.minPrice)}</span></> : <span className="text-gray-300 font-normal text-sm">在庫なし</span>}
                     </span>
-                    <span className="text-right w-16 text-sm text-ink-mute">{(s?.count ?? 0).toLocaleString()}件</span>
+                    <span className="text-right self-end whitespace-nowrap text-sm text-ink-mute">{(s?.count ?? 0).toLocaleString()}件</span>
                   </Link>
                 );
               })}

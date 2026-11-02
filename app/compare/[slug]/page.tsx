@@ -232,7 +232,12 @@ function DiffBox({ a, b, sa, sb }: { a: string; b: string; sa: ModelStats; sb: M
   if (!diffs || !spa || !spb) return null;
   const same = SPEC_ROWS.filter((r) => r.value(spa) === r.value(spb)).map((r) => r.value(spa));
   // 長い機種名は表の列で折り返すので、同じ語の頭（iPhone・Galaxy など）を2つ目から省く
-  const short = (m: string) => { const head = a.split(" ")[0]; return m !== a && m.startsWith(head + " ") ? m.slice(head.length + 1) : m; };
+  // 「iPhone 15 Plus」→「15 Plus」。残りが「(第10世代)」や数字だけになるときは縮めない（iPad の右列が「(第10世代)」だけになった。11/2）
+  const short = (m: string) => {
+    const head = a.split(" ")[0];
+    const rest = m.slice(head.length + 1);
+    return m !== a && m.startsWith(head + " ") && /^[^(（]/.test(rest) && /[A-Za-z]/.test(rest) ? rest : m;
+  };
   return (
     <section className="bg-white rounded-xl border border-line overflow-hidden mb-3">
       <h2 className="px-3.5 py-2 text-[13px] font-bold bg-ground border-b border-line-soft">
@@ -402,13 +407,13 @@ export default async function ComparePage({ params }: Props) {
                 <Link href={modelPagePath(name)} className="hover:text-brand-800">{name}</Link>
               </h2>
               <p className="text-xs font-bold text-ink-mute">中古の最安値</p>
-              <p className="text-2xl md:text-3xl font-bold text-price tracking-tight mb-3">
+              <p className="text-2xl md:text-3xl font-bold text-price tracking-tight whitespace-nowrap mb-3">
                 {stats.minPrice !== null ? yen(stats.minPrice) : "在庫なし"}
               </p>
               <dl className="text-xs md:text-sm text-ink-sub space-y-1">
-                <div className="flex justify-between"><dt>{medianLabel(stats.medianStorage, name)}</dt><dd className="font-bold">{stats.medianPrice !== null ? yen(stats.medianPrice) : "-"}</dd></div>
-                <div className="flex justify-between"><dt>在庫数</dt><dd className="font-bold">{stats.count.toLocaleString()}件</dd></div>
-                <div className="flex justify-between"><dt>取扱ショップ</dt><dd className="font-bold">{stats.shopCount}店</dd></div>
+                <div className="flex justify-between gap-2"><dt className="min-w-0">{medianLabel(stats.medianStorage, name)}</dt><dd className="font-bold whitespace-nowrap">{stats.medianPrice !== null ? yen(stats.medianPrice) : "-"}</dd></div>
+                <div className="flex justify-between gap-2"><dt className="min-w-0">在庫数</dt><dd className="font-bold whitespace-nowrap">{stats.count.toLocaleString()}件</dd></div>
+                <div className="flex justify-between gap-2"><dt className="min-w-0">取扱ショップ</dt><dd className="font-bold whitespace-nowrap">{stats.shopCount}店</dd></div>
               </dl>
               {badgesOf(name).length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-4">

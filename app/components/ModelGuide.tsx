@@ -97,16 +97,16 @@ export default function ModelGuide(p: {
                 <thead>
                   <tr className="text-[11px] text-ink-mute">
                     <th className="text-left font-normal">月</th>
-                    <th className="text-right font-normal">平均</th>
-                    <th className="text-right font-normal">安い日〜高い日</th>
+                    <th className="pl-3 text-right font-normal">平均</th>
+                    <th className="pl-3 text-right font-normal">安い日〜高い日</th>
                   </tr>
                 </thead>
                 <tbody>
                   {p.monthly.map((m) => (
                     <tr key={m.month} className="border-t border-line-soft">
-                      <td className="py-1.5 text-ink-sub">{ym(m.month)}{m.days < 20 && <span className="text-[11px] text-ink-mute">（{m.days}日分）</span>}</td>
-                      <td className="py-1.5 text-right font-bold">{yen(m.avgMedian)}</td>
-                      <td className="py-1.5 text-right text-ink-sub">{yen(m.low)}〜{yen(m.high)}</td>
+                      <td className="py-1.5 text-ink-sub">{ym(m.month)}{m.days < 20 && <span className="block text-[11px] text-ink-mute">（{m.days}日分）</span>}</td>
+                      <td className="py-1.5 pl-3 text-right font-bold whitespace-nowrap">{yen(m.avgMedian)}</td>
+                      <td className="py-1.5 pl-3 text-right text-[12px] text-ink-sub whitespace-nowrap">{yen(m.low)}〜{yen(m.high)}</td>
                     </tr>
                   ))}
                 </tbody>
