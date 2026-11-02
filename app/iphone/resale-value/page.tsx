@@ -144,7 +144,11 @@ export default async function ResaleValuePage() {
         {/* 機種ごとの表 */}
         <section className="flex flex-col gap-2">
           <h2 className="text-lg md:text-xl font-bold">機種ごとの一覧</h2>
-          <div className={`${CARD} overflow-x-auto`}>
+          {/* スマホは1機種を2段に（表だと「いま売ると」が画面の外に隠れた。11/2）。md から表 */}
+          <ul className={`md:hidden ${CARD} divide-y divide-line-soft`}>
+            {rows.map((r) => <MobileRow key={r.model} r={r} />)}
+          </ul>
+          <div className={`hidden md:block ${CARD} overflow-x-auto`}>
             <table className="w-full text-[13px] tabular-nums">
               <caption className="sr-only">iPhone の発売時の値段と、いまの中古の相場（同じ容量）・残っている割合・1か月あたり実質いくら</caption>
               <thead className="bg-ground text-[11px] text-ink-mute">
@@ -229,6 +233,26 @@ export default async function ResaleValuePage() {
 
       <SiteFooter />
     </div>
+  );
+}
+
+function MobileRow({ r }: { r: ResaleRow }) {
+  const nw = "whitespace-nowrap";
+  return (
+    <li className="px-3.5 py-2.5 text-[13px]">
+      <div className="flex items-baseline justify-between gap-3">
+        <Link href={modelPagePath(r.model)} className="min-w-0 font-bold text-brand-600 hover:text-brand-800">{r.model.replace("iPhone ", "")}</Link>
+        <span className="shrink-0 whitespace-nowrap tabular-nums text-right">
+          {r.buyback
+            ? <><span className="text-[10px] text-ink-mute mr-1">いま売ると {r.buyback.shop}・{r.buyback.label}</span><span className="font-bold">{yen(r.buyback.price)}</span></>
+            : <span className="text-[11px] text-ink-mute">いま売ると —</span>}
+        </span>
+      </div>
+      <p className="mt-0.5 text-[11px] text-ink-mute tabular-nums">
+        <span className={nw}>{ym(r.launchDate)}発表・{storageLabel(r.storage, r.model)}</span>　<span className={nw}>発売時 {yen(r.launchPrice)}</span> → <span className={nw}>中古の相場 {yen(r.median)}（{Math.round(r.retention)}%）</span>
+        {r.realPerMonth !== null && <>　<span className={nw}>実質／月 {r.realPerMonth > 0 ? <span className="font-bold text-price">約{yen(r.realPerMonth)}</span> : "発売時より高く売れる"}</span></>}
+      </p>
+    </li>
   );
 }
 

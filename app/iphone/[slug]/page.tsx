@@ -220,6 +220,9 @@ function describeDevice(d: Device): string {
   return `ランク${d.conditionRank}${bat}`;
 }
 
+
+/** 段組み（columns-2）の中の1枚: 途中で折らず、下に余白 */
+const BALANCE = "min-[1360px]:break-inside-avoid min-[1360px]:mb-4";
 export default async function ModelPage({ params }: Props) {
   const { slug } = await params;
   const model = slugToModel(slug);
@@ -667,18 +670,22 @@ export default async function ModelPage({ params }: Props) {
                     hrefOf={(st) => searchHref(model, { storage: String(st) })} />
                 </div>
               )}
-              {showHeat && (
-                <div className={`md:order-1 ${showShops ? "" : "min-[1360px]:col-span-2"}`}>
-                  <HeatCells title={heatTitle} ranks={heatRanks} rows={heatRows} labelWidth={mac ? 88 : 52} />
+              {/* 容量×ランク・どの店が安い？・状態ランクの内訳。2列の PC（1360px〜）では段組みにして左右の高さをそろえる
+                  （グリッドの行だと低い方の下が 200〜450px 空いた。11/2）。それより狭い画面では display: contents で今までどおり縦に並ぶ */}
+              <div className={`contents ${showHeat || showShops ? "min-[1360px]:block min-[1360px]:columns-2 min-[1360px]:gap-4" : ""} min-[1360px]:col-span-2 md:order-1`}>
+                {showHeat && (
+                  <div className={`md:order-1 ${BALANCE}`}>
+                    <HeatCells title={heatTitle} ranks={heatRanks} rows={heatRows} labelWidth={mac ? 88 : 52} />
+                  </div>
+                )}
+                {showShops && (
+                  <div className={`md:order-2 ${BALANCE}`}>
+                    <ShopBars rows={shopRows} hrefOf={(shopName) => searchHref(model, { shop: shopName })} />
+                  </div>
+                )}
+                <div className={`md:order-3 ${BALANCE}`}>
+                  <StackedBar breakdown={breakdown} rankMin={rankMin} rankHref={(r) => searchHref(model, { rank: r })} />
                 </div>
-              )}
-              {showShops && (
-                <div className={`md:order-2 ${showHeat ? "" : "min-[1360px]:col-span-2"}`}>
-                  <ShopBars rows={shopRows} hrefOf={(shopName) => searchHref(model, { shop: shopName })} />
-                </div>
-              )}
-              <div className={`md:order-3 ${showSpark ? "" : "min-[1360px]:col-span-2"}`}>
-                <StackedBar breakdown={breakdown} rankMin={rankMin} rankHref={(r) => searchHref(model, { rank: r })} />
               </div>
 
               <section id="list" className="md:order-5 min-[1360px]:col-span-2 flex flex-col gap-2 scroll-mt-16">
@@ -740,7 +747,7 @@ export default async function ModelPage({ params }: Props) {
               )}
 
               {/* 最安値の推移（30日）。容量別・長い期間のグラフ（クライアント部品）は折りたたみの中 */}
-              <div className="md:order-4 flex flex-col gap-2">
+              <div className="md:order-4 min-[1360px]:col-span-2 flex flex-col gap-2">
                 {showSpark ? (
                   <>
                     <Sparkline points={sparkPoints} />

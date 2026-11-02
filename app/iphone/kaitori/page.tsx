@@ -6,7 +6,7 @@ import BuybackPrices from "@/app/components/BuybackPrices";
 import { IPHONE_CATALOG, LEGACY_SERIES, modelPagePath, modelToSlug } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
 import { BUYBACK_PROGRAMS } from "@/lib/buyback";
-import { BUYBACK_SHOPS, getBuybackList } from "@/lib/buybackPrices";
+import { BUYBACK_SHOPS, getBuybackList, type BuybackCell } from "@/lib/buybackPrices";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（買取価格の取得は週1回）
@@ -27,6 +27,17 @@ const LINK = "text-brand-600 underline underline-offset-2 hover:text-brand-800";
 export async function generateMetadata(): Promise<Metadata> {
   const description = "iPhone の買取価格を、ネットオフ・にこスマ・モバステの3店で機種ごとに比べた一覧。きれいな状態の値段を並べ、いちばん高い店に色を付けています。タップで店の買取ページへ（毎週更新）。";
   return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] } };
+}
+
+/** 買取の店へのリンク（表のセルと同じ rel・計測の属性） */
+function BuybackLink({ cell, className = "", children }: { cell: BuybackCell; className?: string; children: React.ReactNode }) {
+  return (
+    <a href={cell.href} target="_blank" rel={cell.linkType === "a8" ? "sponsored nofollow noopener" : "nofollow noopener"}
+      data-shop-click="" data-shop={`${cell.shop}（買取）`} data-model="kaitori" data-link-type={cell.linkType}
+      className={`inline-block py-1 whitespace-nowrap ${className}`}>
+      {children}
+    </a>
+  );
 }
 
 export default async function KaitoriPage() {
@@ -97,6 +108,33 @@ export default async function KaitoriPage() {
 
         <section className="flex flex-col gap-2">
           <h2 className="text-lg md:text-xl font-bold">機種ごとの買取価格（きれいな状態）</h2>
+          {/* スマホは1機種を2段に（表だと右の店が画面の外にはみ出した。11/2）: 上にいちばん高い店、下にほかの店。md から表 */}
+          <ul className={`md:hidden ${CARD} divide-y divide-line-soft`}>
+            {rows.map((r) => {
+              const others = r.cells.filter((c) => c !== r.best);
+              return (
+                <li key={r.model} className="px-3.5 py-2 text-[13px]">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="min-w-0">
+                      <Link href={`${modelPagePath(r.model)}#kaitori`} className="font-bold text-brand-600 hover:text-brand-800">{r.model.replace("iPhone ", "")}</Link>
+                      <span className="ml-1.5 text-[10px] text-ink-mute whitespace-nowrap">{storageLabel(r.storage, r.model)}{r.storages > 1 ? `・ほか${r.storages - 1}容量` : ""}</span>
+                    </span>
+                    {r.best && <BuybackLink cell={r.best} className="shrink-0 tabular-nums">
+                      <span className="text-[10px] text-ink-mute mr-1">{r.best.shop}</span><span className={`font-bold ${r.cells.length > 1 ? "text-price" : "text-ink"}`}>{yen(r.best.price)}</span>
+                    </BuybackLink>}
+                  </div>
+                  {others.length > 0 && (
+                    <p className="text-[11px] text-ink-mute tabular-nums">
+                      {others.map((c, i) => (
+                        <span key={c.shop}>{i > 0 && "・"}<BuybackLink cell={c} className="hover:text-brand-800">{c.shop} {yen(c.price)}</BuybackLink></span>
+                      ))}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden md:block">
           <BuybackPrices
             rowLabel="機種・容量"
             model={() => "kaitori"}
@@ -108,6 +146,7 @@ export default async function KaitoriPage() {
               best: r.best,
             }))}
           />
+          </div>
           <p className="text-[11px] text-ink-mute leading-relaxed">
             店が表示している買取価格の上限（{dateText}時点・週1回取得）。赤い値がその機種でいちばん高い店。ほかの容量は機種名から機種ページへ。ネットオフは特典込み・バッテリー85%以上が条件。実際の査定は状態で下がります。
           </p>

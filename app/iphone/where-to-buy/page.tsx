@@ -164,7 +164,36 @@ export default async function WhereToBuyPage() {
           <section className="flex flex-col gap-2">
             <h2 className="text-lg md:text-xl font-bold">店ごとの比較</h2>
             <p className="text-sm text-ink-sub">並びは <strong className="text-ink">iPhone の在庫数の多い順</strong>（おすすめ順ではありません）。店名の下は売り場。店名から、その店の iPhone の在庫を検索できます。</p>
-            <div className={CARD}>
+            {/* スマホは1店を2段に（表だと電池・保証・赤ロムが画面の外に隠れた。11/2）。md から表 */}
+            <ul className={`md:hidden ${CARD} divide-y divide-line-soft`}>
+              {w.shops.map((r) => (
+                <li key={r.shop.name} className="px-4 py-2.5 text-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="min-w-0">
+                      <Link href={shopSearch(r.shop)} rel="nofollow" className="font-bold text-ink hover:text-brand-800">{r.shop.label}</Link>
+                      <span className="block text-[10px] text-ink-mute">{r.channels.join("・")}</span>
+                    </span>
+                    <span className="shrink-0 whitespace-nowrap tabular-nums">
+                      {r.count.toLocaleString()}件・<span className={r.cheapestModels > 0 ? "font-bold" : "text-ink-mute"}>最安 {r.cheapestModels}機種</span>
+                    </span>
+                  </div>
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-3 mt-1 text-[13px]">
+                    <dt className="text-xs text-ink-mute pt-px">電池</dt>
+                    <dd className={BATTERY[r.shop.battery].tone}>{BATTERY[r.shop.battery].label}</dd>
+                    <dt className="text-xs text-ink-mute pt-px">保証</dt>
+                    <dd>
+                      {/* 見出しが「保証」なので先頭の「保証 」は省く。両方とも記載なしなら公式へのリンクは1つだけ */}
+                      {/記載なし/.test(r.shop.warrantyShort) && /記載なし/.test(r.shop.redRomShort) ? (
+                        <GuaranteeCell text={r.shop.warrantyShort} shop={r.shop} />
+                      ) : (
+                        <><GuaranteeCell text={r.shop.warrantyShort.replace(/^保証\s*/, "")} shop={r.shop} />・<GuaranteeCell text={r.shop.redRomShort} shop={r.shop} /></>
+                      )}
+                    </dd>
+                  </dl>
+                </li>
+              ))}
+            </ul>
+            <div className={`hidden md:block ${CARD}`}>
               <table className="w-full text-sm">
                 <thead className="bg-ground text-xs text-ink-mute">
                   <tr>

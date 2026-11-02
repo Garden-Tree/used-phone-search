@@ -40,7 +40,7 @@ export default function BuybackPrices({ rows, model, rowLabel }: {
                     {c ? (
                       <a href={c.href} target="_blank" rel={c.linkType === "a8" ? "sponsored nofollow noopener" : "nofollow noopener"}
                         data-shop-click="" data-shop={`${c.shop}（買取）`} data-model={model(r.key)} data-link-type={c.linkType}
-                        className={`block rounded-lg px-1.5 py-1.5 font-bold whitespace-nowrap hover:bg-ground ${top ? "text-price bg-price/5" : "text-ink"}`}>
+                        className={`block rounded-lg px-1.5 py-1.5 font-bold whitespace-nowrap hover:bg-ground ${top ? "text-price" : "text-ink"}`}>
                         {yen(c.price)}<span className="hidden md:inline text-ink-mute font-normal" aria-hidden="true"> ›</span>
                       </a>
                     ) : <span className="px-2 text-ink-mute">—</span>}

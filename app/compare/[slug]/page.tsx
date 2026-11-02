@@ -134,8 +134,30 @@ function CompareTable({ title, rows, labelOf, a, b }: {
   return (
     <section className="bg-white rounded-xl border border-line overflow-hidden mb-6">
       <h2 className="px-5 py-4 text-base font-bold text-ink bg-ground border-b border-line-soft">{title}</h2>
-      {/* スマホ幅では列が収まらないことがあるので、表だけ横にスクロールできるようにする */}
-      <div className="overflow-x-auto">
+      {/* スマホは1行を2段に（表だと差額が画面の外にはみ出した。11/2）: 上に差額、下に2機種の最安値。md から表 */}
+      <ul className="md:hidden divide-y divide-line-soft">
+        {rows.map((r) => {
+          const diff = r.a && r.b ? r.b.minPrice - r.a.minPrice : null;
+          const price = (row?: PriceRow) => row
+            ? <><span className="font-bold text-price">{yen(row.minPrice)}</span>（{row.count.toLocaleString()}件）</>
+            : <span className="text-gray-300">在庫なし</span>;
+          return (
+            <li key={r.key} className="px-4 py-2.5 text-sm">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="min-w-0 font-bold text-ink-sub">{labelOf(r.key)}</span>
+                <span className="shrink-0 whitespace-nowrap tabular-nums">
+                  <span className="text-[10px] text-ink-mute mr-1">差額</span>
+                  <span className="font-bold text-ink-sub">{diff === null ? "-" : `${diff > 0 ? "+" : diff < 0 ? "-" : "±"}${Math.abs(diff).toLocaleString()}円`}</span>
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-ink-mute tabular-nums">
+                <span className="whitespace-nowrap">{a} {price(r.a)}</span>　<span className="whitespace-nowrap">{b} {price(r.b)}</span>
+              </p>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="hidden md:block overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="text-xs text-ink-mute">

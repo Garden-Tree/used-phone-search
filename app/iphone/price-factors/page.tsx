@@ -38,6 +38,23 @@ function ModelLink({ model }: { model: string }) {
   return <Link href={modelPagePath(model)} className="font-bold text-ink hover:text-brand-800 whitespace-nowrap">{model}</Link>;
 }
 
+/** スマホ（md 未満）の1行を2段に: 上に機種と差（答え）、下に残りの列（表だと差の列が画面の外に隠れた。11/2） */
+function MobileRow({ name, answer, tone = "", children }: { name: React.ReactNode; answer: React.ReactNode; tone?: string; children: React.ReactNode }) {
+  return (
+    <li className="px-4 py-2.5 text-sm">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="min-w-0">{name}</span>
+        <span className={`shrink-0 whitespace-nowrap tabular-nums font-bold ${tone}`}>{answer}</span>
+      </div>
+      <p className="mt-0.5 text-xs text-ink-mute tabular-nums">{children}</p>
+    </li>
+  );
+}
+const LIST = `md:hidden ${CARD} divide-y divide-line-soft`;
+const TABLE_BOX = `hidden md:block ${CARD}`;
+const NW = "whitespace-nowrap";
+const signed = (n: number) => `${n >= 0 ? "+" : "−"}${Math.abs(n).toLocaleString()}円`;
+
 export default async function PriceFactorsPage() {
   const shopNum = (await activeShops()).length;
   const f = await getPriceFactors();
@@ -122,7 +139,15 @@ export default async function PriceFactorsPage() {
           <section className="flex flex-col gap-2">
             <h2 className="text-lg md:text-xl font-bold"><span className="text-brand-600 mr-1">Q.</span>1世代前にすると、いくら安い？</h2>
             <p className="text-sm text-ink-sub"><strong className="text-price mr-1">A.</strong>差がいちばん大きい。予算が足りないときは<strong className="text-ink">まず1世代下げる</strong>。</p>
-            <div className={CARD}>
+            <ul className={LIST}>
+              {[...f.gen].sort((a, b) => b.diff - a.diff).map((r) => (
+                <MobileRow key={r.newer} tone={r.diff > 0 ? "text-safe" : "text-ink-mute"} answer={r.diff > 0 ? `−${r.diff.toLocaleString()}円` : `+${(-r.diff).toLocaleString()}円`}
+                  name={<><ModelLink model={r.newer} /> → <Link href={modelPagePath(r.older)} className="text-brand-600 hover:text-brand-800 whitespace-nowrap">{short(r.older)}</Link></>}>
+                  <span className={NW}>{storageLabel(r.storage, r.newer)}</span>　<span className={NW}>{yen(r.newerMedian)} → {yen(r.olderMedian)}</span>
+                </MobileRow>
+              ))}
+            </ul>
+            <div className={TABLE_BOX}>
               <table className="w-full text-sm">
                 <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">比べた組</th><th className={TH}>容量</th><th className={TH}>新しい方</th><th className={TH}>1世代前</th><th className={`${TH} pr-4`}>差</th></tr></thead>
                 <tbody>
@@ -145,7 +170,14 @@ export default async function PriceFactorsPage() {
           <section className="flex flex-col gap-2">
             <h2 className="text-lg md:text-xl font-bold"><span className="text-brand-600 mr-1">Q.</span>状態ランクAとCで、いくら違う？</h2>
             <p className="text-sm text-ink-sub"><strong className="text-price mr-1">A.</strong>差は主に<strong className="text-ink">外装の傷</strong>。ケースを使うならCでも十分です（基準は店ごとに違います）。</p>
-            <div className={CARD}>
+            <ul className={LIST}>
+              {f.rank.map((r) => (
+                <MobileRow key={r.model} name={<ModelLink model={r.model} />} tone={r.diff > 0 ? "text-safe" : "text-ink-mute"} answer={r.diff > 0 ? `−${r.diff.toLocaleString()}円` : "差なし"}>
+                  <span className={NW}>{storageLabel(r.storage, r.model)}</span>　<span className={NW}>A {yen(r.a)}</span>・<span className={NW}>B {yen(r.b)}</span>・<span className={NW}>C {yen(r.c)}</span>
+                </MobileRow>
+              ))}
+            </ul>
+            <div className={TABLE_BOX}>
               <table className="w-full text-sm">
                 <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">機種</th><th className={TH}>容量</th><th className={TH}>ランクA</th><th className={TH}>B</th><th className={TH}>C</th><th className={`${TH} pr-4`}>A→C</th></tr></thead>
                 <tbody>
@@ -169,7 +201,14 @@ export default async function PriceFactorsPage() {
           <section className="flex flex-col gap-2">
             <h2 className="text-lg md:text-xl font-bold"><span className="text-brand-600 mr-1">Q.</span>容量を1つ上げると、いくら高い？</h2>
             <p className="text-sm text-ink-sub"><strong className="text-price mr-1">A.</strong>容量は<strong className="text-ink">あとから増やせません</strong>。写真やゲームが多いなら上げておくと安心です。</p>
-            <div className={CARD}>
+            <ul className={LIST}>
+              {[...f.storage].sort((a, b) => a.diff - b.diff).map((r) => (
+                <MobileRow key={r.model} name={<ModelLink model={r.model} />} answer={signed(r.diff)}>
+                  <span className={NW}>{storageLabel(r.from, r.model)} {yen(r.fromMedian)}</span> → <span className={NW}>{storageLabel(r.to, r.model)} {yen(r.toMedian)}</span>
+                </MobileRow>
+              ))}
+            </ul>
+            <div className={TABLE_BOX}>
               <table className="w-full text-sm">
                 <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">機種</th><th className={TH}>小さい容量</th><th className={TH}>1つ上</th><th className={`${TH} pr-4`}>差</th></tr></thead>
                 <tbody>
@@ -214,7 +253,17 @@ export default async function PriceFactorsPage() {
               </div>
             )}
             {f.gap128.length > 0 && (
-              <div className={CARD}>
+              <ul className={LIST}>
+                <li className="px-4 pt-3 pb-1 text-xs text-ink-mute">128GB→256GB の相場（中央値）の差</li>
+                {[...f.gap128].sort((a, b) => a.diff - b.diff).map((r) => (
+                  <MobileRow key={r.model} name={<ModelLink model={r.model} />} tone={r.diff < 10000 ? "text-safe" : ""} answer={signed(r.diff)}>
+                    <span className={NW}>128GB {yen(r.fromMedian)}</span> → <span className={NW}>256GB {yen(r.toMedian)}</span>
+                  </MobileRow>
+                ))}
+              </ul>
+            )}
+            {f.gap128.length > 0 && (
+              <div className={TABLE_BOX}>
                 <table className="w-full text-sm">
                   <caption className="text-left text-xs text-ink-mute px-4 pt-3 pb-1">128GB→256GB の相場（中央値）の差</caption>
                   <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">機種</th><th className={TH}>128GB</th><th className={TH}>256GB</th><th className={`${TH} pr-4`}>差</th></tr></thead>
@@ -250,7 +299,15 @@ export default async function PriceFactorsPage() {
                 ? <>{batteryCheaper.length}機種で、差が電池交換より小さい。<strong className="text-ink">最初から90%台を選ぶほうが安く済みます</strong>。</>
                 : "電池の差と、Apple の電池交換の料金を比べて選ぶのがおすすめです。"}
             </p>
-            <div className={CARD}>
+            <ul className={LIST}>
+              {f.battery.map((r) => (
+                <MobileRow key={r.model} name={<ModelLink model={r.model} />} answer={signed(r.diff)}>
+                  <span className={NW}>{storageLabel(r.storage, r.model)}</span>　<span className={NW}>80%台 {yen(r.lo)}（{r.loCount}件）</span> → <span className={NW}>90%台 {yen(r.hi)}（{r.hiCount}件）</span>
+                  {r.repair !== null && <>・<span className={NW}>電池交換 {yen(r.repair)}</span></>}
+                </MobileRow>
+              ))}
+            </ul>
+            <div className={TABLE_BOX}>
               <table className="w-full text-sm">
                 <thead className="bg-ground text-xs text-ink-mute"><tr><th className="text-left font-semibold pl-4 pr-2 py-2">機種</th><th className={TH}>容量</th><th className={TH}>80%台</th><th className={TH}>90%台</th><th className={TH}>差</th><th className={`${TH} pr-4`}>電池交換</th></tr></thead>
                 <tbody>

@@ -63,7 +63,8 @@ export default async function GalaxyIndexPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <SiteHeader label="Galaxy" />
 
-      <main className="max-w-[1360px] mx-auto px-4 py-6">
+      {/* 一覧は1列なので PC でも 860px に（全幅だと機種名と値段の間が 1000px 空いた。11/2） */}
+      <main className="max-w-[892px] mx-auto px-4 py-6">
         <nav aria-label="パンくずリスト" className="text-xs text-ink-mute mb-4">
           <Link href="/" className="hover:text-brand-800">トップ</Link>
           <span className="mx-2">›</span>

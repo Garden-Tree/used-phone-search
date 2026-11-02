@@ -5,7 +5,8 @@ export default function VideoEmbed({ video, heading = "動画で見る", classNa
   return (
     <section className={`flex flex-col gap-2 ${className}`}>
       <h2 className="text-lg md:text-xl font-bold">{heading}<span className="whitespace-nowrap">（約{video.minutes}分）</span></h2>
-      <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-line bg-black">
+      {/* PC で全幅だと 1330×750px になった（11/2）ので 720px まで */}
+      <div className="relative w-full max-w-[720px] aspect-video rounded-xl overflow-hidden border border-line bg-black">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${video.id}`}
           title={video.title}

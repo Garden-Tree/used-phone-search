@@ -44,7 +44,8 @@ type Row = {
   count: number;
 };
 
-const STATUS_TONE: Record<RepairStatus, string> = { service: "", vintage: "text-warn font-bold", obsolete: "text-price font-bold" };
+// 赤（text-price）は価格だけ（docs/design.md）。修理を受けられないのは注意の色で
+const STATUS_TONE: Record<RepairStatus, string> = { service: "", vintage: "text-warn font-bold", obsolete: "text-warn font-bold" };
 
 async function getRows(): Promise<{ rows: Row[]; updated: Date | null }> {
   const stats = await Promise.all(MODELS.map((m) => getModelStats(m)));
@@ -162,7 +163,27 @@ export default async function HowLongPage() {
         {/* 機種ごとの表（新しい順） */}
         <section className="flex flex-col gap-2">
           <h2 className="text-lg md:text-xl font-bold">機種ごとの一覧</h2>
-          <div className={`${CARD} overflow-x-auto`}>
+          {/* スマホは1機種を2段に（表だと相場が画面の外に隠れた。11/2）。md から表 */}
+          <ul className={`md:hidden ${CARD} divide-y divide-line-soft`}>
+            {rows.map((r) => (
+              <li key={r.model} className="px-3.5 py-2.5 text-[13px]">
+                <div className="flex items-baseline justify-between gap-3">
+                  <Link href={modelPagePath(r.model)} className="min-w-0 font-bold text-brand-600 hover:text-brand-800">{r.model.replace("iPhone ", "")}</Link>
+                  <span className="shrink-0 whitespace-nowrap text-right">
+                    <span className="text-[10px] text-ink-mute mr-1">iOS 27</span><span className={r.ios27 ? "" : "text-ink-mute font-bold"}>{r.ios27 ? "○" : "×"}</span>
+                    <span className="text-[10px] text-ink-mute ml-2.5 mr-1">修理</span><span className={STATUS_TONE[r.repair]}>{REPAIR_STATUS_LABEL[r.repair]}</span>
+                  </span>
+                </div>
+                <p className="mt-0.5 text-[11px] text-ink-mute tabular-nums">
+                  {r.released && <><span className="whitespace-nowrap">{r.released}発売</span>　</>}
+                  <span className="whitespace-nowrap">バッテリー交換 {r.battery !== null ? yen(r.battery) : "—"}</span>
+                  <span className="whitespace-nowrap">中古の相場 {r.median !== null ? <><span className="font-bold text-ink">{yen(r.median)}</span>{r.medianStorage && `（${storageLabel(r.medianStorage, r.model)}・${r.count.toLocaleString()}件）`}</> : "在庫なし"}</span>
+                  {r.repairNote && <span className="block">{r.repairNote}</span>}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <div className={`hidden md:block ${CARD} overflow-x-auto`}>
             <table className="w-full text-[13px] tabular-nums">
               <caption className="sr-only">中古iPhoneの機種ごとの iOS 27 対応・Apple の修理・バッテリー交換の料金・中古の相場</caption>
               <thead className="bg-ground text-[11px] text-ink-mute">
@@ -181,7 +202,7 @@ export default async function HowLongPage() {
                       <Link href={modelPagePath(r.model)} className="font-bold text-brand-600 hover:text-brand-800">{r.model.replace("iPhone ", "")}</Link>
                       {r.released && <span className="block text-[10px] text-ink-mute">{r.released}発売</span>}
                     </th>
-                    <td className={`text-center px-2 py-2 ${r.ios27 ? "" : "text-price font-bold"}`}>{r.ios27 ? "○" : "×"}</td>
+                    <td className={`text-center px-2 py-2 ${r.ios27 ? "" : "text-ink-mute font-bold"}`}>{r.ios27 ? "○" : "×"}</td>
                     <td className={`px-2 py-2 whitespace-nowrap ${STATUS_TONE[r.repair]}`}>
                       {REPAIR_STATUS_LABEL[r.repair]}
                       {r.repairNote && <span className="block text-[10px] font-normal text-ink-mute">{r.repairNote}</span>}
