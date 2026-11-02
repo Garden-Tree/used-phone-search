@@ -95,7 +95,10 @@ def main():
         "nicosuma_scraper.py": int(os.environ.get("NICOSUMA_LIMIT", 100)),
         "iosis_scraper.py": int(os.environ.get("IOSIS_LIMIT", 200)),
         "mmoba_scraper.py": int(os.environ.get("MMOBA_LIMIT", 100)),
-        "daiwan_scraper.py": int(os.environ.get("DAIWAN_LIMIT", 100)),
+        # ダイワンは公式サイトをリニューアルで休止中（2026/10/21 19:00〜12月中旬の予定・楽天と Yahoo! の店は営業）。
+        # 毎回 404 で失敗し、ほかの1店の失敗と合わせてジョブを失敗にしてしまうので、再開まで実行しない（11/2）。
+        # 在庫は hide_stale_inventory で隠れたまま。再開したら一覧の URL を確かめてから 100 に戻す
+        "daiwan_scraper.py": int(os.environ.get("DAIWAN_LIMIT", 0)),
     }
     config = {script: limit for script, limit in limits.items() if limit > 0}
 

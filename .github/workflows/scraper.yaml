@@ -27,9 +27,9 @@ on:
         required: true
         default: '100'
       daiwan_limit:
-        description: 'ダイワンテレコムの取得数'
+        description: 'ダイワンテレコムの取得数（公式サイトの休止中は 0）'
         required: true
-        default: '100'
+        default: '0'
       rakuten_retry:
         description: '楽天の JSON の取り直し回数（自動で付く。手動では 0 のまま）'
         required: false
@@ -104,7 +104,7 @@ jobs:
           NICOSUMA_LIMIT: ${{ inputs.nicosuma_limit || '100' }}
           IOSIS_LIMIT: ${{ inputs.iosis_limit || '200' }}
           MMOBA_LIMIT: ${{ inputs.mmoba_limit || '100' }}
-          DAIWAN_LIMIT: ${{ inputs.daiwan_limit || '100' }}
+          DAIWAN_LIMIT: ${{ inputs.daiwan_limit || '0' }}  # 公式サイトの休止中（10/21〜12月中旬）は 0。再開したら 100 に戻す
         run: |
           cd scraper
           python run_all_scrapers.py
