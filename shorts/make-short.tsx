@@ -38,6 +38,7 @@ import { buildGenScript } from "./themes/gen";
 import { buildStorageScript } from "./themes/storage";
 import { buildIos27LineScript } from "./themes/ios27line";
 import { buildBatterySwapScript } from "./themes/batteryswap";
+import { buildKaitoriSwapScript } from "./themes/kaitoriswap";
 import { buildOverNewScript } from "./themes/overnew";
 import { buildRakutenMobileScript } from "./themes/rakutenmobile";
 import { buildIpadMiniScript } from "./themes/ipadmini";
@@ -65,7 +66,7 @@ const opt = (name: string) => {
 };
 const OUT = resolve(__dirname, "out");
 const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
-const THEMES = ["drops", "budget", "pixelbudget", "ipadbudget", "macbudget", "probudget", "foldbudget", "galaxybudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "fold", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "rakutenmobile", "ipadmini", "mbpnew", "mbpproled", "watchgen", "macgen", "ipadgen", "pixelgen", "stock", "stockandroid", "stockmac", "watchbudget", "mbpvsair", "kaitorishop", "stockipad", "stockwatch", "ultravs", "stockpixel", "stockpro"] as const;
+const THEMES = ["drops", "budget", "pixelbudget", "ipadbudget", "macbudget", "probudget", "foldbudget", "galaxybudget", "bigbudget", "newused", "provs", "promax", "plusvs", "plusmax", "oldpro", "minie", "fold", "rank", "unused", "battery", "gen", "storage", "ios27line", "batteryswap", "overnew", "rakutenmobile", "ipadmini", "mbpnew", "mbpproled", "watchgen", "macgen", "ipadgen", "pixelgen", "stock", "stockandroid", "stockmac", "watchbudget", "mbpvsair", "kaitorishop", "stockipad", "stockwatch", "ultravs", "stockpixel", "stockpro", "kaitoriswap"] as const;
 /**
  * テーマごとの声。drops・budget は 春日部つむぎ（ノーマル）＝ DEFAULT_SPEAKER（10/21 ユーザーの指示。1本目の drops は ずんだもんだった）。
  * newused・provs・fold は 青山龍星（ノーマル）（10/21・10/22 ユーザーの指示。この PC では ID 13）。pixelbudget は 春日部つむぎ、rank は ずんだもん（ノーマル。口調は「です・ます」のまま）（10/22）。ipadbudget・battery は 青山龍星（10/23）。gen は ずんだもん、storage は 春日部つむぎ（10/23）。promax は provs と同じ 青山龍星、macbudget は 春日部つむぎ（10/23）。probudget は 春日部つむぎ（10/24）。foldbudget は fold と同じ 青山龍星（10/24）。ios27line・batteryswap・overnew は ずんだもん（ノーマル。口調は「です・ます」）（10/25）。plusvs は provs と同じ 青山龍星（10/25）。minie・unused も 青山龍星（10/26）。plusmax は 春日部つむぎ、oldpro は ずんだもん（ノーマル。口調は「です・ます」）（10/26。強い「2つを比べて差を言う」型で 青山龍星 以外の声を試す）。bigbudget は 春日部つむぎ（10/26）。rakutenmobile（広告の回）は 春日部つむぎ（10/26。横動画11本目の解説役と同じ）。 ipadmini（新型 iPad mini の回）は 春日部つむぎ（10/27）。watchgen は 春日部つむぎ、macgen は ずんだもん（ノーマル。口調は「です・ます」）（10/27。予算別を減らした声の比べ V1・ideas/2026-10-27-shorts-plan.md）。ipadgen は 春日部つむぎ、pixelgen は ずんだもん（ノーマル。口調は「です・ます」）（10/27。同じ型の iPad・Pixel 版）。
@@ -97,6 +98,8 @@ const THEME_SPEAKER: Record<(typeof THEMES)[number], number | string> = {
   stockpixel: "ずんだもん/ノーマル",
   // stockpro（11/3〜）: 同じ日の朝の stockpixel（ずんだもん）と続かないよう、iPhone 全体の回（1,001回）と同じ つむぎ
   stockpro: "春日部つむぎ/ノーマル",
+  // kaitoriswap（11/3〜）: 2つを比べて差額を言う型は 青山龍星（継続率がいちばん高い）。11/4 の2本（ずんだもん・つむぎ）とも分ける
+  kaitoriswap: "青山龍星/ノーマル",
 };
 
 async function plan() {
@@ -116,7 +119,7 @@ async function plan() {
     : theme === "ipadgen" ? await buildIpadGenScript(today) : theme === "pixelgen" ? await buildPixelGenScript(today)
     : theme === "stock" ? await buildStockScript(today, "iphone") : theme === "stockandroid" ? await buildStockScript(today, "android") : theme === "stockmac" ? await buildStockScript(today, "mac")
     : theme === "watchbudget" ? await buildWatchBudgetScript(today, budgetOpts) : theme === "mbpvsair" ? await buildMbpVsAirScript(today) : theme === "kaitorishop" ? await buildKaitoriShopScript(today)
-    : theme === "stockipad" ? await buildStockScript(today, "ipad") : theme === "stockwatch" ? await buildStockScript(today, "watch") : theme === "stockpixel" ? await buildStockScript(today, "pixel") : theme === "stockpro" ? await buildStockScript(today, "pro") : theme === "ultravs" ? await buildUltraVsScript(today) : await buildDropsScript(today, days);
+    : theme === "stockipad" ? await buildStockScript(today, "ipad") : theme === "stockwatch" ? await buildStockScript(today, "watch") : theme === "stockpixel" ? await buildStockScript(today, "pixel") : theme === "stockpro" ? await buildStockScript(today, "pro") : theme === "kaitoriswap" ? await buildKaitoriSwapScript(today) : theme === "ultravs" ? await buildUltraVsScript(today) : await buildDropsScript(today, days);
   // ナレーションの下書き（全場面・台本の数字だけ）と声の設定。comment は narration から消せば comment.lines を読む（直した lines が声にも反映）
   const { comment: _c, ...narration } = defaultNarration(built);
   void _c;
@@ -145,6 +148,8 @@ async function plan() {
     script.scenes.ranking.items.forEach((r, i) => console.log(`  ${i + 1}. ${r.model}（${r.storage}・在庫${r.count}件・${r.released}発売） 相場 ${r.median.toLocaleString()}円`));
     const l = script.scenes.legacy;
     console.log(l ? `iOS 27 非対応でいちばん新しい世代（${l.storage}）: ${l.model} 相場 ${l.median.toLocaleString()}円（在庫${l.count}件）・1位との差 ${l.diff >= 0 ? "+" : "−"}${Math.abs(l.diff).toLocaleString()}円` : "iOS 27 非対応の比較: なし");
+  } else if (script.theme === "kaitoriswap") {
+    script.scenes.ranking.items.forEach((r, i) => console.log(`  ${i + 1}. ${r.older}（${r.storage}）${r.shop} ${r.sell.toLocaleString()}円（${r.shops}店） → ${r.newer} ${r.newerMedian.toLocaleString()}円（在庫${r.newerCount}件）・足す ${r.add.toLocaleString()}円`));
   } else if (script.theme === "batteryswap") {
     script.scenes.ranking.items.forEach((r, i) => console.log(`  ${i + 1}. ${r.older}（${r.storage}） ${r.olderMedian.toLocaleString()}円＋電池 ${r.battery.toLocaleString()}円＝${r.total.toLocaleString()}円 vs ${r.newer} ${r.newerMedian.toLocaleString()}円（差 ${r.gap >= 0 ? "+" : "−"}${Math.abs(r.gap).toLocaleString()}円・在庫${r.olderCount}件／${r.newerCount}件）`));
   } else if (script.theme === "overnew") {

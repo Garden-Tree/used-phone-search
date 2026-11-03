@@ -61,6 +61,7 @@ const THEME_TAG: Partial<Record<Script["theme"], string>> = {
   stockwatch: "#ランキング",
   stockpixel: "#ランキング",
   stockpro: "#ランキング",
+  kaitoriswap: "#買取",
 };
 
 const dir = process.argv[2]?.replace(/[\\/]+$/, "");

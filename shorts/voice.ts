@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { isNewVsOld, hasRelatedLong, isBudget, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type StockScript, type KaitoriShopScript, type Script, type VoiceConfig } from "./types";
+import { isNewVsOld, hasRelatedLong, isBudget, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type StockScript, type KaitoriShopScript, type KaitoriSwapScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -78,7 +78,7 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
   return isBudget(s) ? budgetNarration(s) : s.theme === "newused" ? newUsedNarration(s) : isProVs(s) ? (s.theme === "promax" ? proMaxNarration(s) : s.theme === "plusvs" ? plusVsNarration(s) : s.theme === "plusmax" ? plusMaxNarration(s) : s.theme === "ultravs" ? ultraVsNarration(s) : proVsNarration(s))
     : s.theme === "fold" ? foldNarration(s) : s.theme === "rank" ? rankNarration(s) : s.theme === "battery" ? batteryNarration(s)
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
-    : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
+    : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "kaitoriswap" ? kaitoriSwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
     : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s) : s.theme === "mbpvsair" ? mbpVsAirNarration(s) : s.theme === "kaitorishop" ? kaitoriShopNarration(s)
     : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : isNewVsOld(s) ? (s.theme === "mbpnew" ? mbpNewNarration(s) : s.theme === "mbpproled" ? mbpProledNarration(s) : ipadMiniNarration(s))
     : s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen" ? deviceGenNarration(s)
@@ -138,6 +138,22 @@ function batterySwapNarration(s: BatterySwapScript): Partial<Record<NarrationKey
     reveal: `1位は${top.older}。電池交換を足すと、${yen(top.total)}。${top.gap >= 0 ? `${up}との差は、${yen(top.gap)}だけです。` : `${up}の方が、${yen(-top.gap)}安いです。`}`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、電池交換？それとも1つ上？",
+  };
+}
+
+/**
+ * kaitoriswap の既定（11/3〜）: hook 問い / ranking 3位・2位を1文ずつ（「3位は<売る機種>から<1つ上の番号>、<容量>。足すのは<額>です。」）
+ * reveal 1位（店と売値・1つ上の相場・足す額）/ comment ひと言の本文だけ / outro 買取ページへの誘導と問い
+ */
+function kaitoriSwapNarration(s: KaitoriSwapScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  return {
+    hook: "いまのiPhoneを売って、1つ上の世代に買い替えると、いくら足す？",
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].older}から${shortName(items[i].newer)}、${items[i].storage}。足すのは${yen(items[i].add)}です。`).join(""),
+    reveal: `1位は${top.older}。${top.shop}で売ると${yen(top.sell)}。${top.newer}の相場は${yen(top.newerMedian)}なので、足すのは${yen(top.add)}だけです。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "機種ごとの買取価格は、プロフィールのリンクから見られます。あなたなら、売って買い替えますか？",
   };
 }
 

@@ -260,6 +260,25 @@ export type BatterySwapRow = {
   olderMedian: number; battery: number; total: number; newerMedian: number; olderCount: number; newerCount: number; gap: number;
 };
 
+/**
+ * kaitoriswap の1行（11/3〜）: 売る機種（older）をいちばん高い買取店で売った値段（sell・店 shop）と、1つ上の世代（newer）の同じ容量の中古の相場。
+ * add = newerMedian − sell（足す金額）。shorts/themes/kaitoriswap.ts
+ */
+export type KaitoriSwapRow = {
+  older: string; newer: string; storage: string; storageGb: number;
+  sell: number; shop: string; shops: number; newerMedian: number; newerCount: number; add: number;
+};
+
+/** テーマ kaitoriswap「売って1つ上の世代に買い替えると、いくら足す？」（足す金額の小さい順。items[0] が1位） */
+export type KaitoriSwapScript = Common & {
+  theme: "kaitoriswap";
+  scenes: {
+    ranking: { items: KaitoriSwapRow[] };
+    comment: CommentScene;
+    outro: OutroScene;
+  };
+};
+
 /** テーマ batteryswap「電池交換を足すと、1つ上の世代と同じ値段？」（差の小さい順。items[0] が1位） */
 export type BatterySwapScript = Common & {
   theme: "batteryswap";
@@ -444,7 +463,7 @@ export type KaitoriShopScript = Common & {
   };
 };
 
-export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | (OldProBody & { theme: "oldpro" }) | RakutenMobileScript | IpadMiniScript | DeviceGenScript | StockScript | MbpVsAirScript | KaitoriShopScript;
+export type Script = DropsScript | BudgetScript | NewUsedScript | ProVsScript | FoldScript | RankScript | BatteryScript | GenScript | StorageScript | Ios27Script | BatterySwapScript | OverNewScript | MinieScript | UnusedScript | (OldProBody & { theme: "oldpro" }) | RakutenMobileScript | IpadMiniScript | DeviceGenScript | StockScript | MbpVsAirScript | KaitoriShopScript | KaitoriSwapScript;
 
 /**
  * 関連動画（横動画）につながるテーマ。締めの最後に「くわしい解説は、下の関連動画から」を声と画面で出す（10/23〜。

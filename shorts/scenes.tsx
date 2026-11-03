@@ -8,7 +8,7 @@ import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
 import { relatedThumb } from "./relatedLong";
-import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type ProVsRow, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type KaitoriShopScript, type Script } from "./types";
+import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type ProVsRow, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type KaitoriShopScript, type KaitoriSwapScript, type KaitoriSwapRow, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -27,7 +27,7 @@ const HEAD_TITLE = (s: Script) =>
   s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"] : s.theme === "probudget" ? ["予算ぴったりで買える", "中古iPhone Pro"] : s.theme === "foldbudget" ? ["予算ぴったりで買える", "中古折りたたみスマホ"] : s.theme === "galaxybudget" ? ["予算ぴったりで買える", "中古Galaxy"] : s.theme === "bigbudget" ? ["予算ぴったりで買える", "大きい画面の中古iPhone"]
     : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? (s.order === "small" ? ["電池90%台と80%台", "差が小さい中古iPhone"] : ["電池90%台だと", "いくら高い？中古iPhone"])
     : s.theme === "gen" ? ["iPhone", "1世代前でいくら安い？"] : s.theme === "storage" ? ["容量を1つ上げると", "いくら高い？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
-    : s.theme === "ios27line" ? ["iOS 27対応で", "いちばん安い中古iPhone"] : s.theme === "batteryswap" ? ["電池交換を足すと", "1つ上の世代と同じ値段？"] : s.theme === "overnew" ? ["中古なのに", "新品より高い？中古iPhone"]
+    : s.theme === "ios27line" ? ["iOS 27対応で", "いちばん安い中古iPhone"] : s.theme === "batteryswap" ? ["電池交換を足すと", "1つ上の世代と同じ値段？"] : s.theme === "kaitoriswap" ? ["売って買い替えると", "いくら足す？"] : s.theme === "overnew" ? ["中古なのに", "新品より高い？中古iPhone"]
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"] : s.theme === "plusmax" ? ["大画面はPlusとPro Max", "同じ容量でいくら違う？"]
     : s.theme === "oldpro" ? ["1世代前のProと最新の無印", "どっちが安い？中古iPhone"]
     : s.theme === "ipadmini" ? ["新型iPad mini", "中古の旧型ならいくら安い？"]
@@ -77,6 +77,8 @@ watchOS 27対応はApple公式`
     : s.theme === "newused" || s.theme === "overnew" ? `${s.date.replace(/-/g, "/")}・新品はApple公式・中古は同じ容量の中央値`
     : s.theme === "ios27line" ? `${s.date.replace(/-/g, "/")}・iOS 27対応はApple公式・在庫がいちばん多い容量の中央値`
     : s.theme === "batteryswap" ? `${s.date.replace(/-/g, "/")}・電池交換はApple公式・中古は同じ容量の中央値`
+    : s.theme === "kaitoriswap" ? `${s.date.replace(/-/g, "/")}・買取は店のいちばん高い値段（上限）
+中古は1つ上の世代の同じ容量の中央値`
     : s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "fold" ? `${s.date.replace(/-/g, "/")}・中古は同じ容量の中央値` : `${s.date.replace(/-/g, "/")}・在庫がいちばん多い容量の中央値`;
 
 /**
@@ -175,7 +177,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
   if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
-    || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew" || isNewVsOld(s) || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen"
+    || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "kaitoriswap" || s.theme === "overnew" || isNewVsOld(s) || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen"
     || s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "ultravs" || s.theme === "mbpvsair" || s.theme === "kaitorishop") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
@@ -1405,6 +1407,90 @@ const swapPair = (older: string, newer: string) => {
   return se[0] && se[1] ? `iPhone SE (第${se[0]}／第${se[1]}世代)` : `${older}／${genNo(newer)}`;
 };
 
+/** kaitoriswap（11/3〜）: 問い＋「売値 ＋ 足す ＝ 1つ上」の式（札3つ。batteryswap と同じ形）＋1位の足す額 */
+function SwapHook({ s, t }: { s: KaitoriSwapScript; t: number }) {
+  const L = lookOf(s);
+  const r = s.scenes.ranking.items[0];
+  const TW = 250;
+  const TH = 220;
+  const tile = (label: string, sub: string, fill: string) => (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: TW, height: TH, background: fill, borderRadius: Math.min(L.card.radius, 28), color: C.white }}>
+      <div style={{ ...row, fontSize: FIT(label, TW - 30, 72), fontWeight: 900, lineHeight: 1.1 }}>{label}</div>
+      <div style={{ ...row, fontSize: FIT(sub, TW - 30, 34), fontWeight: 700, marginTop: 8 }}>{sub}</div>
+    </div>
+  );
+  const op = (x: string) => <div style={{ ...row, width: (CW - TW * 3) / 2, fontSize: 72, fontWeight: 900, color: L.fg }}>{x}</div>;
+  return (
+    <Frame s={s}>
+      <Question lines={["いまのiPhoneを売って", "1つ上に買い替えると", "いくら足す？"]} max={88} />
+      <div style={{ display: "flex", alignItems: "center", width: CW, marginTop: 36, transform: `scale(${pulseOf(t)})` }}>
+        {tile("売値", "いちばん高い店", C.budget)}
+        {op("＋")}
+        {tile("足す", "いくら？", SITE.inspect700)}
+        {op("＝")}
+        {tile("1つ上", "の世代の中古", L.chip)}
+      </div>
+      <Teaser s={s} label="最小" value={`+${n(r.add)}円`} mt={30} />
+    </Frame>
+  );
+}
+
+/** kaitoriswap のランキング: 機種名は「売る機種／1つ上」、下段は 容量・足す額（大）・「足す」 */
+function KaitoriSwapRanking({ s, t, o }: { s: KaitoriSwapScript; t: number; o: Scene["o"] }) {
+  const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
+    model: swapPair(it.older, it.newer),
+    // 足す額（大）と、容量・売る店を縦に積む（在庫数ランキングと同じ。横に並べると金額が 60px ほどに縮んだ）
+    cells: [
+      { text: `+${n(it.add)}円`, w: 680, max: 88, color: lookOf(s).accent },
+      { text: `${it.storage}・${it.shop}で${n(it.sell)}円で売る`, w: 680, max: 42, color: C.muted },
+    ],
+  }));
+  return <RankRows s={s} t={t} o={o} items={items} stack />;
+}
+
+/**
+ * kaitoriswap の1位: 「売る機種／1つ上」・容量、売値（店）＋足す額の積み上げの棒＝1つ上の世代の相場、足す額（大）。
+ * 棒は 0.8 秒から伸び、足す額は数え上げる
+ */
+function KaitoriSwapReveal({ s, t }: { s: KaitoriSwapScript; t: number }) {
+  const r: KaitoriSwapRow = s.scenes.ranking.items[0];
+  const L = lookOf(s);
+  const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
+  const grow = prog(t, 0.8, 0.7);
+  const name = swapPair(r.older, r.newer);
+  const sub = `${r.storage}・売って1つ上の中古に`;
+  const BAR = CW - 60;
+  const w = (x: number) => Math.round(((BAR * x) / r.newerMedian) * grow);
+  const amber = SITE.inspect700;
+  const sellText = `${r.shop}で売る ${n(r.sell)}円`;
+  const addText = `足す ${n(r.add)}円`;
+  const total = `${swapLabel(r.newer)}の相場 ${n(r.newerMedian)}円`;
+  return (
+    <Frame s={s}>
+      <div style={{ ...row, fontSize: 56, fontWeight: 900, marginBottom: 10, opacity: prog(t, 0, 0.25) }}>1位は…</div>
+      <div style={{ ...card(L), width: CW, padding: "20px 30px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(name, CW - 60, 96), fontWeight: 900 }}>{name}</div>
+        <div style={{ ...row, fontSize: FIT(sub, CW - 60, 42), fontWeight: 900, color: C.muted, marginTop: 2 }}>{sub}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: BAR, marginTop: 18 }}>
+          <div style={{ ...row, justifyContent: "flex-start", fontSize: FIT(total, BAR, 50), fontWeight: 900, color: L.chip }}>{total}</div>
+          <div style={{ display: "flex", marginTop: 6 }}>
+            <div style={{ display: "flex", width: Math.max(8, w(r.sell)), height: 44, background: C.budget, borderRadius: "14px 0 0 14px" }} />
+            <div style={{ display: "flex", width: Math.max(4, w(r.add)), height: 44, background: amber, borderRadius: "0 14px 14px 0" }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", width: BAR, marginTop: 8 }}>
+            <div style={{ ...row, fontSize: FIT(sellText, BAR / 2 + 60, 40, 26), fontWeight: 900, color: C.budget }}>{sellText}</div>
+            <div style={{ ...row, fontSize: FIT(addText, BAR / 2 - 80, 40, 26), fontWeight: 900, color: amber }}>{addText}</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", marginTop: 16 }}>
+          <div style={{ ...row, fontSize: FIT(`+${n(r.add)}円`, 600, 120), fontWeight: 900, color: L.accent }}>{`+${n(Math.round(r.add * prog(t, 1.0, 0.9)))}円`}</div>
+          <div style={{ ...row, fontSize: FIT(`で${swapLabel(r.newer)}に`, 280, 52), fontWeight: 900, color: C.muted, marginLeft: 16 }}>{`で${swapLabel(r.newer)}に`}</div>
+        </div>
+      </div>
+    </Frame>
+  );
+}
+
 /** batteryswap: 問い＋「中古＋電池交換 ＝ 1つ上」の式（札3つ）＋1位の差 */
 function EquationHook({ s, t }: { s: BatterySwapScript; t: number }) {
   const L = lookOf(s);
@@ -1982,13 +2068,17 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       default: throw new Error(`${s.theme} に場面 ${sc.id} はありません`);
     }
   }
-  if (s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "overnew") {
+  if (s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "kaitoriswap" || s.theme === "overnew") {
     if (sc.id === "comment") return <Comment s={s} t={t} o={sc.o} />;
     if (sc.id === "outro") return <Outro s={s} t={t} o={sc.o} />;
     if (s.theme === "ios27line") {
       if (sc.id === "hook") return <PhoneHook s={s} t={t} />;
       if (sc.id === "ranking") return <Ios27Ranking s={s} t={t} o={sc.o} />;
       if (sc.id === "reveal") return <Ios27Reveal s={s} t={t} />;
+    } else if (s.theme === "kaitoriswap") {
+      if (sc.id === "hook") return <SwapHook s={s} t={t} />;
+      if (sc.id === "ranking") return <KaitoriSwapRanking s={s} t={t} o={sc.o} />;
+      if (sc.id === "reveal") return <KaitoriSwapReveal s={s} t={t} />;
     } else if (s.theme === "batteryswap") {
       if (sc.id === "hook") return <EquationHook s={s} t={t} />;
       if (sc.id === "ranking") return <BatterySwapRanking s={s} t={t} o={sc.o} />;
