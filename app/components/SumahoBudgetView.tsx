@@ -8,7 +8,9 @@ import { modelPagePath } from "@/lib/catalog";
 import { BUDGET_NAMES, SUMAHO_BUDGETS, budgetLabel, budgetPath, budgetsOf, sumahoBudgetPath, type BudgetDevice } from "@/lib/budgets";
 import { SUMAHO_MIN_MODELS, getSumahoBudgetModels, type SumahoRow } from "@/lib/budgetStats";
 import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
-import { yen } from "@/lib/format";
+import { storageLabel, yen } from "@/lib/format";
+import { marketOf } from "@/lib/sameBudget";
+import type { ModelMarket } from "@/lib/marketStats";
 
 /**
  * スマホ全体の予算別ページ（/sumaho/budget/[slug]）。「中古スマホ 2万円以下」のように機種の種類を決めずに探す人向け。
@@ -54,8 +56,20 @@ export async function SumahoBudgetView({ max }: { max: number }) {
   const newestText = newestIphone && newestAndroid
     ? `いちばん新しい機種は ${newestIphone.model}（${yen(newestIphone.minPrice)}〜）と、Android の${newestAndroid.model}（${yen(newestAndroid.minPrice)}〜）。`
     : newest ? `いちばん新しいのは${newest.model}（${yen(newest.minPrice)}〜）。` : "";
+  // 11/3〜: 相場（在庫がいちばん多い容量の中央値）が予算に収まる、いちばん新しい iPhone と Android を先に答える
+  // （最安値だけだと、予算内が数件の機種が答えになる。ChatGPT は相場で答え、うちは引用されなかった。ideas/2026-11-03.md）
+  const market = await sumahoMarket();
+  const fitsBudget = (model: string) => { const m = market.get(model); return m !== undefined && m.count >= FIT_MIN_COUNT && m.medianPrice <= max; };
+  const fitIphone = main.find((r) => r.brand === "iPhone" && fitsBudget(r.model));
+  const fitAndroid = main.find((r) => r.brand !== "iPhone" && fitsBudget(r.model));
+  const fitPart = (r: SumahoRow) => { const m = market.get(r.model)!; return `${r.model}（相場${yen(m.medianPrice)}${m.medianStorage !== null ? `・${storageLabel(m.medianStorage, r.model)}` : ""}）`; };
+  const fitText = fitIphone && fitAndroid
+    ? `相場で${label}以内に収まるいちばん新しい機種は ${fitPart(fitIphone)}と、Android の${fitPart(fitAndroid)}。`
+    : fitIphone || fitAndroid ? `相場で${label}以内に収まるいちばん新しい機種は${fitPart((fitIphone ?? fitAndroid)!)}。` : "";
   const lead = rows.length > 0
-    ? `${today}時点、${label}以下で買える中古スマホは iPhone・Pixel・Galaxy・Xperia・AQUOS から${rows.length}機種・${totalCount.toLocaleString()}件（ジャンク品を除く）。${newestText}`
+    ? fitText
+      ? `${today}時点、${fitText}安い1台を探すなら、${newestText.replace(/^いちばん新しい(機種は|のは)\s*/, "いちばん新しいのは")}${label}以下の在庫は iPhone・Pixel・Galaxy・Xperia・AQUOS の${rows.length}機種・${totalCount.toLocaleString()}件（ジャンク品を除く）。`
+      : `${today}時点、${label}以下で買える中古スマホは iPhone・Pixel・Galaxy・Xperia・AQUOS から${rows.length}機種・${totalCount.toLocaleString()}件（ジャンク品を除く）。${newestText}`
     : `${today}時点、${label}以下の中古スマホの在庫はありません。`;
   const webPage = {
     "@context": "https://schema.org",
@@ -116,7 +130,7 @@ export async function SumahoBudgetView({ max }: { max: number }) {
           <section className="mb-10">
             <h2 className="text-xl md:text-2xl font-bold mb-1">最新 OS・アップデート保証がある機種（新しい順）</h2>
             <p className="text-xs text-ink-mute mb-4">iOS 27 対応の iPhone・保証が残る Pixel・発売から4年以内の Android。機種名から容量別・状態別の価格まとめへ</p>
-            <ModelTable rows={main} />
+            <ModelTable rows={main} market={market} max={max} label={label} />
           </section>
         )}
 
@@ -127,7 +141,7 @@ export async function SumahoBudgetView({ max }: { max: number }) {
           <section className="mb-10">
             <h2 className="text-lg font-bold mb-1">サブ機・お試し向け</h2>
             <p className="text-xs text-ink-mute mb-3">最新 OS 非対応・保証終了・発売から4年超の機種（安い順）</p>
-            <ModelTable rows={sub} />
+            <ModelTable rows={sub} market={market} max={max} label={label} />
           </section>
         )}
 
@@ -161,19 +175,34 @@ export async function SumahoBudgetView({ max }: { max: number }) {
   );
 }
 
-function ModelTable({ rows }: { rows: SumahoRow[] }) {
+/** 相場を「予算に収まる」と言うのに要る在庫の数（BudgetView と同じ） */
+const FIT_MIN_COUNT = 5;
+
+/** iPhone・Pixel・Galaxy・Xperia・AQUOS の相場（種類ごとにワーカーで1回だけ集計した値をまとめる） */
+async function sumahoMarket(): Promise<Map<string, ModelMarket>> {
+  const maps = await Promise.all((["iphone", "pixel", "galaxy", "xperia", "aquos"] as const).map((d) => marketOf(d)));
+  return new Map(maps.flatMap((m) => [...m]));
+}
+
+function ModelTable({ rows, market, max, label }: { rows: SumahoRow[]; market: Map<string, ModelMarket>; max: number; label: string }) {
   return (
+    <>
     <div className="bg-white rounded-xl border border-line overflow-hidden">
-      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 bg-ground text-xs font-bold text-ink-mute">
+      {/* 11/3〜 相場の列（機種ページと同じ）。予算に収まる相場は緑青の文字 */}
+      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 md:gap-x-4 px-4 md:px-5 py-3 bg-ground text-xs font-bold text-ink-mute">
         <span>機種</span>
         <span className="text-right">最安値</span>
-        <span className="text-right w-16">在庫</span>
+        <span className="text-right">相場</span>
+        <span className="text-right w-14">{label}以下</span>
       </div>
-      {rows.map((r) => (
+      {rows.map((r) => {
+        const m = market.get(r.model);
+        const fits = m !== undefined && m.count >= FIT_MIN_COUNT && m.medianPrice <= max;
+        return (
         <Link
           key={r.model}
           href={modelPagePath(r.model)}
-          className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 border-t border-line-soft hover:bg-ground items-center"
+          className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 md:gap-x-4 px-4 md:px-5 py-3 border-t border-line-soft hover:bg-ground items-center tabular-nums"
         >
           <span className="min-w-0">
             <span className="block font-bold text-ink">
@@ -183,9 +212,16 @@ function ModelTable({ rows }: { rows: SumahoRow[] }) {
             {r.sub && <span className="block text-[11px] text-ink-mute">{r.sub}</span>}
           </span>
           <span className="text-right font-bold text-price">{yen(r.minPrice)}</span>
-          <span className="text-right w-16 text-sm text-ink-mute">{r.count.toLocaleString()}件</span>
+          <span className={`text-right text-sm ${fits ? "font-bold text-safe" : "text-ink-sub"}`}>
+            {m ? yen(m.medianPrice) : "-"}
+            {m?.medianStorage != null && <span className="block text-[10px] font-normal text-ink-mute">{storageLabel(m.medianStorage, r.model)}</span>}
+          </span>
+          <span className="text-right w-14 text-sm text-ink-mute">{r.count.toLocaleString()}件</span>
         </Link>
-      ))}
+        );
+      })}
     </div>
+    <p className="text-[11px] text-ink-mute mt-2">相場＝在庫がいちばん多い容量の中央値（予算を問わない）。<span className="text-safe font-bold">緑</span>は相場が{label}以内の機種</p>
+    </>
   );
 }

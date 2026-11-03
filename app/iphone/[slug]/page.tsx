@@ -481,6 +481,16 @@ export default async function ModelPage({ params }: Props) {
       </div>
     );
 
+  // 条件ごとの最安の3行（どれでも → ランクB以上・電池85%以上 → ＋保証1年の店）。保証が1年ある店の在庫があるときだけ。
+  // 11/3〜 一覧の上から価格のカードの中へ移した（ChatGPT から来た人の最初の画面に、保証1年の店の1台まで入れる。ideas/2026-11-03.md）
+  const pickRows = cheapestDevice && yearDevice
+    ? [
+        { label: "どれでも", device: cheapestDevice },
+        ...(goodDevice ? [{ label: mac || watch ? "ランクB以上" : "ランクB以上・電池85%以上", device: goodDevice, href: cheapest5.some((d) => d.id === goodDevice.id) ? undefined : "#pick-good" }] : []),
+        { label: "＋保証1年の店", device: yearDevice, href: cheapest5.some((d) => d.id === yearDevice.id) ? undefined : yearDevice.id === goodDevice?.id ? "#pick-good" : "#pick-year" },
+      ]
+    : null;
+
   const summaryCard = (pc: boolean) => (
     <div className={`bg-white border border-line rounded-xl flex flex-col ${pc ? "p-4 gap-3.5" : "p-3.5 gap-3"}`}>
       {pc && <p className="text-sm font-bold">{model}</p>}
@@ -501,9 +511,10 @@ export default async function ModelPage({ params }: Props) {
           <div className="flex flex-col items-end"><span className="text-[11px] text-ink-mute">{medianLabel(stats.medianStorage, model)}</span><span className="text-xl font-bold leading-[1.1]">{stats.medianPrice!.toLocaleString()}<span className="text-xs">円</span></span></div>
         </div>
       )}
+      {!pc && pickRows && <PickSummary rows={pickRows} embedded />}
       {priceBand}
       <StatTiles tiles={statTiles} />
-      {pc && safeLine(true)}
+      {pc && (pickRows ? <PickSummary rows={pickRows} embedded /> : safeLine(true))}
       {listButton}
     </div>
   );
@@ -520,7 +531,8 @@ export default async function ModelPage({ params }: Props) {
   // 店ごとの買取価格（iPhone・表 BuybackPrice・週1回）。タイルは相場の容量（なければいちばん小さい容量）の行だけ、全容量は「買取価格（店ごと）」に
   const buyback = showBuyback && isIphone ? await getModelBuyback(model) : [];
   const buybackRow = buyback.find((r) => r.storage === stats.medianStorage) ?? buyback[0] ?? null;
-  // 買取のタイル（10/25〜 切り出し）。スマホは要約カードの直下に出す（買取は1件あたりの報酬が高いのに3週で15クリックだった）。
+  // 買取のタイル（10/25〜 切り出し）。スマホは要約カードの直下に出していた（買取は1件あたりの報酬が高いのに3週で15クリックだった）が、
+  // 11/3〜 安い在庫の下へ（最初の画面は条件ごとの最安の3行。買取のクリックが減ったら戻す）。
   // 10/27〜 相場の1行と各社の説明文は出さない（文字を減らす）
   const buybackTile = showBuyback ? (
     <div className="bg-white border border-line rounded-xl p-3 flex flex-col gap-1">
@@ -650,9 +662,9 @@ export default async function ModelPage({ params }: Props) {
           {/* スマホ: 要約カードと安心ライン。PC は右の固定サマリーに出す */}
           <div className="md:hidden flex flex-col gap-2.5">
             {hasPrices ? summaryCard(false) : statBlock(false)}
-            {safeLine(false)}
+            {/* 3行があるときは「ランクB以上・電池85%以上」はその2行目に入っている */}
+            {!pickRows && safeLine(false)}
             {simTile}
-            {buybackTile}
           </div>
 
           {!hasStock ? (
@@ -707,14 +719,6 @@ export default async function ModelPage({ params }: Props) {
                     </Link>
                   ))}
                 </div>
-                {/* 条件を上げるといくら足すか（11/1〜・C 案）。保証が1年ある店の在庫があるときだけ */}
-                {cheapestDevice && yearDevice && (
-                  <PickSummary rows={[
-                    { label: "どれでも", device: cheapestDevice },
-                    ...(goodDevice ? [{ label: mac || watch ? "ランクB以上" : "ランクB以上・電池85%以上", device: goodDevice, href: cheapest5.some((d) => d.id === goodDevice.id) ? undefined : "#pick-good" }] : []),
-                    { label: "＋保証1年の店", device: yearDevice, href: cheapest5.some((d) => d.id === yearDevice.id) ? undefined : yearDevice.id === goodDevice?.id ? "#pick-good" : "#pick-year" },
-                  ]} />
-                )}
                 <DeviceList>
                   {cheapest5.map((d) => <DeviceCard key={d.id} device={d} showModel={false} />)}
                   {/* 安い5件に「ランクB以上・バッテリー85%以上」の在庫がなければ、その条件でいちばん安い1台を添える（10/23〜） */}
@@ -738,6 +742,9 @@ export default async function ModelPage({ params }: Props) {
                   </Link>
                 </DeviceList>
               </section>
+
+              {/* スマホ: 買取（PR）は安い在庫の下（11/3〜。最初の画面は買う人向けの3行を優先。それまでは要約カードの直下） */}
+              {buybackTile && <div className="md:hidden">{buybackTile}</div>}
 
               {hasStock && (
                 <div className="md:order-5 min-[1360px]:col-span-2">
@@ -980,7 +987,7 @@ export default async function ModelPage({ params }: Props) {
                 </div>
               )}
 
-              {/* スマホ: 修理のタイル（買取・回線は要約の下） */}
+              {/* スマホ: 修理のタイル（回線は要約の下・買取は安い在庫の下） */}
               {prTiles("md:hidden", false)}
               {/* PC: 買取と「直す？買い替える？」は本文に置く（右の固定サマリーは回線まで。下が画面からはみ出して見えなかった・ユーザー 10/27） */}
               {(showBuyback || showRepair) && (

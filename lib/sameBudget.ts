@@ -13,7 +13,8 @@ const MIN_COUNT = 5;
 
 const memo = new Map<Device, Promise<Map<string, ModelMarket>>>();
 
-function marketOf(device: Device): Promise<Map<string, ModelMarket>> {
+/** 種類ごとの全機種の相場（ワーカーごとに1回だけ集計。予算別ページの「相場」の列と冒頭の1文でも使う・11/3〜） */
+export function marketOf(device: Device): Promise<Map<string, ModelMarket>> {
   let p = memo.get(device);
   if (!p) {
     p = getModelMarket(ALL_DEVICE_PAGE_MODELS.filter((m) => deviceOf(m) === device));

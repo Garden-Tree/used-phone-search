@@ -12,7 +12,9 @@ import { modelPagePath } from "@/lib/catalog";
 import { BUDGET_NAMES, budgetLabel, SUMAHO_BUDGETS, budgetPath, budgetsOf, sumahoBudgetPath, type BudgetDevice } from "@/lib/budgets";
 import { cheapestUnder, getBudgetModels } from "@/lib/budgetStats";
 import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
-import { yen } from "@/lib/format";
+import { storageLabel, yen } from "@/lib/format";
+import { marketOf } from "@/lib/sameBudget";
+import type { ModelMarket } from "@/lib/marketStats";
 import { GALAXY_SHOPS, IPAD_SHOPS, PIXEL_SHOPS, SHOPS, type Shop } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import { jaMonth, updateUntil } from "@/lib/pixelCatalog";
@@ -118,13 +120,29 @@ const todayJa = () => new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo
  * 冒頭の1文（10/27〜。AI 検索の引用が予算別ページにも来ているので、機種ページの buildSummary と同じ形にそろえる:
  * 日付・機種数・件数・いちばん新しい機種と最安・店数）。画面の最初の段落と JSON-LD の description に同じ文を使う
  */
-function budgetLead(p: { label: string; t: DeviceText; rows: { model: string; minPrice: number; count: number }[]; newest?: { model: string; minPrice: number } }): string {
-  const { label, t, rows, newest } = p;
+function budgetLead(p: {
+  label: string; t: DeviceText; rows: { model: string; minPrice: number; count: number }[]; newest?: { model: string; minPrice: number };
+  /** 相場（在庫がいちばん多い容量の中央値）が予算に収まる、いちばん新しい機種と、それより新しくて最安値なら予算に届く機種（11/3〜） */
+  fit?: { model: string; market: ModelMarket }; reach?: { model: string; minPrice: number; count: number }[];
+}): string {
+  const { label, t, rows, newest, fit, reach = [] } = p;
   if (rows.length === 0) return `${todayJa()}時点、${label}以下の${t.name}の在庫はありません。`;
   const total = rows.reduce((n, r) => n + r.count, 0);
+  // 11/3〜: 最安値だけで「いちばん新しいのは」と答えると、予算内が数件・電池の弱い1台の機種が答えになる（5万円で iPhone 14 が9件）。
+  // 相場で収まる機種を先に答え、最安値なら届く新しい機種を続ける（ChatGPT は相場で答え、うちは引用されなかった。ideas/2026-11-03.md）
+  if (fit && t.byRelease !== false) {
+    const m = fit.market;
+    const reachText = reach.length > 0
+      ? `安い1台を探せば${reach.map((r) => `${r.model}（${yen(r.minPrice)}〜・${label}以下 ${r.count.toLocaleString()}件）`).join("・")}も届きます。`
+      : "";
+    return `${todayJa()}時点、${t.supportedLead}${t.supportedLead ? "、" : ""}相場で${label}以内に収まるいちばん新しい機種は${fit.model}（相場${yen(m.medianPrice)}${m.medianStorage !== null ? `・${storageLabel(m.medianStorage, fit.model)}` : ""}）。${reachText}${label}以下の在庫は${rows.length}機種・${total.toLocaleString()}件（ジャンク品を除く・大手中古ショップ${t.shops}店）。`;
+  }
   const lead = newest && t.byRelease !== false ? `${t.supportedLead}いちばん新しいのは${newest.model}（${yen(newest.minPrice)}〜）。` : "";
   return `${todayJa()}時点、${label}以下で買える${t.name}は${rows.length}機種・${total.toLocaleString()}件（ジャンク品を除く）。${lead}大手中古ショップ${t.shops}店の在庫を集計。`;
 }
+
+/** 相場を「予算に収まる」と言うのに要る在庫の数（数件の値付けで決まらないように。lib/sameBudget.ts と同じ） */
+const FIT_MIN_COUNT = 5;
 
 export async function BudgetView({ max, device }: { max: number; device: BudgetDevice }) {
   const t = await withActiveShops(device);
@@ -139,7 +157,13 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
   );
 
   const path = budgetPath(max, device);
-  const lead = budgetLead({ label, t, rows, newest: supported[0] });
+  // 機種ごとの相場（種類ごとにワーカーで1回だけ集計した値を使い回す）
+  const market = await marketOf(device);
+  const fitIdx = supported.findIndex((r) => { const m = market.get(r.model); return m !== undefined && m.count >= FIT_MIN_COUNT && m.medianPrice <= max; });
+  const fit = fitIdx >= 0 ? { model: supported[fitIdx].model, market: market.get(supported[fitIdx].model)! } : undefined;
+  // 収まる機種のすぐ上（新しい側）から2機種まで、古い順に
+  const reach = fitIdx > 0 ? supported.slice(0, fitIdx).reverse().slice(0, 2) : [];
+  const lead = budgetLead({ label, t, rows, newest: supported[0], fit, reach });
   // ページの要約（AI の検索が日付と数字をそのまま引用できるように。機種ページと同じ形）
   const webPage = {
     "@context": "https://schema.org",
@@ -208,26 +232,37 @@ export async function BudgetView({ max, device }: { max: number; device: BudgetD
             <h2 className="text-xl md:text-2xl font-bold mb-1">{label}以下で買える機種（{t.byRelease === false ? "シリーズ順" : "新しい順"}）</h2>
             <p className="text-xs text-ink-mute mb-4">{t.supportedNote}</p>
             <div className="bg-white rounded-xl border border-line overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 bg-ground text-xs font-bold text-ink-mute">
+              {/* 11/3〜 相場の列（在庫がいちばん多い容量の中央値・機種ページと同じ）。予算に収まる相場は緑青の文字 */}
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 md:gap-x-4 px-4 md:px-5 py-3 bg-ground text-xs font-bold text-ink-mute">
                 <span>機種</span>
                 <span className="text-right">最安値</span>
-                <span className="text-right w-16">在庫</span>
+                <span className="text-right">相場</span>
+                <span className="text-right w-14">{label}以下</span>
               </div>
-              {supported.map((r) => (
-                <Link
-                  key={r.model}
-                  href={modelPagePath(r.model)}
-                  className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-5 py-3 border-t border-line-soft hover:bg-ground items-center"
-                >
-                  <span className="min-w-0">
-                    <span className="block font-bold text-ink">{r.model} <span className="text-gray-300">›</span></span>
-                    {t.subOf?.(r.model) && <span className="block text-[11px] text-ink-mute">{t.subOf(r.model)}</span>}
-                  </span>
-                  <span className="text-right font-bold text-price">{yen(r.minPrice)}</span>
-                  <span className="text-right w-16 text-sm text-ink-mute">{r.count.toLocaleString()}件</span>
-                </Link>
-              ))}
+              {supported.map((r) => {
+                const m = market.get(r.model);
+                const fits = m !== undefined && m.count >= FIT_MIN_COUNT && m.medianPrice <= max;
+                return (
+                  <Link
+                    key={r.model}
+                    href={modelPagePath(r.model)}
+                    className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 md:gap-x-4 px-4 md:px-5 py-3 border-t border-line-soft hover:bg-ground items-center tabular-nums"
+                  >
+                    <span className="min-w-0">
+                      <span className="block font-bold text-ink">{r.model} <span className="text-gray-300">›</span></span>
+                      {t.subOf?.(r.model) && <span className="block text-[11px] text-ink-mute">{t.subOf(r.model)}</span>}
+                    </span>
+                    <span className="text-right font-bold text-price">{yen(r.minPrice)}</span>
+                    <span className={`text-right text-sm ${fits ? "font-bold text-safe" : "text-ink-sub"}`}>
+                      {m ? yen(m.medianPrice) : "-"}
+                      {m?.medianStorage != null && <span className="block text-[10px] font-normal text-ink-mute">{storageLabel(m.medianStorage, r.model)}</span>}
+                    </span>
+                    <span className="text-right w-14 text-sm text-ink-mute">{r.count.toLocaleString()}件</span>
+                  </Link>
+                );
+              })}
             </div>
+            <p className="text-[11px] text-ink-mute mt-2">相場＝在庫がいちばん多い容量の中央値（予算を問わない）。<span className="text-safe font-bold">緑</span>は相場が{label}以内の機種</p>
           </section>
         )}
 

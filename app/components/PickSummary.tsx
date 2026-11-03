@@ -7,15 +7,16 @@ type Row = { label: string; device: Device; href?: string };
 /**
  * 機種ページの「安い在庫」の上に置く、条件ごとの最安の3行（2026-11-01〜・ユーザーが C 案を選んだ）。
  * どれでも → ランクB以上・電池85%以上 → ＋保証1年の店 と条件を上げると、いちばん安い1台からいくら足すかを並べる。
- * 行を押すと、その在庫の行（下の一覧の #pick-good・#pick-year）へ動く。在庫の行が一覧の5件にあるときはリンクなし
+ * 行を押すと、その在庫の行（下の一覧の #pick-good・#pick-year）へ動く。在庫の行が一覧の5件にあるときはリンクなし。
+ * embedded: 価格のカードの中に置く（11/3〜・案A。ChatGPT から来た人の最初の画面に保証1年の店まで入れる）。枠なし・上に区切り線
  */
-export default function PickSummary({ rows }: { rows: Row[] }) {
+export default function PickSummary({ rows, embedded = false }: { rows: Row[]; embedded?: boolean }) {
   const base = rows[0].device.price;
   // 3行とも同じ容量なら見出しに1回だけ書く（スマホの幅に収める）
   const first = rows[0].device;
   const sameStorage = rows.every((r) => r.device.storage === first.storage);
   return (
-    <div className="bg-white border border-line rounded-xl px-3.5 pt-2.5 pb-1">
+    <div className={embedded ? "border-t border-line-soft pt-2" : "bg-white border border-line rounded-xl px-3.5 pt-2.5 pb-1"}>
       <p className="text-[11px] text-ink-mute">条件ごとの最安{sameStorage ? `（${storageLabel(first.storage, first.modelName)}）` : ""}</p>
       {rows.map((r, i) => {
         const d = r.device;
