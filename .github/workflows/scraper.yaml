@@ -19,9 +19,9 @@ on:
         required: false
         default: ''
       iosis_limit:
-        description: 'イオシスの取得数（ページ数の上限。商品のないページで止まる。iPhone が 106 ページ）'
+        description: 'イオシスの取得数（公式サイトが Actions を 403 で拒否しているので 0。許可を得たら 200）'
         required: true
-        default: '200'
+        default: '0'
       mmoba_limit:
         description: 'エムモバの取得数'
         required: true
@@ -102,7 +102,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           # フォームからの入力値を渡す。定期実行(cron)の時は空になるので '100' をフォールバックとして渡す
           NICOSUMA_LIMIT: ${{ inputs.nicosuma_limit || '100' }}
-          IOSIS_LIMIT: ${{ inputs.iosis_limit || '200' }}
+          IOSIS_LIMIT: ${{ inputs.iosis_limit || '0' }}  # 公式サイトが Actions を 403 で拒否（11/2〜）。回避はしないので取得しない。楽天市場店で出る
           MMOBA_LIMIT: ${{ inputs.mmoba_limit || '100' }}
           DAIWAN_LIMIT: ${{ inputs.daiwan_limit || '0' }}  # 公式サイトの休止中（10/21〜12月中旬）は 0。再開したら 100 に戻す
         run: |

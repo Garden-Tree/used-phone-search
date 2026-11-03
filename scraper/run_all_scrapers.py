@@ -93,7 +93,9 @@ def main():
     # ゲオは公式ECが自動アクセスを拒否しているため、楽天API（rakuten-sync/）で取得している
     limits = {
         "nicosuma_scraper.py": int(os.environ.get("NICOSUMA_LIMIT", 100)),
-        "iosis_scraper.py": int(os.environ.get("IOSIS_LIMIT", 200)),
+        # イオシスの公式サイトは 11/2 21時台から GitHub Actions の取得を 403 で拒否している。回避（別の IP から取るなど）はしないので
+        # 取得を止める（11/3・ユーザーと決定）。公式の在庫は hide_stale_inventory で隠れ、イオシス楽天市場店の在庫がイオシスとして出る
+        "iosis_scraper.py": int(os.environ.get("IOSIS_LIMIT", 0)),
         "mmoba_scraper.py": int(os.environ.get("MMOBA_LIMIT", 100)),
         # ダイワンは公式サイトをリニューアルで休止中（2026/10/21 19:00〜12月中旬の予定・楽天と Yahoo! の店は営業）。
         # 毎回 404 で失敗し、ほかの1店の失敗と合わせてジョブを失敗にしてしまうので、再開まで実行しない（11/2）。
