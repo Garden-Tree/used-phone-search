@@ -25,7 +25,7 @@ export const VIDEOS = {
   // 月次の BEST5（11月）。iPhone の予算別ページに出す。11/2 18:00 公開
   monthly202611: { id: "FJ18j4Nw22I", title: "中古iPhoneおすすめBEST5【2026年11月】4万・5万・7万・10万・15万円の正解を3.7万件の相場で", minutes: 10, asOf: "2026-11-01", heading: "予算別のBEST5を動画で見る" },
   howOld: { id: "T7ltgSB-4XM", title: "中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決めた", minutes: 9, asOf: "2026-10-25", heading: "何世代前まで買っていいかを動画で見る" },
-  // 11/5 18:00 公開予約（11/3 アップロード）。買取ページ（/iphone/<slug>/kaitori）とショート kaitoriswap と同じ考え方
+  // 11/3 16時台に公開（予約の 11/5 18:00 を前倒し）。買取ページ（/iphone/<slug>/kaitori）とショート kaitoriswap と同じ考え方
   sellSwap: { id: "MSsibdtHR1E", title: "iPhoneを売って買い替えると実質いくら？13→14は+28,980円｜買取3店と中古相場で計算", minutes: 9, asOf: "2026-11-03", heading: "売って買い替えるといくら足すかを動画で見る" },
 } satisfies Record<string, Video>;
 
