@@ -59,6 +59,8 @@ export function forVoice(text: string): string {
     [/PROLED/g, "プロエルイーディー"], [/\bXDR\b/g, "エックスディーアール"],
     // 「その差は」がサハ・「何なのだ」がナニナノダ・「差し込み口」がサシコミコウ（MBP vs Air・10/29 ユーザー指示）
     [/差は/g, "さわ"], [/何なの/g, "なんなの"], [/差し込み口/g, "さしこみぐち"],
+    // 「2つ上」「1つ上」の「上」を「ジョウ」と読む（売って買い替えると・11/3 ユーザー指示。ショートの READING_FIXES と同じ直し）
+    [/([1-3])つ上/g, (_m: string, n: string) => `${{ "1": "ひとつ", "2": "ふたつ", "3": "みっつ" }[n]}うえ`],
   ];
   return words.reduce((t, [re, to]) => t.replace(re, to as string), text);
 }
