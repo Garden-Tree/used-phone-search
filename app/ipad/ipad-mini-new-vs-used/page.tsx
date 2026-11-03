@@ -9,7 +9,7 @@ import {
   IPAD_MINI_A17_SPEC_SOURCE, IPAD_MINI_A20_CHECKED, IPAD_MINI_A20_NAME, IPAD_MINI_A20_PRICE_SOURCE, IPAD_MINI_A20_PRICES,
   IPAD_MINI_A20_RELEASE, IPAD_MINI_A20_SPEC_SOURCE, IPAD_MINI_COMPARE,
 } from "@/lib/ipadMiniA20";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
 export const dynamic = "force-static";
@@ -52,7 +52,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: { canonical: PATH },
     // openGraph を上書きすると親の OGP 画像が引き継がれないので、/ipad の画像を明示する
-    openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/ipad/opengraph-image"] },
+    openGraph: { ...OG_BASE, title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/ipad/opengraph-image"] },
   };
 }
 

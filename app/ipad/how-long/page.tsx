@@ -9,7 +9,7 @@ import { storageLabel, yen } from "@/lib/format";
 import { IPAD_SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import { getModelStats } from "@/lib/modelStats";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
 export const dynamic = "force-static";
@@ -66,7 +66,7 @@ function buildLead(rows: Row[], dateText: string): string | null {
 
 export async function generateMetadata(): Promise<Metadata> {
   const description = "中古iPadが「いつまで使えるか」を機種ごとに一覧。iPadOS 27 への対応（Apple 公式）、発売年と、中古の相場（毎日更新）を1つの表で比べられます。iPad・iPad mini・iPad Air・iPad Pro。";
-  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/ipad/opengraph-image"] } };
+  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { ...OG_BASE, title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/ipad/opengraph-image"] } };
 }
 
 export default async function IpadHowLongPage() {

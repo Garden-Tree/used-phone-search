@@ -9,7 +9,7 @@ import { badgesOf, modelPagePath } from "@/lib/catalog";
 import { getModelStats } from "@/lib/modelStats";
 import { PICKS, findPick, pickDevice, pickPath, pickSearchHref } from "@/lib/picks";
 import { jaMonth, updateUntil } from "@/lib/pixelCatalog";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { yen } from "@/lib/format";
 
 // 静的に生成して CDN から配信する（検索ページと違い、休止明けでも待たされない）。在庫はビルド（1日4回）のたびに更新
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: pick.seoTitle,
     description: pick.lead,
     alternates: { canonical: path },
-    openGraph: { title: `${pick.seoTitle} | ${SITE_NAME}`, description: pick.lead, url: path, images: ["/opengraph-image"] },
+    openGraph: { ...OG_BASE, title: `${pick.seoTitle} | ${SITE_NAME}`, description: pick.lead, url: path, images: ["/opengraph-image"] },
   };
 }
 

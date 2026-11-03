@@ -10,7 +10,7 @@ import { getPriceDrop } from "@/lib/priceDrop";
 import { LAUNCH_PRICES_CHECKED } from "@/lib/launchPrices";
 import { applePrice } from "@/lib/applePrices";
 import { BUYBACK_PROGRAMS } from "@/lib/buyback";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
 export const dynamic = "force-static";
@@ -32,7 +32,7 @@ const ym = (iso: string) => { const [y, m] = iso.split("-").map(Number); return 
 
 export async function generateMetadata(): Promise<Metadata> {
   const description = "iPhone の発売時の値段（Apple 公式）と、いまの中古の相場（同じ容量）を比べて、発売から1年・2年・3年で何%残るかを一覧に。高い機種を買って数年後に手放すと、1か月あたり実質いくらだったかの目安も（毎日更新）。";
-  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] } };
+  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { ...OG_BASE, title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] } };
 }
 
 export default async function ResaleValuePage() {

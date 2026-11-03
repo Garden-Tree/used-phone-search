@@ -7,7 +7,7 @@ import SimTile from "@/app/components/SimTile";
 import { modelPagePath } from "@/lib/catalog";
 import { BUDGET_NAMES, SUMAHO_BUDGETS, budgetLabel, budgetPath, budgetsOf, sumahoBudgetPath, type BudgetDevice } from "@/lib/budgets";
 import { SUMAHO_MIN_MODELS, getSumahoBudgetModels, type SumahoRow } from "@/lib/budgetStats";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { yen } from "@/lib/format";
 
 /**
@@ -33,7 +33,7 @@ export async function sumahoBudgetMetadata(max: number): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: path, images: ["/opengraph-image"] },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: path, images: ["/opengraph-image"] },
     robots: main.length < SUMAHO_MIN_MODELS ? { index: false, follow: true } : undefined,
   };
 }

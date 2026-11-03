@@ -11,7 +11,7 @@ import { specOf } from "@/lib/iphoneSpecs";
 import { appleRepair, APPLE_REPAIR_SOURCE } from "@/lib/appleRepairPrices";
 import { APPLE_VINTAGE_CHECKED, APPLE_VINTAGE_SOURCE, REPAIR_STATUS_LABEL, repairStatus, type RepairStatus } from "@/lib/appleVintage";
 import { VIDEOS } from "@/lib/videos";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
 export const dynamic = "force-static";
@@ -78,7 +78,7 @@ function buildLead(rows: Row[], dateText: string): string | null {
 
 export async function generateMetadata(): Promise<Metadata> {
   const description = "中古iPhoneが「いつまで使えるか」を機種ごとに一覧。iOS 27 への対応、Apple の修理を受けられる期間（ビンテージ・オブソリート）、バッテリー交換の料金（Apple 公式）と、中古の相場（毎日更新）を1つの表で比べられます。";
-  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] } };
+  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { ...OG_BASE, title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] } };
 }
 
 export default async function HowLongPage() {

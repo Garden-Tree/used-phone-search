@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getModelMarket } from "@/lib/marketStats";
 import { hubTitle } from "@/lib/hubSummary";
 import AndroidIndexView, { ANDROID_HUB, androidDescribe } from "@/app/components/AndroidIndexView";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, OG_BASE } from "@/lib/site";
 import { activeXperiaShops } from "@/lib/activeShops";
 
 // Sony Xperia の機種一覧（2026-10-15〜）。在庫はビルド（1日4回）のたびに更新
@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: path },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: path },
   };
 }
 

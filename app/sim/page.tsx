@@ -6,7 +6,7 @@ import { modelPagePath } from "@/lib/catalog";
 import { SIM_PLANS, SIM_PRICES_CHECKED, repTier } from "@/lib/simPlans";
 import { SIM_HEADLINE_MODEL, SIM_TOTAL_MONTHS, SIM_TOTAL_STORAGE, getSimTotalRows, manYen } from "@/lib/simTotals";
 import { shortDate } from "@/lib/marketStats";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
 export const dynamic = "force-static";
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: PATH },
-  openGraph: { title: `${TITLE} | ${SITE_NAME}`, description: DESCRIPTION, url: PATH, images: ["/iphone/opengraph-image"] },
+  openGraph: { ...OG_BASE, title: `${TITLE} | ${SITE_NAME}`, description: DESCRIPTION, url: PATH, images: ["/iphone/opengraph-image"] },
 };
 
 const LINK = "text-brand-600 underline underline-offset-2 hover:text-brand-800";

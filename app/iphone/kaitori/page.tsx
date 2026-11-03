@@ -7,7 +7,7 @@ import { IPHONE_CATALOG, LEGACY_SERIES, modelPagePath, modelToSlug } from "@/lib
 import { storageLabel, yen } from "@/lib/format";
 import { BUYBACK_PROGRAMS } from "@/lib/buyback";
 import { BUYBACK_SHOPS, getBuybackList, type BuybackCell } from "@/lib/buybackPrices";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（買取価格の取得は週1回）
 export const dynamic = "force-static";
@@ -26,7 +26,7 @@ const LINK = "text-brand-600 underline underline-offset-2 hover:text-brand-800";
 
 export async function generateMetadata(): Promise<Metadata> {
   const description = "iPhone の買取価格を、ネットオフ・にこスマ・モバステの3店で機種ごとに比べた一覧。きれいな状態の値段を並べ、いちばん高い店に色を付けています。タップで店の買取ページへ（毎週更新）。";
-  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] } };
+  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { ...OG_BASE, title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] } };
 }
 
 /** 買取の店へのリンク（表のセルと同じ rel・計測の属性） */

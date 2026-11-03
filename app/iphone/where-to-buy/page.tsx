@@ -10,7 +10,7 @@ import { modelPagePath } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
 import { getWhereToBuy } from "@/lib/whereToBuy";
 import type { Shop } from "@/lib/shops";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
 export const dynamic = "force-static";
@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: { canonical: PATH },
     // openGraph を上書きすると親の OGP 画像が引き継がれないので、/iphone の画像を明示する
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] },
   };
 }
 

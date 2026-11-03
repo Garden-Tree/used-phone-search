@@ -10,7 +10,7 @@ import { modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { PIXEL_CATALOG, PIXEL_INFO, PIXEL_MODELS, isPixel, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { PIXEL_SPECS } from "@/lib/pixelSpecs";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { medianLabel, yen } from "@/lib/format";
 import { PIXEL_SHOPS, shopLabels, type Shop } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: "/pixel" },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: "/pixel" },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: "/pixel" },
   };
 }
 

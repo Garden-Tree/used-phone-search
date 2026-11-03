@@ -12,7 +12,7 @@ import {
   MBP_M6_PRICE_SOURCE, MBP_M6_RELEASE, MBP_M6_SPEC_SOURCE,
 } from "@/lib/macbookProM6";
 import { VIDEOS } from "@/lib/videos";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
 export const dynamic = "force-static";
@@ -45,7 +45,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: { canonical: PATH },
     // openGraph を上書きすると親の OGP 画像が引き継がれないので、/mac の画像を明示する
-    openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/mac/opengraph-image"] },
+    openGraph: { ...OG_BASE, title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/mac/opengraph-image"] },
   };
 }
 

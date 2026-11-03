@@ -48,7 +48,7 @@ import { getGoodDevice, getYearWarrantyDevice } from "@/lib/modelBest";
 import PickSummary from "@/app/components/PickSummary";
 import { getBuyNowStats } from "@/lib/buyNow";
 import { getBreakdown, getRankSMax, getShopBars, type Breakdown, type ShopBarRow } from "@/lib/modelBreakdown";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { medianLabel, yen, storageLabel } from "@/lib/format";
 import { findShop, shopsFor } from "@/lib/shops";
 import { activeShopsFor } from "@/lib/activeShops";
@@ -106,7 +106,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: path },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: path },
     // 在庫ゼロの薄いページはインデックスさせない
     robots: stats.count === 0 ? { index: false, follow: true } : undefined,
   };

@@ -12,7 +12,7 @@ import { ALL_CATALOG_MODELS, ALL_PAGE_MODELS, IPHONE_CATALOG, LEGACY_SERIES, mod
 import { getModelMarket, getPriceDrops, type ModelMarket } from "@/lib/marketStats";
 import { specOf } from "@/lib/iphoneSpecs";
 import { activeShops } from "@/lib/activeShops";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { storageLabel, yen } from "@/lib/format";
 import { monthJa, reportMonths } from "@/lib/monthlyReport";
 
@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: { canonical: "/iphone" },
     // 画像は app/iphone/opengraph-image.tsx（相場一覧専用）
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: "/iphone" },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: "/iphone" },
   };
 }
 

@@ -7,7 +7,7 @@ import AdDisclosure from "@/app/components/AdDisclosure";
 import { getModelMarket } from "@/lib/marketStats";
 import { modelPagePath } from "@/lib/catalog";
 import { WATCH_CATALOG, WATCH_INFO, WATCH_MODELS, isWatchOS27 } from "@/lib/watchCatalog";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { medianLabel, yen } from "@/lib/format";
 import { shopLabels, type Shop } from "@/lib/shops";
 import { activeWatchShops } from "@/lib/activeShops";
@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: "/watch" },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: "/watch" },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: "/watch" },
   };
 }
 

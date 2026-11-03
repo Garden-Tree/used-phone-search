@@ -5,7 +5,7 @@ import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import { affiliateLinkType, affiliateUrl } from "@/lib/affiliate";
 import { yen } from "@/lib/format";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { bestWithin, cpuMemoryMatrix, getPcItems, pcBudgetPath, PC_BUDGETS, PC_MIN_INDEX_ITEMS, pcShopLabels, type PcItem } from "@/lib/pcInventory";
 import PcItemRow, { type PcRowItem } from "@/app/components/PcItemRow";
 import PcItemList from "@/app/components/PcItemList";
@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: TITLE,
     description: DESCRIPTION,
     alternates: { canonical: "/pc" },
-    openGraph: { title: `${TITLE} | ${SITE_NAME}`, description: DESCRIPTION, url: "/pc" },
+    openGraph: { ...OG_BASE, title: `${TITLE} | ${SITE_NAME}`, description: DESCRIPTION, url: "/pc" },
     ...(items.length < PC_MIN_INDEX_ITEMS ? { robots: { index: false, follow: true } } : {}),
   };
 }

@@ -9,7 +9,7 @@ import SimTile from "@/app/components/SimTile";
 import { badgesOf, modelPagePath } from "@/lib/catalog";
 import { COMPARE_PAIRS, comparePath, compareSlug, comparesFor, slugToPair } from "@/lib/compare";
 import { getModelStats, type ModelStats, type PriceRow } from "@/lib/modelStats";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { medianLabel, yen, storageLabel } from "@/lib/format";
 import { activeShopsFor } from "@/lib/activeShops";
 import { SPEC_ROWS, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
@@ -106,7 +106,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: path },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: path },
     // どちらかの在庫が少ない（10件未満）と比較として中身が薄いのでインデックスさせない（サイトマップからも外す。lib/compareStock.ts）
     robots: (await isCompareIndexable(a, b)) ? undefined : { index: false, follow: true },
   };

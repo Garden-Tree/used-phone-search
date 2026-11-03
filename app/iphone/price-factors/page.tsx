@@ -10,7 +10,7 @@ import { activeShops } from "@/lib/activeShops";
 import { APPLE_REPAIR_CHECKED, APPLE_REPAIR_SOURCE } from "@/lib/appleRepairPrices";
 import { factorTiles, getPriceFactors } from "@/lib/priceFactors";
 import { LAUNCH_PRICES, LAUNCH_PRICES_CHECKED } from "@/lib/launchPrices";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
 export const dynamic = "force-static";
@@ -24,7 +24,7 @@ const PATH = "/iphone/price-factors";
 
 export async function generateMetadata(): Promise<Metadata> {
   const description = `中古iPhoneの相場が、電池90%台と80%台・状態ランクAとC・容量・1世代前でいくら違うかを、大手中古ショップ${(await activeShops()).length}社の在庫で毎日集計。お金をかけるところと妥協していいところが分かります。`;
-  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: PATH } };
+  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { ...OG_BASE, title: `${TITLE} | ${SITE_NAME}`, description, url: PATH } };
 }
 
 const CARD = "bg-white rounded-xl border border-line overflow-x-auto";

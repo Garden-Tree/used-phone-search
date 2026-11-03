@@ -10,7 +10,7 @@ import PcMatrixGroups from "@/app/components/PcMatrixGroups";
 import { getMacMatrix, MAC_GROUP_ORDER } from "@/lib/pcMac";
 import { affiliateLinkType, affiliateUrl } from "@/lib/affiliate";
 import { yen } from "@/lib/format";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import {
   bestWithin, cpuMemoryMatrix, getPcItems, pcBudgetPath, pcBudgetSlug, pcSlugToBudget,
   PC_BUDGETS, PC_BUDGET_MIN_INDEX_ITEMS, pcShopLabels, type PcItem,
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: path },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: path },
     ...(n < PC_BUDGET_MIN_INDEX_ITEMS ? { robots: { index: false, follow: true } } : {}),
   };
 }

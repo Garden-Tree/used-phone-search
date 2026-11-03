@@ -81,6 +81,9 @@ AI（ChatGPT・Copilot・Google の AI モード／AI による概要）が実�
 | Search Console 検索結果（28日・クエリ・500行） | **会話の形の問い**（「11プロは？」「中古だと？」＝ AI モードの続きの質問）・比較（vs・比較・違い）・推移・店（どこ・どっち）・予算（○万円）。下の JS で絞る |
 | Bing Webmaster Tools「AI Performance」 | 引用回数・grounding query・引用されたページ（データは数日遅れ・サンプル） |
 | GA4 ランディングページ × チャネル「AI Assistant」 | AI から来た人の入口と shop_click |
+| ChatGPT に直接聞く（11/3〜・ログインなし・一時チャット `chatgpt.com/?temporary-chat=true`） | 決まった8問（下）で、うちが引用されるか・並ぶサイト・使われた数字。引用元は答えの中の「サイト名 +N」と `main a[href^=http]` |
+
+決まった8問: ①中古のiPad 第9世代の相場はいくら？どこで買うのが安い？ ②MacBook Air M4 中古の相場と最安値は？ ③iPhone 中古 相場 一覧を教えて ④iPhone 16 中古 価格はいくら？ ⑤iPad Air 第5世代 中古だといくら？ ⑥2万円以下で買える中古スマホのおすすめは？ ⑦5万円以下で買える中古iPhoneはどれ？ ⑧Galaxy S24 Ultra 中古相場は？（「どこで買う」「15と15 Plusの違い」は ChatGPT が検索せずに答えたので外した）
 
 Search Console で「1ページあたりの行数」を 500 にしてから、コンソールで:
 ```js

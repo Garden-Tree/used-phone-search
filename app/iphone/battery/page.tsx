@@ -12,7 +12,7 @@ import { REPAIR_PROGRAMS } from "@/lib/buyback";
 import { modelPagePath } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
 import { VIDEOS } from "@/lib/videos";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（相場は1日4回・買取価格は週1回）
 export const dynamic = "force-static";
@@ -32,7 +32,7 @@ const aisapoCheckedJa = (() => { const [y, m, d] = AISAPO_CHECKED.split("-").map
 
 export async function generateMetadata(): Promise<Metadata> {
   const description = "iPhoneのバッテリー交換（Apple 公式・非正規）と、中古の1つ上・2つ上の世代への買い替えを「1年あたりの費用」で比べる計算機。中古の相場は電池80%以上・85%以上で絞った値、いまの iPhone の買取価格も差し引けます。全機種の料金表つき。";
-  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] } };
+  return { title: TITLE, description, alternates: { canonical: PATH }, openGraph: { ...OG_BASE, title: `${TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] } };
 }
 
 export default async function BatteryPage() {

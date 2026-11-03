@@ -7,7 +7,7 @@ import { getModelMarket } from "@/lib/marketStats";
 import { hubSummary, hubWebPage, hubTitle } from "@/lib/hubSummary";
 import { modelPagePath } from "@/lib/catalog";
 import { MAC_INFO, MAC_MODELS } from "@/lib/macCatalog";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { medianLabel, yen } from "@/lib/format";
 import { shopLabels, type Shop } from "@/lib/shops";
 import { activeMacShops } from "@/lib/activeShops";
@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: "/mac" },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: "/mac" },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: "/mac" },
   };
 }
 

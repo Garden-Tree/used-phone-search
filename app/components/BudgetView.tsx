@@ -11,7 +11,7 @@ import { VIDEOS } from "@/lib/videos";
 import { modelPagePath } from "@/lib/catalog";
 import { BUDGET_NAMES, budgetLabel, SUMAHO_BUDGETS, budgetPath, budgetsOf, sumahoBudgetPath, type BudgetDevice } from "@/lib/budgets";
 import { cheapestUnder, getBudgetModels } from "@/lib/budgetStats";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { yen } from "@/lib/format";
 import { GALAXY_SHOPS, IPAD_SHOPS, PIXEL_SHOPS, SHOPS, type Shop } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
@@ -106,7 +106,7 @@ export async function budgetMetadata(max: number, device: BudgetDevice): Promise
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: path, images: ["/opengraph-image"] },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: path, images: ["/opengraph-image"] },
     robots: rows.length === 0 ? { index: false, follow: true } : undefined,
   };
 }

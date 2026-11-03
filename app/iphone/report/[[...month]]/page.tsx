@@ -16,7 +16,7 @@ import {
   signedPct,
   type MoveRow,
 } from "@/lib/monthlyReport";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）。終わった月の数字は変わらない
 export const dynamic = "force-static";
@@ -61,7 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       alternates: { canonical: PATH },
       // レポートが1本もない間は検索に出さない
       ...(latest ? {} : { robots: { index: false, follow: true } }),
-      openGraph: { title: `${INDEX_TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] },
+      openGraph: { ...OG_BASE, title: `${INDEX_TITLE} | ${SITE_NAME}`, description, url: PATH, images: ["/iphone/opengraph-image"] },
     };
   }
   const r = await getMonthlyReport(ym);
@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     alternates: { canonical: path },
     // openGraph を上書きすると親の OGP 画像が引き継がれないので、/iphone の画像を明示する
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: path, images: ["/iphone/opengraph-image"], type: "article" },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: path, images: ["/iphone/opengraph-image"], type: "article" },
   };
 }
 

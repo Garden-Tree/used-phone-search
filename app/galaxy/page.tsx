@@ -13,7 +13,7 @@ import { GALAXY_PICKS, pickPath } from "@/lib/picks";
 import { GALAXY_CATALOG, GALAXY_MODELS, GALAXY_RELEASED, isGalaxy } from "@/lib/galaxyCatalog";
 import { jaMonth } from "@/lib/pixelCatalog";
 import { GALAXY_SPECS } from "@/lib/galaxySpecs";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { medianLabel, yen } from "@/lib/format";
 import { GALAXY_SHOPS, shopLabels, type Shop } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: "/galaxy" },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url: "/galaxy" },
+    openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: "/galaxy" },
   };
 }
 
