@@ -10,6 +10,7 @@ import { reportMonths, reportPublished } from "@/lib/monthlyReport";
 import prisma from "@/lib/prisma";
 import { getPcItems, pcBudgetPath, PC_BUDGETS, PC_BUDGET_MIN_INDEX_ITEMS, PC_MIN_INDEX_ITEMS } from "@/lib/pcInventory";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
+import { KAITORI_MIN_SHOPS, kaitoriModels, kaitoriPath } from "@/lib/kaitoriModel";
 
 // ビルドのたびに作る（lastmod を在庫の更新に合わせるため）
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -68,6 +69,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/iphone/how-long`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/iphone/resale-value`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/iphone/kaitori`, lastModified, changeFrequency: "weekly", priority: 0.7 },
+    // 機種ごとの買取価格（11/3〜）。3店そろう容量がない機種は noindex なので入れない
+    ...(await kaitoriModels()).filter((k) => k.shops >= KAITORI_MIN_SHOPS).map((k) => ({ url: `${SITE_URL}${kaitoriPath(k.model)}`, lastModified, changeFrequency: "weekly" as const, priority: 0.6 })),
     { url: `${SITE_URL}/iphone/battery`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/ipad/how-long`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/pixel/how-long`, lastModified, changeFrequency: "daily", priority: 0.7 },

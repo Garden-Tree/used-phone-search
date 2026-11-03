@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import BuybackPrices from "@/app/components/BuybackPrices";
-import { IPHONE_CATALOG, LEGACY_SERIES, modelPagePath, modelToSlug } from "@/lib/catalog";
+import { IPHONE_CATALOG, LEGACY_SERIES, modelToSlug } from "@/lib/catalog";
 import { storageLabel, yen } from "@/lib/format";
 import { BUYBACK_PROGRAMS } from "@/lib/buyback";
 import { BUYBACK_SHOPS, getBuybackList, type BuybackCell } from "@/lib/buybackPrices";
 import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
+import { kaitoriPath } from "@/lib/kaitoriModel";
 
 // 機種ページと同じくビルドのたびに作る（買取価格の取得は週1回）
 export const dynamic = "force-static";
@@ -116,7 +117,7 @@ export default async function KaitoriPage() {
                 <li key={r.model} className="px-3.5 py-2 text-[13px]">
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="min-w-0">
-                      <Link href={`${modelPagePath(r.model)}#kaitori`} className="font-bold text-brand-600 hover:text-brand-800">{r.model.replace("iPhone ", "")}</Link>
+                      <Link href={kaitoriPath(r.model)} className="font-bold text-brand-600 hover:text-brand-800">{r.model.replace("iPhone ", "")}</Link>
                       <span className="ml-1.5 text-[10px] text-ink-mute whitespace-nowrap">{storageLabel(r.storage, r.model)}{r.storages > 1 ? `・ほか${r.storages - 1}容量` : ""}</span>
                     </span>
                     {r.best && <BuybackLink cell={r.best} className="shrink-0 tabular-nums">
@@ -140,7 +141,7 @@ export default async function KaitoriPage() {
             model={() => "kaitori"}
             rows={rows.map((r) => ({
               key: r.model,
-              label: <Link href={`${modelPagePath(r.model)}#kaitori`} id={modelToSlug(r.model)} className="font-bold text-brand-600 hover:text-brand-800 scroll-mt-16">{r.model.replace("iPhone ", "")}</Link>,
+              label: <Link href={kaitoriPath(r.model)} id={modelToSlug(r.model)} className="font-bold text-brand-600 hover:text-brand-800 scroll-mt-16">{r.model.replace("iPhone ", "")}</Link>,
               sub: `${storageLabel(r.storage, r.model)}${r.storages > 1 ? `・ほか${r.storages - 1}容量` : ""}`,
               cells: r.cells,
               best: r.best,
@@ -148,7 +149,7 @@ export default async function KaitoriPage() {
           />
           </div>
           <p className="text-[11px] text-ink-mute leading-relaxed">
-            店が表示している買取価格の上限（{dateText}時点・週1回取得）。赤い値がその機種でいちばん高い店。ほかの容量は機種名から機種ページへ。ネットオフは特典込み・バッテリー85%以上が条件。実際の査定は状態で下がります。
+            店が表示している買取価格の上限（{dateText}時点・週1回取得）。赤い値がその機種でいちばん高い店。ほかの容量と、売って買い替えたときの差額は機種名から機種ごとのページへ。ネットオフは特典込み・バッテリー85%以上が条件。実際の査定は状態で下がります。
           </p>
         </section>
 

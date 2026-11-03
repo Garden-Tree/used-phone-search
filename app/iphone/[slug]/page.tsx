@@ -69,6 +69,7 @@ import { sameBudgetModels } from "@/lib/sameBudget";
 import { SIM_PLANS } from "@/lib/simPlans";
 import SimTile from "@/app/components/SimTile";
 import { nextGeneration } from "@/lib/nextGeneration";
+import { kaitoriPath } from "@/lib/kaitoriModel";
 import { searchRel } from "@/lib/searchRel";
 
 // スクレイパーの後にビルドするので、在庫はその時点のもの
@@ -793,7 +794,7 @@ export default async function ModelPage({ params }: Props) {
                         <BuybackPrices rowLabel="容量" model={() => model}
                           rows={buyback.map((r) => ({ key: String(r.storage), label: <span className="font-bold">{storageLabel(r.storage, model)}</span>, cells: r.cells, best: r.best }))} />
                         <p className="text-[11px] text-ink-mute leading-relaxed mt-2">
-                          店が表示している上限の目安（きれいな状態・週1回取得）。実際の査定は状態で下がります。<Link href="/iphone/kaitori" className="text-brand-600 underline underline-offset-2">ほかの機種の買取価格 ›</Link>
+                          店が表示している上限の目安（きれいな状態・週1回取得）。実際の査定は状態で下がります。<Link href={kaitoriPath(model)} className="text-brand-600 underline underline-offset-2">売って買い替えると差額いくら？ ›</Link> <Link href="/iphone/kaitori" className="text-brand-600 underline underline-offset-2">ほかの機種の買取価格 ›</Link>
                         </p>
                       </Accordion>
                     </div>
