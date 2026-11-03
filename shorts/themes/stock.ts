@@ -28,7 +28,7 @@ import { GALAXY_SHOPS, IPAD_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
 import { activeAquosShops, activeMacShops, activeShops, activeWatchShops, activeXperiaShops } from "@/lib/activeShops";
 import type { StockRow, StockScript } from "../types";
 
-export type StockKind = "iphone" | "android" | "mac" | "ipad" | "watch";
+export type StockKind = "iphone" | "android" | "mac" | "ipad" | "watch" | "pixel";
 const SHOWN = 3;
 
 const man = (n: number) => n.toLocaleString();
@@ -44,6 +44,8 @@ const KINDS = {
   // stockipad・stockwatch（11/2〜）: iPad（lib/ipadCatalog.ts の IPAD_MODELS）・Apple Watch（lib/watchCatalog.ts の WATCH_MODELS。容量の代わりにケースの mm）
   ipad: { theme: "stockipad", models: IPAD_MODELS, prefixes: ["iPad"], label: "iPad" },
   watch: { theme: "stockwatch", models: WATCH_MODELS, prefixes: ["Apple Watch"], label: "Apple Watch" },
+  // stockpixel（11/3〜）: Google Pixel だけ（lib/pixelCatalog.ts の PIXEL_MODELS）。Android 全体の回（1位 Galaxy A25 5G）と1位が変わる
+  pixel: { theme: "stockpixel", models: PIXEL_MODELS, prefixes: ["Pixel"], label: "Google Pixel" },
 } as const;
 
 /** "iPhone 13" → "13"・"iPhone SE (第3世代)" → "SE（第3世代）"（タイトルの答え。iPhone は「中古でいちばん多いiPhoneは」に続ける） */
@@ -95,12 +97,13 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
     : kind === "mac" ? await activeMacShops()
     : kind === "ipad" ? await activeShops(IPAD_SHOPS)
     : kind === "watch" ? await activeWatchShops()
+    : kind === "pixel" ? await activeShops(PIXEL_SHOPS)
     : [...(await activeShops(PIXEL_SHOPS)), ...(await activeShops(GALAXY_SHOPS)), ...(await activeXperiaShops()), ...(await activeAquosShops())];
   const shopCount = new Set(shops.map((s) => s.name)).size;
 
   // 検品担当のひと言の下書き（1行16字以内・3行まで）。数字は入れない（画面と声に件数がある）
   // iPhone: 在庫が多い機種は同じ機種の中で電池・保証を比べて選べる。Android: アップデートの期限は機種で違う（Pixel は Google 公式の保証、Galaxy は公式の保証期間が出ていない）
-  const pixelUntil = kind === "android" && isPixel(top.model) ? updateUntil(top.model) : undefined;
+  const pixelUntil = (kind === "android" || kind === "pixel") && isPixel(top.model) ? updateUntil(top.model) : undefined;
   // Mac: Apple シリコンの MacBook はメモリを後から増やせない。在庫が多い機種はメモリ・SSD の構成を選べる
   const lines = kind === "iphone"
     ? ["在庫が多い機種ほど", "電池の%と保証を", "比べて選べます"]
@@ -117,7 +120,7 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
   const rawTitle = `中古でいちばん多い${k.label}は${titleName(kind, top.model)}！在庫${man(top.count)}件ランキング`;
   const title = rawTitle.length <= 60 ? rawTitle : `中古でいちばん多い${k.label}は？在庫${man(top.count)}件ランキング`;
   const rowText = (r: StockRow, i: number) => `${i + 1}位 ${r.model} 在庫${man(r.count)}件（${r.share.toFixed(1)}%）・相場${man(r.median)}円（${r.storage}）`;
-  const scope = kind === "iphone" ? "iPhone" : kind === "mac" ? "MacBook（Air・Pro・Neo）" : kind === "ipad" ? "iPad（無印・Air・Pro・mini）" : kind === "watch" ? "Apple Watch（Series・Ultra・SE）" : "Android（Pixel・Galaxy・Xperia・AQUOS）";
+  const scope = kind === "iphone" ? "iPhone" : kind === "mac" ? "MacBook（Air・Pro・Neo）" : kind === "ipad" ? "iPad（無印・Air・Pro・mini）" : kind === "watch" ? "Apple Watch（Series・Ultra・SE）" : kind === "pixel" ? "Google Pixel" : "Android（Pixel・Galaxy・Xperia・AQUOS）";
   const description = [
     `中古でいちばん出回っている${scope}は？ 大手中古ショップの在庫の数のランキングです。1位は${top.model}で、在庫${man(top.count)}件。${k.label}全体の${top.share.toFixed(1)}%です。相場は${kind === "mac" ? "SSD " : kind === "watch" ? "ケース " : ""}${top.storage}で${man(top.median)}円。`,
     "",
@@ -130,6 +133,7 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
     kind === "mac" ? `中古MacBookの全機種の相場: https://used.gadelog.com/mac?${utm(date, theme)}`
     : kind === "ipad" ? `中古iPadの全機種の相場: https://used.gadelog.com/ipad?${utm(date, theme)}`
     : kind === "watch" ? `Apple Watch 全機種の中古相場: https://used.gadelog.com/watch?${utm(date, theme)}`
+    : kind === "pixel" ? `Google Pixel 全機種の中古相場・アップデート保証の期限: https://used.gadelog.com/pixel?${utm(date, theme)}`
     : `全機種の中古相場: https://used.gadelog.com/?${utm(date, theme)}`,
   ].join("\n");
 
@@ -149,6 +153,6 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
         question: "あなたなら どれにする？",
       },
     },
-    youtube: { title, description, hashtags: kind === "iphone" ? ["#中古iPhone", "#iPhone"] : kind === "mac" ? ["#MacBook", "#中古MacBook"] : kind === "ipad" ? ["#iPad", "#中古iPad"] : kind === "watch" ? ["#AppleWatch", "#中古"] : ["#中古スマホ", "#Android"] },
+    youtube: { title, description, hashtags: kind === "iphone" ? ["#中古iPhone", "#iPhone"] : kind === "mac" ? ["#MacBook", "#中古MacBook"] : kind === "ipad" ? ["#iPad", "#中古iPad"] : kind === "watch" ? ["#AppleWatch", "#中古"] : kind === "pixel" ? ["#Pixel", "#中古スマホ"] : ["#中古スマホ", "#Android"] },
   };
 }

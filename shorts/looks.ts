@@ -171,6 +171,8 @@ export const LOOKS: Record<Script["theme"], Look> = {
   // ultravs は2つを比べる型の ③ VERSUS＋「Series vs Ultra」の札（split）
   stockipad: { ...CONDITION, hook: "bars" },
   stockwatch: { ...CONDITION, hook: "bars" },
+  // stockpixel（11/3〜）: 在庫数ランキングと同じ ④ CONDITION＋横の棒
+  stockpixel: { ...CONDITION, hook: "bars" },
   ultravs: { ...VERSUS, hook: "split" },
 };
 
