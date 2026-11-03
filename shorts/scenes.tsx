@@ -20,6 +20,8 @@ const BODY = { top: 590, height: 810 };
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
 const HEAD_SUB = (s: Script) => s.theme === "rakutenmobile" ? `料金は公式・中古は大手中古ショップ${s.shopCount}店の相場`
   : s.theme === "kaitorishop" ? `毎週更新・買取価格は${s.shopCount}店の公式`
+  // 在庫数ランキング（11/3〜）: 「在庫数ランキング」は上の小さな行へ（大きな2行を短くして文字を大きく。ユーザー「タイトルを大きく」）
+  : isStock(s) ? `在庫数ランキング・大手中古ショップ${s.shopCount}店`
   : `${s.theme === "drops" && s.period ? "毎日集計" : "毎週更新"}・大手中古ショップ${s.shopCount}店の相場`;
 const HEAD_TITLE = (s: Script) =>
   s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"] : s.theme === "probudget" ? ["予算ぴったりで買える", "中古iPhone Pro"] : s.theme === "foldbudget" ? ["予算ぴったりで買える", "中古折りたたみスマホ"] : s.theme === "galaxybudget" ? ["予算ぴったりで買える", "中古Galaxy"] : s.theme === "bigbudget" ? ["予算ぴったりで買える", "大きい画面の中古iPhone"]
@@ -32,9 +34,8 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "mbpnew" || s.theme === "mbpproled" ? (s.scenes.copy?.head ?? ["新型", "中古の旧型ならいくら安い？"])
     : s.theme === "watchgen" ? ["Apple Watch", "1世代前でいくら安い？"] : s.theme === "macgen" ? ["MacBook Air", "1世代前でいくら安い？"]
     : s.theme === "ipadgen" ? ["iPad", "1世代前でいくら安い？"] : s.theme === "pixelgen" ? ["Google Pixel", "1世代前でいくら安い？"]
-    : s.theme === "stock" ? ["中古でいちばん多いiPhone", "在庫数ランキング"] : s.theme === "stockandroid" ? ["中古でいちばん多いAndroid", "在庫数ランキング"] : s.theme === "stockmac" ? ["中古でいちばん多いMacBook", "在庫数ランキング"]
-    : s.theme === "stockipad" ? ["中古でいちばん多いiPad", "在庫数ランキング"] : s.theme === "stockwatch" ? ["中古でいちばん多いApple Watch", "在庫数ランキング"]
-    : s.theme === "stockpixel" ? ["中古でいちばん多いGoogle Pixel", "在庫数ランキング"]
+    // 在庫数ランキング: 11/3〜 「中古でいちばん多い／（種類）」の短い2行に（1行目に種類まで入れると幅で 55px ほどに縮んでいた）
+    : isStock(s) ? ["中古でいちばん多い", s.theme === "stock" ? "iPhone" : s.theme === "stockandroid" ? "Androidスマホ" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : "Google Pixel"]
     : s.theme === "ultravs" ? ["Apple Watch UltraとSeries", "中古ならいくら違う？"]
     : s.theme === "watchbudget" ? ["予算ぴったりで買える", "中古Apple Watch"] : s.theme === "mbpvsair" ? ["MacBook ProとAir", "中古ならどっちが安い？"]
     : s.theme === "kaitorishop" ? ["同じiPhoneでも", "売る店でいくら違う？"]
@@ -251,7 +252,7 @@ function Frame({ s, children, header = true, footer = true, body = BODY }: { s: 
       <div style={{ position: "absolute", left: MARGIN, top: body.top, width: CW, height: body.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>{children}</div>
       {footer && (
         // 「\n」で行を分ける（長い注記が 24px でも幅に入らないとき。rakutenmobile）。大きさはいちばん長い行で決める
-        <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.4, fontSize: Math.min(...FOOT(s).split("\n").map((l) => FIT(l, CW, 30, 24))), fontWeight: 500, color: L.sub, whiteSpace: "nowrap" }}>
+        <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.4, fontSize: Math.min(...FOOT(s).split("\n").map((l) => FIT(l, CW, isStock(s) ? 36 : 30, 24))), fontWeight: 500, color: L.sub, whiteSpace: "nowrap" }}>
           {FOOT(s).split("\n").map((l) => <div key={l} style={{ display: "flex" }}>{l}</div>)}
         </div>
       )}
@@ -670,7 +671,8 @@ function FoldRanking({ s, t, o, nameOf = foldName, sizeOf = (r) => r.storage }: 
 }
 
 /** 3位・2位・伏せた1位の行（drops・newused・provs・fold で共通）。items[0] が1位 */
-function RankRows({ s, t, o, items, badges }: { s: Script; t: number; o: Scene["o"]; items: { model: string; cells: Cell[] }[]; badges?: string[] }) {
+/** stack: 下段の欄を横に並べず縦に積む（在庫数ランキング・11/3〜。欄ごとに右の列の幅いっぱいまで大きくできる） */
+function RankRows({ s, t, o, items, badges, stack = false }: { s: Script; t: number; o: Scene["o"]; items: { model: string; cells: Cell[] }[]; badges?: string[]; stack?: boolean }) {
   // 1行 260px・3行。機種名は右の列の幅いっぱい、その下に下段の欄
   const RH = 260;
   const RIGHT = 680;
@@ -690,9 +692,9 @@ function RankRows({ s, t, o, items, badges }: { s: Script; t: number; o: Scene["
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: RIGHT, flexShrink: 0, marginLeft: 20 }}>
                   <div style={{ ...row, fontSize: FIT(it.model, RIGHT, 80), fontWeight: 900 }}>{it.model}</div>
-                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", width: RIGHT, marginTop: 8 }}>
+                  <div style={{ display: "flex", flexDirection: stack ? "column" : "row", alignItems: stack ? "center" : "baseline", justifyContent: "center", width: RIGHT, marginTop: stack ? 2 : 8 }}>
                     {it.cells.map((c, k) => (
-                      <div key={k} style={{ ...row, width: c.w, fontSize: FIT(c.text, c.w, c.max), fontWeight: 900, color: c.color }}>{c.text}</div>
+                      <div key={k} style={{ ...row, width: c.w, fontSize: FIT(c.text, c.w, c.max), fontWeight: 900, color: c.color, ...(stack ? { lineHeight: 1.1 } : {}) }}>{c.text}</div>
                     ))}
                   </div>
                 </div>
@@ -1885,8 +1887,9 @@ function StockHook({ s, t }: { s: StockScript; t: number }) {
   const BAR = CW - 60 - 150 - 20;
   return (
     <Frame s={s}>
-      <Question lines={s.hookLines ?? ["中古でいちばん出回っている", `${stockScope(s)}は…？`]} max={84} />
-      <div style={{ ...card(L), width: CW, padding: "24px 30px", marginTop: 30, transform: `scale(${pulseOf(t)})` }}>
+      {/* 11/3〜 問いを3行に（13字の1行が幅で 70px に縮んでいた）・最大 104px */}
+      <Question lines={s.hookLines ?? ["中古でいちばん", "出回っている", `${stockScope(s)}は…？`]} max={88} />
+      <div style={{ ...card(L), width: CW, padding: "24px 30px", marginTop: 20, transform: `scale(${pulseOf(t)})` }}>
         {items.map((r, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 14 : 0 }}>
             <div style={{ ...row, width: 150, fontSize: 48, fontWeight: 900, color: C.white, background: BADGE[i], borderRadius: 18, padding: "2px 0" }}>{`${i + 1}位`}</div>
@@ -1896,7 +1899,7 @@ function StockHook({ s, t }: { s: StockScript; t: number }) {
           </div>
         ))}
       </div>
-      <Teaser s={s} label="最多" value={`${n(items[0].count)}件`} mt={20} />
+      <Teaser s={s} label="最多" value={`${n(items[0].count)}件`} mt={6} />
     </Frame>
   );
 }
@@ -1905,12 +1908,13 @@ function StockHook({ s, t }: { s: StockScript; t: number }) {
 function StockRanking({ s, t, o }: { s: StockScript; t: number; o: Scene["o"] }) {
   const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
     model: it.model,
+    // 11/3〜 件数と相場を縦に積む（横に並べると相場が幅で 35px ほどに縮んでいた）
     cells: [
-      { text: `${n(it.count)}件`, w: 280, max: 76, color: lookOf(s).accent },
-      { text: `相場 ${n(it.median)}円（${it.storage}）`, w: 400, max: 40, color: C.muted },
+      { text: `${n(it.count)}件`, w: 680, max: 84, color: lookOf(s).accent },
+      { text: `相場 ${n(it.median)}円（${it.storage}）`, w: 680, max: 44, color: C.muted },
     ],
   }));
-  return <RankRows s={s} t={t} o={o} items={items} />;
+  return <RankRows s={s} t={t} o={o} items={items} stack />;
 }
 
 /**
@@ -1925,29 +1929,29 @@ function StockReveal({ s, t }: { s: StockScript; t: number }) {
   const grow = prog(t, 0.8, 0.7);
   const share = `${stockScope(s)}全体の${rate(r.share)}%`;
   const price = `相場 ${n(r.median)}円（${r.storage}）`;
-  const LABEL = 110;
+  const LABEL = 124;
   const BAR = CW - 60 - LABEL - 20;
   return (
     <Frame s={s}>
-      <div style={{ ...row, fontSize: 56, fontWeight: 900, marginBottom: 10, opacity: prog(t, 0, 0.25) }}>1位は…</div>
-      <div style={{ ...card(L), width: CW, padding: "18px 30px 22px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
-        <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 88), fontWeight: 900 }}>{r.model}</div>
+      <div style={{ ...row, fontSize: 52, fontWeight: 900, marginBottom: 4, opacity: prog(t, 0, 0.25) }}>1位は…</div>
+      <div style={{ ...card(L), width: CW, padding: "8px 30px 16px", opacity: clamp((t - 0.6) / 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 100), fontWeight: 900 }}>{r.model}</div>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
-          <div style={{ ...row, fontSize: 44, fontWeight: 900, color: C.navy, marginRight: 14 }}>在庫</div>
-          <div style={{ ...row, fontSize: FIT(`${n(r.count)}件`, CW - 260, 104), fontWeight: 900, color: L.accent, lineHeight: 1.1 }}>{`${n(Math.round(r.count * prog(t, 1.0, 0.9)))}件`}</div>
+          <div style={{ ...row, fontSize: 52, fontWeight: 900, color: C.navy, marginRight: 14 }}>在庫</div>
+          <div style={{ ...row, fontSize: FIT(`${n(r.count)}件`, CW - 260, 116), fontWeight: 900, color: L.accent, lineHeight: 1.1 }}>{`${n(Math.round(r.count * prog(t, 1.0, 0.9)))}件`}</div>
         </div>
-        <div style={{ ...row, fontSize: FIT(share, CW - 60, 46), fontWeight: 900, color: C.navy }}>{share}</div>
-        <div style={{ ...row, fontSize: FIT(price, CW - 60, 40), fontWeight: 900, color: C.muted, marginTop: 2 }}>{price}</div>
-        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 12, paddingTop: 12, borderTop: `3px solid ${C.line}`, opacity: prog(t, 1.2, 0.3) }}>
+        <div style={{ ...row, fontSize: FIT(share, CW - 60, 52), fontWeight: 900, color: C.navy }}>{share}</div>
+        <div style={{ ...row, fontSize: FIT(price, CW - 60, 46), fontWeight: 900, color: C.muted, marginTop: 2 }}>{price}</div>
+        <div style={{ display: "flex", flexDirection: "column", width: CW - 60, marginTop: 8, paddingTop: 8, borderTop: `3px solid ${C.line}`, opacity: prog(t, 1.2, 0.3) }}>
           {items.map((b, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 8 : 0 }}>
-              <div style={{ ...row, width: LABEL, fontSize: 36, fontWeight: 900, color: C.white, background: BADGE[i], borderRadius: 14, padding: "2px 0" }}>{`${i + 1}位`}</div>
+              <div style={{ ...row, width: LABEL, fontSize: 40, fontWeight: 900, color: C.white, background: BADGE[i], borderRadius: 14, padding: "2px 0" }}>{`${i + 1}位`}</div>
               <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
                 <div style={{ display: "flex", alignItems: "baseline", width: BAR }}>
-                  <div style={{ ...row, fontSize: FIT(b.model, BAR - 190, 34, 24), fontWeight: 900, color: C.navy }}>{b.model}</div>
-                  <div style={{ ...row, fontSize: 34, fontWeight: 900, color: i === 0 ? L.accent : C.muted, marginLeft: "auto" }}>{`${n(b.count)}件`}</div>
+                  <div style={{ ...row, fontSize: FIT(b.model, BAR - 200, 40, 28), fontWeight: 900, color: C.navy }}>{b.model}</div>
+                  <div style={{ ...row, fontSize: 40, fontWeight: 900, color: i === 0 ? L.accent : C.muted, marginLeft: "auto" }}>{`${n(b.count)}件`}</div>
                 </div>
-                <div style={{ display: "flex", width: Math.max(8, Math.round(((BAR * b.count) / r.count) * grow)), height: 20, background: i === 0 ? L.accent : C.silver, borderRadius: 10, marginTop: 2 }} />
+                <div style={{ display: "flex", width: Math.max(8, Math.round(((BAR * b.count) / r.count) * grow)), height: 22, background: i === 0 ? L.accent : C.silver, borderRadius: 10, marginTop: 2 }} />
               </div>
             </div>
           ))}
