@@ -432,7 +432,7 @@ export type StockRow = { model: string; count: number; share: number; storage: s
 
 /** テーマ stock「中古でいちばん出回っているiPhoneは？在庫数ランキング」・stockandroid（同じ Android 版。Pixel・Galaxy・Xperia・AQUOS）（10/27〜。shorts/themes/stock.ts） */
 export type StockScript = Common & {
-  theme: "stock" | "stockandroid" | "stockmac" | "stockipad" | "stockwatch" | "stockpixel" | "stockpro";
+  theme: "stock" | "stockandroid" | "stockmac" | "stockipad" | "stockwatch" | "stockpixel" | "stockpro" | "stockgalaxy";
   scenes: {
     /** 範囲の全機種の件数の合計（割合の分母）と機種の数 */
     total: number;
@@ -480,6 +480,6 @@ export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" |
 /** provs・promax・plusvs・plusmax（2機種の差のランキング・場面を共有） */
 export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "ultravs";
 /** stock・stockandroid・stockmac（在庫数ランキング・場面を共有） */
-export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro";
+export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "stockgalaxy";
 /** ipadmini・mbpnew・mbpproled（新型と中古の旧型・場面を共有） */
 export const isNewVsOld = (s: Script): s is IpadMiniScript => s.theme === "ipadmini" || s.theme === "mbpnew" || s.theme === "mbpproled";
