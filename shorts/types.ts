@@ -408,7 +408,7 @@ export type NewVsOldCopy = { head: [string, string]; hook: string[]; hookSub: st
  * mbpproled「MacBook Pro 4択、新型（有機EL）よりいくら安い？」（10/29〜。shorts/themes/mbpproled.ts。基準は新型 PROLED（newModel）、行は新品（isNew）と中古の混在）
  */
 export type IpadMiniScript = Common & {
-  theme: "ipadmini" | "mbpnew" | "mbpproled";
+  theme: "ipadmini" | "mbpnew" | "mbpproled" | "launch";
   /** 新型の価格・仕様を Apple 公式で確かめた日（lib/ipadMiniA20.ts の IPAD_MINI_A20_CHECKED） */
   appleChecked: string;
   scenes: {
@@ -432,7 +432,7 @@ export type StockRow = { model: string; count: number; share: number; storage: s
 
 /** テーマ stock「中古でいちばん出回っているiPhoneは？在庫数ランキング」・stockandroid（同じ Android 版。Pixel・Galaxy・Xperia・AQUOS）（10/27〜。shorts/themes/stock.ts） */
 export type StockScript = Common & {
-  theme: "stock" | "stockandroid" | "stockmac" | "stockipad" | "stockwatch" | "stockpixel" | "stockpro" | "stockgalaxy";
+  theme: "stock" | "stockandroid" | "stockmac" | "stockipad" | "stockwatch" | "stockpixel" | "stockpro" | "stockgalaxy" | "stockmini";
   scenes: {
     /** 範囲の全機種の件数の合計（割合の分母）と機種の数 */
     total: number;
@@ -480,6 +480,6 @@ export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" |
 /** provs・promax・plusvs・plusmax（2機種の差のランキング・場面を共有） */
 export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "ultravs";
 /** stock・stockandroid・stockmac（在庫数ランキング・場面を共有） */
-export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "stockgalaxy";
+export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "stockgalaxy" || s.theme === "stockmini";
 /** ipadmini・mbpnew・mbpproled（新型と中古の旧型・場面を共有） */
-export const isNewVsOld = (s: Script): s is IpadMiniScript => s.theme === "ipadmini" || s.theme === "mbpnew" || s.theme === "mbpproled";
+export const isNewVsOld = (s: Script): s is IpadMiniScript => s.theme === "ipadmini" || s.theme === "mbpnew" || s.theme === "mbpproled" || s.theme === "launch";

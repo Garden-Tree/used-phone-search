@@ -80,7 +80,7 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
     : s.theme === "gen" ? genNarration(s) : s.theme === "storage" ? storageNarration(s)
     : s.theme === "ios27line" ? ios27Narration(s) : s.theme === "batteryswap" ? batterySwapNarration(s) : s.theme === "kaitoriswap" ? kaitoriSwapNarration(s) : s.theme === "overnew" ? overNewNarration(s)
     : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s) : s.theme === "mbpvsair" ? mbpVsAirNarration(s) : s.theme === "kaitorishop" ? kaitoriShopNarration(s)
-    : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : isNewVsOld(s) ? (s.theme === "mbpnew" ? mbpNewNarration(s) : s.theme === "mbpproled" ? mbpProledNarration(s) : ipadMiniNarration(s))
+    : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : isNewVsOld(s) ? (s.theme === "launch" ? launchNarration(s) : s.theme === "mbpnew" ? mbpNewNarration(s) : s.theme === "mbpproled" ? mbpProledNarration(s) : ipadMiniNarration(s))
     : s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen" ? deviceGenNarration(s)
     : isStock(s) ? stockNarration(s) : dropsNarration(s);
 }
@@ -297,7 +297,7 @@ function deviceGenNarration(s: DeviceGenScript): Partial<Record<NarrationKey, st
 function stockNarration(s: StockScript): Partial<Record<NarrationKey, string>> {
   const items = s.scenes.ranking.items;
   const top = items[0];
-  const scope = s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpixel" ? "Google Pixel" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : "Androidスマホ";
+  const scope = s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpixel" ? "Google Pixel" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : s.theme === "stockmini" ? "iPad mini" : "Androidスマホ";
   // stockipad・stockwatch（11/2〜）: iPad の「(M4)」は読点に（spokenModel）。Watch は問いで「Apple Watch」と言うので行では「Series 9」だけ読む
   const say = (model: string) => (s.theme === "stockwatch" ? model.replace(/^Apple Watch\s+/, "") : s.theme === "stockipad" ? spokenModel(model) : model);
   return {
@@ -560,6 +560,25 @@ function mbpNewNarration(s: IpadMiniScript): Partial<Record<NarrationKey, string
       .map((i) => `${items[i].short}は、相場${yen(items[i].median)}。新型より${yen(items[i].diff)}安いです。`).join(""),
     // 「約8.0万円」は「ハッテン/ゼロ/マンエン」と読まれるので、小数が 0 なら外す（10/28）
     reveal: `${top.short}は、相場${yen(top.median)}。新型より約${(Math.round(top.diff / 1000) / 10).toFixed(1).replace(/\.0$/, "")}万円、およそ${Math.round(top.pct)}%安くなります。新型はCPUが${cpu?.a20}、${wifi?.a20.replace(/^Wi-Fi\s*(\d+)/, (_m, d: string) => `ワイファイ${EN_NUM[d] ?? d}`)}。電池の時間は同じです。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、新型と中古、どちらにしますか？",
+  };
+}
+
+/**
+ * launch の既定（11/5〜・11/6 発売の朝の回）: hook 答えから（H2）/ ranking 旧型の2行を差の小さい順に / reveal 伏せた行の相場と差、公式の仕様の違い / comment / outro。
+ * 行によって比べる新型が違う（iPad mini は新型の iPad mini と）ので、声で言い分ける
+ */
+function launchNarration(s: IpadMiniScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const c = (label: string) => s.scenes.compare.find((x) => x.label === label);
+  const topMan = (Math.round(top.diff / 1000) / 10).toFixed(1).replace(/\.0$/, "");
+  return {
+    hook: `今日発売の新型MacBook Pro、中古の${top.short}なら、約${topMan}万円安いです。`,
+    ranking: [...items.keys()].slice(1).reverse()
+      .map((i) => `${items[i].short}は、相場${yen(items[i].median)}。${items[i].model.startsWith("iPad mini") ? "新型のiPad miniより" : "新型より"}${yen(items[i].diff)}安いです。`).join(""),
+    reveal: `${top.short}は、相場${yen(top.median)}。新型より、およそ${Math.round(top.pct)}%安くなります。新型はCPUが${c("CPU")?.a20}、${c("Wi-Fi")?.a20.replace(/^Wi-Fi\s*(\d+)/, (_m, d: string) => `ワイファイ${EN_NUM[d] ?? d}`)}。電池の時間は同じです。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、新型と中古、どちらにしますか？",
   };

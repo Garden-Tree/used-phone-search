@@ -1,0 +1,125 @@
+{
+  "theme": "launch",
+  "date": "2026-11-05",
+  "shopCount": 14,
+  "appleChecked": "2026-11-04",
+  "scenes": {
+    "newModel": {
+      "name": "MacBook Pro 14インチ M6",
+      "release": "2026-11-06",
+      "price": 339800
+    },
+    "ranking": {
+      "items": [
+        {
+          "model": "MacBook Pro 14インチ M4",
+          "short": "M4",
+          "year": "2024年",
+          "storage": "16GB・1TB",
+          "storageGb": 1024,
+          "median": 270980,
+          "count": 6,
+          "newStorageGb": 1024,
+          "newPrice": 339800,
+          "diff": 68820,
+          "pct": 20.3
+        },
+        {
+          "model": "MacBook Pro 14インチ M5",
+          "short": "M5",
+          "year": "2025年",
+          "storage": "16GB・1TB",
+          "storageGb": 1024,
+          "median": 297980,
+          "count": 21,
+          "newStorageGb": 1024,
+          "newPrice": 339800,
+          "diff": 41820,
+          "pct": 12.3
+        },
+        {
+          "model": "iPad mini (A17 Pro)",
+          "short": "iPad mini",
+          "year": "2024年",
+          "storage": "128GB",
+          "storageGb": 128,
+          "median": 83980,
+          "count": 530,
+          "newStorageGb": 128,
+          "newPrice": 119800,
+          "diff": 35820,
+          "pct": 29.9
+        }
+      ]
+    },
+    "compare": [
+      {
+        "label": "CPU",
+        "a20": "12コア",
+        "a17": "10コア"
+      },
+      {
+        "label": "Wi-Fi",
+        "a20": "Wi-Fi 7",
+        "a17": "Wi-Fi 6E"
+      },
+      {
+        "label": "電池（動画）",
+        "a20": "最大24時間",
+        "a17": "最大24時間"
+      }
+    ],
+    "copy": {
+      "head": [
+        "今日発売の新型",
+        "中古の旧型ならいくら安い？"
+      ],
+      "hook": [
+        "今日発売のMacBook Pro",
+        "中古のM4なら",
+        "約6.9万円安い"
+      ],
+      "hookSub": "M6",
+      "foot": "2026/11/05・新型はApple公式（M6 16GB・1TB／mini 128GB）\n中古は同じ構成の中央値",
+      "revealSub": "16GB・1TB・2024年発売・在庫6件",
+      "newBar": "新型 M6",
+      "compareHead": "M4"
+    },
+    "comment": {
+      "speaker": "検品担当",
+      "lines": [
+        "中古のMacは",
+        "電池の充放電回数を",
+        "確認しましょう"
+      ]
+    },
+    "outro": {
+      "lines": [
+        "全機種の相場は",
+        "プロフィールのリンクから"
+      ],
+      "url": "used.gadelog.com",
+      "note": "大手中古ショップ14店の在庫から・2026/11/05",
+      "question": "新型と中古、どっちにする？"
+    }
+  },
+  "youtube": {
+    "title": "今日発売の新型MacBook Pro、中古のM4なら68,820円安い｜iPad miniは35,820円差",
+    "description": "今日（11/6）発売の新型と、同じ構成の中古の旧型の相場の差です。MacBook Pro 14インチ M6（Apple公式 339,800円〜・16GB／1TB）と比べて、MacBook Pro 14インチ M4は相場270,980円で68,820円安い。iPad mini A20 Pro（Apple公式 119,800円〜・128GB）と比べて、iPad mini (A17 Pro) は相場83,980円で35,820円安い。\n\nMacBook Pro 14インチ M4（16GB・1TB・在庫6件） 相場270,980円 → 新型 339,800円より −68,820円（−20.3%）\nMacBook Pro 14インチ M5（16GB・1TB・在庫21件） 相場297,980円 → 新型 339,800円より −41,820円（−12.3%）\niPad mini (A17 Pro)（128GB・在庫530件） 相場83,980円 → 新型 119,800円より −35,820円（−29.9%）\n\nM6 と M4 の違い（Apple公式の仕様）: CPU 12コア／10コア・Wi-Fi Wi-Fi 7／Wi-Fi 6E・電池（動画） 最大24時間／最大24時間。\n\n比べ方: 中古は同じ構成（チップ・メモリ・SSD／iPad は容量）の中央値（在庫5件以上）。件数が少ない構成もあるので目安です。新型は Apple 公式の価格（税込・2026/11/04確認）。データ: 大手中古ショップ14店の在庫（2026/11/05時点）。\n\nMacBook Pro 14インチ M4の店ごとの在庫と最安値: https://used.gadelog.com/mac/macbook-pro-14-m4?utm_source=youtube&utm_medium=social&utm_campaign=shorts_20261105_launch\niPad mini (A17 Pro)の店ごとの在庫と最安値: https://used.gadelog.com/ipad/ipad-mini-a17-pro?utm_source=youtube&utm_medium=social&utm_campaign=shorts_20261105_launch\n中古MacBookの全機種の相場: https://used.gadelog.com/mac?utm_source=youtube&utm_medium=social&utm_campaign=shorts_20261105_launch",
+    "hashtags": [
+      "#MacBookPro",
+      "#iPadmini",
+      "#中古MacBook"
+    ]
+  },
+  "narration": {
+    "hook": "今日発売の新型MacBook Pro、中古のM4なら、約6.9万円安いです。",
+    "ranking": "iPad miniは、相場83,980円。新型のiPad miniより35,820円安いです。M5は、相場297,980円。新型より約4.2万円安いです。",
+    "reveal": "M4は、相場270,980円。新型より、およそ20%安くなります。新型はCPUが12コア、ワイファイセブン。電池の時間は同じです。",
+    "outro": "全機種の相場は、プロフィールのリンクから見られます。あなたなら、新型と中古、どちらにしますか？"
+  },
+  "voice": {
+    "speaker": "青山龍星/ノーマル",
+    "speedScale": 1.25
+  }
+}

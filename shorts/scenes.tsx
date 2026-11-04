@@ -31,11 +31,11 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"] : s.theme === "plusmax" ? ["大画面はPlusとPro Max", "同じ容量でいくら違う？"]
     : s.theme === "oldpro" ? ["1世代前のProと最新の無印", "どっちが安い？中古iPhone"]
     : s.theme === "ipadmini" ? ["新型iPad mini", "中古の旧型ならいくら安い？"]
-    : s.theme === "mbpnew" || s.theme === "mbpproled" ? (s.scenes.copy?.head ?? ["新型", "中古の旧型ならいくら安い？"])
+    : s.theme === "mbpnew" || s.theme === "mbpproled" || s.theme === "launch" ? (s.scenes.copy?.head ?? ["新型", "中古の旧型ならいくら安い？"])
     : s.theme === "watchgen" ? ["Apple Watch", "1世代前でいくら安い？"] : s.theme === "macgen" ? ["MacBook Air", "1世代前でいくら安い？"]
     : s.theme === "ipadgen" ? ["iPad", "1世代前でいくら安い？"] : s.theme === "pixelgen" ? ["Google Pixel", "1世代前でいくら安い？"]
     // 在庫数ランキング: 11/3〜 「中古でいちばん多い／（種類）」の短い2行に（1行目に種類まで入れると幅で 55px ほどに縮んでいた）
-    : isStock(s) ? ["中古でいちばん多い", s.theme === "stock" ? "iPhone" : s.theme === "stockandroid" ? "Androidスマホ" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : "Google Pixel"]
+    : isStock(s) ? ["中古でいちばん多い", s.theme === "stock" ? "iPhone" : s.theme === "stockandroid" ? "Androidスマホ" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : s.theme === "stockmini" ? "iPad mini" : "Google Pixel"]
     : s.theme === "ultravs" ? ["Apple Watch UltraとSeries", "中古ならいくら違う？"]
     : s.theme === "watchbudget" ? ["予算ぴったりで買える", "中古Apple Watch"] : s.theme === "mbpvsair" ? ["MacBook ProとAir", "中古ならどっちが安い？"]
     : s.theme === "kaitorishop" ? ["同じiPhoneでも", "売る店でいくら違う？"]
@@ -178,7 +178,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
   if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
     || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "kaitoriswap" || s.theme === "overnew" || isNewVsOld(s) || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen"
-    || s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "stockgalaxy" || s.theme === "ultravs" || s.theme === "mbpvsair" || s.theme === "kaitorishop") return [
+    || s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "stockgalaxy" || s.theme === "stockmini" || s.theme === "ultravs" || s.theme === "mbpvsair" || s.theme === "kaitorishop") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -1963,7 +1963,7 @@ function TierTotals({ s, t }: { s: RakutenMobileScript; t: number }) {
  * stock・stockandroid（10/27〜・在庫数ランキング）の名前。行・1位・棒の札で使う（長い Android の名前は幅に合わせて縮む）
  * "iPhone SE (第3世代)" はそのまま（行の幅で縮む）
  */
-const stockScope = (s: StockScript) => (s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpixel" ? "Pixel" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : "Android");
+const stockScope = (s: StockScript) => (s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpixel" ? "Pixel" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : s.theme === "stockmini" ? "iPad mini" : "Android");
 
 /** stock・stockandroid: 問い＋在庫の数の横の棒3本（1位・2位・3位。機種は伏せ、1位の棒だけ強調色）＋「最多 ○件」 */
 function StockHook({ s, t }: { s: StockScript; t: number }) {
