@@ -10,6 +10,7 @@ import { getBatteryData } from "@/lib/batteryDecision";
 import { perYear, pickTarget } from "@/lib/batteryCalc";
 import { REPAIR_PROGRAMS } from "@/lib/buyback";
 import { modelPagePath } from "@/lib/catalog";
+import { kaitoriModels, kaitoriPath } from "@/lib/kaitoriModel";
 import { storageLabel, yen } from "@/lib/format";
 import { VIDEOS } from "@/lib/videos";
 import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
@@ -39,6 +40,7 @@ export default async function BatteryPage() {
   const { models, targets } = await getBatteryData();
   const paths = Object.fromEntries([...new Set(models.flatMap((m) => [m.model, m.next1, m.next2]).filter((x): x is string => !!x))].map((m) => [m, modelPagePath(m)]));
   const aisapo = REPAIR_PROGRAMS.find((p) => p.name === "アイサポ")!;
+  const kaitori = new Set((await kaitoriModels()).map((k) => k.model));
 
   // 表: 機種ごとに、買取のデータがある容量（128GB があればそれ）で1行
   const table = models.map((m) => {
@@ -127,7 +129,12 @@ export default async function BatteryPage() {
                     </td>
                     <td className="text-right px-2 py-1.5">{m.apple !== null ? m.apple.toLocaleString() : "—"}</td>
                     <td className="text-right px-2 py-1.5 text-ink-sub">{m.aisapo !== null ? m.aisapo.toLocaleString() : "—"}</td>
-                    <td className="text-right px-2 py-1.5 text-ink-sub">{sell ? sell.price.toLocaleString() : "—"}</td>
+                    <td className="text-right px-2 py-1.5 text-ink-sub">
+                      {!sell ? "—" : kaitori.has(m.model)
+                        // 11/5〜: 機種ごとの買取ページへ。押しやすいように上下を広げる
+                        ? <Link href={kaitoriPath(m.model)} data-kaitori-link="battery" data-model={m.model} className="inline-block py-1 -my-1 text-brand-600 underline underline-offset-2">{sell.price.toLocaleString()}</Link>
+                        : sell.price.toLocaleString()}
+                    </td>
                     <td className="text-right px-2 py-1.5">
                       {m.next1 && next?.cell ? (
                         <Link href={paths[m.next1]} className="text-price font-bold hover:underline">{next.cell.median.toLocaleString()}<span className="block text-[10px] font-normal text-ink-mute">{m.next1.replace("iPhone ", "")}</span></Link>
@@ -139,7 +146,7 @@ export default async function BatteryPage() {
             </table>
           </div>
           <p className="text-[11px] text-ink-mute leading-relaxed">
-            Apple 公式（{appleRepairCheckedJa()}）・アイサポ 新宿本店（{aisapoCheckedJa}）・税込。1つ上の中古は電池80%以上の中央値。機種名で計算機へ
+            Apple 公式（{appleRepairCheckedJa()}）・アイサポ 新宿本店（{aisapoCheckedJa}）・税込。1つ上の中古は電池80%以上の中央値。機種名で計算機へ・「売ると」の金額で買取ページへ
           </p>
         </section>
 

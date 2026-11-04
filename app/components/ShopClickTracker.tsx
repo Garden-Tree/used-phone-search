@@ -14,6 +14,12 @@ export default function ShopClickTracker() {
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const target = e.target instanceof Element ? e.target : null;
+      // 機種ごとの買取ページへの内部リンク（11/5〜）。店へのクリックではないので shop_click とは別のイベント
+      const kaitori = target?.closest<HTMLAnchorElement>("a[data-kaitori-link]");
+      if (kaitori) {
+        (window as unknown as { gtag?: Gtag }).gtag?.("event", "kaitori_link", { model_name: kaitori.dataset.model ?? "", placement: kaitori.dataset.kaitoriLink ?? "" });
+        return;
+      }
       const link = target?.closest<HTMLAnchorElement>("a[data-shop-click]");
       if (!link) return;
       const gtag = (window as unknown as { gtag?: Gtag }).gtag;

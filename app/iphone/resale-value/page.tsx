@@ -10,6 +10,7 @@ import { getPriceDrop } from "@/lib/priceDrop";
 import { LAUNCH_PRICES_CHECKED } from "@/lib/launchPrices";
 import { applePrice } from "@/lib/applePrices";
 import { BUYBACK_PROGRAMS } from "@/lib/buyback";
+import { kaitoriModels, kaitoriPath } from "@/lib/kaitoriModel";
 import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
@@ -27,6 +28,8 @@ const TITLE = "iPhoneは発売から何年でいくら下がる？発売時の�
 
 const CARD = "bg-white rounded-xl border border-line";
 const LINK = "text-brand-600 underline underline-offset-2 hover:text-brand-800";
+/** 買取の金額のリンク（11/5〜・機種ごとの買取ページへ） */
+const PRICE_LINK = "text-brand-600 underline underline-offset-2";
 const slash = (iso: string) => iso.replace(/-0?/g, "/");
 const ym = (iso: string) => { const [y, m] = iso.split("-").map(Number); return `${y}年${m}月`; };
 
@@ -39,6 +42,7 @@ export default async function ResaleValuePage() {
   const shopNum = (await activeShops()).length;
   const { rows, groups } = await getResaleValue();
   const drop = await getPriceDrop();
+  const kaitori = new Set((await kaitoriModels()).map((k) => k.model));
   const pctText = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : "±"}${Math.abs(n).toFixed(1)}%`;
   const yenDiff = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : "±"}${Math.abs(n).toLocaleString()}円`;
   const dateText = new Date().toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
@@ -146,7 +150,7 @@ export default async function ResaleValuePage() {
           <h2 className="text-lg md:text-xl font-bold">機種ごとの一覧</h2>
           {/* スマホは1機種を2段に（表だと「いま売ると」が画面の外に隠れた。11/2）。md から表 */}
           <ul className={`md:hidden ${CARD} divide-y divide-line-soft`}>
-            {rows.map((r) => <MobileRow key={r.model} r={r} />)}
+            {rows.map((r) => <MobileRow key={r.model} r={r} hasKaitori={kaitori.has(r.model)} />)}
           </ul>
           <div className={`hidden md:block ${CARD} overflow-x-auto`}>
             <table className="w-full text-[13px] tabular-nums">
@@ -161,12 +165,12 @@ export default async function ResaleValuePage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => <Row key={r.model} r={r} />)}
+                {rows.map((r) => <Row key={r.model} r={r} hasKaitori={kaitori.has(r.model)} />)}
               </tbody>
             </table>
           </div>
           <p className="text-[11px] text-ink-mute leading-relaxed">
-            「中古の相場」は店で売られている値段の中央値と、発売時の値段に対する割合。「いま売ると」はネットオフ（美品）・にこスマ（良品）・モバステ（中古の上限）の買取価格のうちいちばん高い値（店の表示・特典込みなどの条件は店ごと。実際の査定は状態で下がります）。「実質／月」は（発売時の値段 − いま売ると）÷ 発売からの月数で、発売から1年以上の機種だけ。中古の在庫が{RESALE_MIN_COUNT}件未満の機種は出していません。
+            「中古の相場」は店で売られている値段の中央値と、発売時の値段に対する割合。「いま売ると」はネットオフ（美品）・にこスマ（良品）・モバステ（中古の上限）の買取価格のうちいちばん高い値（店の表示・特典込みなどの条件は店ごと。実際の査定は状態で下がります）。「実質／月」は（発売時の値段 − いま売ると）÷ 発売からの月数で、発売から1年以上の機種だけ。中古の在庫が{RESALE_MIN_COUNT}件未満の機種は出していません。下線の金額を押すと、機種ごとの買取ページ（店ごとの比較）へ移ります。
           </p>
         </section>
 
@@ -237,16 +241,20 @@ export default async function ResaleValuePage() {
   );
 }
 
-function MobileRow({ r }: { r: ResaleRow }) {
+function MobileRow({ r, hasKaitori }: { r: ResaleRow; hasKaitori: boolean }) {
   const nw = "whitespace-nowrap";
+  const sell = r.buyback && <><span className="text-[10px] text-ink-mute mr-1">いま売ると {r.buyback.shop}・{r.buyback.label}</span><span className={`font-bold ${hasKaitori ? PRICE_LINK : ""}`}>{yen(r.buyback.price)}</span></>;
   return (
     <li className="px-3.5 py-2.5 text-[13px]">
       <div className="flex items-baseline justify-between gap-3">
         <Link href={modelPagePath(r.model)} className="min-w-0 font-bold text-brand-600 hover:text-brand-800">{r.model.replace("iPhone ", "")}</Link>
         <span className="shrink-0 whitespace-nowrap tabular-nums text-right">
-          {r.buyback
-            ? <><span className="text-[10px] text-ink-mute mr-1">いま売ると {r.buyback.shop}・{r.buyback.label}</span><span className="font-bold">{yen(r.buyback.price)}</span></>
-            : <span className="text-[11px] text-ink-mute">いま売ると —</span>}
+          {!sell
+            ? <span className="text-[11px] text-ink-mute">いま売ると —</span>
+            : hasKaitori
+              // 押せる範囲は「いま売ると …」まで広げる（下線は金額だけ）
+              ? <Link href={kaitoriPath(r.model)} data-kaitori-link="resale-value" data-model={r.model} className="inline-block py-1 -my-1">{sell}</Link>
+              : sell}
         </span>
       </div>
       <p className="mt-0.5 text-[11px] text-ink-mute tabular-nums">
@@ -257,7 +265,8 @@ function MobileRow({ r }: { r: ResaleRow }) {
   );
 }
 
-function Row({ r }: { r: ResaleRow }) {
+function Row({ r, hasKaitori }: { r: ResaleRow; hasKaitori: boolean }) {
+  const sub = r.buyback && <span className="block text-[10px] font-normal text-ink-mute">{r.buyback.shop}・{r.buyback.label}</span>;
   return (
     <tr className="border-t border-line-soft">
       <th scope="row" className="text-left font-normal pl-3.5 pr-2 py-2 whitespace-nowrap">
@@ -267,7 +276,11 @@ function Row({ r }: { r: ResaleRow }) {
       <td className="text-right px-2 py-2 whitespace-nowrap">{yen(r.launchPrice)}</td>
       <td className="text-right px-2 py-2 whitespace-nowrap">{yen(r.median)}<span className="block text-[10px] text-ink-mute">{Math.round(r.retention)}%</span></td>
       <td className="text-right px-2 py-2 whitespace-nowrap font-bold">
-        {r.buyback ? <>{yen(r.buyback.price)}<span className="block text-[10px] font-normal text-ink-mute">{r.buyback.shop}・{r.buyback.label}</span></> : <span className="text-ink-mute font-normal">—</span>}
+        {!r.buyback
+          ? <span className="text-ink-mute font-normal">—</span>
+          : hasKaitori
+            ? <Link href={kaitoriPath(r.model)} data-kaitori-link="resale-value" data-model={r.model} className="block"><span className={PRICE_LINK}>{yen(r.buyback.price)}</span>{sub}</Link>
+            : <>{yen(r.buyback.price)}{sub}</>}
       </td>
       <td className="text-right pl-2 pr-3.5 py-2 whitespace-nowrap font-bold text-price">
         {r.realPerMonth !== null ? (r.realPerMonth > 0 ? `約${yen(r.realPerMonth)}` : <span className="text-[11px] font-normal text-ink-mute">発売時より高く売れる</span>) : <span className="text-ink-mute font-normal">—</span>}
