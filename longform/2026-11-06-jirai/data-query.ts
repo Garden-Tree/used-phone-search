@@ -153,15 +153,18 @@ async function main() {
     const np = x ? applePrice(m, x.gb) : null;
     if (x && np !== null && x.median > np) console.log(`${m} ${x.gb}GB 新品 ${np} 相場 ${x.median} 中古が +${x.median - np} 全${market.get(m)?.count}件 最安 ${x.min}`);
   }
-  console.log(`\n== 選定 地雷の条件4: 相場の容量が128GB の機種で、USB-C・Apple Intelligence の線（その機能がいちばん安い機種の128GB）まであと5,000円未満`);
+  console.log(`\n== 選定 地雷の条件4: 128GB の在庫が5件以上ある機種の128GB の相場で、USB-C・Apple Intelligence の線（その機能がいちばん安い機種の128GB）まであと5,000円未満（線より高い機種は条件の外として別に出す）`);
   const LINES: [string, (m: string) => boolean][] = [["USB-C", (m) => specOf(m)?.port === "USB-C"], ["Apple Intelligence", (m) => AI_MODELS.test(m)]];
   for (const [name, ok] of LINES) {
     const line = catalog.filter(ok).map((m) => ({ m, y: at(m, 128) })).filter((p) => p.y && p.y.count >= 300).sort((a, b) => a.y!.median - b.y!.median)[0];
     if (!line) continue;
     console.log(`${name} の線: ${line.m} 128GB ${line.y!.median}`);
-    for (const m of catalog.filter((n) => !ok(n) && market.get(n)?.medianStorage === 128)) {
-      const x = at(m, 128);
-      if (x && x.median < line.y!.median && line.y!.median - x.median < 5000) console.log(`  ${m} 128GB ${x.median}（${x.count}件・85%以上${x.b85}件 ${((x.b85 / x.count) * 100).toFixed(1)}%）あと ${line.y!.median - x.median}`);
+    for (const m of catalog.filter((n) => !ok(n))) {
+      const x = at(m, 128); // at は在庫5件以上の容量だけ
+      if (!x) continue;
+      const info = `${m} 128GB ${x.median}（${x.count}件・85%以上${x.b85}件 ${((x.b85 / x.count) * 100).toFixed(1)}%）`;
+      if (x.median < line.y!.median && line.y!.median - x.median < 5000) console.log(`  ${info}あと ${line.y!.median - x.median}`);
+      else if (x.median >= line.y!.median) console.log(`  条件の外（線より高い）: ${info}線より +${x.median - line.y!.median}`);
     }
   }
   console.log(`\n== 選定 正解: iOS 27 対応・電池交換の料金表にある・128GB以上で在庫300件以上・電池85%以上の在庫100件以上のうち、その機能がいちばん安い容量`);
