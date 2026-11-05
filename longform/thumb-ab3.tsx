@@ -6,6 +6,7 @@
  *   npx tsx longform/thumb-ab3.tsx set4       # 10/28: 13本目（新型 MBP）と、楽天モバイルの B を楽天のピンクに。一覧 longform/thumb-ab3-contact4.png
  *   npx tsx longform/thumb-ab3.tsx set5       # 10/29: 14本目（MBP 4択・A も作り直し）・15本目（Pro と Air）。一覧 longform/thumb-ab3-contact5.png
  *   npx tsx longform/thumb-ab3.tsx set6       # 10/31: 16〜20本目（予算別 MacBook・128GB・Duo か大きい画面・M1 Air・折りたたみ）。一覧 longform/thumb-ab3-contact6.png
+ *   npx tsx longform/thumb-ab3.tsx set7       # 11/6: 21・22本目（地雷・正解、中古iPad 何世代まで）。一覧 longform/thumb-ab3-contact7.png
  *   npx tsx longform/thumb-ab3.tsx <フォルダ> # 1本だけ
  * 出力: <フォルダ>/thumb-B.png・thumb-C.png（1280x720）。A がある案は thumb-A.png も
  *
@@ -777,6 +778,58 @@ const PLANS: Record<string, Plan> = {
       </Frame>
     ),
   },
+  // 21本目（未アップロード）。A＝thumbnail.png「中古iPhone／今は買うな／地雷6台」
+  "2026-11-06-jirai": {
+    id: "未アップロード",
+    // B: 色帯3段＋端末の絵に ✓✕（「0:00 結論」: 地雷 XR・17e／正解 13・15）
+    B: () => (
+      <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>
+        <Bands bands={[{ text: "中古iPhone", bg: WHITE, color: BLACK, size: 100 }, { text: "今は買うな", bg: RED, color: WHITE, size: 120 }, { text: "地雷6台", bg: YELLOW, color: BLACK, size: 170 }]} />
+        <Labeled x={780} y={14} w={130} h={200} label="XR" ok={false} screen={SCREENS[2]} />
+        <Labeled x={1010} y={14} w={130} h={200} label="17e" ok={false} screen={SCREENS[3]} />
+        <Labeled x={780} y={300} w={130} h={200} label="13" ok screen={SCREENS[0]} />
+        <Labeled x={1010} y={300} w={130} h={200} label="15" ok screen={SCREENS[1]} />
+        <div style={{ position: "absolute", left: 34, top: 560, display: "flex", fontSize: 66, fontWeight: 900, color: WHITE, letterSpacing: -2 }}>正解は3台だけ</div>
+      </Frame>
+    ),
+    // C: 青ざめたずんだもん＋「新品より高い」（「6:12 地雷6」: 18 Pro 256GB の相場は新品より +11,180円）
+    C: () => (
+      <Frame bg={DARKRED_BG}>
+        {chara("zundamon-shock", { left: 860, top: 140, height: 640 })}
+        <div style={{ position: "absolute", left: 40, top: 30, display: "flex" }}><Outlined text="中古iPhone" size={100} color={WHITE} outer={{ w: 7, c: BLACK }} spacing={-4} /></div>
+        <div style={{ position: "absolute", left: 30, top: 160, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="中古なのに" size={150} color={YELLOW} inner={{ w: 9, c: BLACK }} outer={{ w: 7, c: WHITE }} spacing={-8} />
+          <div style={{ display: "flex", marginTop: 10 }}><Outlined text="新品より高い" size={fit("新品より高い", 860, 160)} color={WHITE} inner={{ w: 10, c: RED }} outer={{ w: 9, c: BLACK }} spacing={-10} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 40, top: 560, display: "flex", padding: "2px 22px", background: YELLOW, color: BLACK, fontSize: 64, fontWeight: 900, letterSpacing: -2 }}>18 Pro は +1.1万円</div>
+      </Frame>
+    ),
+  },
+  // 22本目（未アップロード）。A＝thumbnail.png
+  "2026-11-06-ipad-how-old": {
+    id: "未アップロード",
+    // B: 色帯3段＋端末の絵に ✓✕（「結論」: 第8世代は iPadOS 27 非対応・第9世代は対応、相場 42,800円）
+    B: () => (
+      <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>
+        <Bands bands={[{ text: "中古iPad", bg: WHITE, color: BLACK, size: 100 }, { text: "何世代まで？", bg: RED, color: WHITE, size: 104 }, { text: "第9世代", bg: YELLOW, color: BLACK, size: 170 }]} />
+        <Labeled x={800} y={14} w={260} h={200} label="第8世代" ok={false} screen={SCREENS[2]} />
+        <Labeled x={800} y={300} w={260} h={200} label="第9世代" ok screen={SCREENS[0]} />
+        <div style={{ position: "absolute", left: 34, top: 560, display: "flex", fontSize: 66, fontWeight: 900, color: WHITE, letterSpacing: -2 }}>相場 4.3万円から</div>
+      </Frame>
+    ),
+    // C: 青ざめたずんだもん＋「第8世代は買うな」（第8世代 25,980円は iPadOS 27 非対応）
+    C: () => (
+      <Frame bg={DARKRED_BG}>
+        {chara("zundamon-shock", { left: 860, top: 140, height: 640 })}
+        <div style={{ position: "absolute", left: 40, top: 30, display: "flex" }}><Outlined text="中古iPad 何世代まで？" size={90} color={WHITE} outer={{ w: 7, c: BLACK }} spacing={-4} /></div>
+        <div style={{ position: "absolute", left: 30, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="第8世代は" size={170} color={YELLOW} inner={{ w: 9, c: BLACK }} outer={{ w: 7, c: WHITE }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 6 }}><Outlined text="買うな" size={250} color={WHITE} inner={{ w: 10, c: RED }} outer={{ w: 9, c: BLACK }} spacing={-10} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 40, top: 590, display: "flex", padding: "2px 22px", background: YELLOW, color: BLACK, fontSize: 72, fontWeight: 900, letterSpacing: -2 }}>iPadOS 27 非対応</div>
+      </Frame>
+    ),
+  },
 };
 
 /** 一覧のまとまり（引数なし＝第3弾の4本、set2＝10/26 に足した2本、set3＝10/27 に足した3本、set4＝10/28） */
@@ -787,6 +840,7 @@ const GROUPS: Record<string, { keys: string[]; out: string }> = {
   set4: { keys: ["2026-10-29-mbp-m6", "2026-10-31-rakuten-mobile"], out: "thumb-ab3-contact4.png" },
   set5: { keys: ["2026-10-31-mbp-proled", "2026-11-01-mbp-vs-mba"], out: "thumb-ab3-contact5.png" },
   set6: { keys: ["2026-11-02-macbook", "2026-11-02-storage", "2026-11-03-duo-vs-mini", "2026-11-03-m1-air", "2026-11-04-foldables"], out: "thumb-ab3-contact6.png" },
+  set7: { keys: ["2026-11-06-jirai", "2026-11-06-ipad-how-old"], out: "thumb-ab3-contact7.png" },
 };
 
 /** 一覧: 動画ごとに A・B・C を 400x225 と、スマホの関連動画の大きさ 168x94 で並べる */
