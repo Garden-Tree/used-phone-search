@@ -1,0 +1,194 @@
+{
+  "date": "2026-11-05",
+  "shops": 15,
+  "source": "script.md の数字そのまま（2026/11/5 22:55 JST の集計・在庫の最終更新は 2026/11/5 09:42 JST・longform/2026-11-06-ipad-how-old/data-query.ts → data-query.log。相場＝在庫がいちばん多い容量の中央値。在庫5件未満の容量は使わない。iPadOS 27 は lib/ipadSpecs.ts の IPADOS27_MODELS、Pencil は lib/ipadPencil.ts、端子・チップ・発売年は lib/ipadSpecs.ts、修理の区分は support.apple.com/ja-jp/102772、Apple Intelligence は apple.com/jp/ipados/ の注記1（すべて Apple 公式））",
+  "thumbnail": {
+    "lines": ["中古iPad", "何世代まで買っていい？"],
+    "badge": [{ "text": "最低ラインは" }, { "text": "第" }, { "text": "9", "red": true }, { "text": "世代" }],
+    "footer": "iPadOS 27・修理・Pencil・AI と 1.2万件の相場 ｜ used.gadelog.com"
+  },
+  "chapters": [
+    {
+      "title": "結論：無印は第9世代から",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "中古iPad 何世代まで買っていい？",
+        "items": [
+          { "label": "無印の最低ライン", "value": "第9", "unit": "世代", "cue": "無印のiPadは、第9世代が最低ライン" },
+          { "label": "相場（64GB）", "value": "42,800", "unit": "円", "cue": "無印のiPadは、第9世代が最低ライン" },
+          { "label": "第8世代（32GB）は非対応", "value": "25,980", "unit": "円", "cue": "第8世代には、今のiPadOS 27が入らない" }
+        ],
+        "note": "Air は第4世代・mini は第6世代・Pro 11インチは第2世代から（iPadOS 27 の対応。Apple 公式）"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "どうやって調べた？",
+        "items": [
+          { "label": "iPad を扱う中古ショップ", "value": "15", "unit": "店", "cue": "大手の中古ショップ15店" },
+          { "label": "iPad の在庫", "value": "12,135", "unit": "件", "cue": "大手の中古ショップ15店" },
+          { "label": "今日比べる機種", "value": "16", "unit": "機種", "cue": "今日比べるのは" }
+        ],
+        "note": "相場＝在庫がいちばん多い容量の中央値（5件未満は使わない）。iPadOS・Pencil・修理・AI は Apple 公式"
+      }
+    },
+    {
+      "title": "iPadOS 27で分かれる線",
+      "scene": {
+        "type": "table",
+        "heading": "無印の iPad と iPadOS 27（Apple 公式）",
+        "columns": ["機種", "発売", "iPadOS 27", "相場"],
+        "emphasis": [2, 3],
+        "rows": [
+          { "cells": ["第6世代", "2018年", "非対応", "14,278円（32GB）"], "cue": "2018年の第6世代" },
+          { "cells": ["第7世代", "2019年", "非対応", "18,601円（32GB）"], "cue": "2018年の第6世代" },
+          { "cells": ["第8世代", "2020年", "非対応", "25,980円（32GB）"], "cue": "2018年の第6世代" },
+          { "cells": ["第9世代", "2021年", "対応", "42,800円（64GB）"], "cue": "2021年の第9世代から" },
+          { "cells": ["第10世代", "2022年", "対応", "65,980円（64GB）"], "cue": "2022年の第10世代" },
+          { "cells": ["A16", "2025年", "対応", "76,930円（128GB）"], "cue": "2022年の第10世代" }
+        ],
+        "note": "相場＝在庫がいちばん多い容量の中央値。発売年は Apple「iPad のモデルを識別する」"
+      }
+    },
+    {
+      "title": "Air・mini・Proの線",
+      "scene": {
+        "type": "table",
+        "heading": "シリーズごとの iPadOS 27 の線",
+        "columns": ["シリーズ", "入らない", "入る"],
+        "emphasis": [2],
+        "rows": [
+          { "cells": ["無印", "第8世代 25,980円", "第9世代 42,800円"], "cue": "AirやminiやProにも" },
+          { "cells": ["Air", "第3世代 29,730円", "第4世代 57,266円"], "cue": "Airは第3世代には" },
+          { "cells": ["mini", "第5世代 28,800円", "第6世代 61,980円"], "cue": "Airは第3世代には" },
+          { "cells": ["Pro 11インチ", "第1世代 52,041円", "第2世代 76,780円"], "cue": "11インチは、第1世代には" }
+        ],
+        "note": "容量: 無印 32GB／64GB・Air と mini 64GB・Pro 64GB／128GB。Pro 12.9インチは第4世代から"
+      }
+    },
+    {
+      "title": "修理と部品はいつまで？",
+      "scene": {
+        "type": "table",
+        "heading": "Apple の修理と部品（Apple 公式）",
+        "columns": ["区分", "販売店への供給をやめてから", "iPad の例"],
+        "emphasis": [1],
+        "rows": [
+          { "cells": ["オブソリート", "7年以上（修理なし）", "第6世代"], "cue": "7年以上は、オブソリート製品" },
+          { "cells": ["ビンテージ", "5年以上7年未満（部品しだい）", "Air 第3・Pro 11 第1"], "cue": "5年以上7年未満は、ビンテージ製品" },
+          { "cells": ["どちらでもない", "—", "第7〜第9・mini 第5"], "cue": "どっちの一覧にも入ってない" }
+        ],
+        "note": "support.apple.com/ja-jp/102772（2026/10/19 の版を 11/5 確認）。最低5年・部品の在庫しだいで最長7年"
+      }
+    },
+    {
+      "title": "第8世代と第9世代の差",
+      "scene": {
+        "type": "table",
+        "heading": "第8世代と第9世代、何が違う？",
+        "columns": ["項目", "第8世代", "第9世代"],
+        "emphasis": [2],
+        "rows": [
+          { "cells": ["画面・端子", "10.2インチ・Lightning", "10.2インチ・Lightning"], "cue": "見た目はほとんど同じ", "emphasis": [] },
+          { "cells": ["Pencil", "第1世代", "第1世代"], "cue": "見た目はほとんど同じ", "emphasis": [] },
+          { "cells": ["iPadOS 27", "非対応", "対応"], "cue": "違うのは3つ" },
+          { "cells": ["チップ", "A12 Bionic", "A13 Bionic"], "cue": "違うのは3つ" },
+          { "cells": ["相場", "25,980円（32GB）", "42,800円（64GB）"], "cue": "違うのは3つ" }
+        ],
+        "note": "第8世代の 128GB は 38,800円（第9世代の 64GB と 4,000円差）"
+      }
+    },
+    {
+      "title": "第9世代の次はどれ？",
+      "scene": {
+        "type": "bars",
+        "heading": "第9世代の次はどれ？（相場）",
+        "unit": "万円",
+        "rows": [
+          { "label": "第9世代", "sub": "64GB・Lightning・A13", "median": 4.28, "min": 3.04, "minLabel": "30,400円", "stock": "在庫 1,345件", "cue": "第9世代の弱点が気になる" },
+          { "label": "Air 第4世代", "sub": "64GB・USB-C・A14", "median": 5.7266, "stock": "在庫 148件", "pick": true, "cue": "Airの第4世代。64GBで" },
+          { "label": "第10世代", "sub": "64GB・USB-C・A14", "median": 6.598, "stock": "在庫 106件", "cue": "普通は第10世代って" }
+        ],
+        "note": "第10世代の Pencil は USB-C か第1世代（アダプタ）。Air 第4世代は USB-C か第2世代（Apple 公式）"
+      }
+    },
+    {
+      "title": "AIまで欲しいなら",
+      "scene": {
+        "type": "bars",
+        "heading": "Apple Intelligence と相場",
+        "unit": "万円",
+        "rows": [
+          { "label": "Air 第5世代", "sub": "64GB・M1・対応", "median": 7.128, "stock": "在庫 153件", "pick": true, "cue": "M1のAir 第5世代" },
+          { "label": "iPad A16", "sub": "128GB・非対応", "median": 7.693, "stock": "在庫 1,062件", "cue": "A16は、対象じゃない" },
+          { "label": "mini A17 Pro", "sub": "128GB・対応", "median": 8.398, "stock": "在庫 528件", "cue": "miniのA17 Proが128GBで" },
+          { "label": "Air 11 M2", "sub": "128GB・対応", "median": 9.658, "stock": "在庫 126件", "cue": "miniのA17 Proが128GBで" },
+          { "label": "Pro 11 第3世代", "sub": "128GB・M1・対応", "median": 9.8532, "stock": "在庫 48件", "cue": "miniのA17 Proが128GBで" }
+        ],
+        "note": "対応＝M1以降と mini A17 Pro 以降（apple.com/jp/ipados/）。256GB: Air 第5世代 89,980円・A16 92,980円"
+      }
+    },
+    {
+      "title": "検品担当が見る：電池",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "第9世代（64GB）の電池の表記",
+        "items": [
+          { "label": "在庫", "value": "1,345", "unit": "件", "cue": "1,345件のうち" },
+          { "label": "表記あり", "value": "553", "unit": "件", "cue": "1,345件のうち" },
+          { "label": "書いてある数字", "value": "52〜100", "unit": "%", "cue": "数字は52%から100%まで" }
+        ],
+        "note": "数字そのまま 545件・「80%以上」8件。ランクは外装の傷の話で、電池とは別"
+      }
+    },
+    {
+      "title": "Wi-Fi・Cellular・SIM・容量",
+      "scene": {
+        "type": "table",
+        "heading": "第9世代（64GB）の回線の種類と相場",
+        "columns": ["種類", "在庫", "相場"],
+        "emphasis": [2],
+        "rows": [
+          { "cells": ["Wi-Fi", "910件", "43,670円"], "cue": "第9世代の64GBだと、910件" },
+          { "cells": ["au", "145件", "36,800円"], "cue": "auのCellularが" },
+          { "cells": ["SoftBank", "24件", "40,800円"], "cue": "auのCellularが" },
+          { "cells": ["docomo", "12件", "43,800円"], "cue": "auのCellularが" },
+          { "cells": ["SIMフリー（国内版）", "28件", "41,848円"], "cue": "auのCellularが" },
+          { "cells": ["読み取れない", "225件", "41,591円"], "cue": "読み取れないのが、225件" }
+        ],
+        "note": "回線の種類は買ってから変えられない。容量は 64GB と 256GB（55,176円）で 12,376円差"
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "table",
+        "heading": "まとめ: 中古iPadは何世代まで？",
+        "columns": ["シリーズ", "最低ライン", "11/5 の相場"],
+        "emphasis": [2],
+        "rows": [
+          { "cells": ["無印", "第9世代", "42,800円（64GB）"], "cue": "まとめるのだ" },
+          { "cells": ["Air", "第4世代", "57,266円（64GB）"], "cue": "Airは第4世代、miniは第6世代" },
+          { "cells": ["mini", "第6世代", "72,930円（256GB）"], "cue": "Airは第4世代、miniは第6世代" },
+          { "cells": ["Pro 11インチ", "第2世代", "76,780円（128GB）"], "cue": "Airは第4世代、miniは第6世代" },
+          { "cells": ["AI まで欲しい", "Air 第5世代", "71,280円（64GB）"], "cue": "AIまで欲しいなら" }
+        ],
+        "note": "相場は毎日変わる。機種ページで今日の値段を確認"
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          { "id": "SHyQRQ8wAic", "title": "【中古iPad】いま買うならどれ？ 16店の相場で「使い方別」に選んだ（無印・Air・mini・Pro）" },
+          { "id": "T7ltgSB-4XM", "title": "中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決めた" }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com"
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+今は買うな｜中古iPhone 地雷6台・正解3台【2026年11月】
+
+2026年11月に買うならどの中古iPhoneかを、大手中古ショップ16店・販売中の iPhone 36,574件の相場（2026/11/05時点）と Apple 公式の値で判定しました。地雷は機種の判断で、店の良し悪しの話ではありません。
+結論: 今は買わないほうがいい6台は XR・11 Pro・14 Pro・15 Plus・17e・18 Pro。正解の3台は 13（Face ID）・15（USB-C）・16e（Apple Intelligence）。
+
+地雷の条件（どれかに当たる機種）:
+1. iOS 27 非対応で、同じ容量の対応機種でいちばん安い機種との差が2,000円未満（対応機種より高いものも含む）
+2. iOS 27 対応だが、Apple の電池交換の料金表にない
+3. 中古の相場が Apple の新品より高い
+4. 相場の容量が128GBの機種で、USB-C または Apple Intelligence がいちばん安い機種まで、あと5,000円未満
+正解の決まり: iOS 27 対応・電池交換の料金表にある・128GB以上で在庫300件以上・電池85%以上と書いてある在庫100件以上のうち、その機能がいちばん安い機種。
+
+・XR（64GB）19,580円。iOS 27 に対応する SE 第2世代は 20,680円で差 1,100円（同じ条件: X 19,580円・XS 23,980円）
+・11 Pro（256GB）38,280円。電池交換の料金表になし（11 Pro Max も）。12 mini（256GB）38,980円・12（256GB）44,726円
+・14 Pro（128GB）87,780円。15 は 90,600円で差 2,820円・同じ A16 Bionic。電池85%以上の在庫 59件／1,501件・画面修理 57,800円／45,800円。120Hz と3倍望遠を使う人は別
+・15 Plus（128GB）104,291円。16e は 106,980円で差 2,689円。電池85%以上 30.7%／64.0%・画面修理 57,800円／41,800円。大きい画面が目的の人は別
+・17e（256GB）125,980円。Apple の新品 124,800円より +1,180円（最安は 109,980円）
+・18 Pro（256GB）230,980円。Apple の新品 219,800円より +11,180円（最安は 217,580円）。18 Pro Max（256GB）も +7,180円
+・正解: 13（128GB）50,800円・電池85%以上の最安 40,100円／15（128GB）90,600円・電池85%以上 1,501件／16e（128GB）106,980円・電池85%以上 347件
+
+相場＝在庫がいちばん多い容量の中央値（比べるときは同じ容量の中央値）。新品の価格（10/19 確認）・修理の料金（10/21 確認）・iOS の対応・スペックは Apple 公式で確かめた値です。
+
+0:00 結論：地雷6台・正解3台
+0:39 どうやって選んだ？
+1:46 地雷1 XR：iOS 27が入らない
+2:31 地雷2 11 Pro：料金表にない
+3:32 地雷3 14 Pro：15まで2,820円
+4:28 地雷4 15 Plus：16eまで2,689円
+5:18 地雷5 17e：新品より1,180円高い
+6:07 地雷6 18 Pro：新品より1.1万円高い
+6:42 正解1 13：Face IDでいちばん安い
+7:41 正解2 15：USB-Cでいちばん安い
+8:19 正解3 16e：AIでいちばん安い
+8:57 まとめ
+9:42 次におすすめの動画
+
+iPhone 13 を電池85%以上で探す: https://used.gadelog.com/search?model=iPhone+13&minBattery=85&utm_source=youtube&utm_medium=social&utm_campaign=long_20261106
+iPhone 15 の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-15?utm_source=youtube&utm_medium=social&utm_campaign=long_20261106
+iPhone 16e の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-16e?utm_source=youtube&utm_medium=social&utm_campaign=long_20261106
+全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261106
+
+VOICEVOX:春日部つむぎ
+VOICEVOX:ずんだもん
+BGM: Cyber Society by のる（OpenTracks）
+効果音：効果音ラボ
+立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)
+ずんだもん立ち絵：坂本アヒル様
+
+中古スマホにするなら回線も見直す
+楽天モバイル（Rakuten最強プラン 月1,078円〜・税込・10/26 公式で確認）【PR】: https://hb.afl.rakuten.co.jp/hsc/58858f0c.304dd67c.566a1a2e.942e4aef/?link_type=text&rafst=rmn&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJ0ZXh0IiwiY29sIjoxLCJjYXQiOjEsImJhbiI6Im5hbWUiLCJhbXAiOmZhbHNlfQ%3D%3D
+
+#中古iPhone #iPhone #中古スマホ

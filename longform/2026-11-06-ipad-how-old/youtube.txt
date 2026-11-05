@@ -1,0 +1,40 @@
+中古iPadは何世代まで買っていい？無印は第9世代から｜相場4.3万円
+
+中古iPadは何世代前まで買っていいのかを、Apple 公式の情報（iPadOS 27 の対応機種・修理と部品の期間・端子・使える Apple Pencil・Apple Intelligence の対応機種）と、iPad を扱う大手中古ショップ15店の在庫 12,135件の相場（2026/11/05時点）で確かめました。
+結論: 無印の最低ラインは iPadOS 27 に対応する第9世代（相場 42,800円・64GB）。Air は第4世代、mini は第6世代、Pro 11インチは第2世代から。第9世代は Lightning・Pencil 第1世代だけ・Apple Intelligence 非対応なので、絵を描くなら USB-C の Air 第4世代（57,266円・64GB）も候補です。
+
+・iPadOS 27 非対応: 第6世代（14,278円）・第7世代（18,601円）・第8世代（25,980円）（すべて32GB）／対応: 第9世代（42,800円・64GB）・第10世代（65,980円・64GB）・A16（76,930円・128GB）
+・シリーズごとの線: Air 第3世代 29,730円 → 第4世代 57,266円（64GB）／mini 第5世代 28,800円 → 第6世代 61,980円（64GB。在庫がいちばん多い256GBは72,930円）／Pro 11インチ 第1世代 52,041円（64GB）→ 第2世代 76,780円（128GB）
+・修理と部品: Apple は販売店への供給をやめてから最低5年（部品の在庫しだいで最長7年）。5年以上7年未満はビンテージ（Air 第3世代・Pro 11インチ 第1世代など）、7年以上はオブソリートで修理なし（第6世代など）
+・第10世代（65,980円）と Air 第4世代（57,266円）は同じ A14 Bionic・USB-C。Air 第4世代のほうが 8,714円安く、Pencil は第2世代が使えます（64GB）
+・Apple Intelligence: M1以降のiPadと iPad mini（A17 Pro）以降。いちばん安いのは Air 第5世代（71,280円・64GB）。256GB どうしでは Air 第5世代 89,980円・A16 92,980円（A16 は非対応）
+・第9世代（64GB）の在庫 1,345件のうち電池の表記ありは 553件（52〜100%）。Wi-Fi 910件 43,670円／au 145件 36,800円／国内版SIMフリー 28件 41,848円
+
+相場＝在庫がいちばん多い容量の中央値（比べるときは同じ容量どうし）。在庫5件未満の容量は使っていません。iPadOS・修理・Pencil・AI は Apple 公式（apple.com/jp/ipados/・support.apple.com/ja-jp/102772・support.apple.com/ja-jp/108937）で確かめた情報です。
+
+0:00 結論：無印は第9世代から
+0:58 どうやって調べた？
+1:36 iPadOS 27で分かれる線
+2:33 Air・mini・Proの線
+3:20 修理と部品はいつまで？
+4:15 第8世代と第9世代の差
+4:56 第9世代の次はどれ？
+6:04 AIまで欲しいなら
+6:59 検品担当が見る：電池
+7:44 Wi-Fi・Cellular・SIM・容量
+8:57 まとめ
+9:44 次におすすめの動画
+
+iPad 第9世代の店ごとの在庫と最安値: https://used.gadelog.com/ipad/ipad-9th-gen?utm_source=youtube&utm_medium=social&utm_campaign=long_20261106
+iPad Air（第4世代）の店ごとの在庫と最安値: https://used.gadelog.com/ipad/ipad-air-4th-gen?utm_source=youtube&utm_medium=social&utm_campaign=long_20261106
+iPad mini（第6世代）の店ごとの在庫と最安値: https://used.gadelog.com/ipad/ipad-mini-6th-gen?utm_source=youtube&utm_medium=social&utm_campaign=long_20261106
+全機種の中古相場: https://used.gadelog.com/ipad?utm_source=youtube&utm_medium=social&utm_campaign=long_20261106
+
+VOICEVOX:春日部つむぎ
+VOICEVOX:ずんだもん
+BGM: Cyber Society by のる（OpenTracks）
+効果音：効果音ラボ
+立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)
+ずんだもん立ち絵：坂本アヒル様
+
+#中古iPad #iPad #iPadOS27
