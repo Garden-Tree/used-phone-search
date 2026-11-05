@@ -342,6 +342,7 @@ export default async function ModelPage({ params }: Props) {
     ? buildSummary({
         model, dateText: summaryDate, minPrice: stats.minPrice, minStorage: minStorageRow && stats.byStorage.length > 1 ? storageLabel(minStorageRow.key, model) : null,
         medianPrice: stats.medianPrice, medianStorage: stats.medianStorage, shopCount: stats.shopCount, count: stats.count, newVsUsed: newRows, newSourceName: newSource?.name,
+        note: isIpad(model) ? (IPADOS27_MODELS.has(model) ? "iPadOS 27 に対応。" : "iPadOS 27 には非対応。") : undefined,
       })
     : null;
 
@@ -631,7 +632,9 @@ export default async function ModelPage({ params }: Props) {
             <h1 className="text-[22px] md:text-[28px] leading-[1.3] font-bold">
               {H1_PRICE_MODELS.has(model) && stats.minPrice !== null && newRows[0]
                 ? <>{model} 中古の最安値 <span className="text-price">{yen(stats.minPrice)}</span>〜｜新品は{yen(newRows[0].newPrice)}</>
-                : <>{model} 中古の相場・最安値</>}
+                : isIpad(model)
+                  ? <>{model} <span className="inline-block">中古の相場・最安値</span></>
+                  : <>{model} 中古の相場・最安値</>}
             </h1>
 
             {/* 冒頭の要約文: AI 検索と検索エンジンが引用しやすいよう、h1 の直後の最初の段落に1文だけ置く（日付・最安・相場・店数・件数。ideas/2026-10-19・10-23）。

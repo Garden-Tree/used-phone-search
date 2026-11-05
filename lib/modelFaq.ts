@@ -143,6 +143,8 @@ export function buildSummary(p: {
   count: number;
   newVsUsed?: NewVsUsedRow[];
   newSourceName?: string;
+  /** 文の最後に足す1文（iPad の iPadOS 27 対応。11/5〜） */
+  note?: string;
 }): string {
   const { model } = p;
   const nv = p.newVsUsed ?? [];
@@ -158,5 +160,5 @@ export function buildSummary(p: {
       ? `。新品（${p.newSourceName ?? "公式"}）${yen(main.newPrice)}より${yen(main.diff)}安い（${storageLabel(main.storage, model)}の最安で比較）`
       : "。中古の最安は新品以上")
     : "";
-  return `${p.dateText}時点、${model}の中古は${minPart}${med}${shops}${tail}。`;
+  return `${p.dateText}時点、${model}の中古は${minPart}${med}${shops}${tail}。${p.note ?? ""}`;
 }
