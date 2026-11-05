@@ -297,7 +297,7 @@ function deviceGenNarration(s: DeviceGenScript): Partial<Record<NarrationKey, st
 function stockNarration(s: StockScript): Partial<Record<NarrationKey, string>> {
   const items = s.scenes.ranking.items;
   const top = items[0];
-  const scope = s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpixel" ? "Google Pixel" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : s.theme === "stockmini" ? "iPad mini" : "Androidスマホ";
+  const scope = s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpixel" ? "Google Pixel" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : s.theme === "stockmini" ? "iPad mini" : s.theme === "stockxperia" ? "Xperia" : "Androidスマホ";
   // stockipad・stockwatch（11/2〜）: iPad の「(M4)」は読点に（spokenModel）。Watch は問いで「Apple Watch」と言うので行では「Series 9」だけ読む
   const say = (model: string) => (s.theme === "stockwatch" ? model.replace(/^Apple Watch\s+/, "") : s.theme === "stockipad" ? spokenModel(model) : model);
   return {

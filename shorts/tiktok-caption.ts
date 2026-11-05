@@ -36,6 +36,7 @@ const BASE_TAGS: Partial<Record<Script["theme"], string[]>> = {
   stockpixel: ["#中古スマホ", "#Pixel", "#中古Pixel"],
   stockgalaxy: ["#中古スマホ", "#Galaxy", "#中古Galaxy"],
   stockmini: ["#中古iPad", "#iPadmini", "#iPad"],
+  stockxperia: ["#中古スマホ", "#Xperia"],
   launch: ["#MacBookPro", "#iPadmini", "#中古MacBook"],
   ultravs: ["#AppleWatch", "#AppleWatchUltra", "#中古"],
 };
@@ -66,6 +67,7 @@ const THEME_TAG: Partial<Record<Script["theme"], string>> = {
   stockpro: "#ランキング",
   stockgalaxy: "#ランキング",
   stockmini: "#ランキング",
+  stockxperia: "#ランキング",
   launch: "#新型",
   kaitoriswap: "#買取",
 };
