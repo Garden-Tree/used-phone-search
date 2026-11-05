@@ -125,7 +125,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - macgen: 組は Air 13インチ M5→M4→M3→M2→M1・15インチ M5→M4→M3→M2（`lib/macCatalog.ts`）。SSD は両方に在庫5件以上の最小の容量。ひと言は1位の1世代前・その容量の**メモリの内訳（memoryGB の groupBy）**から（分かる在庫5件未満なら一般の注意）。リンクは /mac。utm `_macgen`・#MacBook #MacBookAir #中古。声 ずんだもん
   - 見た目は ⑤ PRO、つかみは機器の形（look.hook "device"。時計の文字盤とバンド／開いたノート＋最大の差額）。関連動画の締めはなし（iPhone ではない）
   - 読み: Series シリーズ（voiceTuning の BRANDS で頭を切る）・Ultra 2〜4 ウルトラツー〜フォー・M1〜M5 エムワン〜エムファイブ・mm ミリ・Watch ウォッチ（`voice.ts` の speakable）
-- stock・stockandroid（10/27〜・`shorts/themes/stock.ts`）: 中古でいちばん出回っている iPhone／Android の在庫数ランキング。件数は販売中・ジャンク除く・表記ゆれを機種にまとめる（groupBy 1回）。上位3機種の相場（中央値・容量つき）と全体に占める割合。声 stock つむぎ・stockandroid ずんだもん。見た目 ④ CONDITION＋つかみ bars。1位と2位が近ければ公開前日に取り直す
+- stock・stockandroid（10/27〜・`shorts/themes/stock.ts`）: 中古でいちばん出回っている iPhone／Android の在庫数ランキング。件数は販売中・ジャンク除く・表記ゆれを機種にまとめる（groupBy 1回）。上位3機種の相場（中央値・容量つき）と全体に占める割合。声 stock つむぎ・stockandroid ずんだもん。見た目 ④ CONDITION＋つかみ bars。1位と2位が近ければ公開前日に取り直す。stockxperia（11/5〜）は Xperia 版で同じ作り。161,980円のような額は声が「16万せん980」になるので narration は「約16.2万円」に（画面はそのまま）
 - mbpvsair（10/29〜・`shorts/themes/mbpvsair.ts`。台本案 `longform/2026-11-01-mbp-vs-mba/short-plan.md`）: 「MacBook ProとAir、中古ならどっちが安い？」。場面・行は oldpro と同じ（OldProRow で older＝Pro・newer＝Air・diff＝Air − Pro の向きつき。型 MbpVsAirScript）
   - 行は同じメモリ・SSD どうしだけ: 新品 Air 13インチ M5 vs Pro 14インチ M6（16GB・1TB。`lib/macbookAirM5.ts`・`lib/macbookProM6.ts`・Apple 公式）と、中古 Air 13インチ M2 vs Pro 14インチ M1 Pro（16GB・512GB／1TB・構成の中央値・ジャンク除く・在庫5件以上）。**13インチ Pro（Touch Bar の旧筐体）は比べる相手にしない**（10/29 ユーザーと決定）
   - 並びは差の大きさの**小さい順**（1位＝いちばん同じ値段に近い組）。安い方は毎回の数字から（逆転していたら「Proのほうが安い」と言わない。タイトルも切り替わる）
