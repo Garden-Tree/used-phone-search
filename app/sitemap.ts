@@ -4,7 +4,7 @@ import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { PICKS, pickPath } from "@/lib/picks";
 import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, SUMAHO_BUDGETS, budgetPath, sumahoBudgetPath } from "@/lib/budgets";
 import { isSumahoIndexable } from "@/lib/budgetStats";
-import { isCompareIndexable, COMPARE_MIN_STOCK } from "@/lib/compareStock";
+import { getModelStockCounts, isCompareIndexable, COMPARE_MIN_STOCK } from "@/lib/compareStock";
 import { SITE_URL } from "@/lib/site";
 import { reportMonths, reportPublished } from "@/lib/monthlyReport";
 import prisma from "@/lib/prisma";
@@ -39,7 +39,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const pair of COMPARE_PAIRS) if (await isCompareIndexable(pair[0], pair[1])) comparePairs.push(pair);
   console.log(`[compare] 比較ページ ${COMPARE_PAIRS.length} 件のうち、在庫が ${COMPARE_MIN_STOCK} 件未満で noindex・サイトマップ除外: ${COMPARE_PAIRS.length - comparePairs.length} 件`);
 
-  const modelPages: MetadataRoute.Sitemap = ALL_DEVICE_PAGE_MODELS.map((model) => ({
+  // 在庫ゼロの機種ページは noindex なのでサイトマップからも外す（在庫が戻れば次のビルドで載る）
+  const stockCounts = await getModelStockCounts();
+  const modelPages: MetadataRoute.Sitemap = ALL_DEVICE_PAGE_MODELS.filter((model) => (stockCounts.get(model) ?? 0) > 0).map((model) => ({
     url: `${SITE_URL}${modelPagePath(model)}`,
     lastModified,
     changeFrequency: "daily",

@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { matchesModel } from "@/lib/modelMatch";
 import { COMPARE_PAIRS } from "@/lib/compare";
+import { ALL_DEVICE_PAGE_MODELS } from "@/lib/catalog";
 
 /**
  * 比較ページを検索に登録するかの判断（2026-10-15〜）。
@@ -21,7 +22,7 @@ export function getModelStockCounts(): Promise<Map<string, number>> {
         where: { isSoldOut: false },
         _count: { _all: true },
       });
-      const models = new Set(COMPARE_PAIRS.flat());
+      const models = new Set([...COMPARE_PAIRS.flat(), ...ALL_DEVICE_PAGE_MODELS]);
       const out = new Map<string, number>();
       for (const m of models) {
         out.set(m, rows.filter((r) => matchesModel(m, r.modelName)).reduce((n, r) => n + r._count._all, 0));
