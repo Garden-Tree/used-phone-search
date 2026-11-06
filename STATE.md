@@ -31,7 +31,7 @@
 - **相場レポート** `/iphone/report/<月>`（毎月1日）・`/how-long`・`/iphone/resale-value`
 - **YouTube 予約は2日後まで**・声はずんだもん（比べる型は青山）
 - **X**: 返信の2/3は見られている投稿へ・速報は1日1本・引用1日1本・RTなし
-- **ショート**: 1日2本（7〜8時・19〜21時）。在庫数と電池の型を優先・予算別は週1・新形式3本（`reversal.tsx`）11/9〜朝に予約
+- **ショート**: 1日2本（7〜8時・19〜21時）。在庫数と電池の型を優先・予算別は週1・新形式 `reversal.tsx` 1本公開・2本 11/9〜朝
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
 - **中古パソコン** `/pc`・予算別（10/27〜）: 表 `PcInventory`。PC WRAP・Qualit・PC next・Be-Stock は A8、ソフマップ・じゃんぱら・イオシスは楽天
 
