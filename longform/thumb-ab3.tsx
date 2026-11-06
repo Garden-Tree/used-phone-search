@@ -778,9 +778,9 @@ const PLANS: Record<string, Plan> = {
       </Frame>
     ),
   },
-  // 21本目（未アップロード）。A＝thumbnail.png「中古iPhone／今は買うな／地雷6台」
+  // 21本目（11/6 公開）。A＝thumbnail.png「中古iPhone／今は買うな／地雷6台」
   "2026-11-06-jirai": {
-    id: "未アップロード",
+    id: "4jeD0o26_U4",
     // B: 色帯3段＋端末の絵に ✓✕（「0:00 結論」: 地雷 XR・17e／正解 13・15）
     B: () => (
       <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>
