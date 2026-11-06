@@ -187,7 +187,7 @@
    （`shopping.yahoo.co.jp/search?...&sid=` は店で絞り込まれない）
    （商品検索API v3 を `seller_id=<ストアID>&condition=used&in_stock=true` で呼んでも商品名を集められる。`description` にランク・バッテリー・キャリアが書かれている店が多く、`fetch-yahoo.ts` の `extract` が読む。保証は店の `guide.html`（`info.html` は会社概要だけ）にある）
 2. `lib/shops.ts` の `SHOPS` に1行足す（`note` が "Yahoo!" で始まる店は絞り込みで「（Yahoo!）」と出る。保証・赤ロムは**その店の公式ページで確かめてから**書く）
-3. リンクは、バリューコマース（サイト ID 3784061）の提携が通るまで**もしもアフィリエイト経由**（`lib/affiliate.ts` の `moshimoYahooUrl`。a_id 5840289・p_id 1225・メディア「中古スマホ一括検索」692048。GA4 の `link_type` は `moshimo`）。Secrets の `VC_SID`・`VC_PID` を入れると自動で ValueCommerce（2%。`vc`）に切り替わる。Yahoo の商品ページ以外へは張らない
+3. リンクは**バリューコマース経由**（サイト ID 3784061。もしもは否認）（`lib/affiliate.ts` の `moshimoYahooUrl`。a_id 5840289・p_id 1225・メディア「中古スマホ一括検索」692048。GA4 の `link_type` は `moshimo`）。Secrets の `VC_SID`・`VC_PID` を入れると自動で ValueCommerce（2%。`vc`）に切り替わる。Yahoo の商品ページ以外へは張らない
 4. API の応答の形・件数の上限を確かめるとき: `YAHOO_APP_ID=... npx tsx scripts/fetch-yahoo.ts --debug --shop <ストアID>`（最初の1商品の生の応答を出す）
 - Yahoo! JAPAN のウェブサービスを使う側の表記（クレジット）は未対応。API 規約を確認して `app/components/AdDisclosure.tsx` に足す
 

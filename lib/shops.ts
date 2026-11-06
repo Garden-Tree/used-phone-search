@@ -75,7 +75,7 @@ export const SHOPS: Shop[] = [
   { name: "エムティーエム（楽天市場店）", label: "エムティーエム", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "記載なし（楽天の店舗情報に保証期間の記載がない。商品ページを確認）", redRom: "記載なし", warrantyShort: "保証 記載なし", redRomShort: "赤ロム 記載なし",
     guaranteeUrl: "https://www.rakuten.co.jp/ekosuta/info.html" },
-  // Yahoo!ショッピングの店（2026-10-10〜。リンクはもしもアフィリエイト経由。保証・赤ロムは 2026-10-09 に各店のお買い物ガイド（guide.html。info.html は会社概要だけ）の文面から（要・再確認））
+  // Yahoo!ショッピングの店（2026-10-10〜。リンクはバリューコマース経由。保証・赤ロムは 2026-10-09 に各店のお買い物ガイド（guide.html。info.html は会社概要だけ）の文面から（要・再確認））
   { name: "Quality Shop（Yahoo!ショッピング店）", label: "Quality Shop", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "記載なし（確認中）", redRom: "記載なし（確認中）", warrantyShort: "保証 記載なし", redRomShort: "赤ロム 記載なし",
     guaranteeUrl: "https://store.shopping.yahoo.co.jp/quality-shop/info.html", marketplace: "yahoo" },
