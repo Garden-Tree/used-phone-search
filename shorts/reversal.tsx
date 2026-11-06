@@ -29,17 +29,22 @@ const SPEED = 1.3;
 const GAP = 0.08;
 const Z = "ずんだもん/ノーマル";
 const T = "春日部つむぎ/ノーマル";
-const NAVY = "#14123a";
-const RED = "#ff3b30";
-const YELLOW = "#ffd60a";
-const GREEN = "#34d399";
+/** 配色。11/6 ユーザー「色がチカチカする」で案を比べる（--palette か script.json の palette）。accent＝悪い数字、good＝良い数字、shout＝驚きの文字 */
+const PALETTES = {
+  dark: { bg: "linear-gradient(180deg, #14123a 0%, #2a1a5e 70%, #0b0a24 100%)", ink: "#ffffff", sub: "#d1d5db", tagBg: "#ffd60a", tagInk: "#14123a", accent: "#ff3b30", good: "#34d399", shout: "#ffd60a", neutral: "#9ca3af" },
+  cream: { bg: "#FFF8EC", ink: "#1b1a3a", sub: "#4b5563", tagBg: "#1b1a3a", tagInk: "#ffffff", accent: "#c8231b", good: "#0f766e", shout: "#1b1a3a", neutral: "#9ca3af" },
+  white: { bg: "#F4F5F7", ink: "#111827", sub: "#4b5563", tagBg: "#111827", tagInk: "#ffffff", accent: "#c8231b", good: "#111827", shout: "#111827", neutral: "#b6bbc4" },
+  navy: { bg: "#171A33", ink: "#f4f5f7", sub: "#b6bbc8", tagBg: "#f4f5f7", tagInk: "#171A33", accent: "#ff7a6b", good: "#f4f5f7", shout: "#f4f5f7", neutral: "#6b7285" },
+} as const;
+type Palette = keyof typeof PALETTES;
 
 type Who = "z" | "t";
 type Visual =
-  | { kind: "big"; kicker: string; lines: string[]; color?: string; size?: number }
+  | { kind: "big"; kicker: string; lines: string[]; tone?: "accent" | "good" | "shout"; size?: number }
   | { kind: "bars"; show: number };
 type Line = { who: Who; text: string; face: { z: string; t: string }; visual: Visual; se?: "pop" | "ta" };
 type Plan = {
+  palette?: Palette;
   date: string;
   shopCount: number;
   storage: number;
@@ -67,13 +72,13 @@ function linesOf(p: Plan): Line[] {
   const wow = { z: "expr/zundamon-surprised", t: "tsumugi" };
   return [
     { who: "z", text: "18 Pro、中古なら安いのだ！", face: calm, visual: { kind: "big", kicker: `iPhone 18 Pro ${p.storage}GB`, lines: ["中古なら", "安い？"], size: 190 } },
-    { who: "t", text: `それ、新品より${say(p.over)}高いよ。`, face: shock, se: "ta", visual: { kind: "big", kicker: "中古の相場は 新品より", lines: [`+${yen(p.over)}`, "高い"], color: RED, size: 150 } },
-    { who: "z", text: "中古なのに！？", face: shock, visual: { kind: "big", kicker: "", lines: ["中古なのに", "！？"], color: YELLOW, size: 180 } },
+    { who: "t", text: `それ、新品より${say(p.over)}高いよ。`, face: shock, se: "ta", visual: { kind: "big", kicker: "中古の相場は 新品より", lines: [`+${yen(p.over)}`, "高い"], tone: "accent", size: 150 } },
+    { who: "z", text: "中古なのに！？", face: shock, visual: { kind: "big", kicker: "", lines: ["中古なのに", "！？"], tone: "shout", size: 180 } },
     { who: "t", text: `Appleの新品が${say(p.newPrice)}。`, face: wow, se: "pop", visual: { kind: "bars", show: 1 } },
     { who: "t", text: `中古の相場は${say(p.used)}。`, face: wow, se: "pop", visual: { kind: "bars", show: 2 } },
     { who: "z", text: "じゃあ、どれを買えばいいのだ？", face: wow, visual: { kind: "big", kicker: "", lines: ["じゃあ", "どれ？"], size: 210 } },
     { who: "t", text: `1つ前の17 Proなら、${say(p.older)}。`, face: calm, se: "pop", visual: { kind: "bars", show: 3 } },
-    { who: "z", text: `${say(p.saved)}も違うのだ！`, face: wow, se: "ta", visual: { kind: "big", kicker: "18 Pro の中古より", lines: [`−${yen(p.saved)}`], color: GREEN, size: 140 } },
+    { who: "z", text: `${say(p.saved)}も違うのだ！`, face: wow, se: "ta", visual: { kind: "big", kicker: "18 Pro の中古より", lines: [`−${yen(p.saved)}`], tone: "good", size: 140 } },
     { who: "t", text: "あなたなら、どっちを買う？", face: calm, visual: { kind: "big", kicker: "同じ 256GB の中古", lines: ["18 Pro か", "17 Pro か"], size: 150 } },
   ];
 }
@@ -87,19 +92,20 @@ function art(name: string, cache: Art) {
 }
 
 function Bars({ p, show }: { p: Plan; show: number }) {
+  const c = PALETTES[p.palette ?? "dark"];
   const max = Math.max(p.newPrice, p.used);
   const rows = [
-    { label: "18 Pro 新品（Apple公式）", value: p.newPrice, color: "#9ca3af" },
-    { label: "18 Pro 中古の相場", value: p.used, color: RED },
-    { label: "17 Pro 中古の相場", value: p.older, color: GREEN },
+    { label: "18 Pro 新品（Apple公式）", value: p.newPrice, color: c.neutral },
+    { label: "18 Pro 中古の相場", value: p.used, color: c.accent },
+    { label: "17 Pro 中古の相場", value: p.older, color: c.good },
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 34, width: 960 }}>
       {rows.slice(0, show).map((r, i) => (
         <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", color: "#fff" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", color: c.ink }}>
             <span style={{ fontSize: 42, fontWeight: 500 }}>{r.label}</span>
-            <span style={{ fontSize: 76, fontWeight: 900, color: i === show - 1 ? (i === 0 ? "#fff" : r.color) : "#fff" }}>{yen(r.value)}</span>
+            <span style={{ fontSize: 76, fontWeight: 900, color: i === show - 1 && i > 0 ? r.color : c.ink }}>{yen(r.value)}</span>
           </div>
           <div style={{ display: "flex", width: Math.round((r.value / max) * 960), height: 44, borderRadius: 10, background: r.color }} />
         </div>
@@ -110,6 +116,7 @@ function Bars({ p, show }: { p: Plan; show: number }) {
 
 function Frame({ p, line, cache, talk, scale }: { p: Plan; line: Line; cache: Art; talk: boolean; scale: number }) {
   const v = line.visual;
+  const c = PALETTES[p.palette ?? "dark"];
   const chara = (who: Who) => {
     const active = line.who === who;
     const name = line.face[who];
@@ -119,13 +126,13 @@ function Frame({ p, line, cache, talk, scale }: { p: Plan; line: Line; cache: Ar
     return <img src={a.src} width={Math.round((a.w / a.h) * height)} height={height} style={{ opacity: active ? 1 : 0.75 }} />;
   };
   return (
-    <div style={{ width: W, height: H, display: "flex", flexDirection: "column", alignItems: "center", background: `linear-gradient(180deg, ${NAVY} 0%, #2a1a5e 70%, #0b0a24 100%)`, fontFamily: "Noto Sans JP", position: "relative" }}>
+    <div style={{ width: W, height: H, display: "flex", flexDirection: "column", alignItems: "center", background: c.bg, fontFamily: "Noto Sans JP", position: "relative" }}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 690, marginTop: 130, transform: `scale(${scale})` }}>
         {v.kind === "bars" ? <Bars p={p} show={v.show} /> : (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            {v.kicker && <div style={{ display: "flex", fontSize: 54, fontWeight: 900, color: NAVY, background: YELLOW, borderRadius: 12, padding: "6px 26px", marginBottom: 26 }}>{v.kicker}</div>}
+            {v.kicker && <div style={{ display: "flex", fontSize: 54, fontWeight: 900, color: c.tagInk, background: c.tagBg, borderRadius: 12, padding: "6px 26px", marginBottom: 26 }}>{v.kicker}</div>}
             {v.lines.map((l, i) => (
-              <div key={i} style={{ display: "flex", fontSize: i === 1 && l === "高い" ? 120 : v.size ?? 150, lineHeight: 1.18, fontWeight: 900, color: v.color && !(i === 1 && l === "高い") ? v.color : "#fff" }}>{l}</div>
+              <div key={i} style={{ display: "flex", fontSize: i === 1 && l === "高い" ? 120 : v.size ?? 150, lineHeight: 1.18, fontWeight: 900, color: v.tone && !(i === 1 && l === "高い") ? c[v.tone] : c.ink }}>{l}</div>
             ))}
           </div>
         )}
@@ -137,7 +144,7 @@ function Frame({ p, line, cache, talk, scale }: { p: Plan; line: Line; cache: Ar
       <div style={{ position: "absolute", left: 30, right: 30, top: 825, display: "flex", justifyContent: "center" }}>
         <div style={{ display: "flex", maxWidth: 1000, background: "#fff", color: "#111827", borderRadius: 20, padding: "10px 26px", fontSize: 46, fontWeight: 900, textAlign: "center", border: `6px solid ${line.who === "z" ? "#22c55e" : "#f59e0b"}` }}>{line.text}</div>
       </div>
-      <div style={{ position: "absolute", left: 40, top: 1548, display: "flex", width: 860, fontSize: 28, fontWeight: 500, color: "#d1d5db", lineHeight: 1.35 }}>
+      <div style={{ position: "absolute", left: 40, top: 1548, display: "flex", width: 860, fontSize: 28, fontWeight: 500, color: c.sub, lineHeight: 1.35 }}>
         {`${p.storage}GB・相場は${p.shopCount}店の中央値（${p.date.replace(/-/g, "/")}）・18 Pro の最安は${yen(p.usedMin)}・新品はApple公式`}
       </div>
     </div>
@@ -287,9 +294,27 @@ async function render(dirArg: string) {
   if (existsSync(join(frames, "mixed.mkv"))) rmSync(join(frames, "mixed.mkv"));
 }
 
+/** 配色の比較用に、指定した場面の静止画だけ書く（動画は作らない） */
+async function stills(dirArg: string) {
+  const dir = resolve(dirArg);
+  const base = JSON.parse(readFileSync(join(dir, "script.json"), "utf8")) as Plan;
+  const out = join(dir, "palettes");
+  mkdirSync(out, { recursive: true });
+  const lines = linesOf(base);
+  const fonts = await notoSansJp(JSON.stringify(lines) + JSON.stringify(base) + "0123456789,.+−円万・（）18 Pro 新品Apple公式中古の相場17GB店中央値最安はとiPhone");
+  const cache: Art = {};
+  for (const name of Object.keys(PALETTES) as Palette[]) {
+    for (const i of [1, 2, 6]) {
+      const el = <Frame p={{ ...base, palette: name }} line={lines[i]} cache={cache} talk scale={1} />;
+      writeFileSync(join(out, `${name}-${i}.png`), Buffer.from(await new ImageResponse(el, { width: W, height: H, fonts }).arrayBuffer()));
+    }
+  }
+  console.log(out);
+}
+
 const [cmd] = process.argv.slice(2);
 const dirIdx = process.argv.indexOf("--dir");
-(cmd === "plan" ? plan() : cmd === "render" && dirIdx > 0 ? render(process.argv[dirIdx + 1]) : Promise.reject(new Error("使い方: plan / render --dir <フォルダ>")))
+(cmd === "plan" ? plan() : cmd === "stills" && dirIdx > 0 ? stills(process.argv[dirIdx + 1]) : cmd === "render" && dirIdx > 0 ? render(process.argv[dirIdx + 1]) : Promise.reject(new Error("使い方: plan / render --dir <フォルダ>")))
   .catch((e) => {
     console.error(e);
     process.exitCode = 1;
