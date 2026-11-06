@@ -805,9 +805,9 @@ const PLANS: Record<string, Plan> = {
       </Frame>
     ),
   },
-  // 22本目（未アップロード）。A＝thumbnail.png
+  // 22本目（11/8 12:00 公開予約）。A＝thumbnail.png
   "2026-11-06-ipad-how-old": {
-    id: "未アップロード",
+    id: "X-QOob6x4N0",
     // B: 色帯3段＋端末の絵に ✓✕（「結論」: 第8世代は iPadOS 27 非対応・第9世代は対応、相場 42,800円）
     B: () => (
       <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>

@@ -153,6 +153,7 @@ async function main() {
     const np = x ? applePrice(m, x.gb) : null;
     if (x && np !== null && x.median > np) console.log(`${m} ${x.gb}GB 新品 ${np} 相場 ${x.median} 中古が +${x.median - np} 全${market.get(m)?.count}件 最安 ${x.min}`);
   }
+  // 11/6 変更: 動画の条件4は同じ大きさの画面どうしで見る（6.5インチ以上の USB-C の線は 15 Plus）。下のログは全機種の線のまま
   console.log(`\n== 選定 地雷の条件4: 128GB の在庫が5件以上ある機種の128GB の相場で、USB-C・Apple Intelligence の線（その機能がいちばん安い機種の128GB）まであと5,000円未満（線より高い機種は条件の外として別に出す）`);
   const LINES: [string, (m: string) => boolean][] = [["USB-C", (m) => specOf(m)?.port === "USB-C"], ["Apple Intelligence", (m) => AI_MODELS.test(m)]];
   for (const [name, ok] of LINES) {
