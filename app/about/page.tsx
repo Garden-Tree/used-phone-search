@@ -52,7 +52,7 @@ export default async function AboutPage() {
         <Section id="operator" title="運営者">
           <p>
             {SITE_NAME}は、ブログ「<a href={BLOG_URL} target="_blank" rel="noopener" className={ext}>ガデログ</a>」の管理人 GardenTree が個人で運営しています。
-            運営者は中古スマホ店で接客と検品をしています。店の名前は出していません。このサイトは、勤め先の店とは関係のない個人のサイトです。
+            運営者は中古スマホ店のアルバイトで、約1年、接客と検品をしています。店の名前は出していません。このサイトは、勤め先の店とは関係のない個人のサイトです。
           </p>
           <p>
             店で接客をしていると、新品しか考えていなかった方や、どれを選べばいいか迷っている方によく会います。

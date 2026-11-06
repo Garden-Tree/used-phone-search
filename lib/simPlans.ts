@@ -90,26 +90,6 @@ export const ALL_SIM_PLANS: SimPlan[] = [
     checked: "2026-10-26",
   }),
   plan({
-    // A8「J:COM MOBILE」（s00000019927002。10/26 深夜に申請・提携待ち → 提携したら href・imgSrc を入れる）
-    name: "J:COM MOBILE",
-    text: "J:COM の格安スマホ",
-    href: "",
-    linkType: "a8",
-    // 色は仮（出す前にユーザーに見せる）
-    style: { background: "#C8102E", color: "#FFFFFF", border: "3px solid #C8102E" },
-    // Aプラン ST/SU（ST＝SIM・SU＝eSIM）1GB 1,408円・5GB 1,958円・10GB 2,508円・20GB 3,058円・50GB 3,828円（10/26 公式・税込）。
-    // J:COM の他サービスを契約すると同じ料金でデータが増える「データ盛」は条件付きなので入れない
-    tiers: [
-      { label: "1GB", gb: 1, monthly: 1408 },
-      { label: "5GB", gb: 5, monthly: 1958 },
-      { label: "10GB", gb: 10, monthly: 2508 },
-      { label: "20GB", gb: 20, monthly: 3058 },
-      { label: "50GB", gb: 50, monthly: 3828 },
-    ],
-    priceSource: "https://www.jcom.co.jp/service/mobile/price/",
-    checked: "2026-10-26",
-  }),
-  plan({
     // A8「X-mobile（グリーンプラン）」（s00000027731001。10/26 提携・新規開通 6,000円。10/28 にリンクを入れた）
     name: "X-mobile",
     text: "データ量を選べるグリーンプラン",

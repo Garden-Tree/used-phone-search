@@ -23,6 +23,8 @@ export const LONG_PAUSE = 0.5;
  */
 export function forVoice(text: string): string {
   const words: [RegExp, string | ((...a: string[]) => string)][] = [
+    // Tensor を「テンソー」と読む（Pixel の回・11/6）
+    [/Tensor G2/g, "テンサージーツー"], [/Tensor G3/g, "テンサージースリー"], [/Tensor G4/g, "テンサージーフォー"], [/G3/g, "ジースリー"],
     [/USB-C/g, "ユーエスビーシー"], [/MagSafe/g, "マグセーフ"], [/(\d+)Hz/g, "$1ヘルツ"], [/\bOS\b/g, "オーエス"],
     [/\bMac\b/g, "マック"], [/\bApple\b/g, "アップル"], [/\bOK\b/g, "オーケー"], [/〜/g, "ー"], [/あーし/g, "アーシ"], [/△/g, "サンカク"], [/×/g, "バツ"],
     // 「へたってる」の「へ」を助詞（エ）と読む・「3.0万円」は「サンテンゼロ」・「数字はね」は「ハネ」・「あと13は」は「アトジュウ／サンワ」（10/22）
