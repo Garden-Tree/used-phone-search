@@ -44,7 +44,7 @@ const RANK_STYLES: Record<string, string> = {
 const rankStyle = (rank: string) => RANK_STYLES[rank.toUpperCase()] ?? 'bg-gray-100 text-gray-600';
 
 /** キャリア・SIMロック状態の文言（行の2行目に出す） */
-function simLabel(device: Device): string {
+export function simLabel(device: Device): string {
   const carrier = device.carrier;
   // iPad の Wi-Fi モデル（SIM を使わない）
   if (carrier === 'Wi-Fiモデル') return 'Wi-Fiモデル';
@@ -69,14 +69,30 @@ function batteryLabel(device: Device): { text: string; low: boolean } | null {
   return { text: `${h}%`, low: h < 80 };
 }
 
+/** 店へのリンクの属性。ShopClickTracker が data-* を読んで GA4 の shop_click に載せる（どの店・機種・価格が押されたか） */
+export function shopLinkProps(device: Device) {
+  const href = affiliateUrl(device.shopName, device.url);
+  const sold = device.isSoldOut;
+  return {
+    href: sold ? '#' : href,
+    target: sold ? '_self' : '_blank',
+    rel: isAffiliateUrl(href) ? 'sponsored noopener noreferrer' : 'noopener noreferrer',
+    'data-shop-click': sold ? undefined : '',
+    'data-shop': device.shopName,
+    'data-model': device.modelName,
+    'data-storage': device.storage,
+    'data-rank': device.conditionRank,
+    'data-price': device.price,
+    'data-link-type': affiliateLinkType(href),
+  };
+}
+
 /**
  * 在庫の1行（約90px）。左にランクの四角、右に3行（容量・色／価格、電池・SIM・利用制限、店名／保証の短いタグ）。
  * 同じ商品をモール店でも売っているときは、行の下に「楽天市場でも販売」の帯を付ける。
  * showModel: 機種名を1行目の頭に出す（機種が混ざる一覧用。1機種だけの一覧では false）
  */
 export default function DeviceCard({ device, showModel = true }: { device: Device; showModel?: boolean }) {
-  const href = affiliateUrl(device.shopName, device.url);
-  const rel = isAffiliateUrl(href) ? 'sponsored noopener noreferrer' : 'noopener noreferrer';
   const shop = findShop(device.shopName);
   const bat = batteryLabel(device);
   const modelName = device.modelName.replace(/iPhone(\d+)/i, 'iPhone $1');
@@ -96,17 +112,7 @@ export default function DeviceCard({ device, showModel = true }: { device: Devic
   return (
     <div className={`border-b border-line-soft last:border-b-0 ${sold ? 'opacity-60' : ''}`}>
       <a
-        href={sold ? '#' : href}
-        target={sold ? '_self' : '_blank'}
-        rel={rel}
-        // ShopClickTracker が読んで GA4 の shop_click イベントに載せる（どの店・機種・価格の行が押されたか）
-        data-shop-click={sold ? undefined : ''}
-        data-shop={device.shopName}
-        data-model={device.modelName}
-        data-storage={device.storage}
-        data-rank={device.conditionRank}
-        data-price={device.price}
-        data-link-type={affiliateLinkType(href)}
+        {...shopLinkProps(device)}
         className={`flex gap-2.5 px-3.5 py-3 text-ink hover:bg-ground focus-visible:bg-ground ${sold ? 'cursor-not-allowed' : ''}`}
       >
         <span

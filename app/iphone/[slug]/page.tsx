@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowDown, Check, ChevronDown } from "lucide-react";
 import DeviceCard, { DeviceList, type Device } from "@/app/components/DeviceCard";
+import CheapestRows from "@/app/components/CheapestRows";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import VideoEmbed from "@/app/components/VideoEmbed";
@@ -462,7 +463,7 @@ export default async function ModelPage({ params }: Props) {
 
   const listButton = (
     <a href="#list" className="h-12 rounded-xl bg-brand-600 hover:bg-brand-800 text-white flex items-center justify-center gap-1.5 text-sm font-bold">
-      安い順に在庫を見る
+      在庫を見る
       <ArrowDown className="w-[18px] h-[18px]" aria-hidden="true" />
     </a>
   );
@@ -487,9 +488,9 @@ export default async function ModelPage({ params }: Props) {
   // 11/3〜 一覧の上から価格のカードの中へ移した（ChatGPT から来た人の最初の画面に、保証1年の店の1台まで入れる。ideas/2026-11-03.md）
   const pickRows = cheapestDevice && yearDevice
     ? [
-        { label: "どれでも", device: cheapestDevice },
-        ...(goodDevice ? [{ label: mac || watch ? "ランクB以上" : "ランクB以上・電池85%以上", device: goodDevice, href: cheapest5.some((d) => d.id === goodDevice.id) ? undefined : "#pick-good" }] : []),
-        { label: "＋保証1年の店", device: yearDevice, href: cheapest5.some((d) => d.id === yearDevice.id) ? undefined : yearDevice.id === goodDevice?.id ? "#pick-good" : "#pick-year" },
+        { label: "どれでも", device: cheapestDevice, placement: "first_any" },
+        ...(goodDevice ? [{ label: mac || watch ? "ランクB以上" : "ランクB以上・電池85%以上", device: goodDevice, placement: "first_good" }] : []),
+        { label: "＋保証1年の店", device: yearDevice, placement: "first_warranty" },
       ]
     : null;
 
@@ -703,7 +704,7 @@ export default async function ModelPage({ params }: Props) {
               </div>
 
               <section id="list" className="md:order-5 min-[1360px]:col-span-2 flex flex-col gap-2 scroll-mt-16">
-                <h2 className="text-[17px] font-bold">安い在庫</h2>
+                <h2 className="text-[17px] font-bold">在庫</h2>
                 <div className="flex gap-1.5 overflow-x-auto">
                   {[
                     { label: "すべて", href: searchHref(model), current: true },
@@ -722,23 +723,24 @@ export default async function ModelPage({ params }: Props) {
                   ))}
                 </div>
                 <DeviceList>
-                  {cheapest5.map((d) => <DeviceCard key={d.id} device={d} showModel={false} />)}
-                  {/* 安い5件に「ランクB以上・バッテリー85%以上」の在庫がなければ、その条件でいちばん安い1台を添える（10/23〜） */}
-                  {goodDevice && !cheapest5.some((d) => d.id === goodDevice.id) && (
+                  {/* 条件つきの1台を先に（11/6〜・案2B。/search と同じ並び。いちばん安い値は上のカードにも出ている） */}
+                  {goodDevice && (
                     <>
-                      <p id="pick-good" className="scroll-mt-16 px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe border-t border-line">
+                      <p className="px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe">
                         {mac || watch ? "ランクB以上でいちばん安い1台" : "ランクB以上・バッテリー85%以上でいちばん安い1台"}
                       </p>
                       <div data-placement="good_pick"><DeviceCard device={goodDevice} showModel={false} /></div>
                     </>
                   )}
                   {/* 保証が1年ある店（にこスマ・ダイワンテレコム）で、同じ条件でいちばん安い1台（11/1〜・PickSummary の3行目） */}
-                  {yearDevice && !cheapest5.some((d) => d.id === yearDevice.id) && yearDevice.id !== goodDevice?.id && (
+                  {yearDevice && yearDevice.id !== goodDevice?.id && (
                     <>
-                      <p id="pick-year" className="scroll-mt-16 px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe border-t border-line">保証が1年ある店でいちばん安い1台</p>
+                      <p className={`px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe ${goodDevice ? "border-t border-line" : ""}`}>保証が1年ある店でいちばん安い1台</p>
                       <div data-placement="warranty_pick"><DeviceCard device={yearDevice} showModel={false} /></div>
                     </>
                   )}
+                  {(goodDevice || yearDevice) && <p className="px-3.5 pt-3 pb-1 text-[12px] font-bold text-ink-sub border-t border-line">条件なしでいちばん安い</p>}
+                  <CheapestRows devices={cheapest5.filter((d) => d.id !== goodDevice?.id && d.id !== yearDevice?.id)} />
                   <Link href={searchHref(model)} rel="nofollow" className={`flex items-center justify-center h-12 text-sm font-bold ${LINK}`}>
                     {stats.count.toLocaleString()}件すべて見る ›
                   </Link>
