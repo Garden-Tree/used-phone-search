@@ -29,7 +29,7 @@ const SPEED = 1.3;
 const GAP = 0.08;
 const Z = "ずんだもん/ノーマル";
 const T = "春日部つむぎ/ノーマル";
-/** 配色。11/6 ユーザー「色がチカチカする」で案を比べる（--palette か script.json の palette）。accent＝悪い数字、good＝良い数字、shout＝驚きの文字 */
+/** 配色。11/6 ユーザー「色がチカチカする」で案を比べる（--palette か script.json の palette）。既定は cream（ユーザーが選んだ）。accent＝悪い数字、good＝良い数字、shout＝驚きの文字 */
 const PALETTES = {
   dark: { bg: "linear-gradient(180deg, #14123a 0%, #2a1a5e 70%, #0b0a24 100%)", ink: "#ffffff", sub: "#d1d5db", tagBg: "#ffd60a", tagInk: "#14123a", accent: "#ff3b30", good: "#34d399", shout: "#ffd60a", neutral: "#9ca3af" },
   cream: { bg: "#FFF8EC", ink: "#1b1a3a", sub: "#4b5563", tagBg: "#1b1a3a", tagInk: "#ffffff", accent: "#c8231b", good: "#0f766e", shout: "#1b1a3a", neutral: "#9ca3af" },
@@ -92,7 +92,7 @@ function art(name: string, cache: Art) {
 }
 
 function Bars({ p, show }: { p: Plan; show: number }) {
-  const c = PALETTES[p.palette ?? "dark"];
+  const c = PALETTES[p.palette ?? "cream"];
   const max = Math.max(p.newPrice, p.used);
   const rows = [
     { label: "18 Pro 新品（Apple公式）", value: p.newPrice, color: c.neutral },
@@ -116,14 +116,14 @@ function Bars({ p, show }: { p: Plan; show: number }) {
 
 function Frame({ p, line, cache, talk, scale }: { p: Plan; line: Line; cache: Art; talk: boolean; scale: number }) {
   const v = line.visual;
-  const c = PALETTES[p.palette ?? "dark"];
+  const c = PALETTES[p.palette ?? "cream"];
   const chara = (who: Who) => {
     const active = line.who === who;
     const name = line.face[who];
     const base = name === "zundamon" || name === "tsumugi" ? (active && talk ? `${name}-talk` : name) : name;
     const a = art(base, cache);
     const height = active ? 620 : 500;
-    return <img src={a.src} width={Math.round((a.w / a.h) * height)} height={height} style={{ opacity: active ? 1 : 0.75 }} />;
+    return <img src={a.src} width={Math.round((a.w / a.h) * height)} height={height} style={{ opacity: active || p.palette === "cream" || !p.palette ? 1 : 0.75 }} />;
   };
   return (
     <div style={{ width: W, height: H, display: "flex", flexDirection: "column", alignItems: "center", background: c.bg, fontFamily: "Noto Sans JP", position: "relative" }}>
@@ -169,7 +169,7 @@ async function plan() {
   if (a.medianPrice <= newPrice) throw new Error(`中古の相場（${a.medianPrice}）が新品（${newPrice}）以下です。この台本は使えません`);
   const shops = await activeShops(SHOPS);
   const p: Plan = {
-    date, shopCount: shops.length, storage: a.medianStorage, newPrice, used: a.medianPrice, usedMin: a.minPrice, usedCount: a.count,
+    palette: "cream", date, shopCount: shops.length, storage: a.medianStorage, newPrice, used: a.medianPrice, usedMin: a.minPrice, usedCount: a.count,
     older: b.medianPrice, olderCount: b.count, over: a.medianPrice - newPrice, saved: a.medianPrice - b.medianPrice,
   };
   const dir = resolve(__dirname, `out/${date}-reversal-18pro`);
