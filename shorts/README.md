@@ -57,7 +57,7 @@ npx tsx shorts/stills.tsx --outro [plusmax …]          # 締めの最後のコ
 npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本の全ナレーションの読み（エンジンの読み → 直した読み）を出す。"テキスト" でも可。--speaker で話者を変えて試せる
 ```
 
-掛け合いの形式（11/6〜の試作）: `npx tsx shorts/reversal.tsx plan` → `render --dir shorts/out/<日付>-reversal-18pro`。ずんだもんとつむぎ・約20秒。make-short.tsx とは別のスクリプト
+掛け合いの形式（11/6〜の試作）: `npx tsx shorts/reversal.tsx plan [reversal|jirai|qa]` → `render --dir shorts/out/<フォルダ>`。ずんだもんとつむぎ・20〜30秒・クリームの地。make-short.tsx とは別のスクリプト
 
 テーマ（`shorts/themes/`）:
 
