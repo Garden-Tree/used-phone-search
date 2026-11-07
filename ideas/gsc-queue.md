@@ -19,3 +19,6 @@
 
 ## 確認
 GSC のレポートが更新されたら、サイトマップの絞り込みの未登録を見直す（`&pages=SITEMAP&sitemap=…/sitemap.xml`）。2週間たっても 10/23 のままなら GSC の遅れとして記録する。
+
+## 進み具合
+- 11/7 13時台: リクエスト8件（/iphone/iphone-13-pro-max・iphone-11・iphone-xs-max、/mac/macbook-pro-14-m3-pro・14-m5-pro・16-m5-pro、/sumaho/budget/under-50000、/pick/camera）。登録済みで飛ばした: /ipad/ipad-9th-gen・/mac/macbook-air-13-m2・macbook-pro-14-m4・macbook-neo。比較 iPhone 1件目の検査で「エラーが発生しました」が出たのでここまで。次は順番の 7（比較 /compare/iphone-13-vs-iphone-14 から）

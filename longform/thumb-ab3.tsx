@@ -7,6 +7,7 @@
  *   npx tsx longform/thumb-ab3.tsx set5       # 10/29: 14本目（MBP 4択・A も作り直し）・15本目（Pro と Air）。一覧 longform/thumb-ab3-contact5.png
  *   npx tsx longform/thumb-ab3.tsx set6       # 10/31: 16〜20本目（予算別 MacBook・128GB・Duo か大きい画面・M1 Air・折りたたみ）。一覧 longform/thumb-ab3-contact6.png
  *   npx tsx longform/thumb-ab3.tsx set7       # 11/6: 21・22本目（地雷・正解、中古iPad 何世代まで）。一覧 longform/thumb-ab3-contact7.png
+ *   npx tsx longform/thumb-ab3.tsx set8       # 11/7: 23本目（Pixel・1年あたり）。一覧 longform/thumb-ab3-contact8.png
  *   npx tsx longform/thumb-ab3.tsx <フォルダ> # 1本だけ
  * 出力: <フォルダ>/thumb-B.png・thumb-C.png（1280x720）。A がある案は thumb-A.png も
  *
@@ -830,6 +831,31 @@ const PLANS: Record<string, Plan> = {
       </Frame>
     ),
   },
+  // 23本目（Pixel・1年あたり）。A＝thumbnail.png
+  "2026-11-07-pixel": {
+    id: "_ePKOLLG6NQ",
+    // B: 色帯3段＋端末の絵に ✓✕（「結論」: 6a 年44,700円・8a 年10,462円。同じ6.1インチ・128GB）
+    B: () => (
+      <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>
+        <Bands bands={[{ text: "中古Pixel", bg: WHITE, color: BLACK, size: 100 }, { text: "1年あたり", bg: RED, color: WHITE, size: 120 }, { text: "4倍の差", bg: YELLOW, color: BLACK, size: 170 }]} />
+        <Labeled x={800} y={14} w={130} h={200} label="6a" ok={false} screen={SCREENS[2]} />
+        <Labeled x={800} y={300} w={130} h={200} label="8a" ok screen={SCREENS[0]} />
+        <div style={{ position: "absolute", left: 34, top: 560, display: "flex", fontSize: 66, fontWeight: 900, color: WHITE, letterSpacing: -2 }}>年4.5万円 → 年1.0万円</div>
+      </Frame>
+    ),
+    // C: 青ざめたずんだもん＋「安いほど損」（6a は 29,800円でいちばん安いが、更新は 2027年7月まで）
+    C: () => (
+      <Frame bg={DARKRED_BG}>
+        {chara("zundamon-shock", { left: 860, top: 140, height: 640 })}
+        <div style={{ position: "absolute", left: 40, top: 30, display: "flex" }}><Outlined text="中古Pixel" size={100} color={WHITE} outer={{ w: 7, c: BLACK }} spacing={-4} /></div>
+        <div style={{ position: "absolute", left: 30, top: 150, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <Outlined text="安いほど" size={170} color={YELLOW} inner={{ w: 9, c: BLACK }} outer={{ w: 7, c: WHITE }} spacing={-6} />
+          <div style={{ display: "flex", marginTop: 6 }}><Outlined text="損" size={250} color={WHITE} inner={{ w: 10, c: RED }} outer={{ w: 9, c: BLACK }} spacing={-10} /></div>
+        </div>
+        <div style={{ position: "absolute", left: 40, top: 590, display: "flex", padding: "2px 22px", background: YELLOW, color: BLACK, fontSize: 72, fontWeight: 900, letterSpacing: -2 }}>6aは来年7月まで</div>
+      </Frame>
+    ),
+  },
 };
 
 /** 一覧のまとまり（引数なし＝第3弾の4本、set2＝10/26 に足した2本、set3＝10/27 に足した3本、set4＝10/28） */
@@ -841,6 +867,7 @@ const GROUPS: Record<string, { keys: string[]; out: string }> = {
   set5: { keys: ["2026-10-31-mbp-proled", "2026-11-01-mbp-vs-mba"], out: "thumb-ab3-contact5.png" },
   set6: { keys: ["2026-11-02-macbook", "2026-11-02-storage", "2026-11-03-duo-vs-mini", "2026-11-03-m1-air", "2026-11-04-foldables"], out: "thumb-ab3-contact6.png" },
   set7: { keys: ["2026-11-06-jirai", "2026-11-06-ipad-how-old"], out: "thumb-ab3-contact7.png" },
+  set8: { keys: ["2026-11-07-pixel"], out: "thumb-ab3-contact8.png" },
 };
 
 /** 一覧: 動画ごとに A・B・C を 400x225 と、スマホの関連動画の大きさ 168x94 で並べる */

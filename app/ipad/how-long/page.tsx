@@ -10,6 +10,8 @@ import { IPAD_SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import { getModelStats } from "@/lib/modelStats";
 import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
+import VideoEmbed from "@/app/components/VideoEmbed";
+import { VIDEOS } from "@/lib/videos";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
 export const dynamic = "force-static";
@@ -175,6 +177,8 @@ export default async function IpadHowLongPage() {
             iPadOS 27 の「○」は Apple「iPadOS 27 に対応している iPad のモデル」に載っている機種。発売年は Apple の技術仕様。中古の相場は在庫がいちばん多い容量の中央値。
           </p>
         </section>
+
+        <VideoEmbed video={VIDEOS.ipadHowOld} heading={VIDEOS.ipadHowOld.heading} />
 
         <section className="flex flex-col gap-3">
           <h2 className="text-lg md:text-xl font-bold">よくある質問</h2>

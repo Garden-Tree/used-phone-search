@@ -27,6 +27,8 @@ export const VIDEOS = {
   howOld: { id: "T7ltgSB-4XM", title: "中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決めた", minutes: 9, asOf: "2026-10-25", heading: "何世代前まで買っていいかを動画で見る" },
   // 11/3 16時台に公開（予約の 11/5 18:00 を前倒し）。買取ページ（/iphone/<slug>/kaitori）とショート kaitoriswap と同じ考え方
   sellSwap: { id: "MSsibdtHR1E", title: "iPhoneを売って買い替えると実質いくら？13→14は+28,980円｜買取3店と中古相場で計算", minutes: 9, asOf: "2026-11-03", heading: "売って買い替えるといくら足すかを動画で見る" },
+  // 11/7 12:00 公開（iPad 何世代まで。/ipad/how-long に）
+  ipadHowOld: { id: "X-QOob6x4N0", title: "中古iPadは何世代まで買っていい？無印は第9世代から｜相場4.3万円", minutes: 10, asOf: "2026-11-06", heading: "何世代前まで買っていいかを動画で見る" },
   // 11/6 11時台に公開（今は買うな。17e・18 Pro・18 Pro Max の機種ページに）
   jirai: { id: "4jeD0o26_U4", title: "今は買うな｜中古iPhone 地雷6台・正解3台【2026年11月】", minutes: 10, asOf: "2026-11-06", heading: "今は買わないほうがいい機種を動画で見る" },
 } satisfies Record<string, Video>;
