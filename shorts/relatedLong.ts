@@ -57,6 +57,7 @@ export const RELATED_LONG: Partial<Record<Script["theme"], RelatedLong>> = {
   ipadbudget: IPAD_DORE,
   stockipad: IPAD_DORE,
   stockipadpro: IPAD_DORE,
+  stockipadair: IPAD_DORE,
   stockmini: IPAD_MINI,
   bigbudget: BIG_SCREEN,
   rakutenmobile: RAKUTEN_MOBILE,

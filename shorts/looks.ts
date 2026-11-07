@@ -179,6 +179,7 @@ export const LOOKS: Record<Script["theme"], Look> = {
   stockxperia: { ...CONDITION, hook: "bars" },
   stockaquos: { ...CONDITION, hook: "bars" },
   stockipadpro: { ...CONDITION, hook: "bars" },
+  stockipadair: { ...CONDITION, hook: "bars" },
   launch: { ...DROPS, hook: "split" },
   // kaitoriswap（11/3〜）: 前後の在庫数ランキング（④ CONDITION）と続かないよう ③ VERSUS。つかみは batteryswap と同じ式の札（場面の部品は SwapHook）
   kaitoriswap: { ...VERSUS, hook: "equation" },
