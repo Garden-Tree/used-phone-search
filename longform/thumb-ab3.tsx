@@ -831,9 +831,9 @@ const PLANS: Record<string, Plan> = {
       </Frame>
     ),
   },
-  // 23本目（Pixel・1年あたり）。A＝thumbnail.png
+  // 23本目（Pixel・1年あたり。11/8 12:00 公開予約）。A＝thumbnail.png
   "2026-11-07-pixel": {
-    id: "_ePKOLLG6NQ",
+    id: "Zs1ZtFqdnuQ",
     // B: 色帯3段＋端末の絵に ✓✕（「結論」: 6a 年44,700円・8a 年10,462円。同じ6.1インチ・128GB）
     B: () => (
       <Frame bg={`linear-gradient(135deg, #1F2937 0%, ${BLACK} 70%)`}>
