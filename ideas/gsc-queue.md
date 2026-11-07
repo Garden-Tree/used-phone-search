@@ -22,3 +22,4 @@ GSC のレポートが更新されたら、サイトマップの絞り込みの�
 
 ## 進み具合
 - 11/7 13時台: リクエスト8件（/iphone/iphone-13-pro-max・iphone-11・iphone-xs-max、/mac/macbook-pro-14-m3-pro・14-m5-pro・16-m5-pro、/sumaho/budget/under-50000、/pick/camera）。登録済みで飛ばした: /ipad/ipad-9th-gen・/mac/macbook-air-13-m2・macbook-pro-14-m4・macbook-neo。比較 iPhone 1件目の検査で「エラーが発生しました」が出たのでここまで。次は順番の 7（比較 /compare/iphone-13-vs-iphone-14 から）
+- 11/8 1時台: リクエスト4件（/compare/iphone-13-vs-iphone-14・14-vs-15・15-vs-16・13-pro-vs-14-pro。どれも「検出・未登録」か「Google が認識していない」）。登録済みで飛ばした: 16-vs-17・11-vs-12・15-pro-vs-16-pro。5件目 14-pro-vs-15-pro で「割り当て量を超えています」（11/7 の8件と同じ日の枠。太平洋時間の0時＝17時に戻る）。次は 14-pro-vs-15-pro から（続けて 12-vs-13・12-pro-vs-13-pro・16-pro-vs-17-pro・17-pro-vs-18-pro・Pro Max の組）
