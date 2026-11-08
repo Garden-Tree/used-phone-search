@@ -100,3 +100,5 @@ longform/**/*.mp4
 
 # Pexels の実写素材（11/9〜・ライセンスは Pexels、クレジット不要。git には入れない）
 /shorts/assets/stock/
+# 効果音ラボの mp3（商用可・再配布不可。11/9〜）
+/shorts/assets/se/

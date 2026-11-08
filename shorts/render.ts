@@ -1,7 +1,7 @@
 /** 台本 → コマ（ImageResponse）→ ffmpeg で mp4（drops は A・B・C の3つの構成、budget は A だけ） */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, resolve, relative } from "node:path";
 import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
 import { FPS, H, RANK_SHOWN, TIMELINE, W, budgetRows, countdown, sceneFrame, variantsOf, type Variant } from "./scenes";
@@ -27,22 +27,37 @@ function allText(v: unknown): string {
 
 const duration = (file: string) => Number(run(["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file], "ffprobe").trim());
 
-/** 効果音を ffmpeg の合成音で作る（ダウンロードなし）。pop = 小さく柔らかい音、ta = 二音の「ターン」 */
-function seFilters(times: { at: number; kind: "pop" | "ta" }[]): { parts: string[]; labels: string[] } {
+type SeKind = "pop" | "ta" | "whoosh" | "roll";
+/**
+ * 効果音（11/9〜）: shorts/assets/se/ の mp3（効果音ラボ・商用可・クレジット不要・再配布不可なので git には入れない）。
+ * pop = 行が出る（button/decision1）・ta = 1位の発表（anime/shakin1）・whoosh = 場面の切り替え（battle/punch-swing1・実写モード）・roll = ドラムロール（anime/drum-roll1・未使用）。
+ * ファイルがなければ今までどおり ffmpeg の合成音（pop = 小さく柔らかい音、ta = 二音の「ターン」）
+ */
+const SE_FILE: Record<SeKind, string> = { pop: "pop.mp3", ta: "ta.mp3", whoosh: "whoosh.mp3", roll: "roll.mp3" };
+const SE_VOL: Record<SeKind, number> = { pop: 0.9, ta: 1.1, whoosh: 0.8, roll: 0.9 };
+function seFilters(times: { at: number; kind: SeKind }[]): { parts: string[]; labels: string[] } {
   const parts: string[] = [];
   const labels: string[] = [];
   const fmt = "aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo";
   times.forEach((e, i) => {
+    const ms = Math.round(e.at * 1000);
+    const file = resolve(__dirname, "assets/se", SE_FILE[e.kind]);
+    if (existsSync(file)) {
+      // amovie の filename は作業フォルダからの相対パス（C: のコロンは escape しても通らなかった）
+      const path = relative(process.cwd(), file).replace(/\\/g, "/");
+      parts.push(`amovie=${path},aresample=44100,${fmt},volume=${SE_VOL[e.kind]},adelay=${ms}|${ms}[se${i}]`);
+      labels.push(`[se${i}]`);
+      return;
+    }
     const tone = (hz: number, dur: number, vol: number, at: number, tag: string) => {
-      const ms = Math.round(at * 1000);
-      parts.push(`sine=frequency=${hz}:duration=${dur}:sample_rate=44100,afade=t=out:st=0:d=${dur},volume=${vol},${fmt},adelay=${ms}|${ms}[${tag}]`);
+      const m = Math.round(at * 1000);
+      parts.push(`sine=frequency=${hz}:duration=${dur}:sample_rate=44100,afade=t=out:st=0:d=${dur},volume=${vol},${fmt},adelay=${m}|${m}[${tag}]`);
       labels.push(`[${tag}]`);
     };
-    if (e.kind === "pop") tone(880, 0.08, 0.9, e.at, `se${i}`);
-    else {
+    if (e.kind === "ta" || e.kind === "roll") {
       tone(784, 0.16, 1.4, e.at, `se${i}a`);
       tone(1175, 0.5, 1.4, e.at + 0.14, `se${i}b`);
-    }
+    } else tone(880, 0.08, 0.9, e.at, `se${i}`);
   });
   return { parts, labels };
 }
@@ -125,13 +140,14 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
   const total = timeline.reduce((a, s) => a + s.dur, 0);
   if (total > MAX_TOTAL) console.warn(`注意: ${variant} が ${total.toFixed(1)} 秒になりました（ショートは ${MAX_TOTAL} 秒以内に）。ナレーションを短くするか voice.speedScale を上げてください`);
   const segs: string[] = [];
-  const se: { at: number; kind: "pop" | "ta" }[] = [];
+  const se: { at: number; kind: SeKind }[] = [];
   let offset = 0;
 
   timeline.forEach((sc, idx) => {
+    // 実写モード: 場面が替わるところ（つかみの後）に風切り音
+    if (script.liveClip && idx > 0 && sc.id !== "outro") se.push({ at: offset, kind: "whoosh" });
     for (const e of sc.se ?? []) se.push({ at: offset + e.t, kind: e.kind });
     offset += sc.dur;
-    void idx;
   });
 
   for (const [idx, sc] of timeline.entries()) {
