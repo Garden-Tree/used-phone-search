@@ -2191,8 +2191,91 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
   );
 }
 
+/**
+ * 実写モードのランキング・1位・ひと言（11/9・docs/shorts-design.md）: カードを使わず、実写の上に大きな文字だけ。
+ * 行は「順位の札＋名前＋数字1つ」（容量・率・件数は出さない。声では読む）。1位は数字1つをカウントアップ
+ */
+type LiveRow = { label: string; value: string };
+function liveRows(s: Script): LiveRow[] {
+  const items = ((s.scenes as { ranking?: { items?: Record<string, unknown>[] } }).ranking?.items ?? []).slice(0, RANK_SHOWN) as Record<string, unknown>[];
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  const num = (v: unknown) => (typeof v === "number" ? v : 0);
+  return items.map((r) => {
+    if (isStock(s)) return { label: str(r.model), value: `${n(num(r.count))}件` };
+    if (s.theme === "battery") return { label: str(r.model), value: `+${n(num(r.diff))}円` };
+    if (typeof r.proMedian === "number") return { label: str(r.pro), value: `${num(r.diff) >= 0 ? "+" : "−"}${n(Math.abs(num(r.diff)))}円` };
+    if (typeof r.olderMedian === "number") return { label: str(r.older), value: `−${n(Math.abs(num(r.diff)))}円` };
+    if (isNewVsOld(s)) return { label: str(r.short) || str(r.model), value: `${n(num(r.median))}円` };
+    if (typeof r.drop === "number") return { label: str(r.model), value: `−${n(num(r.drop))}円` };
+    return { label: str(r.model) || str(r.label), value: r.diff != null ? `${n(Math.abs(num(r.diff)))}円` : "" };
+  });
+}
+const LIVE_BADGE = [C.gold, C.silver, C.bronze];
+
+function LiveRanking({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
+  const rows = liveRows(s);
+  const RH = 300;
+  return (
+    <Frame s={s} footer={false}>
+      <div style={{ display: "flex", flexDirection: "column", width: CW }}>
+        {rows.map((r, i) => {
+          const at = o?.at?.[i] ?? (o?.start ?? 0.5) + (o?.gap ?? 1.6) * (rows.length - 1 - i);
+          const p = i === 0 ? 1 : prog(t, at, ROW_FADE);
+          const label = i === 0 ? "？？？" : r.label;
+          return (
+            <div key={i} style={{ display: "flex", alignItems: "center", height: RH, opacity: p, transform: `translateX(${Math.round((1 - p) * 60)}px)` }}>
+              <div style={{ ...row, width: 150, height: 92, fontSize: 56, fontWeight: 900, color: C.white, background: LIVE_BADGE[i], borderRadius: 24, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>{`${i + 1}位`}</div>
+              <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", marginLeft: 30, width: CW - 180 }}>
+                <div style={{ ...liveText(C.white, FIT(label, CW - 180, i === 0 ? 110 : 84)), lineHeight: 1.1 }}>{label}</div>
+                {i !== 0 && r.value && <div style={{ ...liveText(LIVE_RED, FIT(r.value, CW - 180, 96)), marginTop: 6 }}>{r.value}</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Frame>
+  );
+}
+
+function LiveReveal({ s, t }: { s: Script; t: number }) {
+  const r = liveRows(s)[0];
+  const m = r.value.match(/^([+−-]?)([\d,]+)(.*)$/);
+  const target = m ? Number(m[2].replace(/,/g, "")) : 0;
+  const c = prog(t, 0.6, 0.9);
+  const value = m ? `${m[1]}${n(Math.round(target * c))}${m[3]}` : r.value;
+  const pop = 0.8 + 0.2 * back((t - 0.3) / 0.5);
+  return (
+    <Frame s={s} footer={false}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.3, 0.25), transform: `scale(${pop})` }}>
+        <div style={{ ...row, width: 220, height: 96, fontSize: 60, fontWeight: 900, color: C.white, background: C.gold, borderRadius: 24, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>1位</div>
+        <div style={{ ...liveText(C.white, FIT(r.label, CW, 120)), marginTop: 40, lineHeight: 1.1 }}>{r.label}</div>
+        {r.value && <div style={{ ...liveText(LIVE_RED, FIT(r.value, CW, 190)), marginTop: 20 }}>{value}</div>}
+      </div>
+    </Frame>
+  );
+}
+
+function LiveComment({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
+  const { lines } = s.scenes.comment;
+  const size = Math.min(...lines.map((l) => FIT(l, CW, 96, 48)));
+  return (
+    <Frame s={s} footer={false}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        {lines.map((l, i) => (
+          <div key={i} style={{ ...liveText(C.white, size), marginBottom: 30, opacity: prog(t, (o?.start ?? 0.4) + i * (o?.gap ?? 1.0), 0.25) }}>{l}</div>
+        ))}
+      </div>
+    </Frame>
+  );
+}
+
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
-  if (sc.id === "hook" && s.liveClip) return <LiveHook s={s} t={t} />;
+  if (s.liveClip) {
+    if (sc.id === "hook") return <LiveHook s={s} t={t} />;
+    if (sc.id === "ranking") return <LiveRanking s={s} t={t} o={sc.o} />;
+    if (sc.id === "reveal") return <LiveReveal s={s} t={t} />;
+    if (sc.id === "comment") return <LiveComment s={s} t={t} o={sc.o} />;
+  }
   if (isStock(s)) {
     switch (sc.id) {
       case "hook": return <StockHook s={s} t={t} />;
