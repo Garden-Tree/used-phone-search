@@ -266,7 +266,7 @@ function Frame({ s, children, header = true, footer = true, body = BODY }: { s: 
 const card = (L: Look) => ({ display: "flex", flexDirection: "column", alignItems: "center", background: C.white, borderRadius: L.card.radius, boxShadow: L.card.shadow, color: C.navy }) as const;
 
 /**
- * つかみ（1コマ目）。t=0 で絵がそろっている（出る動きはなし。札だけ小さく脈打つ）。型はテーマの look.hook（shorts/looks.ts）。
+ * つかみ（1コマ目）。11/8 案B〜: 棒・電池・札は最初のコマから 0.9秒かけて出る（それまでは t=0 で絵がそろっていた。上位20本が 1,000 前後で止まり、視聴を継続 23.7%）。型はテーマの look.hook（shorts/looks.ts）。
  * 数字は台本の1位の値（items[0]＝差額がいちばん大きい）。画像・ロゴ・製品写真は使わず、文字と図形だけ
  */
 const pulseOf = (t: number) => 1 + 0.035 * Math.sin(t * Math.PI * 2 * 1.2);
@@ -371,9 +371,57 @@ function CoinHook({ s, t }: { s: BudgetScript; t: number }) {
 
 type Tile = { label: string; sub: string; fill: string };
 
-/** newused・provs: 問い＋2つを並べた札（真ん中に vs）＋1位の差額 */
-function SplitHook({ s, t, lines, left, right, teaser, label = "最大" }: { s: Script; t: number; lines: string[]; left: Tile; right: Tile; teaser: string; label?: string }) {
+/** 0秒目の動き（11/8 案B）: 棒は 0〜0.9秒で伸び、数字は 0〜1.0秒で数え上げる。上位20本が 1,000〜1,232 で止まり「視聴を継続」が 23.7% だったので、最初のコマから動く絵にする */
+const GROW = (t: number) => prog(t, 0, 0.9);
+const COUNT = (t: number) => prog(t, 0, 1.0);
+
+/**
+ * 2本の縦の棒（左右の値に比例）。上に数え上げる数字、下に札の名前と容量。間に VS の丸。
+ * 値のない呼び出し（SplitHook の values なし）は使わず、今までの札のまま
+ */
+function GrowBars({ s, t, left, right, values, fmt = (v) => `${n(v)}円` }: { s: Script; t: number; left: Tile; right: Tile; values: [number, number]; fmt?: (v: number) => string }) {
   const L = lookOf(s);
+  const BW = 300;
+  const BH = 220;
+  const VS = 100;
+  const max = Math.max(values[0], values[1], 1);
+  const g = GROW(t);
+  const c = COUNT(t);
+  const bar = (x: Tile, v: number, i: number) => {
+    const h = Math.max(10, Math.round((BH * v / max) * g));
+    const num = fmt(Math.round(v * c));
+    return (
+      <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: BW + 60 }}>
+        <div style={{ ...row, fontSize: FIT(num, BW + 40, 64), fontWeight: 900, color: i === 1 ? L.accentOnBg : L.fg, height: 64 }}>{num}</div>
+        <div style={{ display: "flex", alignItems: "flex-end", width: BW, height: BH }}>
+          <div style={{ display: "flex", width: BW, height: h, background: x.fill, borderRadius: 22, boxShadow: L.card.shadow }} />
+        </div>
+        <div style={{ ...row, fontSize: FIT(x.label, BW + 40, 52), fontWeight: 900, color: L.fg, marginTop: 10, lineHeight: 1.1 }}>{x.label}</div>
+        <div style={{ ...row, fontSize: FIT(x.sub, BW + 40, 36), fontWeight: 700, color: L.sub, marginTop: 4 }}>{x.sub}</div>
+      </div>
+    );
+  };
+  return (
+    <div style={{ display: "flex", position: "relative", justifyContent: "space-between", width: CW, marginTop: 24 }}>
+      {bar(left, values[0], 0)}
+      {bar(right, values[1], 1)}
+      <div style={{ position: "absolute", left: (CW - VS) / 2, top: 64 + (BH - VS) / 2, width: VS, height: VS, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: VS / 2, background: L.bg, boxShadow: `0 0 0 6px ${L.fg}`, fontSize: 48, fontWeight: 900, lineHeight: 1, color: L.fg, opacity: prog(t, 0.5, 0.3) }}>VS</div>
+    </div>
+  );
+}
+
+/** newused・provs: 問い＋2つを並べた札（真ん中に vs）＋1位の差額 */
+function SplitHook({ s, t, lines, left, right, teaser, label = "最大", values, fmt }: { s: Script; t: number; lines: string[]; left: Tile; right: Tile; teaser: string; label?: string; values?: [number, number]; fmt?: (v: number) => string }) {
+  const L = lookOf(s);
+  if (values) {
+    return (
+      <Frame s={s}>
+        <Question lines={s.hookLines ?? lines} max={88} />
+        <GrowBars s={s} t={t} left={left} right={right} values={values} fmt={fmt} />
+        <Teaser s={s} label={s.hookStyle === "answer" ? "1位" : label} value={teaser} />
+      </Frame>
+    );
+  }
   const TW = 400;
   const TH = 250;
   const VS = 130;
@@ -386,7 +434,7 @@ function SplitHook({ s, t, lines, left, right, teaser, label = "最大" }: { s: 
   return (
     <Frame s={s}>
       <Question lines={s.hookLines ?? lines} max={88} />
-      <div style={{ display: "flex", position: "relative", justifyContent: "space-between", width: CW, height: TH, marginTop: 40, transform: `scale(${pulseOf(t)})` }}>
+      <div style={{ display: "flex", position: "relative", justifyContent: "space-between", width: CW, height: TH, marginTop: 40, transform: `scale(${0.6 + 0.4 * back(prog(t, 0, 0.5))})`, opacity: prog(t, 0, 0.3) }}>
         {tile(left)}
         {tile(right)}
         <div style={{ position: "absolute", left: (CW - VS) / 2, top: (TH - VS) / 2, width: VS, height: VS, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: VS / 2, background: L.bg, boxShadow: `0 0 0 6px ${L.fg}`, fontSize: 56, fontWeight: 900, lineHeight: 1, color: L.fg }}>VS</div>
@@ -515,21 +563,23 @@ function BatteryHook({ s, t }: { s: BatteryScript; t: number }) {
   const small = s.order === "small";
   const BW = 230;
   const BH = 300;
-  const cell = (label: string, level: number, fill: string) => (
+  // 11/8 案B: 電池の中身は 0〜0.9秒で満ち、上の相場は数え上げる（最初のコマから動く）
+  const cell = (label: string, level: number, fill: string, price: number, accent: boolean) => (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{ ...row, fontSize: FIT(`${n(price)}円`, BW + 40, 56), fontWeight: 900, color: accent ? L.accentOnBg : L.fg, height: 64, marginBottom: 6 }}>{`${n(Math.round(price * COUNT(t)))}円`}</div>
       <div style={{ display: "flex", width: 80, height: 22, background: L.fg, borderRadius: "10px 10px 0 0" }} />
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", width: BW, height: BH, padding: 14, borderRadius: 30, boxShadow: `0 0 0 10px ${L.fg}` }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: Math.round((BH - 28) * level), background: fill, borderRadius: 16, color: C.white, fontSize: 56, fontWeight: 900, whiteSpace: "nowrap" }}>{label}</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: Math.max(12, Math.round((BH - 28) * level * GROW(t))), background: fill, borderRadius: 16, color: C.white, fontSize: 56, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden" }}>{GROW(t) > 0.6 ? label : ""}</div>
       </div>
     </div>
   );
   return (
     <Frame s={s}>
       <Question lines={s.hookLines ?? (small ? (r.diff === 0 ? ["電池90%台も80%台も", "同じ値段の", "中古iPhoneがある"] : ["電池90%台でも", `+${n(r.diff)}円だけの`, "中古iPhoneがある"]) : ["電池が90%台だと、", "中古iPhoneは", "いくら高い？"])} max={74} />
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", width: CW, marginTop: 40, transform: `scale(${pulseOf(t)})` }}>
-        {cell("90%台", 0.95, SITE.safe)}
-        <div style={{ ...row, width: 150, fontSize: 56, fontWeight: 900, lineHeight: 1, color: L.fg, paddingBottom: 110 }}>VS</div>
-        {cell("80%台", 0.85, C.budget)}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", width: CW, marginTop: 30 }}>
+        {cell("90%台", 0.95, SITE.safe, r.hiMedian, true)}
+        <div style={{ ...row, width: 150, fontSize: 56, fontWeight: 900, lineHeight: 1, color: L.fg, paddingBottom: 110, opacity: prog(t, 0.5, 0.3) }}>VS</div>
+        {cell("80%台", 0.85, C.budget, r.loMedian, false)}
       </div>
       <Teaser s={s} label={small ? "差" : "最大"} value={small ? `${n(r.diff)}円` : `+${n(r.diff)}円`} mt={36} />
     </Frame>
@@ -1975,17 +2025,18 @@ function StockHook({ s, t }: { s: StockScript; t: number }) {
     <Frame s={s}>
       {/* 11/3〜 問いを3行に（13字の1行が幅で 70px に縮んでいた）・最大 104px */}
       <Question lines={s.hookLines ?? ["中古でいちばん", "出回っている", `${stockScope(s)}は…？`]} max={88} />
-      <div style={{ ...card(L), width: CW, padding: "24px 30px", marginTop: 20, transform: `scale(${pulseOf(t)})` }}>
+      {/* 11/8 案B: 棒は 0〜0.9秒で伸び、下の件数は数え上げる（最初のコマから動く） */}
+      <div style={{ ...card(L), width: CW, padding: "24px 30px", marginTop: 20 }}>
         {items.map((r, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 14 : 0 }}>
             <div style={{ ...row, width: 150, fontSize: 48, fontWeight: 900, color: C.white, background: BADGE[i], borderRadius: 18, padding: "2px 0" }}>{`${i + 1}位`}</div>
             <div style={{ display: "flex", alignItems: "center", width: BAR, marginLeft: 20 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(40, Math.round((BAR * r.count) / max)), height: 52, borderRadius: 14, background: i === 0 ? L.accent : C.line, color: C.white, fontSize: 40, fontWeight: 900 }}>{i === 0 ? "？？？" : ""}</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(40, Math.round(((BAR * r.count) / max) * GROW(t))), height: 52, borderRadius: 14, background: i === 0 ? L.accent : C.line, color: C.white, fontSize: 40, fontWeight: 900, overflow: "hidden" }}>{i === 0 && GROW(t) > 0.6 ? "？？？" : ""}</div>
             </div>
           </div>
         ))}
       </div>
-      <Teaser s={s} label="最多" value={`${n(items[0].count)}件`} mt={6} />
+      <Teaser s={s} label="最多" value={`${n(Math.round(items[0].count * COUNT(t)))}件`} mt={6} />
     </Frame>
   );
 }
@@ -2100,7 +2151,7 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
         const lines = s.hookStyle === "answer"
           ? [`iPhone ${r.older.replace(/^iPhone /, "")}は`, "無印より", `約${(r.diff / 10000).toFixed(1)}万円安い`]
           : ["miniとeは、", "無印より", "いくら安い？"];
-        return <SplitHook s={s} t={t} lines={lines} teaser={`−${n(r.diff)}円`} label={s.hookStyle === "answer" ? "1位" : "最大"}
+        return <SplitHook s={s} t={t} lines={lines} teaser={`−${n(r.diff)}円`} label={s.hookStyle === "answer" ? "1位" : "最大"} values={[r.newerMedian, r.olderMedian]}
           left={{ label: "無印", sub: r.storage, fill: C.budget }} right={{ label: "mini・e", sub: "弟分", fill: C.red }} />;
       }
       case "ranking": return <FoldRanking s={f} t={t} o={sc.o} nameOf={minieName} />;
@@ -2165,7 +2216,7 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
     switch (sc.id) {
       case "hook": {
         const r = s.scenes.ranking.items[0];
-        return <SplitHook s={s} t={t} lines={["iPhone、", "1世代前にすると", "いくら安い？"]} teaser={`−${n(r.diff)}円`}
+        return <SplitHook s={s} t={t} lines={["iPhone、", "1世代前にすると", "いくら安い？"]} teaser={`−${n(r.diff)}円`} values={[r.newerMedian, r.olderMedian]}
           left={{ label: "最新", sub: r.storage, fill: C.budget }} right={{ label: "1世代前", sub: r.storage, fill: lookOf(s).chip }} />;
       }
       case "ranking": return <FoldRanking s={f} t={t} o={sc.o} />;
@@ -2246,7 +2297,7 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
         const r = s.scenes.ranking.items[0];
         // ultravs: 札の下はケースのサイズ（Series は1位の組のサイズ・Ultra は 49mm）。storage は「49／45mm」
         const [proSub, baseSub] = uv && r.storage.includes("／") ? [`${r.storage.split("／")[0]}mm`, r.storage.split("／")[1]] : [r.storage, r.storage];
-        return <SplitHook s={s} t={t} lines={uv ? ["Apple Watch", "UltraとSeries、", "中古ならいくら違う？"] : [pm ? "Pro MaxとPro、" : px ? "PlusとPro Max、" : `${proLabel}と無印、`, "同じ容量だと", "いくら違う？"]} teaser={`+${n(r.diff)}円`}
+        return <SplitHook s={s} t={t} lines={uv ? ["Apple Watch", "UltraとSeries、", "中古ならいくら違う？"] : [pm ? "Pro MaxとPro、" : px ? "PlusとPro Max、" : `${proLabel}と無印、`, "同じ容量だと", "いくら違う？"]} teaser={`+${n(r.diff)}円`} values={[r.baseMedian, r.proMedian]}
           left={{ label: baseLabel, sub: baseSub, fill: C.budget }} right={{ label: proLabel, sub: proSub, fill: lookOf(s).chip }} />;
       }
       case "ranking": return <ProVsRanking s={s} t={t} o={sc.o} />;
@@ -2261,7 +2312,7 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       case "hook": {
         const nm = s.scenes.newModel;
         const cp = s.scenes.copy;
-        return <SplitHook s={s} t={t} lines={cp?.hook ?? ["新型iPad mini、", "中古の旧型なら", "いくら安い？"]} teaser={`${n(nm.price)}円〜`} label={cp?.teaserLabel ?? "新型"}
+        return <SplitHook s={s} t={t} lines={cp?.hook ?? ["新型iPad mini、", "中古の旧型なら", "いくら安い？"]} teaser={`${n(nm.price)}円〜`} label={cp?.teaserLabel ?? "新型"} values={[nm.price, s.scenes.ranking.items[0].median]}
           left={{ label: "新型", sub: cp?.hookSub ?? "A20 Pro", fill: C.budget }} right={{ label: cp?.hookRight?.label ?? "旧型", sub: cp?.hookRight?.sub ?? "中古の相場", fill: lookOf(s).chip }} />;
       }
       case "ranking": return <IpadMiniRanking s={s} t={t} o={sc.o} />;
