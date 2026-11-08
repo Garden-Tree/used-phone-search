@@ -381,9 +381,9 @@ const COUNT = (t: number) => prog(t, 0, 1.0);
  */
 function GrowBars({ s, t, left, right, values, fmt = (v) => `${n(v)}円` }: { s: Script; t: number; left: Tile; right: Tile; values: [number, number]; fmt?: (v: number) => string }) {
   const L = lookOf(s);
-  const BW = 300;
-  const BH = 220;
-  const VS = 100;
+  const BW = 380;
+  const BH = 380;
+  const VS = 120;
   const max = Math.max(values[0], values[1], 1);
   const g = GROW(t);
   const c = COUNT(t);
@@ -391,13 +391,12 @@ function GrowBars({ s, t, left, right, values, fmt = (v) => `${n(v)}円` }: { s:
     const h = Math.max(10, Math.round((BH * v / max) * g));
     const num = fmt(Math.round(v * c));
     return (
-      <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: BW + 60 }}>
-        <div style={{ ...row, fontSize: FIT(num, BW + 40, 64), fontWeight: 900, color: i === 1 ? L.accentOnBg : L.fg, height: 64 }}>{num}</div>
+      <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: BW + 40 }}>
+        <div style={{ ...row, fontSize: FIT(num, BW + 40, 92), fontWeight: 900, color: i === 1 ? L.accentOnBg : L.fg, height: 100 }}>{num}</div>
         <div style={{ display: "flex", alignItems: "flex-end", width: BW, height: BH }}>
           <div style={{ display: "flex", width: BW, height: h, background: x.fill, borderRadius: 22, boxShadow: L.card.shadow }} />
         </div>
-        <div style={{ ...row, fontSize: FIT(x.label, BW + 40, 52), fontWeight: 900, color: L.fg, marginTop: 10, lineHeight: 1.1 }}>{x.label}</div>
-        <div style={{ ...row, fontSize: FIT(x.sub, BW + 40, 36), fontWeight: 700, color: L.sub, marginTop: 4 }}>{x.sub}</div>
+        <div style={{ ...row, fontSize: FIT(x.label, BW + 40, 84), fontWeight: 900, color: L.fg, marginTop: 18, lineHeight: 1.1 }}>{x.label}</div>
       </div>
     );
   };
@@ -405,7 +404,7 @@ function GrowBars({ s, t, left, right, values, fmt = (v) => `${n(v)}円` }: { s:
     <div style={{ display: "flex", position: "relative", justifyContent: "space-between", width: CW, marginTop: 24 }}>
       {bar(left, values[0], 0)}
       {bar(right, values[1], 1)}
-      <div style={{ position: "absolute", left: (CW - VS) / 2, top: 64 + (BH - VS) / 2, width: VS, height: VS, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: VS / 2, background: L.bg, boxShadow: `0 0 0 6px ${L.fg}`, fontSize: 48, fontWeight: 900, lineHeight: 1, color: L.fg, opacity: prog(t, 0.5, 0.3) }}>VS</div>
+      <div style={{ position: "absolute", left: (CW - VS) / 2, top: 100 + (BH - VS) / 2, width: VS, height: VS, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: VS / 2, background: L.bg, boxShadow: `0 0 0 6px ${L.fg}`, fontSize: 56, fontWeight: 900, lineHeight: 1, color: L.fg, opacity: prog(t, 0.5, 0.3) }}>VS</div>
     </div>
   );
 }
@@ -416,9 +415,8 @@ function SplitHook({ s, t, lines, left, right, teaser, label = "最大", values,
   if (values) {
     return (
       <Frame s={s}>
-        <Question lines={s.hookLines ?? lines} max={88} />
         <GrowBars s={s} t={t} left={left} right={right} values={values} fmt={fmt} />
-        <Teaser s={s} label={s.hookStyle === "answer" ? "1位" : label} value={teaser} />
+        <Teaser s={s} label={s.hookStyle === "answer" ? "1位" : label} value={teaser} mt={30} />
       </Frame>
     );
   }
@@ -561,27 +559,26 @@ function BatteryHook({ s, t }: { s: BatteryScript; t: number }) {
   const r = s.scenes.ranking.items[0];
   // small（差の小さい順）は答えから始める: 「同じ値段の中古iPhoneがある」＋「差 0円」
   const small = s.order === "small";
-  const BW = 230;
-  const BH = 300;
+  const BW = 320;
+  const BH = 460;
   // 11/8 案B: 電池の中身は 0〜0.9秒で満ち、上の相場は数え上げる（最初のコマから動く）
   const cell = (label: string, level: number, fill: string, price: number, accent: boolean) => (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <div style={{ ...row, fontSize: FIT(`${n(price)}円`, BW + 40, 56), fontWeight: 900, color: accent ? L.accentOnBg : L.fg, height: 64, marginBottom: 6 }}>{`${n(Math.round(price * COUNT(t)))}円`}</div>
+      <div style={{ ...row, fontSize: FIT(`${n(price)}円`, BW + 40, 84), fontWeight: 900, color: accent ? L.accentOnBg : L.fg, height: 96, marginBottom: 10 }}>{`${n(Math.round(price * COUNT(t)))}円`}</div>
       <div style={{ display: "flex", width: 80, height: 22, background: L.fg, borderRadius: "10px 10px 0 0" }} />
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", width: BW, height: BH, padding: 14, borderRadius: 30, boxShadow: `0 0 0 10px ${L.fg}` }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: Math.max(12, Math.round((BH - 28) * level * GROW(t))), background: fill, borderRadius: 16, color: C.white, fontSize: 56, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden" }}>{GROW(t) > 0.6 ? label : ""}</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: Math.max(12, Math.round((BH - 28) * level * GROW(t))), background: fill, borderRadius: 16, color: C.white, fontSize: 76, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden" }}>{GROW(t) > 0.6 ? label : ""}</div>
       </div>
     </div>
   );
   return (
     <Frame s={s}>
-      <Question lines={s.hookLines ?? (small ? (r.diff === 0 ? ["電池90%台も80%台も", "同じ値段の", "中古iPhoneがある"] : ["電池90%台でも", `+${n(r.diff)}円だけの`, "中古iPhoneがある"]) : ["電池が90%台だと、", "中古iPhoneは", "いくら高い？"])} max={74} />
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", width: CW, marginTop: 30 }}>
         {cell("90%台", 0.95, SITE.safe, r.hiMedian, true)}
-        <div style={{ ...row, width: 150, fontSize: 56, fontWeight: 900, lineHeight: 1, color: L.fg, paddingBottom: 110, opacity: prog(t, 0.5, 0.3) }}>VS</div>
+        <div style={{ ...row, width: 150, fontSize: 64, fontWeight: 900, lineHeight: 1, color: L.fg, paddingBottom: 190, opacity: prog(t, 0.5, 0.3) }}>VS</div>
         {cell("80%台", 0.85, C.budget, r.loMedian, false)}
       </div>
-      <Teaser s={s} label={small ? "差" : "最大"} value={small ? `${n(r.diff)}円` : `+${n(r.diff)}円`} mt={36} />
+      <Teaser s={s} label={small ? "差" : "最大"} value={small ? `${n(r.diff)}円` : `+${n(r.diff)}円`} mt={56} />
     </Frame>
   );
 }
@@ -2024,19 +2021,18 @@ function StockHook({ s, t }: { s: StockScript; t: number }) {
   return (
     <Frame s={s}>
       {/* 11/3〜 問いを3行に（13字の1行が幅で 70px に縮んでいた）・最大 104px */}
-      <Question lines={s.hookLines ?? ["中古でいちばん", "出回っている", `${stockScope(s)}は…？`]} max={88} />
-      {/* 11/8 案B: 棒は 0〜0.9秒で伸び、下の件数は数え上げる（最初のコマから動く） */}
-      <div style={{ ...card(L), width: CW, padding: "24px 30px", marginTop: 20 }}>
+      {/* 11/8 案B（夜）: 問いの3行は帯と重なるのでやめ、棒と札を大きく: 棒は 0〜0.9秒で伸び、下の件数は数え上げる（最初のコマから動く） */}
+      <div style={{ ...card(L), width: CW, padding: "40px 30px", marginTop: 40 }}>
         {items.map((r, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 14 : 0 }}>
-            <div style={{ ...row, width: 150, fontSize: 48, fontWeight: 900, color: C.white, background: BADGE[i], borderRadius: 18, padding: "2px 0" }}>{`${i + 1}位`}</div>
+          <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 36 : 0 }}>
+            <div style={{ ...row, width: 150, fontSize: 60, fontWeight: 900, color: C.white, background: BADGE[i], borderRadius: 22, padding: "6px 0" }}>{`${i + 1}位`}</div>
             <div style={{ display: "flex", alignItems: "center", width: BAR, marginLeft: 20 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(40, Math.round(((BAR * r.count) / max) * GROW(t))), height: 52, borderRadius: 14, background: i === 0 ? L.accent : C.line, color: C.white, fontSize: 40, fontWeight: 900, overflow: "hidden" }}>{i === 0 && GROW(t) > 0.6 ? "？？？" : ""}</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(40, Math.round(((BAR * r.count) / max) * GROW(t))), height: 96, borderRadius: 20, background: i === 0 ? L.accent : C.line, color: C.white, fontSize: 64, fontWeight: 900, overflow: "hidden" }}>{i === 0 && GROW(t) > 0.6 ? "？？？" : ""}</div>
             </div>
           </div>
         ))}
       </div>
-      <Teaser s={s} label="最多" value={`${n(Math.round(items[0].count * COUNT(t)))}件`} mt={6} />
+      <Teaser s={s} label="最多" value={`${n(Math.round(items[0].count * COUNT(t)))}件`} mt={50} />
     </Frame>
   );
 }
