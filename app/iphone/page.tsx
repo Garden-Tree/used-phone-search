@@ -8,6 +8,7 @@ import { VIDEOS } from "@/lib/videos";
 import PopularModels from "@/app/components/PopularModels";
 import AdDisclosure from "@/app/components/AdDisclosure";
 import PriceDrops from "@/app/components/PriceDrops";
+import CompareCards from "@/app/components/CompareCards";
 import { ALL_CATALOG_MODELS, ALL_PAGE_MODELS, IPHONE_CATALOG, LEGACY_SERIES, modelPagePath } from "@/lib/catalog";
 import { getModelMarket, getPriceDrops, type ModelMarket } from "@/lib/marketStats";
 import { specOf } from "@/lib/iphoneSpecs";
@@ -79,6 +80,16 @@ function MarketTable({ rows }: { rows: Row[] }) {
     </div>
   );
 }
+
+// よく比べられる組（隣の世代と、無印と Pro。lib/compare.ts の COMPARE_PAIRS にある組だけ）
+const FEATURED_COMPARES: [string, string][] = [
+  ["iPhone 13", "iPhone 14"],
+  ["iPhone 14", "iPhone 15"],
+  ["iPhone 15", "iPhone 16"],
+  ["iPhone 16", "iPhone 17"],
+  ["iPhone 13 Pro", "iPhone 14 Pro"],
+  ["iPhone 16", "iPhone 16 Pro"],
+];
 
 export default async function IphoneIndexPage() {
   const shopNum = (await activeShops()).length;
@@ -170,6 +181,12 @@ export default async function IphoneIndexPage() {
         </details>
 
         <PriceDrops drops={drops} title="この1週間で値下がりした中古iPhone" />
+
+        {/* 比較ページへの入口（11/8〜。/iphone から比較へのリンクが0本だった） */}
+        <section className="my-6">
+          <h2 className="text-[17px] font-bold mb-2.5">よく比べられる組</h2>
+          <CompareCards pairs={FEATURED_COMPARES} prices={market} className="grid grid-cols-2 md:grid-cols-6 gap-2" />
+        </section>
 
         {cheapest.length > 0 && (
           <section className="my-8">

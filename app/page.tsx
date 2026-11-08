@@ -11,7 +11,6 @@ import { WATCH_MODELS } from "@/lib/watchCatalog";
 import { minPriceByModel } from "@/lib/budgetStats";
 import { yen } from "@/lib/format";
 import { monthJa, reportMonths } from "@/lib/monthlyReport";
-import { comparePath } from "@/lib/compare";
 import { IPHONE_PICKS, pickPath } from "@/lib/picks";
 import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 import prisma from "@/lib/prisma";
@@ -21,6 +20,7 @@ import { countPcItems, PC_MIN_INDEX_ITEMS } from "@/lib/pcInventory";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import PopularModels from "@/app/components/PopularModels";
+import CompareCards from "@/app/components/CompareCards";
 import BudgetPicker, { type BudgetOption } from "@/app/components/BudgetPicker";
 import { getModelMarket, getPriceDrops, shortDate, type ModelMarket } from "@/lib/marketStats";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
@@ -75,11 +75,11 @@ const FEATURED_COMPARES: [string, string][] = [
   ["iPhone 13", "iPhone 14"],
   ["iPhone 14", "iPhone 15"],
   ["iPhone 15", "iPhone 16"],
-  ["iPhone 15", "iPhone 15 Pro"],
   ["iPhone 16e", "iPhone 16"],
-  ["iPhone 17", "iPhone Air"],
-  ["iPhone SE (第2世代)", "iPhone SE (第3世代)"],
-  ["iPhone SE (第3世代)", "iPhone 13 mini"],
+  ["iPad mini (第6世代)", "iPad mini (A17 Pro)"],
+  ["iPad (第10世代)", "iPad Air (第5世代)"],
+  ["Pixel 8a", "Pixel 9a"],
+  ["Galaxy S24", "Galaxy S25"],
 ];
 
 // 機種の種類ごとの入口（件数は在庫の合計）
@@ -150,12 +150,6 @@ export default async function Home() {
   });
   const maxRate = Math.max(1, ...dropRows.map((d) => d.rate));
 
-  // よく比較される機種: 両方の最安値があるものから3つ（差は2機種の最安値の差）
-  const compareCards = FEATURED_COMPARES.flatMap(([a, b]) => {
-    const pa = prices.get(a)?.minPrice;
-    const pb = prices.get(b)?.minPrice;
-    return pa !== undefined && pb !== undefined ? [{ a, b, diff: Math.abs(pa - pb) }] : [];
-  }).slice(0, 3);
 
   const mainShops = MAIN_SHOP_LABELS.filter((l) => shops.some((s) => s.label === l));
   const restShops = shops.length - mainShops.length;
@@ -342,20 +336,11 @@ export default async function Home() {
           )}
         </div>
 
-          {compareCards.length > 0 && (
-            <section className="pt-5 flex flex-col gap-2.5">
-              <h2 className={h2}>よく比較される機種</h2>
-              <div className="grid grid-cols-3 gap-2">
-                {compareCards.map(({ a, b, diff }) => (
-                  <Link key={comparePath(a, b)} href={comparePath(a, b)} className={`${card} p-2.5 flex flex-col gap-1 text-ink hover:border-brand-200`}>
-                    <span className="text-[11px] font-bold">{shortModel(a)} vs {shortModel(b)}</span>
-                    <span className="text-[10px] text-ink-mute">最安の差</span>
-                    <span className="text-sm font-bold">{yen(diff)}</span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
+          {/* よく比べられる組（iPhone・iPad・Pixel・Galaxy の8組。差は2機種の最安値の差） */}
+          <section className="pt-5 flex flex-col gap-2.5">
+            <h2 className={h2}>よく比較される機種</h2>
+            <CompareCards pairs={FEATURED_COMPARES} prices={prices} showBrand className="grid grid-cols-2 md:grid-cols-4 gap-2" />
+          </section>
 
         {/* 末尾: 比較している店・目的から探す・運営者 */}
         <section className="pt-5 flex flex-col gap-2">
@@ -389,9 +374,4 @@ export default async function Home() {
       <SiteFooter />
     </div>
   );
-}
-
-/** "iPhone 13" → "13"（比較カードの短い表記） */
-function shortModel(model: string): string {
-  return model.replace(/^iPhone /, "");
 }

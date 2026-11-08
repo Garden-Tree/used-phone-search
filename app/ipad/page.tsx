@@ -5,6 +5,7 @@ import SiteFooter from "@/app/components/SiteFooter";
 import VideoEmbed from "@/app/components/VideoEmbed";
 import { VIDEOS } from "@/lib/videos";
 import AdDisclosure from "@/app/components/AdDisclosure";
+import CompareCards from "@/app/components/CompareCards";
 import { getModelMarket } from "@/lib/marketStats";
 import { hubSummary, hubWebPage, hubTitle } from "@/lib/hubSummary";
 import { isIpad, modelPagePath } from "@/lib/catalog";
@@ -38,6 +39,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+
+// よく比べられる組（mini・Air・無印の迷いやすい組。lib/compare.ts の COMPARE_PAIRS にある組だけ。ほかの組は下にチップで）
+const FEATURED_COMPARES: [string, string][] = [
+  ["iPad mini (第6世代)", "iPad mini (A17 Pro)"],
+  ["iPad (第9世代)", "iPad (第10世代)"],
+  ["iPad (第10世代)", "iPad (A16)"],
+  ["iPad (第10世代)", "iPad Air (第5世代)"],
+  ["iPad Air 11インチ (M2)", "iPad Air 11インチ (M3)"],
+  ["iPad Air 11インチ (M4)", "iPad Pro 11インチ (M4)"],
+];
 
 export default async function IpadIndexPage() {
   const shops = await activeShops(IPAD_SHOPS);
@@ -114,9 +125,11 @@ export default async function IpadIndexPage() {
 
         {/* iPad の比較ページ */}
         <section className="my-6">
-          <h2 className="text-lg font-bold mb-3">よく比較される iPad</h2>
+          <h2 className="text-lg font-bold mb-3">よく比べられる組</h2>
+          <CompareCards pairs={FEATURED_COMPARES} prices={stats} />
+          <h3 className="text-sm font-bold text-ink-sub mt-4 mb-2">ほかの比較</h3>
           <div className="flex flex-wrap gap-2">
-            {COMPARE_PAIRS.filter(([a]) => isIpad(a)).map(([a, b]) => (
+            {COMPARE_PAIRS.filter(([a, b]) => isIpad(a) && !FEATURED_COMPARES.some(([x, y]) => x === a && y === b)).map(([a, b]) => (
               <Link key={comparePath(a, b)} href={comparePath(a, b)}
                 className="px-3.5 min-h-10 inline-flex items-center gap-1 rounded-full text-sm font-bold bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
                 {a} <span className="text-ink-mute font-medium">vs</span> {b}
