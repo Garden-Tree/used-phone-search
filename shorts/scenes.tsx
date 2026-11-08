@@ -931,6 +931,9 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   const L = lookOf(s);
   const question = out.question ?? `${s.theme === "drops" ? periodOf(s).next : "来週"}の1位は…？`;
   const related = hasRelatedLong(s);
+  // 実写モード（11/9）: 文字に黒の縁取り・小さい注記は出さない・問いは大きく
+  const lo = s.liveClip ? { textShadow: LIVE_OUTLINE } : {};
+  const qMax = s.liveClip ? 84 : 52;
   const thumb = related ? relatedThumb(s) : null;
   if (thumb) {
     // 関連動画（横動画）のサムネを、声の「くわしい解説は…」に合わせて出す（relatedLong.ts）。上の文字は小さくして詰め、重ならないようにする
@@ -941,21 +944,21 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0, 0.25) }}>
             {out.lines.map((l, i) => (
-              <div key={i} style={{ ...row, fontSize: FIT(l, CW, 72), fontWeight: 900, marginBottom: 10 }}>{l}</div>
+              <div key={i} style={{ ...row, ...lo, fontSize: FIT(l, CW, 72), fontWeight: 900, marginBottom: 10 }}>{l}</div>
             ))}
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.6 * k, 0.4) }}>
-            <div style={{ ...row, fontSize: FIT(out.url, CW, 68), fontWeight: 900, color: L.url, marginTop: 24 }}>{out.url}</div>
+            <div style={{ ...row, ...lo, fontSize: FIT(out.url, CW, 68), fontWeight: 900, color: L.url, marginTop: 24 }}>{out.url}</div>
             {!s.liveClip && out.note.split("\n").map((l, i) => <div key={i} style={{ ...row, fontSize: FIT(l, CW, 30, 24), fontWeight: 500, color: L.sub, marginTop: i ? 4 : 14 }}>{l}</div>)}
           </div>
-          <div style={{ ...row, fontSize: FIT(question, CW, 50), fontWeight: 900, marginTop: 34, opacity: prog(t, 1.2 * k, 0.4) }}>{question}</div>
+          <div style={{ ...row, ...lo, fontSize: FIT(question, CW, s.liveClip ? 72 : 50), fontWeight: 900, marginTop: 34, opacity: prog(t, 1.2 * k, 0.4) }}>{question}</div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 40, opacity: p, transform: `translateY(${Math.round((1 - p) * 40)}px)` }}>
             <div style={{ ...row, fontSize: 40, fontWeight: 900, padding: "10px 32px", borderRadius: 999, background: L.chip, color: C.white }}>くわしい解説はこちら</div>
             <div style={{ display: "flex", marginTop: 18, borderRadius: 18, overflow: "hidden", boxShadow: `0 0 0 4px ${L.dark ? C.white : C.line}` }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={thumb} width={REL_THUMB.w} height={REL_THUMB.h} style={{ width: REL_THUMB.w, height: REL_THUMB.h }} alt="" />
             </div>
-            <div style={{ ...row, fontSize: 46, fontWeight: 900, color: L.accentOnBg, marginTop: 14 }}>{"▼ 下の関連動画から ▼"}</div>
+            <div style={{ ...row, ...lo, fontSize: 46, fontWeight: 900, color: L.accentOnBg, marginTop: 14 }}>{"▼ 下の関連動画から ▼"}</div>
           </div>
         </div>
       </Frame>
@@ -966,17 +969,17 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0, 0.25) }}>
           {out.lines.map((l, i) => (
-            <div key={i} style={{ ...row, fontSize: FIT(l, CW, 88), fontWeight: 900, marginBottom: 14 }}>{l}</div>
+            <div key={i} style={{ ...row, ...lo, fontSize: FIT(l, CW, 88), fontWeight: 900, marginBottom: 14 }}>{l}</div>
           ))}
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.6 * k, 0.4) }}>
-          <div style={{ ...row, fontSize: FIT(out.url, CW, 80), fontWeight: 900, color: L.url, marginTop: 56 }}>{out.url}</div>
+          <div style={{ ...row, ...lo, fontSize: FIT(out.url, CW, 80), fontWeight: 900, color: L.url, marginTop: 56 }}>{out.url}</div>
           {/* TikTok（--tiktok）は「全機種の相場は／URL／で検索」。プロフィールのリンクも関連動画もないので、URL を打って探してもらう */}
           {out.urlTail && <div style={{ ...row, fontSize: FIT(out.urlTail, CW, 72), fontWeight: 900, marginTop: 14 }}>{out.urlTail}</div>}
           {/* 「\n」で行を分ける（長い注記が幅に入らないとき。rakutenmobile）。幅に入らない行は縮める */}
-          {out.note.split("\n").map((l, i) => <div key={i} style={{ ...row, fontSize: FIT(l, CW, 34, 24), fontWeight: 500, color: L.sub, marginTop: i ? 6 : 40 }}>{l}</div>)}
+          {!s.liveClip && out.note.split("\n").map((l, i) => <div key={i} style={{ ...row, fontSize: FIT(l, CW, 34, 24), fontWeight: 500, color: L.sub, marginTop: i ? 6 : 40 }}>{l}</div>)}
         </div>
-        <div style={{ ...row, fontSize: 52, fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>{question}</div>
+        <div style={{ ...row, ...lo, fontSize: FIT(question, CW, qMax), fontWeight: 900, marginTop: 64, opacity: prog(t, 1.2 * k, 0.4) }}>{question}</div>
         {/* 関連動画（横動画）への誘導。サムネのファイルがないとき（relatedLong.ts）は文字の札だけ。画面の下の関連動画のリンクを指す */}
         {related && (
           <div style={{ ...row, fontSize: 46, fontWeight: 900, marginTop: 56, padding: "14px 30px", borderRadius: 999, background: L.chip, color: C.white, opacity: prog(t, o?.rel ?? 2.2 * k, 0.4) }}>{`▼ ${RELATED_LONG_LINE}`}</div>

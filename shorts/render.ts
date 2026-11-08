@@ -169,7 +169,8 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
       const clip = resolve(__dirname, "assets/stock", name);
       if (!existsSync(clip)) throw new Error(`実写の素材がありません: ${clip}（shorts/assets/stock/ に置く。git には入れない）`);
       const dark = sc.id === "hook" ? "eq=brightness=-0.15" : "eq=brightness=-0.32:saturation=0.7,gblur=sigma=3";
-      run(["-y", "-ss", "1", "-i", clip, "-framerate", String(FPS), "-i", join(sd, "f%04d.png"),
+      // 素材より場面が長いとき（締め 10秒など）に映像が先に切れないよう、素材はループさせる
+      run(["-y", "-stream_loop", "-1", "-ss", "1", "-i", clip, "-framerate", String(FPS), "-i", join(sd, "f%04d.png"),
         "-filter_complex", `[0:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},${dark},setpts=PTS-STARTPTS[bg];[1:v]tpad=stop_mode=clone:stop_duration=${hold.toFixed(3)}[ov];[bg][ov]overlay=0:0:shortest=1,format=yuv420p`,
         "-r", String(FPS), "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-t", String(sc.dur), "-an", seg]);
     } else {
