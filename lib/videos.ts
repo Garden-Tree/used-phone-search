@@ -31,6 +31,8 @@ export const VIDEOS = {
   ipadHowOld: { id: "X-QOob6x4N0", title: "中古iPadは何世代まで買っていい？無印は第9世代から｜相場4.3万円", minutes: 10, asOf: "2026-11-06", heading: "何世代前まで買っていいかを動画で見る" },
   // 11/6 11時台に公開（今は買うな。17e・18 Pro・18 Pro Max の機種ページに）
   jirai: { id: "4jeD0o26_U4", title: "今は買うな｜中古iPhone 地雷6台・正解3台【2026年11月】", minutes: 10, asOf: "2026-11-06", heading: "今は買わないほうがいい機種を動画で見る" },
+  // 11/8 12:00 公開（Pixel を1年あたりで比べる。/pixel/how-long と Pixel 6〜10 系の機種ページに）
+  pixelPerYear: { id: "Zs1ZtFqdnuQ", title: "安いPixelほど損？中古6a・7a・8a、1年あたりで4倍の差【2026年11月】", minutes: 9, asOf: "2026-11-07", heading: "Pixel を「1年あたり」で比べた動画を見る" },
 } satisfies Record<string, Video>;
 
 /**
@@ -49,5 +51,7 @@ export function videoForModel(model: string): Video | null {
   if (/^MacBook Air 13インチ (M2|M5)$/.test(model)) return VIDEOS.mbpVsAir;
   if (model === "MacBook Air M1") return VIDEOS.m1Air;
   if (/^iPhone (1[12]( mini| Pro( Max)?)?|X[SR]?( Max)?|SE \(第[23]世代\))$/.test(model)) return VIDEOS.howOld;
+  // Pixel を1年あたりで比べた回（6・6 Pro・6a・7・7 Pro・7a・8・8 Pro・8a・9・9a・10・10a）
+  if (/^Pixel ([6-9]( Pro)?|[6-9]a|10a?)$/.test(model)) return VIDEOS.pixelPerYear;
   return null;
 }

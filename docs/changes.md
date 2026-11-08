@@ -7,6 +7,7 @@
 
 | 日 | 場所 | 変更 | 判定 |
 | --- | --- | --- | --- |
+| 11/8 | /pixel/how-long・Pixel 6〜10 系の機種ページ | 横動画「安いPixelほど損？」（Zs1ZtFqdnuQ・12:00 公開）を埋め込み（`lib/videos.ts` pixelPerYear・videoForModel） | |
 | 11/8 | 比較ページへの内部リンク | /iphone・/ipad・/pixel・/galaxy に「よく比べられる組」6本（最安の差つきカード・`CompareCards`。ほかはチップ）・トップの比較を3→8本（4種類） | 11/30（比較の表示・GSC 登録）|
 | 11/8 | 機種ページの在庫・/search | 「電池85%以上で最安」と「保証1年で最安」を1つのカードの2行に（`PickPair`。同じ商品なら1行に見出し2つ）。別の枠だった保証1年の1台は機種ページで週0クリック（good_pick 18）。/search は同じ商品でも出す。placement は good_pick／warranty_pick（_search）のまま。価格カードの3行（first_*）はそのまま | 11/22 warranty_pick |
 | 11/7 | ショートの時間帯 | 2本目を 19:00 → 12:30 に（在庫数の型: 朝 985〜1,016・昼 96〜435・夕 22）。AQUOS iPoUnhPyM3k を 11/8 12:30 に変更 | 11/10 昼の3本 |

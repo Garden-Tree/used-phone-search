@@ -9,6 +9,8 @@ import { PIXEL_SHOPS } from "@/lib/shops";
 import { activeShops } from "@/lib/activeShops";
 import { getModelStats } from "@/lib/modelStats";
 import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
+import VideoEmbed from "@/app/components/VideoEmbed";
+import { VIDEOS } from "@/lib/videos";
 
 // 機種ページと同じくビルドのたびに作る（1日4回）
 export const dynamic = "force-static";
@@ -202,6 +204,8 @@ export default async function PixelHowLongPage() {
             アップデート保証の期限は、米国の Google ストアでの販売開始の月に保証の年数を足した月（Google 公式）。中古の相場は在庫がいちばん多い容量の中央値。
           </p>
         </section>
+
+        <VideoEmbed video={VIDEOS.pixelPerYear} heading={VIDEOS.pixelPerYear.heading} />
 
         <section className="flex flex-col gap-3">
           <h2 className="text-lg md:text-xl font-bold">よくある質問</h2>
