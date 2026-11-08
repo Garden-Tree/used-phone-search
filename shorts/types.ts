@@ -22,6 +22,13 @@ type Common = {
   /** VOICEVOX の設定（任意）。なければ 春日部つむぎ・速さ 1.25 */
   voice?: VoiceConfig;
   /**
+   * 実写のつかみ（11/9〜）: shorts/assets/stock/ の Pexels の縦動画（例 "pexels-15689201.mp4"）。書くと hook の場面は、この実写の上に
+   * 文字2行（liveLines）と図1つ（型ごと: 電池が満ちる・棒が伸びる・棒2本・数字）だけを重ねる（帯・問い・注記は出さない）。render.ts が ffmpeg で重ねる
+   */
+  liveClip?: string;
+  /** 実写のつかみの2行（1行8字まで）。なければ型ごとの既定の文（scenes.tsx の liveLinesOf） */
+  liveLines?: string[];
+  /**
    * つかみの型（任意・10/26〜の実験）。"answer" は問いでなく1位の答え（機種と差額）から始める。
    * いまは minie だけが絵を切り替える。声は narration.hook に答えの文を書く
    */

@@ -2094,7 +2094,105 @@ function StockReveal({ s, t }: { s: StockScript; t: number }) {
   );
 }
 
+/** 実写のつかみの2本の値（左・右）。相場2つがある型だけ。なければ null（数字だけの型へ） */
+function liveValues(s: Script): [number, number] | null {
+  const r = (s.scenes as { ranking?: { items?: Record<string, unknown>[] } }).ranking?.items?.[0] as Record<string, number> | undefined;
+  if (!r) return null;
+  if (typeof r.baseMedian === "number" && typeof r.proMedian === "number") return [r.baseMedian, r.proMedian];
+  if (typeof r.newerMedian === "number" && typeof r.olderMedian === "number") return [r.newerMedian, r.olderMedian];
+  if (isNewVsOld(s)) return [s.scenes.newModel.price, r.median];
+  return null;
+}
+/** 実写のつかみの差（数字だけの型・2行目の既定） */
+function liveDiff(s: Script): number {
+  const r = (s.scenes as { ranking?: { items?: Record<string, unknown>[] } }).ranking?.items?.[0] as Record<string, number> | undefined;
+  if (isNewVsOld(s) && r) return s.scenes.newModel.price - r.median;
+  return Math.abs(r?.diff ?? 0);
+}
+/** 実写のつかみの2行の既定（1行8字まで） */
+export function liveLinesOf(s: Script): string[] {
+  if (s.liveLines?.length) return s.liveLines;
+  if (isStock(s)) return ["中古で", `いちばん多い${stockScope(s)}は`];
+  if (s.theme === "battery") return ["電池90%台は", `+${n(liveDiff(s))}円`];
+  if (isNewVsOld(s)) return ["中古の旧型なら", `${(liveDiff(s) / 10000).toFixed(1)}万円安い`];
+  return ["差は", `${n(liveDiff(s))}円`];
+}
+/** 文字の縁取り（satori は text-stroke が効かないので 8方向の影）＋落ちる影 */
+const LIVE_OUTLINE = (() => { const o = 7; return [[-o, -o], [o, -o], [-o, o], [o, o], [0, -o], [0, o], [-o, 0], [o, 0]].map(([x, y]) => `${x}px ${y}px 0 #000`).join(", ") + ", 0 10px 28px rgba(0,0,0,0.7)"; })();
+const LIVE_RED = ON_DARK.price;
+const liveText = (color: string, size: number) => ({ display: "flex", fontSize: size, fontWeight: 900, color, lineHeight: 1.15, whiteSpace: "nowrap", textShadow: LIVE_OUTLINE } as const);
+
+/**
+ * 実写のつかみ（11/9・ユーザー決定）: 地は透明（render.ts が Pexels の実写に重ねる）。上に2行、下に図1つが 0〜0.9秒で動く。
+ * 帯・問い・注記は出さない（他チャンネルの伸びた回は 1コマ目が実写＋1〜2行だけ。ideas/2026-11-08-analysis.md）
+ */
+function LiveHook({ s, t }: { s: Script; t: number }) {
+  const [l1, l2] = liveLinesOf(s);
+  const g = GROW(t);
+  const c = COUNT(t);
+  const values = liveValues(s);
+  const top = (
+    <div style={{ position: "absolute", left: 0, top: 150, width: W, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={liveText(C.white, Math.min(120, FIT(l1, CW, 120)))}>{l1}</div>
+      <div style={{ ...liveText(LIVE_RED, Math.min(180, FIT(l2, CW, 180))), marginTop: 6 }}>{l2}</div>
+    </div>
+  );
+  let figure: ReactNode;
+  if (isStock(s)) {
+    const items = s.scenes.ranking.items;
+    figure = (
+      <>
+        <div style={{ position: "absolute", left: 70, top: H - 520, display: "flex", alignItems: "center", width: 940, height: 150, background: "rgba(255,255,255,0.92)", borderRadius: 36 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(60, Math.round(600 * g)), height: 150, background: SITE.price, borderRadius: 36, color: C.white, fontSize: 100, fontWeight: 900, overflow: "hidden" }}>{g > 0.6 ? "？？？" : ""}</div>
+        </div>
+        <div style={{ position: "absolute", left: 0, top: H - 330, width: W, ...liveText(LIVE_RED, 140), justifyContent: "center" }}>{`${n(Math.round(items[0].count * c))}件`}</div>
+      </>
+    );
+  } else if (s.theme === "battery") {
+    figure = (
+      <div style={{ position: "absolute", left: (W - 300) / 2, top: H - 580, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ display: "flex", width: 100, height: 28, background: C.white, borderRadius: "12px 12px 0 0" }} />
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", width: 300, height: 400, padding: 16, borderRadius: 36, boxShadow: `0 0 0 12px ${C.white}` }}>
+          <div style={{ display: "flex", width: "100%", height: Math.max(10, Math.round(350 * 0.95 * g)), background: SITE.safe, borderRadius: 20 }} />
+        </div>
+      </div>
+    );
+  } else if (values) {
+    const max = Math.max(values[0], values[1], 1);
+    const bar = (v: number, fill: string, label: string, color: string) => (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", height: 330 }}>
+          <div style={{ display: "flex", width: 300, height: Math.max(10, Math.round((330 * v / max) * g)), background: fill, borderRadius: 26 }} />
+        </div>
+        <div style={{ ...liveText(color, 66), marginTop: 14 }}>{label}</div>
+      </div>
+    );
+    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : ["", ""];
+    figure = (
+      <div style={{ position: "absolute", left: 0, top: H - 640, width: W, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 80 }}>
+        {bar(values[0], "rgba(255,255,255,0.8)", la, C.white)}
+        {bar(values[1], LIVE_RED, lb, LIVE_RED)}
+      </div>
+    );
+  } else {
+    const d = liveDiff(s);
+    figure = (
+      <div style={{ position: "absolute", left: 0, top: H - 620, width: W, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ ...liveText(LIVE_RED, 290), letterSpacing: -6 }}>{n(Math.round(d * c))}</div>
+        <div style={liveText(LIVE_RED, 130)}>円</div>
+      </div>
+    );
+  }
+  return (
+    <div style={{ width: W, height: H, display: "flex", position: "relative", background: "transparent", fontFamily: "Noto Sans JP" }}>
+      {top}
+      {figure}
+    </div>
+  );
+}
+
 export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
+  if (sc.id === "hook" && s.liveClip) return <LiveHook s={s} t={t} />;
   if (isStock(s)) {
     switch (sc.id) {
       case "hook": return <StockHook s={s} t={t} />;

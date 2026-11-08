@@ -12,6 +12,7 @@
  */
 import "dotenv/config";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { pickLiveClip } from "./liveClips";
 import { join, resolve } from "node:path";
 import prisma from "@/lib/prisma";
 import { buildDropsScript } from "./themes/drops";
@@ -135,6 +136,11 @@ async function plan() {
   const { comment: _c, ...narration } = defaultNarration(built);
   void _c;
   const script: Script = { ...built, narration, voice: { speaker: THEME_SPEAKER[built.theme], speedScale: DEFAULT_SPEED } };
+  // --live [pexels-<id>.mp4]: 実写のつかみ（11/9〜）。素材名がなければ日付で順に選ぶ（shorts/liveClips.ts）
+  if (flag("live")) {
+    const v = opt("live");
+    script.liveClip = v && v.startsWith("pexels-") ? v : pickLiveClip(today);
+  }
   mkdirSync(dir, { recursive: true });
   writeFileSync(file, JSON.stringify(script, null, 2) + "\n");
   console.log(`台本: ${file}`);
