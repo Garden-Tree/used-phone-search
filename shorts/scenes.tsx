@@ -224,9 +224,10 @@ function Band({ s, L }: { s: Script; L: Look }) {
       background: b.fill, borderRadius: radius, color: b.text, border: frame ? `10px solid ${b.stripe ?? b.text}` : "none",
       boxShadow: tab && b.stripe ? `-18px 0 0 0 ${b.stripe}` : "none",
     }}>
-      <div style={{ ...row, fontSize: FIT(HEAD_SUB(s), tw, 52), fontWeight: 700, color: b.sub }}>{HEAD_SUB(s)}</div>
+      {/* 実写モード（11/9）: 小さい上の行（毎週更新・店の数）は出さず、題名だけを大きく（小さい文字は実写の上で読めない） */}
+      {!s.liveClip && <div style={{ ...row, fontSize: FIT(HEAD_SUB(s), tw, 52), fontWeight: 700, color: b.sub }}>{HEAD_SUB(s)}</div>}
       {title.map((l, i) => (
-        <div key={i} style={{ ...row, fontSize: Math.min(...title.map((x) => FIT(x, tw, 104))), fontWeight: 900, lineHeight: 1.15, marginTop: i ? 0 : 6 }}>{l}</div>
+        <div key={i} style={{ ...row, fontSize: Math.min(...title.map((x) => FIT(x, tw, s.liveClip ? 124 : 104))), fontWeight: 900, lineHeight: 1.15, marginTop: i ? 0 : 6 }}>{l}</div>
       ))}
       {b.shape === "underline" && b.stripe && (
         <div style={{ position: "absolute", left: 0, bottom: 0, width: CW, height: 16, borderRadius: 8, background: b.stripe }} />
@@ -945,7 +946,7 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.6 * k, 0.4) }}>
             <div style={{ ...row, fontSize: FIT(out.url, CW, 68), fontWeight: 900, color: L.url, marginTop: 24 }}>{out.url}</div>
-            {out.note.split("\n").map((l, i) => <div key={i} style={{ ...row, fontSize: FIT(l, CW, 30, 24), fontWeight: 500, color: L.sub, marginTop: i ? 4 : 14 }}>{l}</div>)}
+            {!s.liveClip && out.note.split("\n").map((l, i) => <div key={i} style={{ ...row, fontSize: FIT(l, CW, 30, 24), fontWeight: 500, color: L.sub, marginTop: i ? 4 : 14 }}>{l}</div>)}
           </div>
           <div style={{ ...row, fontSize: FIT(question, CW, 50), fontWeight: 900, marginTop: 34, opacity: prog(t, 1.2 * k, 0.4) }}>{question}</div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 40, opacity: p, transform: `translateY(${Math.round((1 - p) * 40)}px)` }}>
