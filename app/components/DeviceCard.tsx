@@ -41,7 +41,7 @@ const RANK_STYLES: Record<string, string> = {
   B: 'bg-[#DBEAFE] text-[#1E40AF]',
   C: 'bg-[#FFEDD5] text-[#9A3412]',
 };
-const rankStyle = (rank: string) => RANK_STYLES[rank.toUpperCase()] ?? 'bg-gray-100 text-gray-600';
+export const rankStyle = (rank: string) => RANK_STYLES[rank.toUpperCase()] ?? 'bg-gray-100 text-gray-600';
 
 /** キャリア・SIMロック状態の文言（行の2行目に出す） */
 export function simLabel(device: Device): string {
@@ -59,7 +59,7 @@ export function simLabel(device: Device): string {
 }
 
 /** 電池の文言と、80%未満かどうか（赤系の文字にする） */
-function batteryLabel(device: Device): { text: string; low: boolean } | null {
+export function batteryLabel(device: Device): { text: string; low: boolean } | null {
   const h = device.batteryHealth;
   if (h === null) return null;
   if (h === 100) return { text: '100%', low: false };
@@ -192,7 +192,7 @@ export default function DeviceCard({ device, showModel = true }: { device: Devic
 
 /** 公式の行に添える、同じ商品のモール店のリンク。楽天（イオシス）・Yahoo!ショッピング（エムモバ→エムコム）。知らないホストは null */
 /** 行に出す店名。モール店は「モバステ（Yahoo!）」のように短くする（スマホで2行に折り返さないように） */
-function shopLabel(shopName: string): string {
+export function shopLabel(shopName: string): string {
   const s = findShop(shopName);
   if (!s || !s.note || s.marketplace === 'amazon') return s?.label ?? shopName;
   const note = s.marketplace === 'rakuten' ? '楽天' : s.marketplace === 'yahoo' ? 'Yahoo!' : s.note;
