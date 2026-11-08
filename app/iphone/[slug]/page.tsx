@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowDown, Check, ChevronDown } from "lucide-react";
-import DeviceCard, { DeviceList, type Device } from "@/app/components/DeviceCard";
+import { DeviceList, type Device } from "@/app/components/DeviceCard";
 import CheapestRows from "@/app/components/CheapestRows";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
@@ -47,6 +47,7 @@ import Sparkline, { recentPoints } from "@/app/components/Sparkline";
 import InspectionTips, { inspectionTips } from "@/app/components/InspectionTips";
 import { getGoodDevice, getYearWarrantyDevice } from "@/lib/modelBest";
 import PickSummary from "@/app/components/PickSummary";
+import PickPair from "@/app/components/PickPair";
 import { getBuyNowStats } from "@/lib/buyNow";
 import { getBreakdown, getRankSMax, getShopBars, type Breakdown, type ShopBarRow } from "@/lib/modelBreakdown";
 import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
@@ -723,23 +724,13 @@ export default async function ModelPage({ params }: Props) {
                   ))}
                 </div>
                 <DeviceList>
-                  {/* 条件つきの1台を先に（11/6〜・案2B。/search と同じ並び。いちばん安い値は上のカードにも出ている） */}
-                  {goodDevice && (
-                    <>
-                      <p className="px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe">
-                        {mac || watch ? "ランクB以上でいちばん安い1台" : "ランクB以上・バッテリー85%以上でいちばん安い1台"}
-                      </p>
-                      <div data-placement="good_pick"><DeviceCard device={goodDevice} showModel={false} /></div>
-                    </>
-                  )}
-                  {/* 保証が1年ある店（にこスマ・ダイワンテレコム）で、同じ条件でいちばん安い1台（11/1〜・PickSummary の3行目） */}
-                  {yearDevice && yearDevice.id !== goodDevice?.id && (
-                    <>
-                      <p className={`px-3.5 pt-3 pb-1 text-[12px] font-bold text-safe ${goodDevice ? "border-t border-line" : ""}`}>保証が1年ある店でいちばん安い1台</p>
-                      <div data-placement="warranty_pick"><DeviceCard device={yearDevice} showModel={false} /></div>
-                    </>
-                  )}
-                  {(goodDevice || yearDevice) && <p className="px-3.5 pt-3 pb-1 text-[12px] font-bold text-ink-sub border-t border-line">条件なしでいちばん安い</p>}
+                  {/* 条件つきの1台を先に（11/6〜・案2B）。11/8〜 電池85%以上の1台と保証1年の店（lib/shops.ts の yearWarranty）の1台を同じカードの2行に
+                      （別の枠だった保証1年の1台は1週0クリック。同じ商品なら1行に見出し2つ）。placement は good_pick／warranty_pick のまま */}
+                  <PickPair
+                    good={goodDevice ? { device: goodDevice, label: mac || watch ? "ランクB以上で最安" : "電池85%以上で最安", placement: "good_pick" } : null}
+                    year={yearDevice ? { device: yearDevice, label: "保証1年で最安", placement: "warranty_pick" } : null}
+                    baseline={stats.minPrice} />
+                  {(goodDevice || yearDevice) && <p className="px-3.5 pt-3 pb-1 text-[12px] font-bold text-ink-sub">条件なしでいちばん安い</p>}
                   <CheapestRows devices={cheapest5.filter((d) => d.id !== goodDevice?.id && d.id !== yearDevice?.id)} />
                   <Link href={searchHref(model)} rel="nofollow" className={`flex items-center justify-center h-12 text-sm font-bold ${LINK}`}>
                     {stats.count.toLocaleString()}件すべて見る ›
