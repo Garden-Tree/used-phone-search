@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
+import CompareCards from "@/app/components/CompareCards";
 import GoodPicks from "@/app/components/GoodPicks";
 import { getModelMarket } from "@/lib/marketStats";
 import { hubSummary, hubWebPage, hubTitle } from "@/lib/hubSummary";
@@ -36,6 +37,16 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: { ...OG_BASE, title: `${title} | ${SITE_NAME}`, description, url: "/pixel" },
   };
 }
+
+// よく比べられる組（a・無印の隣の世代と、同じ世代の a と無印・無印と Pro。lib/compare.ts の COMPARE_PAIRS にある組だけ。ほかの組は下にチップで）
+const FEATURED_COMPARES: [string, string][] = [
+  ["Pixel 8a", "Pixel 9a"],
+  ["Pixel 9a", "Pixel 10a"],
+  ["Pixel 8", "Pixel 9"],
+  ["Pixel 9", "Pixel 10"],
+  ["Pixel 9a", "Pixel 9"],
+  ["Pixel 9", "Pixel 9 Pro"],
+];
 
 export default async function PixelIndexPage() {
   const shops = await activeShops(PIXEL_SHOPS);
@@ -112,9 +123,11 @@ export default async function PixelIndexPage() {
 
         {/* Pixel の比較ページ */}
         <section className="my-6">
-          <h2 className="text-lg font-bold mb-3">よく比較される Pixel</h2>
+          <h2 className="text-lg font-bold mb-3">よく比べられる組</h2>
+          <CompareCards pairs={FEATURED_COMPARES} prices={stats} />
+          <h3 className="text-sm font-bold text-ink-sub mt-4 mb-2">ほかの比較</h3>
           <div className="flex flex-wrap gap-2">
-            {COMPARE_PAIRS.filter(([a]) => isPixel(a)).map(([a, b]) => (
+            {COMPARE_PAIRS.filter(([a, b]) => isPixel(a) && !FEATURED_COMPARES.some(([x, y]) => x === a && y === b)).map(([a, b]) => (
               <Link key={comparePath(a, b)} href={comparePath(a, b)}
                 className="px-3.5 min-h-10 inline-flex items-center gap-1 rounded-full text-sm font-bold bg-white border border-line text-ink-sub hover:border-brand-200 hover:text-brand-800">
                 {a} <span className="text-ink-mute font-medium">vs</span> {b}
