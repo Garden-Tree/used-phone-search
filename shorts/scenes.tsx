@@ -252,7 +252,7 @@ function Frame({ s, children, header = true, footer = true, body = BODY }: { s: 
       {s.theme === "rakutenmobile" && <PrMark L={L} />}
       {header && <Band s={s} L={L} />}
       <div style={{ position: "absolute", left: MARGIN, top: body.top, width: CW, height: body.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>{children}</div>
-      {footer && (
+      {footer && !s.liveClip && (
         // 「\n」で行を分ける（長い注記が 24px でも幅に入らないとき。rakutenmobile）。大きさはいちばん長い行で決める
         <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.4, fontSize: Math.min(...FOOT(s).split("\n").map((l) => FIT(l, CW, isStock(s) ? 36 : 30, 24))), fontWeight: 500, color: L.sub, whiteSpace: "nowrap" }}>
           {FOOT(s).split("\n").map((l) => <div key={l} style={{ display: "flex" }}>{l}</div>)}

@@ -7,6 +7,7 @@ import { notoSansJp } from "@/lib/ogFont";
 import { FPS, H, RANK_SHOWN, TIMELINE, W, budgetRows, countdown, sceneFrame, variantsOf, type Variant } from "./scenes";
 import { relatedLineStart } from "./relatedLong";
 import { isNewVsOld, isBudget, type Script } from "./types";
+import { LIVE_CLIPS } from "./liveClips";
 import { VOICEVOX_URL, cachedCharacter, engineAvailable, narrationKey, narrationOf, resolveSpeaker, synthesize, voiceCredit, type Clip, type NarrationKey } from "./voice";
 
 function run(args: string[], bin = "ffmpeg") {
@@ -145,12 +146,15 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
     }
     const hold = Math.max(0, sc.dur - count / FPS);
     const seg = join(framesDir, `${idx}-${sc.id}.mp4`);
-    if (sc.id === "hook" && script.liveClip) {
-      // 実写のつかみ（11/9〜）: Pexels の縦動画を 1080x1920 に切り、少し暗くして、透明のコマ（文字と図）を重ねる。素材は 1秒目から使う
-      const clip = resolve(__dirname, "assets/stock", script.liveClip);
+    if (script.liveClip) {
+      // 実写モード（11/9〜）: 全場面の地に Pexels の縦動画を敷く。場面ごとに素材を替え（2〜4秒で絵が変わる）、つかみは薄く・それ以外は濃く暗くして文字とカードを読めるように。素材は 1秒目から使う
+      const start = Math.max(0, LIVE_CLIPS.indexOf(script.liveClip as (typeof LIVE_CLIPS)[number]));
+      const name = idx === 0 ? script.liveClip : LIVE_CLIPS[(start + idx) % LIVE_CLIPS.length];
+      const clip = resolve(__dirname, "assets/stock", name);
       if (!existsSync(clip)) throw new Error(`実写の素材がありません: ${clip}（shorts/assets/stock/ に置く。git には入れない）`);
+      const dark = sc.id === "hook" ? "eq=brightness=-0.08" : "eq=brightness=-0.22:saturation=0.75,gblur=sigma=2";
       run(["-y", "-ss", "1", "-i", clip, "-framerate", String(FPS), "-i", join(sd, "f%04d.png"),
-        "-filter_complex", `[0:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},eq=brightness=-0.08,setpts=PTS-STARTPTS[bg];[1:v]tpad=stop_mode=clone:stop_duration=${hold.toFixed(3)}[ov];[bg][ov]overlay=0:0:shortest=1,format=yuv420p`,
+        "-filter_complex", `[0:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},${dark},setpts=PTS-STARTPTS[bg];[1:v]tpad=stop_mode=clone:stop_duration=${hold.toFixed(3)}[ov];[bg][ov]overlay=0:0:shortest=1,format=yuv420p`,
         "-r", String(FPS), "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-t", String(sc.dur), "-an", seg]);
     } else {
       run(["-y", "-framerate", String(FPS), "-i", join(sd, "f%04d.png"), "-vf", `tpad=stop_mode=clone:stop_duration=${hold.toFixed(3)},format=yuv420p`,

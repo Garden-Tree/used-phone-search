@@ -186,4 +186,12 @@ export const LOOKS: Record<Script["theme"], Look> = {
   ultravs: { ...VERSUS, hook: "split" },
 };
 
-export const lookOf = (s: Script): Look => LOOKS[s.theme];
+/** 実写モード（liveClip あり・11/9〜）: 地は透明（render.ts が実写を敷く）、地の上の文字は白系。帯・カード・札はテーマのまま */
+const liveLook = (L: Look): Look => ({ ...L, dark: true, bg: "transparent", fg: ON_DARK.white, sub: "#d1d5db", accentOnBg: ON_DARK.price, url: ON_DARK.safe });
+const LIVE_CACHE = new Map<string, Look>();
+export const lookOf = (s: Script): Look => {
+  if (!s.liveClip) return LOOKS[s.theme];
+  let L = LIVE_CACHE.get(s.theme);
+  if (!L) { L = liveLook(LOOKS[s.theme]); LIVE_CACHE.set(s.theme, L); }
+  return L;
+};
