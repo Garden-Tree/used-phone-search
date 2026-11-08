@@ -97,3 +97,6 @@ rakuten-sync/sample.json
 
 # アップロード用に別名でコピーした動画（10/25〜）
 longform/**/*.mp4
+
+# Pexels の実写素材（11/9〜・ライセンスは Pexels、クレジット不要。git には入れない）
+/shorts/assets/stock/
