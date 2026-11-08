@@ -19,7 +19,9 @@ const WHITE = ON_DARK.white;
 const RED = ON_DARK.price;
 const GREEN = SITE.safe;
 
-const shadow = "0 6px 24px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.9)";
+// 縁取り（satori は text-stroke が効かないので 8方向の影で縁を作る）＋下に落ちる影
+const o = 7;
+const shadow = [[-o,-o],[o,-o],[-o,o],[o,o],[0,-o],[0,o],[-o,0],[o,0]].map(([x,y]) => `${x}px ${y}px 0 #000`).join(", ") + ", 0 10px 28px rgba(0,0,0,0.7)";
 const big = (color: string, size: number) => ({ display: "flex", fontSize: size, fontWeight: 900, color, lineHeight: 1.15, whiteSpace: "nowrap", textShadow: shadow } as const);
 /** 上下に黒のグラデーション（文字を読めるように。中央の実写は見せる） */
 const Shade = () => (
@@ -96,10 +98,10 @@ const G = () => (
 );
 
 const SHOTS: [string, () => JSX.Element, string][] = [
-  ["D-battery", D, "pexels-6278824.mp4"],
-  ["E-stock", E, "pexels-6278834.mp4"],
-  ["F-newold", F, "pexels-4884238.mp4"],
-  ["G-number", G, "pexels-6612199.mp4"],
+  ["D-battery", D, "pexels-15689201.mp4"],
+  ["E-stock", E, "pexels-8551164.mp4"],
+  ["F-newold", F, "pexels-15728690.mp4"],
+  ["G-number", G, "pexels-6611951.mp4"],
 ];
 
 async function main() {
@@ -111,7 +113,7 @@ async function main() {
     writeFileSync(ov, Buffer.from(await res.arrayBuffer()));
     const src = join(STOCK, clip);
     // 実写を 1080x1920 に合わせ（はみ出す分は切る）、少し暗くして文字を重ねる。0.5秒目のコマと 3秒の mp4
-    const vf = `[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=brightness=-0.14:contrast=1.1[bg];[bg][1:v]overlay=0:0`;
+    const vf = `[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=brightness=-0.08[bg];[bg][1:v]overlay=0:0`;
     const still = join(OUT, `live-${name}.png`);
     let r = spawnSync("ffmpeg", ["-y", "-loglevel", "error", "-ss", "0.5", "-i", src, "-i", ov, "-filter_complex", vf, "-frames:v", "1", still], { encoding: "utf8" });
     if (r.status !== 0) throw new Error(r.stderr);
