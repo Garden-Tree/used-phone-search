@@ -100,11 +100,10 @@ export function deviceKind(d: Pick<Device, 'modelName'>) {
   return { mac: /^MacBook/.test(d.modelName), watch: /^Apple Watch/.test(d.modelName) };
 }
 
-/** カードの1行目「（機種名）容量・色」。DeviceCard と PickPair で共有 */
+/** カードの1行目「（機種名）容量・色」。1TB 以上は TB（11/9〜。それまで iPhone は 1024GB と出ていた）。DeviceCard と PickPair で共有 */
 export function specLine(d: Device, showModel: boolean): string {
-  const { mac, watch } = deviceKind(d);
   const modelName = d.modelName.replace(/iPhone(\d+)/i, 'iPhone $1');
-  return `${showModel ? `${modelName} ` : ''}${mac || watch ? storageLabel(d.storage, d.modelName) : `${d.storage}GB`}・${d.color}`;
+  return `${showModel ? `${modelName} ` : ''}${storageLabel(d.storage, d.modelName)}・${d.color}`;
 }
 
 export default function DeviceCard({ device, showModel = true }: { device: Device; showModel?: boolean }) {
