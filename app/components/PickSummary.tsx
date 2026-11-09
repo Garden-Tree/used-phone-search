@@ -29,10 +29,10 @@ export default function PickSummary({ rows, embedded = false }: { rows: Row[]; e
           .filter(Boolean) as string[];
         return (
           <a key={r.label} {...shopLinkProps(d)} data-placement={r.placement}
-            className={`grid grid-cols-[1fr_auto_auto] gap-2 items-center py-2 hover:bg-ground ${i > 0 ? "border-t border-line-soft" : ""}`}>
+            className={`grid grid-cols-[minmax(0,1fr)_auto_auto] gap-3 items-center py-2 hover:bg-ground ${i > 0 ? "border-t border-line-soft" : ""}`}>
             <span className="flex flex-col min-w-0">
               <span className="text-[13px] font-bold leading-tight">{r.label}</span>
-              <span className="text-[11px] text-ink-mute leading-snug">{meta.map((m, j) => <span key={j} className="whitespace-nowrap">{j > 0 ? "・" : ""}{m}</span>)}</span>
+              <span className="flex flex-wrap text-[11px] text-ink-mute leading-snug">{meta.map((m, j) => <span key={j} className="whitespace-nowrap">{m}{j < meta.length - 1 ? "・" : ""}</span>)}</span>
             </span>
             <b className="text-price text-base tabular-nums">{d.price.toLocaleString()}</b>
             <span className="flex flex-col items-end min-w-[56px] tabular-nums">

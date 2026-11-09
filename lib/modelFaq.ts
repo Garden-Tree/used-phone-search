@@ -145,6 +145,8 @@ export function buildSummary(p: {
   newSourceName?: string;
   /** 文の最後に足す1文（iPad の iPadOS 27 対応。11/5〜） */
   note?: string;
+  /** 容量ごとの相場（11/10〜。在庫5件以上の容量が2つ以上あれば「64GBは○円、256GBは○円」と容量ごとに書く） */
+  storageRows?: { storage: number; medianPrice: number | null; count: number }[];
 }): string {
   const { model } = p;
   const nv = p.newVsUsed ?? [];
@@ -155,10 +157,18 @@ export function buildSummary(p: {
   // 相場の定義は書かない（10/27〜 文字を減らす。定義は「集計の方法」のページ）
   const med = p.medianPrice !== null ? `、相場${yen(p.medianPrice)}${medLabel ? `（${medLabel}）` : ""}` : "";
   const shops = `。大手中古ショップ${p.shopCount}店の${p.count.toLocaleString()}件を集計`;
+  // 容量ごと（在庫の多い3つまで・容量の小さい順）。ChatGPT が引用した相場サイトは冒頭が容量ごとだった（ideas/2026-11-10.md）
+  const caps = (p.storageRows ?? [])
+    .filter((r): r is { storage: number; medianPrice: number; count: number } => r.medianPrice !== null && r.count >= 5)
+    .sort((a, b) => b.count - a.count).slice(0, 3).sort((a, b) => a.storage - b.storage);
   const tail = main
     ? (main.diff > 0
       ? `。新品（${p.newSourceName ?? "公式"}）${yen(main.newPrice)}より${yen(main.diff)}安い（${storageLabel(main.storage, model)}の最安で比較）`
       : "。中古の最安は新品以上")
     : "";
+  if (caps.length >= 2) {
+    const list = caps.map((r) => `${storageLabel(r.storage, model)}が${yen(r.medianPrice)}`).join("、");
+    return `${p.dateText}時点、${model}の中古の相場は${list}（最安${yen(p.minPrice)}${p.minStorage ? `・${p.minStorage}` : ""}）${shops}${tail}。${p.note ?? ""}`;
+  }
   return `${p.dateText}時点、${model}の中古は${minPart}${med}${shops}${tail}。${p.note ?? ""}`;
 }

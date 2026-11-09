@@ -112,12 +112,13 @@ function Chart({ points }: { points: PricePoint[] }) {
   );
 }
 
-export default function PriceHistoryChart({ history, model }: { history: PriceHistory; model: string }) {
+export default function PriceHistoryChart({ history, model, defaultStorage }: { history: PriceHistory; model: string; defaultStorage?: number | null }) {
   // 全容量 → 容量の小さい順。記録が2日分未満の容量はタブに出さない（全容量は常に出す）
   const storages = Object.keys(history).map(Number)
     .filter((s) => s === 0 || history[s].length >= 2)
     .sort((a, b) => a - b);
-  const [storage, setStorage] = useState(0);
+  // 最初は冒頭の相場と同じ容量（11/10〜。全容量の中央値が冒頭の相場と違って見えた）。記録がなければ全容量
+  const [storage, setStorage] = useState(defaultStorage != null && storages.includes(defaultStorage) ? defaultStorage : 0);
   const points = history[storage] ?? [];
 
   if (points.length < 2) {

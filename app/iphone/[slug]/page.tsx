@@ -53,7 +53,6 @@ import { getBreakdown, getRankSMax, getShopBars, type Breakdown, type ShopBarRow
 import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { medianLabel, yen, storageLabel } from "@/lib/format";
 import { findShop, shopsFor } from "@/lib/shops";
-import { activeShopsFor } from "@/lib/activeShops";
 import { appleCheckedJa, applePriceSource, newVsUsed } from "@/lib/applePrices";
 import { newVsUsedOfficial, officialCheckedJa, officialPriceSource } from "@/lib/officialPrices";
 import NewVsUsedSection from "@/app/components/NewVsUsedSection";
@@ -104,7 +103,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const nv = stats.count === 0 ? [] : deviceOf(model) === "iphone" ? newVsUsed(model, stats.byStorage) : newVsUsedOfficial(model, stats.byStorage);
   const nvMin = nv[0];
   const tail = !nvMin ? "相場" : H1_PRICE_MODELS.has(model) ? `新品は${yen(nvMin.newPrice)}` : nvMin.diff > 0 ? `新品より${yen(nvMin.diff)}安い` : `新品${yen(nvMin.newPrice)}と比較`;
-  const title = stats.minPrice !== null ? `${model} 中古の最安値 ${yen(stats.minPrice)}〜｜${tail}【毎日更新】` : `${model} 中古の相場・最安値【毎日更新】`;
+  // 末尾は年月（11/10〜。ChatGPT が引用した相場サイトは題に【2026年11月】。毎日更新は1日4回のビルドで月が変わればそのまま変わる）
+  const ym = new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "long" }).replace(/\s/g, "");
+  const title = stats.minPrice !== null ? `${model} 中古の最安値 ${yen(stats.minPrice)}〜｜${tail}【${ym}】` : `${model} 中古の相場・最安値【${ym}】`;
   const description = modelDescription(model, stats);
   const path = modelPagePath(model);
 
@@ -242,7 +243,7 @@ export default async function ModelPage({ params }: Props) {
   // Xperia・AQUOS・Apple Watch（2026-10-15〜）も予算別ページはまだない
   const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || device === "watch" ? null : device;
   const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
-  const [stats, history, batteryRows, storageRows, matrix, macMatrix, budget, goodDevice, statTiles, yearDevice] = await Promise.all([
+  const [stats, historyRaw, batteryRows, storageRows, matrix, macMatrix, budget, goodDevice, statTiles, yearDevice] = await Promise.all([
     getModelStats(model),
     getPriceHistory(slug),
     getBatteryRows(model),
@@ -255,6 +256,14 @@ export default async function ModelPage({ params }: Props) {
     getYearWarrantyDevice(model, !(mac || watch)),
   ]);
   const goodMin = goodDevice?.price ?? null;
+  // 今日の記録の件数は、いまの在庫の件数に合わせる（11/10〜。記録は取り込みの途中の時点なので、容量別の表と1件ずれていた）
+  const todayIso = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
+  const liveCount = (gb: number) => (gb === 0 ? stats.count : stats.byStorage.find((r) => Number(r.key) === gb)?.count);
+  const history = Object.fromEntries(Object.entries(historyRaw).map(([k, pts]) => {
+    const last = pts[pts.length - 1];
+    const live = liveCount(Number(k));
+    return [k, last && last.date === todayIso && live !== undefined ? [...pts.slice(0, -1), { ...last, count: live }] : pts];
+  })) as typeof historyRaw;
   // 図の集計（在庫があるときだけ。どれも DB 側の groupBy / aggregate）
   const emptyBreakdown: Breakdown = { ranks: [], battery: { b90: 0, b85: 0, b80: 0, over80: 0, low: 0, unknown: 0 }, batteryKnown: 0, total: 0 };
   const [shopRows, breakdown, rankSMax]: [ShopBarRow[], Breakdown, number | null] = stats.count > 0
@@ -281,7 +290,6 @@ export default async function ModelPage({ params }: Props) {
   const series = seriesOf(model);
   const siblings = siblingModels(model);
   const path = modelPagePath(model);
-  const shopNum = (await activeShopsFor(model)).length;
 
   // 同じシリーズのチップ（カタログの並び順）
   const chipModels = [model, ...siblings].sort((a, b) => ALL_DEVICE_PAGE_MODELS.indexOf(a) - ALL_DEVICE_PAGE_MODELS.indexOf(b));
@@ -343,7 +351,7 @@ export default async function ModelPage({ params }: Props) {
   const summary = hasStock && stats.minPrice !== null
     ? buildSummary({
         model, dateText: summaryDate, minPrice: stats.minPrice, minStorage: minStorageRow && stats.byStorage.length > 1 ? storageLabel(minStorageRow.key, model) : null,
-        medianPrice: stats.medianPrice, medianStorage: stats.medianStorage, shopCount: stats.shopCount, count: stats.count, newVsUsed: newRows, newSourceName: newSource?.name,
+        medianPrice: stats.medianPrice, medianStorage: stats.medianStorage, shopCount: stats.shopCount, count: stats.count, newVsUsed: newRows, newSourceName: newSource?.name, storageRows,
         note: isIpad(model) ? (IPADOS27_MODELS.has(model) ? "iPadOS 27 に対応。" : "iPadOS 27 には非対応。") : undefined,
       })
     : null;
@@ -386,7 +394,7 @@ export default async function ModelPage({ params }: Props) {
   const storageKind = watch ? "サイズ" : mac ? "SSD" : "容量";
   const same = hasStock && stats.medianPrice !== null ? await sameBudgetModels(model, stats.medianPrice) : [];
   const guideSources: SourceItem[] = [
-    { label: "在庫", text: `中古ショップ${shopNum}店・1日4回` },
+    { label: "在庫", text: `${stats.shopCount}店・${stats.count.toLocaleString()}件・1日4回` },
     { label: "推移", text: "毎日記録" },
     ...(newSource && newRows.length > 0 ? [{ label: "新品価格", text: `${newSource.name}・税込・${newCheckedJa}`, href: newSource.url }] : []),
     ...(spec ? [{ label: "スペック", text: specSourceName(spec, model), href: specUrl(spec) }] : []),
@@ -767,13 +775,13 @@ export default async function ModelPage({ params }: Props) {
                         <span className="font-bold">容量別・長い期間のグラフ</span>
                         <ChevronDown className="w-4 h-4 text-ink-mute transition-transform group-open:rotate-180" aria-hidden="true" />
                       </summary>
-                      <div className="px-3.5 pb-3.5"><PriceHistoryChart history={history} model={model} /></div>
+                      <div className="px-3.5 pb-3.5"><PriceHistoryChart history={history} model={model} defaultStorage={stats.medianStorage} /></div>
                     </details>
                   </>
                 ) : (
                   <section className={`${CARD} p-3.5 flex flex-col gap-2`}>
                     <h2 className="text-[15px] font-bold">最安値の推移</h2>
-                    <PriceHistoryChart history={history} model={model} />
+                    <PriceHistoryChart history={history} model={model} defaultStorage={stats.medianStorage} />
                   </section>
                 )}
                 {/* 週ごとの相場（文字の表。グラフは絵なので、同じ記録を表でも出す。10/25〜） */}
