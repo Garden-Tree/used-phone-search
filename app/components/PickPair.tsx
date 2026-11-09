@@ -1,8 +1,7 @@
-import { batteryLabel, rankStyle, shopLabel, shopLinkProps, type Device } from '@/app/components/DeviceCard';
+import { batteryLabel, rankStyle, shopLabel, shopLinkProps, specLine, type Device } from '@/app/components/DeviceCard';
 import { findShop } from '@/lib/shops';
 import { affiliateUrl, isAffiliateUrl } from '@/lib/affiliate';
 import { BUILD_TIME } from '@/lib/buildTime';
-import { storageLabel } from '@/lib/format';
 
 /**
  * 条件つきの1台を2行で1つのカードに（11/8〜）。「電池85%以上で最安」（good）と「保証1年で最安」（year）。
@@ -32,10 +31,7 @@ export default function PickPair({ good, year, showModel = false, baseline = nul
         const d = r.device;
         const shop = findShop(d.shopName);
         const bat = batteryLabel(d);
-        const mac = /^MacBook/.test(d.modelName);
-        const watch = /^Apple Watch/.test(d.modelName);
-        const modelName = d.modelName.replace(/iPhone(\d+)/i, 'iPhone $1');
-        const spec = `${showModel ? `${modelName} ` : ''}${mac || watch ? storageLabel(d.storage, d.modelName) : `${d.storage}GB`}・${d.color}`;
+        const spec = specLine(d, showModel);
         const pr = isAffiliateUrl(affiliateUrl(d.shopName, d.url));
         return (
           <a key={r.placement} {...shopLinkProps(d)} data-placement={r.placement}

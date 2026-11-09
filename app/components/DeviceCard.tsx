@@ -92,15 +92,26 @@ export function shopLinkProps(device: Device) {
  * 同じ商品をモール店でも売っているときは、行の下に「楽天市場でも販売」の帯を付ける。
  * showModel: 機種名を1行目の頭に出す（機種が混ざる一覧用。1機種だけの一覧では false）
  */
+/**
+ * MacBook は容量＝SSD（1TB 以上は TB 表記）。2行目はメモリと SSD（電池はあれば）。SIM・利用制限はない。
+ * Apple Watch は 1行目にケースのサイズ（46mm）と色・素材、2行目に通信方式と電池。SIM・利用制限はない
+ */
+export function deviceKind(d: Pick<Device, 'modelName'>) {
+  return { mac: /^MacBook/.test(d.modelName), watch: /^Apple Watch/.test(d.modelName) };
+}
+
+/** カードの1行目「（機種名）容量・色」。DeviceCard と PickPair で共有 */
+export function specLine(d: Device, showModel: boolean): string {
+  const { mac, watch } = deviceKind(d);
+  const modelName = d.modelName.replace(/iPhone(\d+)/i, 'iPhone $1');
+  return `${showModel ? `${modelName} ` : ''}${mac || watch ? storageLabel(d.storage, d.modelName) : `${d.storage}GB`}・${d.color}`;
+}
+
 export default function DeviceCard({ device, showModel = true }: { device: Device; showModel?: boolean }) {
   const shop = findShop(device.shopName);
   const bat = batteryLabel(device);
-  const modelName = device.modelName.replace(/iPhone(\d+)/i, 'iPhone $1');
-  // MacBook は容量＝SSD（1TB 以上は TB 表記）。2行目はメモリと SSD（電池はあれば）。SIM・利用制限はない
-  const mac = /^MacBook/.test(device.modelName);
-  // Apple Watch は 1行目にケースのサイズ（46mm）と色・素材、2行目に通信方式と電池。SIM・利用制限はない
-  const watch = /^Apple Watch/.test(device.modelName);
-  const spec = `${showModel ? `${modelName} ` : ''}${mac ? storageLabel(device.storage) : watch ? storageLabel(device.storage, device.modelName) : `${device.storage}GB`}・${device.color}`;
+  const { mac, watch } = deviceKind(device);
+  const spec = specLine(device, showModel);
   const showNetwork = !!device.networkStatus && device.networkStatus !== '不明' && device.networkStatus !== '-';
   const tag = shop ? (mac || watch ? shop.warrantyShort : `${shop.warrantyShort}・${shop.redRomShort}`) : '';
   const sold = device.isSoldOut;
