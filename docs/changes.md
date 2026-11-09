@@ -7,6 +7,7 @@
 
 | 日 | 場所 | 変更 | 判定 |
 | --- | --- | --- | --- |
+| 11/10 | iPhone 18 Pro の見出しと title（案B） | h1 を「iPhone 18 Pro 中古の最安値 ○円〜｜新品は○円」に（branch h1-18pro を main へ）。18 Pro 系の表示が 10/29 60/日 → 11/4〜7 1〜4/日で戻らなかったため（台帳 11/10） | 11/24 |
 | 11/9 | 店のカードの容量 | 1TB 以上を「1024GB」でなく「1TB」に（iPhone・iPad・Pixel など。Mac と Watch は前から） | なし |
 | 11/9 | 店のカードの1行目（機種名・容量・色） | DeviceCard と PickPair で別々に組み立てていたのを `specLine`・`deviceKind`（DeviceCard.tsx）にまとめた。表示は変えない（120通りで同じ文字列） | なし |
 | 11/8 | /pixel/how-long・Pixel 6〜10 系の機種ページ | 横動画「安いPixelほど損？」（Zs1ZtFqdnuQ・12:00 公開）を埋め込み（`lib/videos.ts` pixelPerYear・videoForModel） | |
@@ -97,5 +98,4 @@
 
 | 内容 | いつ見るか |
 | --- | --- |
-| 18 Pro の見出し 案B（branch h1-18pro・main に入れていない） | 11/10 |
 | /search の条件なしの画面で iPhone 6s・7 が先頭に出る（入口は2週間で35セッション） | 優先度低・未着手 |

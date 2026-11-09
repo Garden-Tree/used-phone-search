@@ -89,6 +89,9 @@ type Props = { params: Promise<{ slug: string }> };
 const searchHref = (model: string, extra: Record<string, string> = {}) =>
   `/search?${new URLSearchParams({ model, ...extra }).toString()}`;
 
+// 見出しに最安値と新品の価格を入れる機種（試し）。Google は title でなく h1 を検索結果に出している（ideas/2026-11-04.md）
+const H1_PRICE_MODELS = new Set(["iPhone 18 Pro"]);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const model = slugToModel(slug);
@@ -100,7 +103,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // 18 Pro Max などの新しい機種は表示が多いのに 10位前後でクリックが少なく、新品との差を知りたい検索が多いと見た）
   const nv = stats.count === 0 ? [] : deviceOf(model) === "iphone" ? newVsUsed(model, stats.byStorage) : newVsUsedOfficial(model, stats.byStorage);
   const nvMin = nv[0];
-  const tail = nvMin ? (nvMin.diff > 0 ? `新品より${yen(nvMin.diff)}安い` : `新品${yen(nvMin.newPrice)}と比較`) : "相場";
+  const tail = !nvMin ? "相場" : H1_PRICE_MODELS.has(model) ? `新品は${yen(nvMin.newPrice)}` : nvMin.diff > 0 ? `新品より${yen(nvMin.diff)}安い` : `新品${yen(nvMin.newPrice)}と比較`;
   const title = stats.minPrice !== null ? `${model} 中古の最安値 ${yen(stats.minPrice)}〜｜${tail}【毎日更新】` : `${model} 中古の相場・最安値【毎日更新】`;
   const description = modelDescription(model, stats);
   const path = modelPagePath(model);
@@ -628,7 +631,13 @@ export default async function ModelPage({ params }: Props) {
               <span>{model}</span>
             </nav>
 
-            <h1 className="text-[22px] md:text-[28px] leading-[1.3] font-bold">{isIpad(model) ? <>{model} <span className="inline-block">中古の相場・最安値</span></> : <>{model} 中古の相場・最安値</>}</h1>
+            <h1 className="text-[22px] md:text-[28px] leading-[1.3] font-bold">
+              {H1_PRICE_MODELS.has(model) && stats.minPrice !== null && newRows[0]
+                ? <>{model} 中古の最安値 <span className="text-price">{yen(stats.minPrice)}</span>〜｜新品は{yen(newRows[0].newPrice)}</>
+                : isIpad(model)
+                  ? <>{model} <span className="inline-block">中古の相場・最安値</span></>
+                  : <>{model} 中古の相場・最安値</>}
+            </h1>
 
             {/* 冒頭の要約文: AI 検索と検索エンジンが引用しやすいよう、h1 の直後の最初の段落に1文だけ置く（日付・最安・相場・店数・件数。ideas/2026-10-19・10-23）。
                 ほかの場所では同じ数字を文で繰り返さない（10/27〜 画面の文字を減らす） */}
