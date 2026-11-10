@@ -29,7 +29,7 @@
 - **相場レポート** `/iphone/report/<月>`（毎月1日）・`/how-long`・`/resale-value`
 - **YouTube 予約は2日後まで**・声はずんだもん（比べる型は青山）
 - **X**: 返信の2/3は見られている投稿へ・速報は1日1本・引用1日1本・RTなし
-- **ショート**: 1日2本（7時・12:30）。在庫数・電池・新旧比較の型だけ・**0秒目は実写（Pexels）＋2行＋図1つ（`--live`）**。判定は「視聴を継続」
+- **ショート**: 1日2本（7時・12:30）。在庫数・電池・新旧比較の型だけ・**0秒目は実写（Pexels）＋2行＋図1つ（`--live`）**。判定は「視聴を継続」・台帳 `shorts/published.md`
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
 - **中古パソコン** `/pc`（`PcInventory`）。PC WRAP・Qualit・PC next・Be-Stock は A8、他は楽天
 
