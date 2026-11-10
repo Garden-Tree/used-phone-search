@@ -1,0 +1,593 @@
+{
+  "date": "2026-11-11",
+  "shops": 5,
+  "source": "script.md の数字そのまま（longform/2026-11-11-apple-watch/data-query.ts → data-query.log。在庫の最終更新 2026/11/11 03:55 JST・Apple Watch 8,654件）。相場は機種ごとに在庫がいちばん多いケースのサイズの中央値。サイズ・watchOS 27 の対応は lib/watchCatalog.ts（Apple 公式）",
+  "thumbnail": {
+    "lines": [
+      "中古Apple Watch",
+      "いま買うなら"
+    ],
+    "badge": [
+      {
+        "text": "Series 9"
+      },
+      {
+        "text": "3.8万円",
+        "red": true
+      }
+    ],
+    "footer": "watchOS 27対応でいちばん安い（45mm）【2026年11月】"
+  },
+  "chapters": [
+    {
+      "title": "結論：Series 9が3.8万円",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "中古Apple Watch いま買うなら Series 9",
+        "items": [
+          {
+            "label": "相場（45mm）",
+            "value": "38,280",
+            "unit": "円",
+            "cue": "Series 9。相場は"
+          },
+          {
+            "label": "watchOS 27対応で",
+            "value": "最安",
+            "cue": "今のwatchOS 27が入る機種"
+          },
+          {
+            "label": "SE 3より",
+            "value": "4,400",
+            "unit": "円安い",
+            "cue": "SE 3の相場より"
+          }
+        ],
+        "note": "相場＝在庫がいちばん多いケースのサイズの中央値（2026/11/11）"
+      }
+    },
+    {
+      "title": "どうやって調べた？",
+      "scene": {
+        "type": "bigNumber",
+        "heading": "大手中古ショップの在庫から",
+        "items": [
+          {
+            "label": "店",
+            "value": "5",
+            "unit": "店",
+            "cue": "大手の中古ショップ5店"
+          },
+          {
+            "label": "Apple Watch の在庫",
+            "value": "8,654",
+            "unit": "件",
+            "cue": "大手の中古ショップ5店"
+          },
+          {
+            "label": "Series 6〜12・Ultra・SE",
+            "value": "14",
+            "unit": "機種",
+            "cue": "機種は、Series 6から12"
+          }
+        ],
+        "note": "相場は機種ごとに在庫がいちばん多いケースのサイズの中央値。最安の1台ではない"
+      }
+    },
+    {
+      "title": "SE・Series・Ultraの違い",
+      "scene": {
+        "type": "table",
+        "heading": "Apple 公式の表で分かる3つの違い",
+        "columns": [
+          "系統",
+          "ケース",
+          "通信方式",
+          "watchOS 27"
+        ],
+        "emphasis": [
+          3
+        ],
+        "rows": [
+          {
+            "cells": [
+              "SE",
+              "40・44mm",
+              "GPS／Cellular",
+              "SE 3だけ"
+            ],
+            "cue": "SEは40ミリと44ミリ"
+          },
+          {
+            "cells": [
+              "Series",
+              "40〜46mm",
+              "GPS／Cellular",
+              "9以降"
+            ],
+            "cue": "Seriesは世代で変わって"
+          },
+          {
+            "cells": [
+              "Ultra",
+              "49mm",
+              "Cellularだけ",
+              "2以降"
+            ],
+            "cue": "Ultraはどれも49ミリ"
+          }
+        ],
+        "note": "Series 6 は40・44mm、7〜9 は41・45mm、10以降は42・46mm。画面や健康機能の違いは比べていない"
+      }
+    },
+    {
+      "title": "watchOS 27で分かれる線",
+      "scene": {
+        "type": "table",
+        "heading": "watchOS 27 の線のすぐ上と下",
+        "columns": [
+          "対応",
+          "相場",
+          "非対応",
+          "相場",
+          "差"
+        ],
+        "emphasis": [
+          4
+        ],
+        "rows": [
+          {
+            "cells": [
+              "Series 9",
+              "38,280円",
+              "Series 8",
+              "27,280円",
+              "11,000円"
+            ],
+            "cue": "Seriesは、9が3万8,280円"
+          },
+          {
+            "cells": [
+              "SE 3",
+              "42,680円",
+              "SE 2",
+              "21,780円",
+              "20,900円"
+            ],
+            "cue": "SEは、SE 3が"
+          },
+          {
+            "cells": [
+              "Ultra 2",
+              "74,580円",
+              "Ultra",
+              "50,980円",
+              "23,600円"
+            ],
+            "cue": "Ultraは、Ultra 2が"
+          }
+        ],
+        "note": "SE 2＝SE（第2世代）。対応機種には iOS 27 の iPhone 11 以降か iPhone SE（第2世代以降）が要る"
+      }
+    },
+    {
+      "title": "SE 3よりSeries 9が安い",
+      "scene": {
+        "type": "table",
+        "heading": "SE 3 と Series 9（どちらも watchOS 27 対応）",
+        "columns": [
+          "サイズ",
+          "SE 3",
+          "Series 9",
+          "差"
+        ],
+        "emphasis": [
+          3
+        ],
+        "rows": [
+          {
+            "cells": [
+              "大きい方",
+              "42,680円",
+              "38,280円",
+              "4,400円"
+            ],
+            "cue": "大きいサイズで比べると"
+          },
+          {
+            "cells": [
+              "小さい方",
+              "40,480円",
+              "32,980円",
+              "7,500円"
+            ],
+            "cue": "小さいサイズだと"
+          }
+        ],
+        "note": "SE 3 は44mm・40mm、Series 9 は45mm・41mm。Series 9 の在庫は848件。機能の違いは比べていない"
+      }
+    },
+    {
+      "title": "Seriesは世代でいくら違う？",
+      "scene": {
+        "type": "table",
+        "heading": "Series 9〜12 の相場（どれも watchOS 27 対応）",
+        "columns": [
+          "機種",
+          "小さい方",
+          "大きい方"
+        ],
+        "emphasis": [
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "Series 9",
+              "32,980円",
+              "38,280円"
+            ],
+            "cue": "大きいほうのサイズで並べるね"
+          },
+          {
+            "cells": [
+              "Series 10",
+              "45,980円",
+              "48,180円"
+            ],
+            "cue": "大きいほうのサイズで並べるね"
+          },
+          {
+            "cells": [
+              "Series 11",
+              "54,780円",
+              "60,280円"
+            ],
+            "cue": "11は6万280円"
+          },
+          {
+            "cells": [
+              "Series 12",
+              "73,800円",
+              "84,480円"
+            ],
+            "cue": "11は6万280円"
+          }
+        ],
+        "note": "9 は41・45mm、10以降は42・46mm。大きい方で 9→10 は9,900円、11→12 は24,200円"
+      }
+    },
+    {
+      "title": "2万円前後：全部 非対応",
+      "scene": {
+        "type": "table",
+        "heading": "2万円前後の4台（watchOS 27 非対応）",
+        "columns": [
+          "機種",
+          "サイズ",
+          "相場"
+        ],
+        "emphasis": [
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "SE（第1世代）",
+              "40mm",
+              "14,080円"
+            ],
+            "cue": "SEの第1世代とSeries 6が"
+          },
+          {
+            "cells": [
+              "Series 6",
+              "40mm",
+              "14,080円"
+            ],
+            "cue": "SEの第1世代とSeries 6が"
+          },
+          {
+            "cells": [
+              "Series 7",
+              "41mm",
+              "17,380円"
+            ],
+            "cue": "SEの第1世代とSeries 6が"
+          },
+          {
+            "cells": [
+              "SE（第2世代）",
+              "40mm",
+              "21,780円"
+            ],
+            "cue": "SEの第1世代とSeries 6が"
+          }
+        ],
+        "note": "非対応でも動くが、今の watchOS 27 は入らない"
+      }
+    },
+    {
+      "title": "予算別：4万・5万・8万円",
+      "scene": {
+        "type": "table",
+        "heading": "予算で買える中で相場がいちばん高い機種",
+        "columns": [
+          "予算",
+          "機種",
+          "サイズ",
+          "相場",
+          "watchOS 27"
+        ],
+        "emphasis": [
+          3
+        ],
+        "rows": [
+          {
+            "cells": [
+              "2万円",
+              "Series 7",
+              "41mm",
+              "17,380円",
+              "非対応"
+            ],
+            "cue": "2万円なら、Series 7"
+          },
+          {
+            "cells": [
+              "4万円",
+              "Series 9",
+              "45mm",
+              "38,280円",
+              "対応"
+            ],
+            "cue": "4万円なら、Series 9"
+          },
+          {
+            "cells": [
+              "5万円",
+              "Series 10",
+              "46mm",
+              "48,180円",
+              "対応"
+            ],
+            "cue": "5万円なら、Series 10"
+          },
+          {
+            "cells": [
+              "8万円",
+              "Ultra 2",
+              "49mm",
+              "74,580円",
+              "対応"
+            ],
+            "cue": "8万円なら、Ultra 2"
+          }
+        ],
+        "note": "予算の1万円下〜予算の帯で選んだ。Series 11 は60,280円、初代 Ultra は50,980円（非対応）"
+      }
+    },
+    {
+      "title": "Ultraはどれ？",
+      "scene": {
+        "type": "bars",
+        "heading": "Ultra の相場（どれも49mm）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "Ultra 4",
+            "median": 138380,
+            "stock": "39件",
+            "cue": "Ultra 4は13万8,380円"
+          },
+          {
+            "label": "Ultra 3",
+            "median": 104478,
+            "stock": "455件",
+            "cue": "Ultra 3は10万4,478円"
+          },
+          {
+            "label": "Ultra 2",
+            "median": 74580,
+            "stock": "700件",
+            "pick": true,
+            "cue": "Ultra 3は10万4,478円"
+          },
+          {
+            "label": "Ultra",
+            "sub": "watchOS 27 非対応",
+            "median": 50980,
+            "stock": "331件",
+            "cue": "初代のUltraは"
+          }
+        ],
+        "note": "Ultra 2 と 3 の差は29,898円。Ultra はどれも GPS + Cellular"
+      }
+    },
+    {
+      "title": "サイズと通信方式でいくら",
+      "scene": {
+        "type": "table",
+        "heading": "Series 10 のサイズと通信方式",
+        "columns": [
+          "くらべる",
+          "安い方",
+          "高い方",
+          "差"
+        ],
+        "emphasis": [
+          3
+        ],
+        "rows": [
+          {
+            "cells": [
+              "42mm と 46mm",
+              "45,980円",
+              "48,180円",
+              "2,200円"
+            ],
+            "cue": "42ミリが4万5,980円"
+          },
+          {
+            "cells": [
+              "46mm GPS と Cellular",
+              "43,780円",
+              "54,800円",
+              "11,020円"
+            ],
+            "cue": "大きく変わるのは通信方式"
+          }
+        ],
+        "note": "Cellular で単体で通信するには携帯会社の回線契約が別に要る。サイズと通信方式は後から変えられない"
+      }
+    },
+    {
+      "title": "中古で見る5つのこと",
+      "scene": {
+        "type": "checklist",
+        "heading": "中古で見る5つのこと",
+        "items": [
+          {
+            "text": "電池の最大容量",
+            "cue": "1つ目は、バッテリーの最大容量"
+          },
+          {
+            "text": "バンドと充電ケーブルの付属",
+            "cue": "2つ目は付属品"
+          },
+          {
+            "text": "ケースのサイズ",
+            "cue": "3つ目と4つ目は"
+          },
+          {
+            "text": "GPS か GPS + Cellular か",
+            "cue": "3つ目と4つ目は"
+          },
+          {
+            "text": "アクティベーションロックの解除",
+            "cue": "5つ目は、アクティベーションロック"
+          }
+        ],
+        "note": "電池の最大容量が書いてある在庫は 8,654件中 1,095件。付属品・ロックは商品ページか店に確かめる"
+      }
+    },
+    {
+      "title": "電池が書いてある在庫",
+      "scene": {
+        "type": "table",
+        "heading": "電池85%以上と書いてある在庫",
+        "columns": [
+          "機種",
+          "全在庫",
+          "電池85%以上"
+        ],
+        "emphasis": [
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "Series 10",
+              "1,253件",
+              "178件"
+            ],
+            "cue": "いちばん多いのはSeries 10"
+          },
+          {
+            "cells": [
+              "Series 9",
+              "848件",
+              "117件"
+            ],
+            "cue": "Series 9は848件のうち"
+          },
+          {
+            "cells": [
+              "Ultra 2",
+              "700件",
+              "116件"
+            ],
+            "cue": "Series 9は848件のうち"
+          },
+          {
+            "cells": [
+              "SE 3",
+              "974件",
+              "91件"
+            ],
+            "cue": "SE 3は974件のうち"
+          }
+        ],
+        "note": "全サイズの件数。電池の書き方は店によって違い、書いていない在庫も多い"
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "table",
+        "heading": "中古Apple Watch 買うなら",
+        "columns": [
+          "こんな人",
+          "機種",
+          "相場"
+        ],
+        "emphasis": [
+          2
+        ],
+        "rows": [
+          {
+            "cells": [
+              "対応機種で安く",
+              "Series 9",
+              "38,280円"
+            ],
+            "cue": "watchOS 27に対応してて安いのは"
+          },
+          {
+            "cells": [
+              "予算5万円",
+              "Series 10",
+              "48,180円"
+            ],
+            "cue": "5万円出せるなら"
+          },
+          {
+            "cells": [
+              "大きい49mm",
+              "Ultra 2",
+              "74,580円"
+            ],
+            "cue": "5万円出せるなら"
+          },
+          {
+            "cells": [
+              "試すだけ",
+              "2万円以下",
+              "非対応"
+            ],
+            "cue": "2万円以下の機種は"
+          }
+        ],
+        "note": "今日の相場: used.gadelog.com"
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          {
+            "id": "T7ltgSB-4XM",
+            "title": "中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決めた"
+          },
+          {
+            "id": "R1Aki2b5mds",
+            "title": "【中古iPhone】いま買うならどれ？17店・約7万件の相場で予算別に本気で選んだ"
+          }
+        ],
+        "note": "相場は毎日更新: used.gadelog.com"
+      }
+    }
+  ]
+}
