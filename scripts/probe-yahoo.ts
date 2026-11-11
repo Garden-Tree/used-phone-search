@@ -5,7 +5,7 @@
  * 2026-11-11: モバステ（mobilestation）だけ 0件になった件の調査で追加（ideas/2026-11-11.md）
  */
 const ENDPOINT = "https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch";
-const appId = process.env.YAHOO_APP_ID;
+const appId = process.env.YAHOO_APP_ID ?? "";
 if (!appId) throw new Error("YAHOO_APP_ID がない");
 const seller = process.argv[2] ?? "mobilestation";
 
