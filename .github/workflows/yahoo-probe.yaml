@@ -1,0 +1,22 @@
+# Yahoo!ショッピング API の切り分け（手動だけ・DB を使わない）。scripts/probe-yahoo.ts
+name: Yahoo API probe
+on:
+  workflow_dispatch:
+    inputs:
+      seller:
+        description: 'ストアID'
+        required: false
+        default: 'mobilestation'
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: probe
+        env:
+          YAHOO_APP_ID: ${{ secrets.YAHOO_APP_ID }}
+        run: npx -y tsx scripts/probe-yahoo.ts "${{ inputs.seller }}"
