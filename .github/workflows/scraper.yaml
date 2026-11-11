@@ -34,6 +34,10 @@ on:
         description: '楽天の JSON の取り直し回数（自動で付く。手動では 0 のまま）'
         required: false
         default: '0'
+      yahoo_allow_shrink:
+        description: 'true なら Yahoo の取り込みで安全装置（前回の半分未満は洗い替えない）を外す。店側で本当に品切れが多いときの1回だけ（11/11 モバステ）'
+        required: false
+        default: ''
       site_only:
         description: 'true ならサイトの書き出しと配置だけ（在庫の取得・取り込み・価格推移・監視を飛ばす。コードだけ変えたとき。約6〜7分）'
         required: false
@@ -160,7 +164,8 @@ jobs:
         run: |
           failed=0
           npx tsx scripts/fetch-yahoo.ts || failed=1
-          npx tsx scripts/ingest-rakuten.ts yahoo-data --family yahoo || failed=1
+          shrink=""; if [ "${{ inputs.yahoo_allow_shrink }}" = "true" ]; then shrink="--allow-shrink"; fi
+          npx tsx scripts/ingest-rakuten.ts yahoo-data --family yahoo $shrink || failed=1
           exit "$failed"
 
       # Amazon.co.jp の整備済み品（lib/amazonShops.ts）: Creators API を直接呼んで取り込む（1秒1回・最大約12分）。Yahoo と同じ扱い（失敗しても書き出しは続け、ジョブは失敗として通知）。
