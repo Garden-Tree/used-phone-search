@@ -62,7 +62,11 @@ async function main() {
   failures.push(...report.problems.filter((p) => !isMissing(p)));
 
   // 「0件」: 前回もあれば失敗、今回だけなら警告（その種類の一覧だけ一時的に取れなかった回。10/20 ダイワンの Galaxy）
-  const missing = report.problems.filter(isMissing);
+  // 在庫がほぼ無い店（11/11〜 モバステの Yahoo 店は中古がほぼ全部「在庫なし」で数件だけ）: 種類ごとの「0件」は警告だけ。店ごと止まれば最終更新の古さで分かる
+  const SPARSE = ["モバステ:"];
+  const sparse = report.problems.filter((p) => isMissing(p) && SPARSE.some((s) => p.startsWith(s)));
+  warnings.push(...sparse.map((p) => `${p}（在庫が少ない店）`));
+  const missing = report.problems.filter((p) => isMissing(p) && !sparse.includes(p));
   if (missing.length > 0) {
     const previous = await loadPrevious();
     const before = new Set(previous ? previous.problems.filter(isMissing) : missing);
