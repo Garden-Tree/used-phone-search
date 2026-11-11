@@ -4,6 +4,8 @@ import { hubTitle } from "@/lib/hubSummary";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import AdDisclosure from "@/app/components/AdDisclosure";
+import VideoEmbed from "@/app/components/VideoEmbed";
+import { VIDEOS } from "@/lib/videos";
 import { getModelMarket } from "@/lib/marketStats";
 import { modelPagePath } from "@/lib/catalog";
 import { WATCH_CATALOG, WATCH_INFO, WATCH_MODELS, isWatchOS27 } from "@/lib/watchCatalog";
@@ -80,6 +82,7 @@ export default async function WatchIndexPage() {
           バンドの有無は載せていません。
         </p>
         <AdDisclosure compact />
+        <VideoEmbed video={VIDEOS.watchDore} heading={VIDEOS.watchDore.heading} className="my-6" />
 
         {WATCH_CATALOG.map((series) => (
           <section key={series.series} className="my-8">

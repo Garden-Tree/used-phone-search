@@ -7,7 +7,7 @@
 
 | 日付 | フォルダ | タイトル | 動画ID |
 | --- | --- | --- | --- |
-| 2026-11-11 | apple-watch | 中古Apple Watch、いま買うならどれ？Series 9が3.8万円で正解｜SE・Series・Ultraを8,654件の相場で比較【2026年11月】 | - |
+| 2026-11-11 | apple-watch | 中古Apple Watch、いま買うならどれ？Series 9が3.8万円で正解｜SE・Series・Ultraを8,654件の相場で比較【2026年11月】 | WcYKNKIuH4c |
 | 2026-11-07 | pixel | 安いPixelほど損？中古6a・7a・8a、1年あたりで4倍の差【2026年11月】 | Zs1ZtFqdnuQ |
 | 2026-11-06 | jirai | 今は買うな｜中古iPhone 地雷6台・正解3台【2026年11月】 | 4jeD0o26_U4 |
 | 2026-11-06 | ipad-how-old | 中古iPadは何世代まで買っていい？無印は第9世代から｜相場4.3万円 | X-QOob6x4N0 |
@@ -37,6 +37,8 @@
 
 | 日付 | テーマ | タイトル | 動画ID | 0秒目 |
 | --- | --- | --- | --- | --- |
+| 2026-11-12 | macgen | MacBook Air M4→M3で約5.7万円安い！1世代前ランキング | - | 実写 |
+| 2026-11-12 | battery | iPhone 16 Proは電池90%台でも+1,000円だけ！電池の差が小さい中古iPhone | - | 実写 |
 | 2026-11-11 | stockfold | 中古でいちばん多い折りたたみスマホはGalaxy Z Flip6！在庫308件ランキング | rpbi2YTcsFI | 実写 |
 | 2026-11-11 | ipadgen | iPad Pro 13インチ M5→M4で約4.4万円安い！1世代前ランキング | xcnZqV2KQyE | 実写 |
 | 2026-11-10 | stockpixel | 中古でいちばん多いGoogle PixelはPixel 8a！在庫598件ランキング | - | 実写 |

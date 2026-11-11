@@ -67,6 +67,7 @@
 | 11/6 | J:COM MOBILE | A8 で未提携（申込が通らなかった）。画面には出ていなかった枠を simPlans から削除 | |
 | 11/6 | A8 の審査の記録 | 申込中は UQ・JUNKWORLD（スマホ・PC 関係）。J:COM・Back Market・イオシスは申込中にも参加中にもない | |
 | 11/6 | 登録リクエストの順番 | 未登録の内訳を見直して ideas/gsc-queue.md に | |
+| 11/12 | /watch | Apple Watch の横動画（WcYKNKIuH4c）を埋め込む（lib/videos.ts watchDore） | |
 | 11/11 | 読み（shorts/voice.ts の READING_FIXES） | 「血中酸素」→「けっちゅうさんそ」（ユーザー） | |
 | 11/11 | Apple Watch の横動画（未公開） | ユーザーの指示で健康機能（心電図・血中酸素・皮膚温・睡眠時無呼吸・高血圧）と便利機能（ダブルタップ・手首フリック・常時表示・高速充電）の2章を足す。値は新しい lib/watchSpecs.ts。「公式で確かめた」「今回は比べてない」は台詞で言わない | 公開前に数字を取り直す |
 | 11/11 | 監視（scripts/check-health.ts） | モバステの Yahoo 店は中古がほぼ全部「在庫なし」（DB 3件）→ 種類ごとの「0件」は失敗でなく警告に（毎回の失敗で本当の障害が埋もれるため） | 在庫が戻れば SPARSE から外す |

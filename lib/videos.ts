@@ -33,6 +33,8 @@ export const VIDEOS = {
   jirai: { id: "4jeD0o26_U4", title: "今は買うな｜中古iPhone 地雷6台・正解3台【2026年11月】", minutes: 10, asOf: "2026-11-06", heading: "今は買わないほうがいい機種を動画で見る" },
   // 11/8 12:00 公開（Pixel を1年あたりで比べる。/pixel/how-long と Pixel 6〜10 系の機種ページに）
   pixelPerYear: { id: "Zs1ZtFqdnuQ", title: "安いPixelほど損？中古6a・7a・8a、1年あたりで4倍の差【2026年11月】", minutes: 9, asOf: "2026-11-07", heading: "Pixel を「1年あたり」で比べた動画を見る" },
+  // 11/12 0時台に公開（Apple Watch いま買うならどれ。健康機能・便利機能の章つき。/watch に）
+  watchDore: { id: "WcYKNKIuH4c", title: "中古Apple Watch、いま買うならどれ？Series 9が3.8万円で正解｜SE・Series・Ultraを8,654件の相場で比較【2026年11月】", minutes: 10, asOf: "2026-11-11", heading: "いま買うならどの Apple Watch かを動画で見る" },
 } satisfies Record<string, Video>;
 
 /**
