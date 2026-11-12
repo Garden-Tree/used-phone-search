@@ -12,7 +12,8 @@ import { getModelStats, type ModelStats, type PriceRow } from "@/lib/modelStats"
 import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { medianLabel, yen, storageLabel } from "@/lib/format";
 import { activeShopsFor } from "@/lib/activeShops";
-import { SPEC_ROWS, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
+import { SPEC_ROWS, specSourceName, specUrl } from "@/lib/iphoneSpecs";
+import { compareSpecOf as specOf } from "@/lib/androidSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { GALAXY_RELEASED } from "@/lib/galaxyCatalog";
 import { getGoodRankMin } from "@/lib/modelBest";

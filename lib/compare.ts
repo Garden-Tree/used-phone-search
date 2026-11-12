@@ -98,6 +98,22 @@ function buildPairs(): [string, string][] {
     ["Galaxy A55 5G", "Galaxy A57 5G"],
   );
 
+  // AQUOS・Xperia（2026-11-12〜）。GSC で「機種名＋中古」が伸びている定番の中位機。世代違いと、sense と wish・R の迷いどころ
+  pairs.push(
+    ["AQUOS sense7", "AQUOS sense8"],
+    ["AQUOS sense8", "AQUOS sense9"],
+    ["AQUOS sense9", "AQUOS sense10"],
+    ["AQUOS wish3", "AQUOS wish4"],
+    ["AQUOS wish4", "AQUOS wish5"],
+    ["AQUOS wish4", "AQUOS sense8"],
+    ["AQUOS R8", "AQUOS R9"],
+    ["Xperia 10 V", "Xperia 10 VI"],
+    ["Xperia 10 VI", "Xperia 10 VII"],
+    ["Xperia 1 V", "Xperia 1 VI"],
+    ["Xperia 1 VI", "Xperia 1 VII"],
+    ["Xperia 10 VI", "Xperia 1 VI"],
+  );
+
   // カタログに無いモデルを含む組は除外（表記ミスの防止）
   return pairs.filter(([a, b]) => ALL_DEVICE_PAGE_MODELS.includes(a) && ALL_DEVICE_PAGE_MODELS.includes(b));
 }

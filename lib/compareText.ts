@@ -1,4 +1,5 @@
-import { SPEC_ROWS, specOf } from "@/lib/iphoneSpecs";
+import { SPEC_ROWS } from "@/lib/iphoneSpecs";
+import { compareSpecOf as specOf } from "@/lib/androidSpecs";
 import { storageLabel, yen } from "@/lib/format";
 import type { Faq } from "@/lib/modelFaq";
 
