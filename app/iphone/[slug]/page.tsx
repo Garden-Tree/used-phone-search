@@ -247,8 +247,8 @@ export default async function ModelPage({ params }: Props) {
   const mac = device === "mac";
   // Apple Watch（2026-10-15〜）: サイズ（mm）×ランクの表、結論はバッテリーの条件なし（MacBook と同じ）、予算別・検品・買取・回線の枠は出さない
   const watch = device === "watch";
-  // Xperia・AQUOS・Apple Watch（2026-10-15〜）も予算別ページはまだない
-  const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || device === "watch" ? null : device;
+  // Xperia・AQUOS・Apple Watch（2026-10-15〜）・OPPO・Xiaomi（2026-11-12〜）も予算別ページはまだない
+  const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || device === "watch" || device === "oppo" || device === "xiaomi" ? null : device;
   const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
   const [stats, historyRaw, batteryRows, storageRows, matrix, macMatrix, budget, goodDevice, statTiles, yearDevice] = await Promise.all([
     getModelStats(model),
@@ -553,7 +553,7 @@ export default async function ModelPage({ params }: Props) {
   );
 
   // ---- 回線・買取（PR）のタイル。リンク・data-shop-click・rel は今までと同じ。1x1 の計測画像は下で1回だけ出す ----
-  const showSim = hasStock && !legacyLayout && (device === "iphone" || device === "pixel" || device === "galaxy" || device === "xperia" || device === "aquos");
+  const showSim = hasStock && !legacyLayout && (device === "iphone" || device === "pixel" || device === "galaxy" || device === "xperia" || device === "aquos" || device === "oppo" || device === "xiaomi");
   const showBuyback = hasStock && !mac && !watch;
   const showRepair = hasStock && device === "iphone";
   // 「直す？買い替える？」の1つ上の世代の相場（この機種の相場と同じ容量。在庫3件以上のときだけ。DB は件数と中央値の1行）
@@ -955,9 +955,10 @@ export default async function ModelPage({ params }: Props) {
                     </p>
                   </Accordion>
                 )}
-                {/* Xperia・AQUOS の型番とアップデート（メーカーの公式資料の値。未確認の項目は出さない。lib/androidInfo.ts） */}
-                {androidInfo && (androidCodes.length > 0 || androidUpdates.length > 0) && (
-                  <Accordion title={`${model}の型番とアップデート`} hint={androidUpdates.find((r) => r.label === "セキュリティ更新")?.value}>
+                {/* Xperia・AQUOS・OPPO・Xiaomi の型番とアップデート（メーカーの公式資料の値。未確認の項目は出さない。lib/androidInfo.ts）。
+                    型番が1つも確かめられていない OPPO・Xiaomi の機種は、発売の文だけを「基本情報」として出す */}
+                {androidInfo && (androidCodes.length > 0 || androidUpdates.length > 0 || releasedSentence(model)) && (
+                  <Accordion title={androidCodes.length > 0 || androidUpdates.length > 0 ? `${model}の型番とアップデート` : `${model}の基本情報`} hint={androidUpdates.find((r) => r.label === "セキュリティ更新")?.value}>
                     <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
                       {androidUpdates.map((r) => (
                         <div key={r.label} className="contents">

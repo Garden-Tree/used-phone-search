@@ -1,12 +1,14 @@
 /**
- * Xperia・AQUOS の機種情報を、機種ページ・一覧に出す文にする（2026-10-15〜）。値は lib/xperiaCatalog.ts・lib/aquosCatalog.ts
- * （公式で確かめたものだけ。未確認は null で、ここでは何も出さない）
+ * Xperia・AQUOS（2026-10-15〜）・OPPO・Xiaomi（2026-11-12〜）の機種情報を、機種ページ・一覧に出す文にする。
+ * 値は lib/xperiaCatalog.ts・aquosCatalog.ts・oppoCatalog.ts・xiaomiCatalog.ts（公式で確かめたものだけ。未確認は null で、ここでは何も出さない）
  */
 import { CARRIER_LABELS, type AndroidInfo } from "@/lib/androidCommon";
 import { AQUOS_INFO, isAquos } from "@/lib/aquosCatalog";
 import { XPERIA_INFO, isXperia } from "@/lib/xperiaCatalog";
+import { OPPO_INFO, isOppo } from "@/lib/oppoCatalog";
+import { XIAOMI_INFO, isXiaomi } from "@/lib/xiaomiCatalog";
 
-export const androidInfoOf = (model: string): AndroidInfo | undefined => XPERIA_INFO[model] ?? AQUOS_INFO[model];
+export const androidInfoOf = (model: string): AndroidInfo | undefined => XPERIA_INFO[model] ?? AQUOS_INFO[model] ?? OPPO_INFO[model] ?? XIAOMI_INFO[model];
 
 export const isAndroidJp = (model: string) => isXperia(model) || isAquos(model);
 
@@ -23,6 +25,9 @@ export function releasedSentence(model: string): string | null {
   const when = jaDate(info.released);
   if (info.releasedNote === "au") return `日本では${when}に au から発売されました。`;
   if (info.releasedNote === "報道") return `日本では${when}に発売されました（報道による）。`;
+  // OPPO・Xiaomi: 「Y!mobile・楽天モバイル（2026年6月25日）」→「（Y!mobile・楽天モバイル）」。日付の括弧は落とす
+  const where = info.releasedNote?.replace(/（.*$/, "").trim();
+  if (where) return `日本では${when}に発売されました（${where}）。`;
   return `日本では${when}に発売されました。`;
 }
 
@@ -72,6 +77,18 @@ export function supportSentence(model: string, now: string): string | null {
 
 /** 出典（機種ページの「アップデート」の注記） */
 export function updateSource(model: string): { name: string; url: string }[] {
+  if (isOppo(model)) {
+    return [
+      { name: "OPPO「スマートフォン」", url: "https://www.oppo.com/jp/smartphones/" },
+      { name: "au「OPPOの製品情報一覧」", url: "https://www.au.com/support/service/mobile/manual/smartphone/oppo/" },
+    ];
+  }
+  if (isXiaomi(model)) {
+    return [
+      { name: "Xiaomi「スマートフォン」", url: "https://www.mi.com/jp/" },
+      { name: "au「Xiaomiの製品情報一覧」", url: "https://www.au.com/support/service/mobile/manual/smartphone/xiaomi/" },
+    ];
+  }
   return isXperia(model)
     ? [
         { name: "Sony「Xperia の製品ページ」", url: "https://www.sony.jp/xperia/product/index.html" },

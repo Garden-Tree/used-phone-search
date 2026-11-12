@@ -13,6 +13,8 @@
 import { specOf, type IphoneSpec } from "@/lib/iphoneSpecs";
 import { AQUOS_INFO } from "@/lib/aquosCatalog";
 import { XPERIA_INFO } from "@/lib/xperiaCatalog";
+import { OPPO_SPECS } from "@/lib/oppoCatalog";
+import { XIAOMI_SPECS } from "@/lib/xiaomiCatalog";
 
 /** "2024-11" → "2024年11月"、"2023" → "2023年"（月が分からない機種） */
 const jaReleased = (s: string | null | undefined): string => {
@@ -84,6 +86,7 @@ export const XPERIA_SPECS: Record<string, IphoneSpec> = Object.fromEntries([
 /**
  * 比較ページ用のスペック（iPhone・iPad・Pixel・Galaxy に AQUOS・Xperia を足したもの）。
  * `specOf` には入れない: 入れると AQUOS・Xperia の機種ページにもスペックの節が出る（機種ページは Google で伸びているので変えない・11/12）
+ * OPPO・Xiaomi（2026-11-12〜。lib/oppoCatalog.ts・xiaomiCatalog.ts の公式の値）も引ける（比較の組はまだ足していない）
  */
 export const compareSpecOf = (model: string): IphoneSpec | undefined =>
-  specOf(model) ?? AQUOS_SPECS[model] ?? XPERIA_SPECS[model];
+  specOf(model) ?? AQUOS_SPECS[model] ?? XPERIA_SPECS[model] ?? OPPO_SPECS[model] ?? XIAOMI_SPECS[model];

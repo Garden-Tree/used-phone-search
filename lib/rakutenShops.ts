@@ -33,10 +33,14 @@ type Normalize = RakutenShop["normalize"];
 
 type ByShop = (shopName: string, item: RakutenItem) => ReturnType<Normalize>;
 
+/** Android（rakutenAndroid.ts）に回す商品名: Xperia・AQUOS（2026-10-15〜）・OPPO・Xiaomi（Redmi・POCO。2026-11-12〜） */
+const ANDROID_NAME = /Xperia|AQUOS|OPPO|Xiaomi|Redmi|POCO/i;
+
 /**
  * 商品名に MacBook を含むものは Mac 用（2026-10-15〜。最初に判定する。mac を渡さない店＝ゲオは MacBook を取り込まない）、
  * iPad を含むものは iPad 用、Pixel・Galaxy を含むものはそれぞれ用（2026-09-30〜）、
- * Xperia・AQUOS を含むものは Android（日本メーカー）用（2026-10-15〜。Galaxy の次。ゲオ・じゃんぱら・ソフマップが渡す）、それ以外は iPhone 用の読み取りに回す
+ * Xperia・AQUOS を含むものは Android（日本メーカー）用（2026-10-15〜。Galaxy の次。ゲオ・じゃんぱら・ソフマップが渡す）、
+ * OPPO・Xiaomi・Redmi・POCO を含むものも同じ Android 用（2026-11-12〜。lib/rakutenAndroid.ts）、それ以外は iPhone 用の読み取りに回す
  */
 function byDevice(iphone: Normalize, ipad: ByShop, pixel: ByShop, galaxy: ByShop, shopName: string, mac?: Normalize, android?: ByShop, watch?: Normalize): Normalize {
   return (item) =>
@@ -45,14 +49,14 @@ function byDevice(iphone: Normalize, ipad: ByShop, pixel: ByShop, galaxy: ByShop
     : /iPad/.test(item.name) ? ipad(shopName, item)
     : /Pixel/i.test(item.name) ? pixel(shopName, item)
     : /Galaxy/i.test(item.name) ? galaxy(shopName, item)
-    : android && /Xperia|AQUOS/i.test(item.name) ? android(shopName, item)
+    : android && ANDROID_NAME.test(item.name) ? android(shopName, item)
     : iphone(item);
 }
 
 /** ニューズドテック: Apple Watch（2026-10-15〜）は normalizeNewsedtechItem の前で Watch 用に振り分ける */
 const normalizeNewsedtechOrWatch: Normalize = (item) => (/Apple[ ]?Watch/i.test(item.name) ? normalizeNewsedtechWatch(item) : normalizeNewsedtechItem(item));
 
-/** 楽天市場 商品検索API で取り込むショップ（キーは楽天の shopCode）。iPhone・iPad・Pixel・Galaxy・MacBook（ゲオ以外）・Xperia・AQUOS（ゲオ・じゃんぱら・ソフマップ・イオシス）・Apple Watch（ゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック）を同じショップ名で持つ */
+/** 楽天市場 商品検索API で取り込むショップ（キーは楽天の shopCode）。iPhone・iPad・Pixel・Galaxy・MacBook（ゲオ以外）・Xperia・AQUOS・OPPO・Xiaomi（ゲオ・じゃんぱら・ソフマップ・イオシス）・Apple Watch（ゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック）を同じショップ名で持つ */
 export const RAKUTEN_SHOPS: Record<string, RakutenShop> = {
   "geo-mobile": {
     shopName: RAKUTEN_GEO_SHOP,
@@ -77,7 +81,7 @@ export const RAKUTEN_SHOPS: Record<string, RakutenShop> = {
   // エムティーエム（2026-10-09〜）
   ekosuta: { shopName: RAKUTEN_MTM_SHOP, alsoReplace: [], normalize: normalizeMtmItem },
   // イオシス（2026-10-08〜）。公式サイトと同じ商品は、取り込みのあと scripts/link-duplicate-shops.ts が公式の行に添えて消す
-  "pc-good": { shopName: RAKUTEN_IOSYS_SHOP, alsoReplace: [], normalize: (item) => (/MacBook/i.test(item.name) ? normalizeIosysMac(item) : /Apple[ ]?Watch/i.test(item.name) ? normalizeIosysWatch(item) : /Xperia|AQUOS/i.test(item.name) ? normalizeIosysAndroid(item) : normalizeIosysItem(item)) },
+  "pc-good": { shopName: RAKUTEN_IOSYS_SHOP, alsoReplace: [], normalize: (item) => (/MacBook/i.test(item.name) ? normalizeIosysMac(item) : /Apple[ ]?Watch/i.test(item.name) ? normalizeIosysWatch(item) : ANDROID_NAME.test(item.name) ? normalizeIosysAndroid(item) : normalizeIosysItem(item)) },
 };
 
 /** 楽天経由の在庫のショップ名（リンクは楽天アフィリエイトだけにする） */

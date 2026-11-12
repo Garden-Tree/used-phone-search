@@ -1,6 +1,6 @@
 <?php
 /**
- * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone・iPad・Google Pixel・Galaxy（と、一部の店だけ MacBook・Xperia・AQUOS・Apple Watch）在庫を取得し、
+ * 楽天市場 商品検索API から楽天市場店（ゲオモバイル・じゃんぱら・ソフマップ）の iPhone・iPad・Google Pixel・Galaxy（と、一部の店だけ MacBook・Xperia・AQUOS・OPPO・Xiaomi・Apple Watch）在庫を取得し、
  * used.gadelog.com の受け口（/api/ingest/rakuten?shop=<shopCode>）へショップごとに送信する。
  * Cloudflare Pages 版（cloudflare-pages ブランチ）では、config.php に output_dir を書くと、送信せずに
  * <output_dir>/<shopCode>.json.gz に保存する。output_dir は公開フォルダの中の推測されにくいフォルダにし、
@@ -50,7 +50,12 @@ const MAC_SHOP_CODES = ['janpara', 'akiba-u-shop', 'pc-good'];
 // （3,000 件未満なので価格帯の分割はない）。じゃんぱら・ソフマップ・イオシスは各 数百件ずつで 約 20〜40 要求。
 // 既存の取得（全店で約350要求・イオシスは MacBook 約200要求を含む）に足しても、1店あたり 1500 に収まる見込み。
 // 取得時間は ゲオで約 +95 秒（1.1 秒間隔）。実際の要求数は fetch.log の「fetched … with N requests」で確かめる
-const ANDROID_KEYWORDS = ['Xperia', 'AQUOS'];
+// OPPO・Xiaomi は 2026-11-12〜（同じ4店。読み取りも lib/rakutenAndroid.ts）。Redmi・POCO の商品名にも「Xiaomi」が入るので、検索語は 'Xiaomi' だけ
+// （じゃんぱらは「【中古】Xiaomi 国内版 【SIMフリー】 Redmi …」、ソフマップは「XIAOMI Redmi …」、イオシスは「… Xiaomi （小米） 当社…」、ゲオは「Xiaomi Redmi …」）。
+// 要求数の見込み（2026-11-12 の楽天の店内検索の件数）: ゲオ OPPO 約1,040件・Xiaomi 約1,140件 → 1ページ30件で 約 35＋38 ＝ 約 73 要求
+// （3,000 件未満なので価格帯の分割はない）。じゃんぱら 約330＋330件 ＝ 約 23 要求、ソフマップ 約90＋95件 ＝ 約 7 要求、イオシス 約45＋90件 ＝ 約 5 要求。
+// ゲオの合計は 約 650（上の Apple Watch の見込み）＋ 73 ＝ 約 725 要求で、1ショップあたりの上限 1500 に収まる。取得時間はゲオで約 +80 秒（1.1 秒間隔）
+const ANDROID_KEYWORDS = ['Xperia', 'AQUOS', 'OPPO', 'Xiaomi'];
 const ANDROID_SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'pc-good'];
 // Apple Watch は 2026-10-15〜、ゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック（1号店・2号店）の6店だけ（読み取りは lib/rakutenWatch.ts）。
 // キタムラ・エムティーエムは引かない。バンド・充電器・保護フィルムも当たるが、受け口が世代・サイズ・通信方式のそろった本体だけを残す。

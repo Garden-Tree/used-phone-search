@@ -8,6 +8,8 @@ import { MAC_MODELS } from "@/lib/macCatalog";
 import { XPERIA_MODELS } from "@/lib/xperiaCatalog";
 import { AQUOS_MODELS } from "@/lib/aquosCatalog";
 import { WATCH_MODELS } from "@/lib/watchCatalog";
+import { OPPO_MODELS } from "@/lib/oppoCatalog";
+import { XIAOMI_MODELS } from "@/lib/xiaomiCatalog";
 import { minPriceByModel } from "@/lib/budgetStats";
 import { yen } from "@/lib/format";
 import { monthJa, reportMonths } from "@/lib/monthlyReport";
@@ -92,6 +94,8 @@ const DEVICE_HUBS: { label: string; path: string; models: string[] }[] = [
   { label: "Xperia", path: "/xperia", models: XPERIA_MODELS },
   { label: "AQUOS", path: "/aquos", models: AQUOS_MODELS },
   { label: "Apple Watch", path: "/watch", models: WATCH_MODELS },
+  { label: "OPPO", path: "/oppo", models: OPPO_MODELS },
+  { label: "Xiaomi", path: "/xiaomi", models: XIAOMI_MODELS },
 ];
 
 // シリーズのタイルの色（docs/design.md ではなく 10/16 の決定版の見本どおり）
@@ -104,9 +108,13 @@ const HUB_COLORS: Record<string, string> = {
   MacBook: "bg-[#374151]",
   Xperia: "bg-[#1E40AF]",
   AQUOS: "bg-[#9A3412]",
+  OPPO: "bg-[#065F46]",
+  Xiaomi: "bg-[#C2410C]",
 };
 // タイルの並び（見本: 件数の多い順ではなく固定）
 const HUB_ORDER = ["iPhone", "iPad", "Apple Watch", "Pixel", "Galaxy", "MacBook", "Xperia", "AQUOS"];
+// OPPO・Xiaomi（2026-11-12〜）は上の8つ（1行で固定）の後ろに、同じ形のタイルで2段目に足す
+const HUB_ORDER_MORE = ["OPPO", "Xiaomi"];
 
 // 末尾に名前を出す主な店（在庫がある店だけ）
 const MAIN_SHOP_LABELS = ["イオシス", "じゃんぱら", "ソフマップ", "ゲオモバイル", "にこスマ", "ダイワンテレコム"];
@@ -137,11 +145,13 @@ export default async function Home() {
   // 人気の機種の横軸: 表示機種の相場の最大値 × 1.15
   const axisMax = Math.max(1, ...popularRows.map((r) => Math.max(r.medianPrice, r.minPrice))) * 1.15;
 
-  const hubs = HUB_ORDER.flatMap((label) => {
+  const hubsOf = (order: string[]) => order.flatMap((label) => {
     const h = DEVICE_HUBS.find((x) => x.label === label);
     if (!h) return [];
     return [{ ...h, n: h.models.reduce((sum, m) => sum + (prices.get(m)?.count ?? 0), 0) }];
   });
+  const hubs = hubsOf(HUB_ORDER);
+  const moreHubs = hubsOf(HUB_ORDER_MORE);
 
   // 値下がり（記録が足りないときは空で、節ごと出さない）。カタログから外した機種は除く
   const dropRows = drops.flatMap((d) => {
@@ -240,6 +250,19 @@ export default async function Home() {
               className={`${HUB_COLORS[h.label]} text-white rounded-xl py-3 px-1.5 flex flex-col items-center gap-0.5 hover:opacity-90`}
             >
               <span className="text-[13px] font-bold">{h.label === "Apple Watch" ? "Watch" : h.label}</span>
+              {h.n > 0 && <span className="text-[10px] opacity-85">{h.n.toLocaleString()}</span>}
+            </Link>
+          ))}
+        </nav>
+        {/* OPPO・Xiaomi（2026-11-12〜）。上の8つの後ろに2段目として */}
+        <nav aria-label="ほかのメーカーから探す" className="mt-2 grid grid-cols-4 md:grid-cols-8 gap-2">
+          {moreHubs.map((h) => (
+            <Link
+              key={h.path}
+              href={h.path}
+              className={`${HUB_COLORS[h.label]} text-white rounded-xl py-3 px-1.5 flex flex-col items-center gap-0.5 hover:opacity-90`}
+            >
+              <span className="text-[13px] font-bold">{h.label}</span>
               {h.n > 0 && <span className="text-[10px] opacity-85">{h.n.toLocaleString()}</span>}
             </Link>
           ))}

@@ -81,6 +81,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/mac`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/xperia`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/aquos`, lastModified, changeFrequency: "daily", priority: 0.8 },
+    { url: `${SITE_URL}/oppo`, lastModified, changeFrequency: "daily", priority: 0.8 },
+    { url: `${SITE_URL}/xiaomi`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/watch`, lastModified, changeFrequency: "daily", priority: 0.8 },
     // 中古パソコン（2026-10-27〜）。在庫が少ないあいだ（取り込み前）は noindex なので入れない
     ...(await (async () => {
