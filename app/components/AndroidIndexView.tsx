@@ -118,7 +118,8 @@ export default async function AndroidIndexView({ kind }: { kind: AndroidKind }) 
 
         <h1 className="text-2xl md:text-3xl font-bold mb-3">{hub.name}の相場・最安値</h1>
         <p className="text-ink-sub mb-4 leading-relaxed">
-          {shopLabels(shops)}の{hub.name} <strong>{total.toLocaleString()}件</strong>
+          {/* 在庫のある店がまだない（取り込み前の OPPO・Xiaomi）ときは店名と「の」を出さない。店があるときの HTML は今までと同じ */}
+          {shops.length > 0 && shopLabels(shops)}{shops.length > 0 && "の"}{hub.name} <strong>{total.toLocaleString()}件</strong>
           {`を機種別にまとめています（${hub.since}）。機種名から容量別・状態別の最安値へ。`}
         </p>
         <AdDisclosure compact />
