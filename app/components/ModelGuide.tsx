@@ -27,6 +27,8 @@ export default function ModelGuide(p: {
   daily: DailyRow[];
   monthly: MonthlyRow[];
   same: SameBudgetRow[];
+  /** 「同じ予算」の位置に代わりに出す節（Galaxy の「同じ ○インチの相場」・11/12〜）。あれば same は出さない */
+  sameSlot?: React.ReactNode;
   sources: SourceItem[];
   /** 「値段は何で決まる？」のページ（iPhone だけ） */
   factorsHref?: string;
@@ -117,7 +119,7 @@ export default function ModelGuide(p: {
       )}
 
       {/* 同じ予算で買える他の機種 */}
-      {p.same.length > 0 && (
+      {p.sameSlot ?? (p.same.length > 0 && (
         <section className="flex flex-col gap-2">
           <h2 className={H2}>同じ予算で買える他の機種</h2>
           <div className="grid gap-2 md:grid-cols-3">
@@ -130,7 +132,7 @@ export default function ModelGuide(p: {
             ))}
           </div>
         </section>
-      )}
+      ))}
 
       {/* データの出典 */}
       <details className={`${CARD} group`}>

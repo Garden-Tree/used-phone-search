@@ -67,6 +67,9 @@ import PriceWeeklyTable from "@/app/components/PriceWeeklyTable";
 import StorageMedianTable from "@/app/components/StorageMedianTable";
 import { buyFacts, buyVerdict, type BuyFact, dailyRows, monthlyRows, moveOf, seriesFor, trendOf, weeklyRows } from "@/lib/modelGuide";
 import { sameBudgetModels } from "@/lib/sameBudget";
+import { buildDay, screenPeers, watchPeers } from "@/lib/peerMarkets";
+import { WatchGenerations, WatchOs27Line } from "@/app/components/WatchPeerTables";
+import ScreenPeers from "@/app/components/ScreenPeers";
 import { SIM_PLANS } from "@/lib/simPlans";
 import SimTile from "@/app/components/SimTile";
 import { nextGeneration } from "@/lib/nextGeneration";
@@ -392,7 +395,15 @@ export default async function ModelPage({ params }: Props) {
   // 週ごとの相場の表（10/25〜。グラフの下。相場の容量の記録、なければ全容量）
   const weekly = weeklyRows(medianSeries);
   const storageKind = watch ? "サイズ" : mac ? "SSD" : "容量";
-  const same = hasStock && stats.medianPrice !== null ? await sameBudgetModels(model, stats.medianPrice) : [];
+  const galaxy = device === "galaxy";
+  // Galaxy は「同じ予算」の代わりに「同じ ○インチの相場」（11/12〜。lib/peerMarkets.ts）。Apple Watch は世代ごとの相場と watchOS 27 の線
+  const [wPeers, sPeers] = await Promise.all([
+    hasStock && watch ? watchPeers(model, stats.medianStorage) : Promise.resolve(null),
+    hasStock && galaxy ? screenPeers(model, stats.medianStorage) : Promise.resolve(null),
+  ]);
+  // 同じ画面サイズの表が出ない Galaxy（比べる機種がない）は今までどおり「同じ予算」
+  const same = hasStock && stats.medianPrice !== null && !sPeers ? await sameBudgetModels(model, stats.medianPrice) : [];
+  const peerDay = buildDay();
   const guideSources: SourceItem[] = [
     { label: "在庫", text: `${stats.shopCount}店・${stats.count.toLocaleString()}件・1日4回` },
     { label: "推移", text: "毎日記録" },
@@ -703,6 +714,12 @@ export default async function ModelPage({ params }: Props) {
                     hrefOf={(st) => searchHref(model, { storage: String(st) })} />
                 </div>
               )}
+              {/* Apple Watch: 同じシリーズの世代ごとの相場（相場の表の下・在庫の前。11/12〜） */}
+              {wPeers && (
+                <div className="min-[1360px]:col-span-2">
+                  <WatchGenerations model={model} peers={wPeers} day={peerDay} />
+                </div>
+              )}
               {/* 容量×ランク・どの店が安い？・状態ランクの内訳。2列の PC（1360px〜）では段組みにして左右の高さをそろえる
                   （グリッドの行だと低い方の下が 200〜450px 空いた。11/2）。それより狭い画面では display: contents で今までどおり縦に並ぶ */}
               <div className={`contents ${showHeat || showShops ? "min-[1360px]:block min-[1360px]:columns-2 min-[1360px]:gap-4" : ""} min-[1360px]:col-span-2 md:order-1`}>
@@ -761,7 +778,7 @@ export default async function ModelPage({ params }: Props) {
               {hasStock && (
                 <div className="md:order-5 min-[1360px]:col-span-2">
                   <ModelGuide model={model} verdict={verdict}
-                    daily={dailyRows(medianSeries)} monthly={monthlyRows(medianSeries)} same={same} sources={guideSources} factorsHref={isIphone ? "/iphone/price-factors" : undefined} />
+                    daily={dailyRows(medianSeries)} monthly={monthlyRows(medianSeries)} same={same} sameSlot={sPeers ? <ScreenPeers peers={sPeers} day={peerDay} /> : undefined} sources={guideSources} factorsHref={isIphone ? "/iphone/price-factors" : undefined} />
                 </div>
               )}
 
@@ -885,6 +902,12 @@ export default async function ModelPage({ params }: Props) {
                   </Accordion>
                 )}
                 {/* Apple Watch の基本情報（Apple 公式で確かめた値だけ。発売年は公式のページにないので載せない。lib/watchCatalog.ts の WATCH_INFO） */}
+                {/* watchOS 27 に対応するいちばん安い機種（基本情報のすぐ上。Ultra は出さない。11/12〜） */}
+                {wPeers?.os27 && (
+                  <div className="border-b border-line-soft">
+                    <WatchOs27Line model={model} peers={wPeers} day={peerDay} flat />
+                  </div>
+                )}
                 {watchInfo && (
                   <Accordion title={`${model}の基本情報`} hint={isWatchOS27(model) ? "watchOS 27 対応" : "watchOS 27 非対応"}>
                     <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
