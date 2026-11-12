@@ -1,0 +1,42 @@
+中古iPhone 13、いま買っていい？相場5万800円｜14・15との差と、買う前に見る3つ【2026年11月】
+
+中古の iPhone 13 を 2026年11月のいま買っていいかを、大手中古ショップ16店・販売中の iPhone 38,634件の相場（2026/11/13時点）と Apple 公式の値で確かめました。
+結論: 買っていい。条件は「電池85%以上」と書いてある1台を選ぶこと。相場は 128GB で 50,800円（在庫 1,678件・13店）。
+
+・容量ごとの相場: 128GB 50,800円（1,263件）／256GB 59,800円（357件）／512GB 65,800円（58件）
+・同じ6.1インチ・128GB の相場: 12 39,728円（−11,072円）／14 65,780円（+14,980円・同じ A15 Bionic）／15 90,600円（+39,800円・A16 Bionic・USB-C）／16 120,800円（+70,000円）。SE 第3世代（4.7インチ・128GB）は 38,980円
+・Apple 公式: iOS 27 に対応・電池交換 15,600円・画面の修理 45,800円（保証対象外・税込）。Apple Intelligence は使えません。来年以降の iOS の対応は Apple が発表していないので扱っていません
+・電池（128GB）: 85%以上 148件・54,980円／80〜84% 628件・50,800円／80%未満 166件・43,980円／書いていない 241件・52,580円。80%台に電池交換を足すと 66,400円
+・状態ランク（128GB）: A 52,580円／B 50,800円／C 44,600円。ランクBで電池85%以上は 80件・52,980円
+・店による差（128GB・13店）: 店ごとのいちばん安い1台は 1位 29,800円・5位 41,000円。ランクBの中央値は 49,951円〜54,980円。故障の保証は30日〜1年
+
+相場＝在庫がいちばん多い容量の中央値（比べるときは同じ容量の中央値）。「電池85%以上」は店がそう書いている在庫です。修理の料金・iOS の対応・スペックは Apple 公式で確かめた値です。
+
+0:00 結論：買っていい。条件は電池
+0:46 いまの相場：128GBで5万800円
+1:30 12・14・15・16との差
+2:37 あと何年使える？
+3:24 128GBで足りる？
+4:09 電池は何%を選ぶ？
+5:37 状態ランクの差
+6:26 店による差
+7:18 買う前に見る3つ
+7:57 まとめ
+8:37 次におすすめの動画
+
+iPhone 13 を電池85%以上で探す: https://used.gadelog.com/search?model=iPhone+13&minBattery=85&utm_source=youtube&utm_medium=social&utm_campaign=long_20261114
+iPhone 13 の店ごとの在庫と相場: https://used.gadelog.com/iphone/iphone-13?utm_source=youtube&utm_medium=social&utm_campaign=long_20261114
+iPhone 14 の店ごとの在庫と相場: https://used.gadelog.com/iphone/iphone-14?utm_source=youtube&utm_medium=social&utm_campaign=long_20261114
+全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261114
+
+中古スマホにするなら回線も見直す
+楽天モバイル（Rakuten最強プラン 月1,078円〜・税込・10/26 公式で確認）【PR】: https://hb.afl.rakuten.co.jp/hsc/58858f0c.304dd67c.566a1a2e.942e4aef/?link_type=text&rafst=rmn&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJ0ZXh0IiwiY29sIjoxLCJjYXQiOjEsImJhbiI6Im5hbWUiLCJhbXAiOmZhbHNlfQ%3D%3D
+
+VOICEVOX:春日部つむぎ
+VOICEVOX:ずんだもん
+BGM: Cyber Society by のる（OpenTracks）
+効果音：効果音ラボ
+立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)
+ずんだもん立ち絵：坂本アヒル様
+
+#中古iPhone #iPhone13 #中古スマホ
