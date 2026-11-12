@@ -77,6 +77,10 @@ import { kaitoriPath } from "@/lib/kaitoriModel";
 import { searchRel } from "@/lib/searchRel";
 
 // スクレイパーの後にビルドするので、在庫はその時点のもの
+
+/** Google の表示減の検証で 10/19 の版の構成に近づける機種（11/12〜・2週で判定） */
+const LEGACY_LAYOUT_MODELS = new Set(["iPad Pro 11インチ (第3世代)"]);
+
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 // カタログ外のslugは404
@@ -275,6 +279,9 @@ export default async function ModelPage({ params }: Props) {
   const heatRanks = mac && macMatrix ? macMatrix.ranks : matrix.ranks;
   const heatRows = mac && macMatrix ? memorySsdHeat(model, macMatrix) : storageHeat(model, matrix);
   const sparkPoints = recentPoints(history[0] ?? []);
+  // Google の表示減の検証（11/12〜・ideas/2026-11-12.md「午後: 表示減の原因の検証」）: この機種だけ 10/19 の版の構成に近づける
+  // （相場の推移・週ごと・同じ予算・出典のガイド・条件ごとの最安の3行・回線のタイルを出さない）。2週で GSC の表示が戻るかを見る。対照は iPad Pro 11インチ (第4世代)
+  const legacyLayout = LEGACY_LAYOUT_MODELS.has(model);
   const spec = specOf(model);
   const macInfo = MAC_INFO[model];
   const watchInfo = WATCH_INFO[model];
@@ -509,7 +516,7 @@ export default async function ModelPage({ params }: Props) {
 
   // 条件ごとの最安の3行（どれでも → ランクB以上・電池85%以上 → ＋保証1年の店）。保証が1年ある店の在庫があるときだけ。
   // 11/3〜 一覧の上から価格のカードの中へ移した（ChatGPT から来た人の最初の画面に、保証1年の店の1台まで入れる。ideas/2026-11-03.md）
-  const pickRows = cheapestDevice && yearDevice
+  const pickRows = cheapestDevice && yearDevice && !legacyLayout
     ? [
         { label: "どれでも", device: cheapestDevice, placement: "first_any" },
         ...(goodDevice ? [{ label: mac || watch ? "ランクB以上" : "ランクB以上・電池85%以上", device: goodDevice, placement: "first_good" }] : []),
@@ -546,7 +553,7 @@ export default async function ModelPage({ params }: Props) {
   );
 
   // ---- 回線・買取（PR）のタイル。リンク・data-shop-click・rel は今までと同じ。1x1 の計測画像は下で1回だけ出す ----
-  const showSim = hasStock && (device === "iphone" || device === "pixel" || device === "galaxy" || device === "xperia" || device === "aquos");
+  const showSim = hasStock && !legacyLayout && (device === "iphone" || device === "pixel" || device === "galaxy" || device === "xperia" || device === "aquos");
   const showBuyback = hasStock && !mac && !watch;
   const showRepair = hasStock && device === "iphone";
   // 「直す？買い替える？」の1つ上の世代の相場（この機種の相場と同じ容量。在庫3件以上のときだけ。DB は件数と中央値の1行）
@@ -775,7 +782,7 @@ export default async function ModelPage({ params }: Props) {
               {/* スマホ: 買取（PR）は安い在庫の下（11/3〜。最初の画面は買う人向けの3行を優先。それまでは要約カードの直下） */}
               {buybackTile && <div className="md:hidden">{buybackTile}</div>}
 
-              {hasStock && (
+              {hasStock && !legacyLayout && (
                 <div className="md:order-5 min-[1360px]:col-span-2">
                   <ModelGuide model={model} verdict={verdict}
                     daily={dailyRows(medianSeries)} monthly={monthlyRows(medianSeries)} same={same} sameSlot={sPeers ? <ScreenPeers peers={sPeers} day={peerDay} /> : undefined} sources={guideSources} factorsHref={isIphone ? "/iphone/price-factors" : undefined} />
@@ -802,7 +809,7 @@ export default async function ModelPage({ params }: Props) {
                   </section>
                 )}
                 {/* 週ごとの相場（文字の表。グラフは絵なので、同じ記録を表でも出す。10/25〜） */}
-                {weekly.length >= 2 && (
+                {weekly.length >= 2 && !legacyLayout && (
                   <PriceWeeklyTable model={model} rows={weekly} />
                 )}
               </div>
