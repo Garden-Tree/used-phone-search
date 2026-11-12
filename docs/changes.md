@@ -68,6 +68,7 @@
 | 11/6 | J:COM MOBILE | A8 で未提携（申込が通らなかった）。画面には出ていなかった枠を simPlans から削除 | |
 | 11/6 | A8 の審査の記録 | 申込中は UQ・JUNKWORLD（スマホ・PC 関係）。J:COM・Back Market・イオシスは申込中にも参加中にもない | |
 | 11/6 | 登録リクエストの順番 | 未登録の内訳を見直して ideas/gsc-queue.md に | |
+| 11/12 | /search の CLS 0.45→0.003 以下: 静的 HTML が空でフッターが JS 後に押し出されていた → Suspense の fallback に読み込み中の枠（SearchFallback） | GSC の Core Web Vitals で /search の CLS が「良好」に変わるか（28日分なので 12月） |
 | 11/12 | 比較ページに WebPage の構造化データ（冒頭の1文・dateModified）。毎週の AI の問いに高い機種・比較の4問（measurement.md）。llms.txt は作らない（Ahrefs 2026/6: 97% が取得されず・効果の証拠なし。Cloudflare で /llms.txt の取得が見えたら考え直す） | 店の数え方（16社/13店）の統一は 11/30 の後 |
 | 11/12 | GSC: 検索の表示減には何もしない（Google の変動と分けられない・10/26 版へ戻す価値は低い）。登録リクエストは未登録だけに | 11/30 の台帳で表示を見る |
 | 11/12 | Galaxy の「同じ画面サイズ」の表（ScreenPeers） | 前後の世代以外は相場が近い順（1メーカー2機種まで）のまま。発売の近さでは選ばない（ユーザー） | |
