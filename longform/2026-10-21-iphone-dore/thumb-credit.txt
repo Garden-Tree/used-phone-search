@@ -3,3 +3,12 @@
 
 ■ thumb-J.png を使うとき（説明欄に貼る）
 サムネイル画像（Wikimedia Commons・背景を切り抜き）: iPhone 13 for Tora — Tatsuo Yamashita / CC BY 2.0 https://commons.wikimedia.org/wiki/File:IPhone_13_for_Tora_(52641558635).jpg
+
+■ thumb-K.png を使うとき（説明欄に貼る）
+サムネイル画像（背景を切り抜き）: iPhone 13（All iPhone 13 Colors）— Daniel Romero / Unsplash License https://unsplash.com/photos/JSQva3za368 ／ iPhone 14 Blue — Thai Nguyen / Unsplash License https://unsplash.com/photos/zNDH3l4tMs0
+
+■ thumb-K-sa.png を使うとき（説明欄に貼る）　※ CC BY-SA の写真を含む（サムネにも CC BY-SA 4.0 が及ぶ。使う前に確認）
+サムネイル画像（背景を切り抜き）: iPhone 13（All iPhone 13 Colors）— Daniel Romero / Unsplash License https://unsplash.com/photos/JSQva3za368 ／ iPhone 14 Blue — Thai Nguyen / Unsplash License https://unsplash.com/photos/zNDH3l4tMs0 ／ Back of iPhone 15 — ThePhotoGraphIc / CC BY-SA 4.0 https://commons.wikimedia.org/wiki/File:Back_of_iPhone_15.jpg
+
+■ thumb-L.png を使うとき（説明欄に貼る）
+サムネイル画像（背景を切り抜き）: iPhone 13（All iPhone 13 Colors）— Daniel Romero / Unsplash License https://unsplash.com/photos/JSQva3za368
