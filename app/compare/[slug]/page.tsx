@@ -366,6 +366,12 @@ export default async function ComparePage({ params }: Props) {
     new Map([...comparesFor(a), ...comparesFor(b)].map((p) => [compareSlug(...p), p])).values(),
   ).filter(([x, y]) => compareSlug(x, y) !== slug).slice(0, 8);
 
+  // 冒頭の1文に付ける日付（2機種の在庫のうち新しいほうの更新時刻。機種ページの要約文と同じ書き方）
+  const updated = [sa.lastUpdated, sb.lastUpdated].filter((d): d is Date => d !== null).sort((x, y) => y.getTime() - x.getTime())[0] ?? null;
+  const updatedDate = updated?.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
+  const hasDiffBox = specDiffs(a, b) !== null;
+  // ページの更新日と要約（機種ページと同じ WebPage。AI の検索が日付と数字をそのまま取れるように。11/12〜）
+  const webPageDesc = `${updated ? `${updatedDate}時点、` : ""}${verdict(a, b, sa, sb, !hasDiffBox)}`;
   const jsonLd = [
     {
       "@context": "https://schema.org",
@@ -380,16 +386,20 @@ export default async function ComparePage({ params }: Props) {
       "@type": "FAQPage",
       mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
     },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: `${a} と ${b} の比較（中古の相場）`,
+      url: `${SITE_URL}${path}`,
+      description: webPageDesc,
+      ...(updated ? { dateModified: updated.toISOString() } : {}),
+    },
   ];
 
-  // 冒頭の1文に付ける日付（2機種の在庫のうち新しいほうの更新時刻。機種ページの要約文と同じ書き方）
-  const updated = [sa.lastUpdated, sb.lastUpdated].filter((d): d is Date => d !== null).sort((x, y) => y.getTime() - x.getTime())[0] ?? null;
-  const updatedDate = updated?.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "numeric", day: "numeric" });
 
   // 回線のタイル（PR）は2機種ともスマホのときだけ（iPad・MacBook・Apple Watch の比較には出さない）
   const bothPhones = [a, b].every((m) => !/^\s*(ipad|macbook|apple\s*watch)/i.test(m));
 
-  const hasDiffBox = specDiffs(a, b) !== null;
   const models = [
     { name: a, stats: sa },
     { name: b, stats: sb },

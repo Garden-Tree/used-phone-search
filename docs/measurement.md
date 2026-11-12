@@ -85,6 +85,8 @@ AI（ChatGPT・Copilot・Google の AI モード／AI による概要）が実�
 
 決まった8問: ①中古のiPad 第9世代の相場はいくら？どこで買うのが安い？ ②MacBook Air M4 中古の相場と最安値は？ ③iPhone 中古 相場 一覧を教えて ④iPhone 16 中古 価格はいくら？ ⑤iPad Air 第5世代 中古だといくら？ ⑥2万円以下で買える中古スマホのおすすめは？ ⑦5万円以下で買える中古iPhoneはどれ？ ⑧Galaxy S24 Ultra 中古相場は？（「どこで買う」「15と15 Plusの違い」は ChatGPT が検索せずに答えたので外した）
 
+追加の4問（11/12〜・高い機種と比較。収益はにこスマに在庫がある高い機種のページから出ていた）: ⑨Galaxy S25 Ultra 中古の相場は？ ⑩iPad Pro 11インチ M4 中古だといくら？ ⑪iPad Air M4 と iPad Pro M4、中古ならどっちが得？ ⑫Apple Watch 中古で買うならどれ？ 記録は「引用されたか・並んだサイト・答えの数字の出どころ（うちの値か他社か）」を分けて書く
+
 Search Console で「1ページあたりの行数」を 500 にしてから、コンソールで:
 ```js
 const rows=[...document.querySelectorAll('table tbody tr')].map(r=>[...r.querySelectorAll('td')].map(t=>t.innerText.trim()));
