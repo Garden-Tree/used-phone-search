@@ -10,13 +10,16 @@ import { androidInfoOf } from "@/lib/androidInfo";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { medianLabel, yen } from "@/lib/format";
 import { shopLabels, type Shop } from "@/lib/shops";
-import { activeAquosShops, activeXperiaShops } from "@/lib/activeShops";
+import { OPPO_CATALOG, OPPO_MODELS } from "@/lib/oppoCatalog";
+import { XIAOMI_CATALOG, XIAOMI_MODELS } from "@/lib/xiaomiCatalog";
+import { activeAquosShops, activeOppoShops, activeXiaomiShops, activeXperiaShops } from "@/lib/activeShops";
 
 /**
  * 中古Xperia（/xperia）・中古AQUOS（/aquos）の機種一覧（2026-10-15〜）。中身は同じなので1つの部品にして、
- * app/xperia/page.tsx・app/aquos/page.tsx から使う（/galaxy の一覧と同じ作り。目的別・予算別・比較ページはまだない）
+ * app/xperia/page.tsx・app/aquos/page.tsx から使う（/galaxy の一覧と同じ作り。目的別・予算別・比較ページはまだない）。
+ * 中古OPPO（/oppo）・中古Xiaomi（/xiaomi）も同じ部品（2026-11-12〜）
  */
-export type AndroidKind = "xperia" | "aquos";
+export type AndroidKind = "xperia" | "aquos" | "oppo" | "xiaomi";
 
 export const ANDROID_HUB = {
   xperia: {
@@ -27,6 +30,8 @@ export const ANDROID_HUB = {
     catalog: XPERIA_CATALOG,
     shops: activeXperiaShops,
     seriesNote: "Xperia 1・5・10・Ace の2021年以降の機種",
+    since: "2021年以降の機種",
+    releasedNote: "発売は日本での発売（ドコモ。au 先行の機種は au）",
     sourceNote: <>型番と OS・セキュリティ更新の方針は、Sony「<a href="https://www.sony.jp/xperia/product/index.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">Xperia の製品ページ</a>」「<a href="https://www.sony.jp/xperia/product/aer/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">セキュリティアップデート（AER）</a>」</>,
   },
   aquos: {
@@ -37,7 +42,34 @@ export const ANDROID_HUB = {
     catalog: AQUOS_CATALOG,
     shops: activeAquosShops,
     seriesNote: "AQUOS R・sense・wish の2021年以降の機種",
+    since: "2021年以降の機種",
+    releasedNote: "発売は日本での発売（ドコモ。au 先行の機種は au）",
     sourceNote: <>型番と OS・セキュリティ更新の方針は、Sharp「<a href="https://k-tai.sharp.co.jp/support/osv/lineup.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">OS バージョンアップ情報</a>」「<a href="https://k-tai.sharp.co.jp/business/aer_models.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">AER（法人向け）</a>」</>,
+  },
+  // OPPO・Xiaomi（2026-11-12〜）。OS・セキュリティ更新の方針は日本向けの公式ページに見当たらないので載せない（lib/oppoCatalog.ts・xiaomiCatalog.ts）
+  oppo: {
+    label: "OPPO",
+    path: "/oppo",
+    name: "中古OPPO",
+    models: OPPO_MODELS,
+    catalog: OPPO_CATALOG,
+    shops: activeOppoShops,
+    seriesNote: "Find X・Reno・Reno A・A シリーズの2020年以降の機種",
+    since: "2020年以降の機種",
+    releasedNote: "発売は日本で最初に出た売り場の発売日（かっこ内が売り場）",
+    sourceNote: <>型番は OPPO「<a href="https://www.oppo.com/jp/smartphones/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">スマートフォン</a>」の各機種のスペックと、au「<a href="https://www.au.com/support/service/mobile/manual/smartphone/oppo/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">OPPOの製品情報一覧</a>」・Y!mobile・ソフトバンクの製品ページ</>,
+  },
+  xiaomi: {
+    label: "Xiaomi",
+    path: "/xiaomi",
+    name: "中古Xiaomi",
+    models: XIAOMI_MODELS,
+    catalog: XIAOMI_CATALOG,
+    shops: activeXiaomiShops,
+    seriesNote: "Xiaomi・Redmi・POCO の2020年以降の機種",
+    since: "2020年以降の機種",
+    releasedNote: "発売は日本で最初に出た売り場の発売日（かっこ内が売り場）",
+    sourceNote: <>型番は au「<a href="https://www.au.com/support/service/mobile/manual/smartphone/xiaomi/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">Xiaomiの製品情報一覧</a>」とソフトバンクのオンラインマニュアル、発売は各社の発表と Xiaomi「<a href="https://www.mi.com/jp/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">Xiaomi Japan</a>」</>,
   },
 } as const;
 
@@ -50,7 +82,9 @@ function releasedLabel(model: string): string | null {
   const info = androidInfoOf(model);
   if (!info?.released) return null;
   const [y, m] = info.released.split("-");
-  return `${m ? `${y}年${Number(m)}月` : `${y}年`}発売${info.releasedNote === "au" ? "（au）" : info.releasedNote === "報道" ? "（報道）" : ""}`;
+  // OPPO・Xiaomi の注記（「Y!mobile（2024年6月27日）」）は日付の括弧を落として売り場だけ
+  const where = info.releasedNote?.replace(/（.*$/, "").trim();
+  return `${m ? `${y}年${Number(m)}月` : `${y}年`}発売${where ? `（${where}）` : ""}`;
 }
 
 export default async function AndroidIndexView({ kind }: { kind: AndroidKind }) {
@@ -85,7 +119,7 @@ export default async function AndroidIndexView({ kind }: { kind: AndroidKind }) 
         <h1 className="text-2xl md:text-3xl font-bold mb-3">{hub.name}の相場・最安値</h1>
         <p className="text-ink-sub mb-4 leading-relaxed">
           {shopLabels(shops)}の{hub.name} <strong>{total.toLocaleString()}件</strong>
-          を機種別にまとめています（2021年以降の機種）。機種名から容量別・状態別の最安値へ。
+          {`を機種別にまとめています（${hub.since}）。機種名から容量別・状態別の最安値へ。`}
         </p>
         <AdDisclosure compact />
 
@@ -121,7 +155,7 @@ export default async function AndroidIndexView({ kind }: { kind: AndroidKind }) 
         ))}
 
         <p className="text-xs text-ink-mute leading-relaxed">
-          発売は日本での発売（ドコモ。au 先行の機種は au）。{hub.sourceNote}。
+          {`${hub.releasedNote}。`}{hub.sourceNote}。
         </p>
       </main>
 

@@ -4,6 +4,8 @@ import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
 import { MAC_MODELS } from "@/lib/macCatalog";
 import { XPERIA_MODELS } from "@/lib/xperiaCatalog";
 import { AQUOS_MODELS } from "@/lib/aquosCatalog";
+import { OPPO_MODELS } from "@/lib/oppoCatalog";
+import { XIAOMI_MODELS } from "@/lib/xiaomiCatalog";
 import { WATCH_MODELS } from "@/lib/watchCatalog";
 
 /**
@@ -86,7 +88,8 @@ export function matchesModel(query: string, modelName: string): boolean {
   // Pixel・Galaxy・Xperia・AQUOS も取り込み時にメーカーの表記（lib/pixelCatalog.ts・galaxyCatalog.ts・xperiaCatalog.ts・aquosCatalog.ts）にそろえている。考え方は iPad と同じ
   // （トークン判定だと「Pixel 9」が「Pixel 9a」「Pixel 9 Pro」に、「Galaxy S24」が「Galaxy S24 Ultra」に、「Xperia 1 V」が「Xperia 1 VI」に、「AQUOS sense7」が「AQUOS sense7 plus」にも当たる。
   // 正式名での検索は完全一致なので、これらは当たらない）
-  for (const [prefix, models] of [["pixel", PIXEL_MODELS], ["galaxy", GALAXY_MODELS], ["xperia", XPERIA_MODELS], ["aquos", AQUOS_MODELS]] as const) {
+  // OPPO・Xiaomi（2026-11-12〜）も同じ（「OPPO A5 5G」が「OPPO A55s 5G」に、「Xiaomi 14T」が「Xiaomi 14T Pro」に当たらない）
+  for (const [prefix, models] of [["pixel", PIXEL_MODELS], ["galaxy", GALAXY_MODELS], ["xperia", XPERIA_MODELS], ["aquos", AQUOS_MODELS], ["oppo", OPPO_MODELS], ["xiaomi", XIAOMI_MODELS]] as const) {
     const isQuery = query.trim().toLowerCase().startsWith(prefix);
     if (!isQuery && !modelName.trim().toLowerCase().startsWith(prefix)) continue;
     if (!isQuery) return false;
@@ -122,6 +125,8 @@ export const SEARCH_DEVICES = [
   { key: "mac", label: "MacBook", prefix: "MacBook" },
   { key: "xperia", label: "Xperia", prefix: "Xperia" },
   { key: "aquos", label: "AQUOS", prefix: "AQUOS" },
+  { key: "oppo", label: "OPPO", prefix: "OPPO " },
+  { key: "xiaomi", label: "Xiaomi", prefix: "Xiaomi " },
   { key: "watch", label: "Apple Watch", prefix: "Apple Watch" },
 ] as const;
 

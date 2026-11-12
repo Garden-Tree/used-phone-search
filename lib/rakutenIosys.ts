@@ -57,7 +57,7 @@ function galaxyStorageFromCode(raw: string): number {
 export function core(name: string): string {
   return name
     .replace(/^【(?:中古|未使用)】/, "")
-    .split(/\s(?:Apple|Google|SAMSUNG|SONY|SHARP)\s+(?:スマホ|当社)/)[0]
+    .split(/\s(?:Apple|Google|SAMSUNG|SONY|SHARP|OPPO|Xiaomi\s*（小米）)\s+(?:スマホ|当社)/)[0]
     .trim();
 }
 

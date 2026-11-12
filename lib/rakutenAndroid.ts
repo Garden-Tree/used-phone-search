@@ -3,6 +3,8 @@ import { batteryOf, carrierOf, networkStatusOf, rankOf, toStorage, type RakutenI
 import { codeKey, codeTokens } from "@/lib/androidCommon";
 import { AQUOS_NAME_RE, canonicalAquosModel } from "@/lib/aquosCatalog";
 import { XPERIA_NAME_RE, canonicalXperiaModel } from "@/lib/xperiaCatalog";
+import { canonicalOppoModel } from "@/lib/oppoCatalog";
+import { canonicalXiaomiModel } from "@/lib/xiaomiCatalog";
 import { androidInfoOf } from "@/lib/androidInfo";
 import { RAKUTEN_IOSYS_SHOP, core, parseCarrier, parseNetworkStatus } from "@/lib/rakutenIosys";
 
@@ -16,6 +18,12 @@ import { RAKUTEN_IOSYS_SHOP, core, parseCarrier, parseNetworkStatus } from "@/li
  * - キャリア: 国内の SIM フリー版（XQ-xxxx・SH-Mxx など）は "国内版"（DeviceCard が「SIMフリー（国内版）」と表示）、キャリア版はキャリア名。
  *   Y!mobile は SoftBank にまとめる。mineo など MVNO 名だけ（キャリアが読めない）なら null
  * - ゲオ・じゃんぱら・ソフマップは Galaxy（lib/rakutenGalaxy.ts）と同じ読み方（バッテリー・利用制限・ランクも同じ）
+ *
+ * OPPO・Xiaomi（Redmi・POCO 含む。2026-11-12〜）も同じ4店をここで読む（機種名は lib/oppoCatalog.ts・xiaomiCatalog.ts）。Xperia・AQUOS の読み方の結果は変えないよう、
+ * 店ごとの正規表現・色・キャリアは OPPO・Xiaomi の分だけ別にしてある（oxColorOf・oxCarrier・*_OX_RE）。
+ * - 色: 商品名の日本語の語（型番・英字の機種名・容量を書く位置が店ごとにゆれるため）
+ * - キャリア: carrierOf と同じ決まり（UQ mobile → au、Y!mobile・ワイモバイル → SoftBank、楽天・Rakuten → 楽天モバイル）。mineo など MVNO だけなら null
+ * - SIM ロック: 発売日が公式で確かめられていない機種は、商品名に「SIMフリー」「ロック解除」がなければ SIM ロックありとして扱う
  */
 
 type Item = RakutenItem;
@@ -43,9 +51,14 @@ function colorOf(...candidates: (string | undefined)[]): string {
 
 const SONY = { manufacturer: "Sony" } as const;
 const SHARP = { manufacturer: "Sharp" } as const;
+const OPPO = { manufacturer: "OPPO" } as const;
+const XIAOMI = { manufacturer: "Xiaomi" } as const;
+
+type Maker = "Sony" | "Sharp" | "OPPO" | "Xiaomi";
+const isOx = (maker: Maker) => maker === "OPPO" || maker === "Xiaomi";
 
 /** 機種名と、その機種のメーカー。読み取れなければ null */
-function modelOf(raw: string): { modelName: string; manufacturer: "Sony" | "Sharp" } | null {
+function modelOf(raw: string): { modelName: string; manufacturer: Maker } | null {
   if (/Xperia/i.test(raw)) {
     const modelName = canonicalXperiaModel(raw);
     return modelName ? { modelName, ...SONY } : null;
@@ -54,14 +67,44 @@ function modelOf(raw: string): { modelName: string; manufacturer: "Sony" | "Shar
     const modelName = canonicalAquosModel(raw);
     return modelName ? { modelName, ...SHARP } : null;
   }
+  if (/OPPO|Reno\s?\d/i.test(raw)) {
+    const modelName = canonicalOppoModel(raw);
+    return modelName ? { modelName, ...OPPO } : null;
+  }
+  if (/Xiaomi|Redmi|POCO/i.test(raw)) {
+    const modelName = canonicalXiaomiModel(raw);
+    return modelName ? { modelName, ...XIAOMI } : null;
+  }
   return null;
 }
 
+/** OPPO・Xiaomi の色: 括弧の中を除いた残りの、日本語の語（"パープル CPH2639" → "パープル"、"Proイエロー8GB" → "イエロー"）。なければ "-" */
+function oxColorOf(...candidates: (string | undefined)[]): string {
+  for (const c of candidates) {
+    if (!c) continue;
+    const words = c
+      .normalize("NFKC")
+      .replace(/\([^)]*\)|\[[^\]]*\]|【[^】]*】/g, " ")
+      .split(/\s+/)
+      .map((w) => (w.match(/[ぁ-んァ-ヶー一-龠]+/g) ?? []).join(""))
+      .filter(Boolean);
+    if (words.length > 0) return words.join(" ");
+  }
+  return "-";
+}
+
+/** OPPO・Xiaomi のキャリア（上のコメントのとおり。Xperia・AQUOS の androidCarrier と違い、"ymobile"（じゃんぱら）も SoftBank に） */
+function oxCarrier(raw: string): string | null {
+  if (/y!?mobile|ワイモバイル/i.test(raw)) return "SoftBank";
+  return androidCarrier(raw.replace(/Rakuten/gi, "楽天"));
+}
+
 /** SIM ロックの扱い（上のコメントのとおり） */
-function simUnlockedOf(raw: string, modelName: string): boolean {
+function simUnlockedOf(raw: string, modelName: string, maker?: Maker): boolean {
   if (/SIMロックあり|ロックあり/.test(raw)) return false;
   if (/SIMフリー|ロック解除|SIM解除/.test(raw)) return true;
   const released = androidInfoOf(modelName)?.released;
+  if (maker && isOx(maker)) return !!released && released >= "2021-10";
   return !released || released >= "2021-10";
 }
 
@@ -71,18 +114,20 @@ function androidCarrier(raw: string): string | null {
   return c === "国内版SIMフリー" ? "国内版" : c;
 }
 
-function row(item: Item, modelName: string, manufacturer: "Sony" | "Sharp", raw: string, fields: Omit<Row, "manufacturer" | "modelName" | "price" | "url" | "isSoldOut" | "networkStatus" | "simUnlocked">): Row {
+function row(item: Item, modelName: string, manufacturer: Maker, raw: string, fields: Omit<Row, "manufacturer" | "modelName" | "price" | "url" | "isSoldOut" | "networkStatus" | "simUnlocked">): Row {
   return {
-    manufacturer, modelName, networkStatus: networkStatusOf(item), simUnlocked: simUnlockedOf(raw, modelName),
+    manufacturer, modelName, networkStatus: networkStatusOf(item), simUnlocked: simUnlockedOf(raw, modelName, manufacturer),
     price: item.price, url: item.url, isSoldOut: false, ...fields,
   };
 }
 
 // ゲオ: 【中古】【安心保証】 Xperia 5 III SO-53B[128GB] docomo グリーン
 const GEO_RE = /((?:Xperia|AQUOS)[^[]*?)\s*\[(\d+)(GB|TB)\]\s*(.*)$/;
+// ゲオの OPPO・Xiaomi: 【中古】【安心保証】 OPPO A5 5G OPG06[128GB] au ホワイト／… Xiaomi Redmi 15 5G[128GB] SoftBank ミッドナイトブラック
+const GEO_OX_RE = /((?:OPPO|Xiaomi|Redmi|POCO)[^[]*?)\s*\[(\d+)(GB|TB)\]\s*(.*)$/i;
 
 export function normalizeGeoAndroid(shopName: string, item: Item): Row | null {
-  const m = item.name.match(GEO_RE);
+  const m = item.name.match(GEO_RE) ?? item.name.match(GEO_OX_RE);
   if (!m || !item.url || !(item.price > 0)) return null;
   const [, modelPart, size, unit, restRaw] = m;
   const model = modelOf(modelPart);
@@ -92,10 +137,10 @@ export function normalizeGeoAndroid(shopName: string, item: Item): Row | null {
   const color = carrierMatch ? rest.slice(carrierMatch[0].length) : rest;
   return row(item, model.modelName, model.manufacturer, item.name, {
     storage: toStorage(size, unit),
-    color: colorOf(color),
+    color: isOx(model.manufacturer) ? oxColorOf(color) : colorOf(color),
     conditionRank: rankOf(item.rank),
     batteryHealth: null, // ゲオの楽天店はバッテリーの記載がない
-    carrier: carrierMatch ? androidCarrier(carrierMatch[1]) : null,
+    carrier: carrierMatch ? (isOx(model.manufacturer) ? oxCarrier : androidCarrier)(carrierMatch[1]) : null,
     shopName,
   });
 }
@@ -106,8 +151,15 @@ export function normalizeGeoAndroid(shopName: string, item: Item): Row | null {
 const JANPARA_RE =
   /^【(中古|未使用)】\s*(?:SONY|SHARP)\s+(?:(\S+)\s+)?【([^】]+)】\s*((?:Xperia|AQUOS).*?)\s+(?:\d+GB\s+)?(\d+)\s*(GB|TB)\b([^【]*)【[^】]*】\s*保証期間[^【]*(?:【ランク([A-Z])】)?/;
 
+// じゃんぱらの OPPO・Xiaomi（メーカーは "Oppo"・"Xiaomi"。キャリアがないこともある）:
+//   【中古】Oppo 楽天モバイル 【SIMフリー】 OPPO A3 5G 4GB 128GB パープル CPH2639【川崎駅前】保証期間1ヶ月【ランクA】
+//   【中古】Xiaomi 国内版 【SIMフリー】 Redmi Note 10 Pro グレイシャーブルー 6GB 128GB M2101K6R【ECセンター】保証期間1ヶ月【ランクC】
+//   【中古】Xiaomi 【SIMフリー】 Xiaomi 15 ブラック 12GB 256GB【柏】保証期間1ヶ月【ランクA】
+const JANPARA_OX_RE =
+  /^【(中古|未使用)】\s*(?:Oppo|Xiaomi)\s+(?:(\S+)\s+)?【([^】]+)】\s*(.*?)\s+(?:\d+GB\s+)?(\d+)\s*(GB|TB)\b([^【]*)【[^】]*】\s*保証期間[^【]*(?:【ランク([A-Z])】)?/i;
+
 export function normalizeJanparaAndroid(shopName: string, item: Item): Row | null {
-  const m = item.name.match(JANPARA_RE);
+  const m = item.name.match(JANPARA_RE) ?? item.name.match(JANPARA_OX_RE);
   if (!m || !item.url || !(item.price > 0)) return null;
   const [, condition, carrierLabel = "", , modelPart, size, unit, after, rankRaw] = m;
   const model = modelOf(item.name);
@@ -115,10 +167,10 @@ export function normalizeJanparaAndroid(shopName: string, item: Item): Row | nul
   return row(item, model.modelName, model.manufacturer, item.name, {
     storage: toStorage(size, unit),
     // 色は機種名の直後（Xperia 1 VII スレートブラック）か、型番の後ろ（SO-54C ブラック）
-    color: colorOf(modelPart, after),
+    color: isOx(model.manufacturer) ? oxColorOf(modelPart, after) : colorOf(modelPart, after),
     conditionRank: rankOf(rankRaw, condition === "未使用"),
     batteryHealth: batteryOf(item),
-    carrier: androidCarrier(carrierLabel),
+    carrier: (isOx(model.manufacturer) ? oxCarrier : androidCarrier)(carrierLabel),
     shopName,
   });
 }
@@ -128,8 +180,14 @@ export function normalizeJanparaAndroid(shopName: string, item: Item): Row | nul
 //   【中古】SONY(ソニー) Xperia 1 V 256GB ブラック SOSAZ3 Softbank SIMフリー 〔ネットワーク利用制限▲〕 【258-ud】（SOSAZ3 は独自の型番表記。機種は名前で決める）
 const SOFMAP_RE = /^【(中古|未使用)[^】]*】\s*(?:\S+?\([^)]*\))?\s*((?:Xperia|AQUOS).*?)\s+(\d+)\s*(GB|TB)\s+(.*?)\s*(?:【[^】]*】)?\s*$/i;
 
+// ソフマップの OPPO・Xiaomi（メーカーの書き方が「OPPO(オッポ)」「XIAOMI」「楽天モバイル」「UQMOBILE」などゆれるので、容量の手前までを機種名の部分にする）:
+//   【中古】OPPO(オッポ) OPPO Reno14 5G 256GB オパールホワイト CPH2737 SIMフリー 【276-ud】
+//   【中古】XIAOMI Redmi 12 5G 128GB ミッドナイトブラック MZB0ETQJP SIMフリー 【348-ud】
+//   【中古】楽天モバイル OPPO A73 64GB オレンジ ZKVE2002OR 楽天 SIMフリー 【352-ud】
+const SOFMAP_OX_RE = /^【(中古|未使用)[^】]*】\s*(.*?)\s+(\d+)\s*(GB|TB)\s+(.*?)\s*(?:【[^】]*】)?\s*$/i;
+
 export function normalizeSofmapAndroid(shopName: string, item: Item): Row | null {
-  const m = item.name.match(SOFMAP_RE);
+  const m = item.name.match(SOFMAP_RE) ?? (/OPPO|Xiaomi|Redmi|POCO/i.test(item.name) ? item.name.match(SOFMAP_OX_RE) : null);
   if (!m || !item.url || !(item.price > 0)) return null;
   const [, condition, , size, unit, restRaw] = m;
   const model = modelOf(item.name);
@@ -137,11 +195,11 @@ export function normalizeSofmapAndroid(shopName: string, item: Item): Row | null
   const [first = ""] = restRaw.split(/\s+/);
   return row(item, model.modelName, model.manufacturer, item.name, {
     storage: toStorage(size, unit),
-    color: colorOf(first),
+    color: isOx(model.manufacturer) ? oxColorOf(first) : colorOf(first),
     conditionRank: rankOf(item.rank, condition === "未使用"),
     batteryHealth: batteryOf(item),
     // 型番の後ろに「Softbank SIMフリー」のように書かれる。キャリアの記載がなければ国内版
-    carrier: androidCarrier(item.car ?? restRaw.replace(/^\S+\s*/, "")),
+    carrier: (isOx(model.manufacturer) ? oxCarrier : androidCarrier)(item.car ?? restRaw.replace(/^\S+\s*/, "")),
     shopName,
   });
 }
@@ -178,7 +236,7 @@ function storageFromDocomoCode(raw: string): number {
 // ランクは fetch.php が送る item.rank、バッテリーは normalizeIosysItem と同じ（未使用 100・「80%未満」79・それ以外 80）
 export function normalizeIosysAndroid(item: Item): Row | null {
   if (!item.url || !(item.price > 0)) return null;
-  if (/\[(?:未使用|中古|新品)\]|ケース|フィルム|Watch|Buds|イヤホン|RAM\d/.test(item.name)) return null;
+  if (/\[(?:未使用|中古|新品)\]|ケース|フィルム|Watch|Buds|イヤホン|RAM\d|Pad/.test(item.name)) return null;
   const raw = core(item.name);
   const model = modelOf(raw);
   if (!model) return null;
@@ -194,12 +252,16 @@ export function normalizeIosysAndroid(item: Item): Row | null {
   const carrier = parseCarrier(raw);
   // 色は、先頭の【…】を除いて、後ろの【docomo版SIMフリー】の手前までの語（機種名・型番・容量を除く）
   const body = raw.replace(/^(?:【[^】]*】)+/, "").split("【")[0];
-  const color = colorOf(body);
+  const ox = isOx(model.manufacturer);
+  const color = ox ? oxColorOf(body) : colorOf(body);
+  // OPPO・Xiaomi は【UQmobile版SIMフリー】【Y!mobile版SIMフリー】【Rakuten版SIMフリー】【mineo版SIMフリー】が多いので、括弧の中から読む
+  const label = raw.match(/【([^】]*?)版SIMフリー】/)?.[1];
+  const oxCarrierValue = label === undefined ? (carrier === "Apple" ? "国内版" : carrier) : /国内/.test(label) ? "国内版" : oxCarrier(label);
   return {
     manufacturer: model.manufacturer, modelName: model.modelName, storage, color: color === "-" ? "不明" : color,
     conditionRank, batteryHealth, shopName: RAKUTEN_IOSYS_SHOP, price: item.price, url: item.url, isSoldOut: false,
-    carrier: carrier === "Apple" ? "国内版" : carrier,
+    carrier: ox ? oxCarrierValue : carrier === "Apple" ? "国内版" : carrier,
     networkStatus: parseNetworkStatus(raw, carrier),
-    simUnlocked: simUnlockedOf(raw, model.modelName),
+    simUnlocked: simUnlockedOf(raw, model.modelName, model.manufacturer),
   };
 }
