@@ -30,7 +30,7 @@
 - **YouTube 予約は2日後まで**・声はずんだもん（比べる型は青山）
 - **X**: 返信の2/3は見られている投稿へ・速報は1日1本・引用1日1本・RTなし
 - **ショート**: 11/15 から1日1本（7時）。横動画は月2本まで（検索に当たる題）。在庫数・電池・新旧比較の型だけ・**0秒目は実写（Pexels）＋2行＋図1つ（`--live`）・11/12 判定で継続**。判定は「視聴を継続」・台帳 `shorts/published.md`
-- **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・Watch（storage＝mm）
+- **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・OPPO・Xiaomi（11/13〜）・Watch（storage＝mm）
 - **中古パソコン** `/pc`（`PcInventory`）。PC WRAP・Qualit・PC next・Be-Stock は A8、他は楽天
 
 ## 確認台帳（計測・判定）
@@ -43,9 +43,11 @@
 | **11/16** | 11/2 の打ち手（ideas/11-02） | にこスマ 30回/週・X 投稿2倍・再生4万 |
 | **随時** | Duo・mini A20・M6・PROLED | 出たら catalog |
 | **11/13** | 機種ページの店リンク（first_*） | クリック減→戻す |
-| **12/1** | 3行・買取の移動・`kaitori_link`（11/12〜） | 買取クリック減→戻す |
-| **11/22** | `PickPair` | 保証1年＝first_warranty＋warranty_pick(_search) の合計。0のまま→位置を見直す |
-| 11/26 | Watch・Galaxy の表（世代・watchOS 27・同じインチ） | AI 入口の1セッションPV が上がり、店クリック率 37〜39% が下がらない |
+| **11/13 朝** | OPPO・Xiaomi 初回取り込み | 要求数・件数・監視 |
+| 11/27 | iPad Pro 11 第3世代の構成 | 対照より表示が戻れば全機種へ |
+| **12/1** | 3行・買取の移動・`kaitori_link` | 買取クリック減→戻す |
+| **11/22** | `PickPair` | first_warranty＋warranty_pick(_search) が0→位置を見直す |
+| 11/26 | Watch・Galaxy の表 | AI 入口の PV/セッション↑・店クリック率 37〜39% 維持 |
 | **11/30** | 比較の内部リンク（`CompareCards`） | GSC 比較の表示 404→800/週 |
 | **12/1** | ahamo・Neon 11月 | 4GB 未満なら Free |
 | **毎月1日** | 出典の開き直し・相場レポート | 出ていなければログ |
@@ -60,7 +62,7 @@
 ## 次にやる（順序）
 
 ```
-1. 収益: 1訪問 6円 → 30円（ideas/11-12-growth。確認待ち: 比較 AQUOS/Xperia・表示減の検証・OPPO/Xiaomi）
+1. 収益: 1訪問 6円 → 30円（ideas/11-12-growth）
 2. 伸ばし方（ideas/10-24-growth）
 3. X（ideas/x-posts）
 ```
