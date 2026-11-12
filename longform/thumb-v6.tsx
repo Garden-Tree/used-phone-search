@@ -112,7 +112,7 @@ const PLANS: Record<string, () => ReactNode> = {
   //   写真: グレー地・ケースに入った背面を手で持つ。札は付けず、文字だけで言い切る
   "2026-10-26-how-old": () => (
     <Frame bg={BLACK}>
-      <Photo file="pexels-9558788.jpg" x={590} w={780} zoom={1.25} fx={0.62} fy={0.4} />
+      <Photo file="pexels-18241409.jpg" x={590} w={780} zoom={1.15} fx={0.5} fy={0.4} />
       <Shade bg="linear-gradient(90deg, #2A0A0A 0%, #5B1010 38%, rgba(91,16,16,0.85) 52%, rgba(60,10,10,0) 72%)" />
       <T x={34} y={34}><Outlined text="11より前は" size={150} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-6} /></T>
       <T x={26} y={212}><Outlined text="買うな" size={290} color={YELLOW} inner={{ w: 10, c: RED }} outer={{ w: 8, c: BLACK }} spacing={-12} /></T>
