@@ -138,10 +138,10 @@ async function plan() {
   const { comment: _c, ...narration } = defaultNarration(built);
   void _c;
   const script: Script = { ...built, narration, voice: { speaker: THEME_SPEAKER[built.theme], speedScale: DEFAULT_SPEED } };
-  // --live [pexels-<id>.mp4]: 実写のつかみ（11/9〜）。素材名がなければ日付で順に選ぶ（shorts/liveClips.ts）
+  // --live [pexels-<id>.mp4 / pixabay-<id>.mp4]: 実写のつかみ（11/9〜）。素材名がなければ日付で順に選ぶ（shorts/liveClips.ts）
   if (flag("live")) {
     const v = opt("live");
-    script.liveClip = v && v.startsWith("pexels-") ? v : pickLiveClip(today);
+    script.liveClip = v && /^(pexels|pixabay)-/.test(v) ? v : pickLiveClip(today);
   }
   mkdirSync(dir, { recursive: true });
   writeFileSync(file, JSON.stringify(script, null, 2) + "\n");
