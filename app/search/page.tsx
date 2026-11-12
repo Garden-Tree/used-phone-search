@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { OG_BASE } from "@/lib/site";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
-import SearchClient from "@/app/components/SearchClient";
+import SearchClient, { SearchFallback } from "@/app/components/SearchClient";
 import { activeShops } from "@/lib/activeShops";
 
 /**
@@ -30,8 +30,9 @@ export default async function SearchPage() {
     <div className="min-h-screen bg-ground text-ink">
       <SiteHeader label="在庫検索" />
       <main className="pb-24 md:pb-6">
-        {/* useSearchParams を使うクライアント部品は Suspense で包む（静的書き出しの決まり） */}
-        <Suspense>
+        {/* useSearchParams を使うクライアント部品は Suspense で包む（静的書き出しの決まり）。
+            HTML には fallback が入る。空にするとフッターが上に描かれて、JS が動いたときに大きくずれる（CLS） */}
+        <Suspense fallback={<SearchFallback />}>
           <SearchClient activeShopNames={activeShopNames} />
         </Suspense>
       </main>

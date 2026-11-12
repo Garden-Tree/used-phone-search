@@ -362,11 +362,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
                 <p className="text-sm text-ink-mute mt-2">時間をおいて、ページを読み込み直してください。</p>
               </div>
             ) : (
-              <div className="bg-white border border-line rounded-xl overflow-hidden" aria-busy="true">
-                {Array.from({ length: 8 }, (_, i) => (
-                  <div key={i} className="h-[88px] border-b border-line-soft bg-ground/60 animate-pulse" />
-                ))}
-              </div>
+              <ResultsSkeleton />
             )
           ) : devices.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-xl border border-line">
@@ -437,6 +433,68 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+/** 在庫を読み込んでいる間の一覧の仮の枠（8件分） */
+function ResultsSkeleton() {
+  return (
+    <div className="bg-white border border-line rounded-xl overflow-hidden" aria-busy="true">
+      {Array.from({ length: 8 }, (_, i) => (
+        <div key={i} className="h-[88px] border-b border-line-soft bg-ground/60 animate-pulse" />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * 静的書き出しの HTML に入る仮の画面（app/search/page.tsx の Suspense の fallback）。
+ * useSearchParams を使う SearchClient は HTML に入らず、JS が動くまで main が空になる。
+ * 空のままだとフッターがヘッダーのすぐ下に描かれ、JS が動いた瞬間に画面の外へ押し出される（CLS 0.45・11/12 計測）。
+ * 読み込み中の SearchClient と同じ並び・高さの枠を先に出して、フッターを最初から下に置く。
+ * URL の条件はここでは分からないので、条件で変わる文字（見出し・ボタン）は灰色の枠にする
+ */
+export function SearchFallback() {
+  const bar = 'bg-ground animate-pulse';
+  return (
+    <>
+      <section className="bg-white border-b border-line">
+        <div className="max-w-[1360px] mx-auto px-4 pt-3.5 pb-3 flex flex-col gap-2">
+          <div className={`h-7 w-56 max-w-full rounded ${bar}`} aria-hidden="true" />
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            {/* 幅 375px 前後では、Web フォントに替わると下のボタンが次の行へ回る（本物も同じ）。
+                フォントの差し替えでずれないよう、狭い画面では最初から次の行に置く */}
+            <p className="text-[13px] text-ink-sub max-[389px]:w-full">在庫を読み込んでいます...</p>
+            {/* 文字を透明にして、本物のボタン・タブと同じ幅にする */}
+            <div className={`h-9 px-3.5 rounded-full border border-transparent text-[13px] font-bold text-transparent flex items-center ${bar}`} aria-hidden="true">
+              バッテリー85%以上だけ
+            </div>
+            <div className="hidden md:flex items-center gap-2" aria-hidden="true">
+              <span className="text-sm text-ink-sub">並び替え</span>
+              <div className={`h-10 w-[200px] rounded-lg ${bar}`} />
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2" aria-hidden="true">
+            {SEARCH_DEVICES.map((d) => (
+              <div key={d.key} className={`h-9 px-3.5 inline-flex items-center rounded-full border border-transparent text-[13px] font-medium text-transparent ${bar}`}>
+                {d.label}
+              </div>
+            ))}
+          </div>
+          <AdDisclosure compact />
+          <p className="text-[11px] text-ink-mute">更新 {BUILD_TIME}</p>
+        </div>
+      </section>
+      <div className="max-w-[1360px] mx-auto px-4 mt-3 md:grid md:grid-cols-[280px_minmax(0,1fr)] md:gap-6 md:items-start">
+        <aside className="hidden md:block bg-white border border-line rounded-xl p-4" aria-label="絞り込み">
+          <h2 className="text-base font-bold mb-4">絞り込み</h2>
+          <div className={`h-[1345px] rounded-lg ${bar}`} aria-hidden="true" />
+        </aside>
+        <div className="min-w-0">
+          <ResultsSkeleton />
+        </div>
+      </div>
     </>
   );
 }
