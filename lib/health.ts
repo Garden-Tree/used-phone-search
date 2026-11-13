@@ -31,6 +31,9 @@ const DEVICES = [
   { key: "xiaomi", label: "Xiaomi", prefix: "Xiaomi " },
   // Apple Watch は 2026-10-15〜（ゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック）。イオシスは MacBook と同じく楽天市場店（alias）の在庫で出す
   { key: "watch", label: "Apple Watch", prefix: "Apple Watch" },
+  // Galaxy Watch・Pixel Watch は 2026-11-13〜（じゃんぱら・イオシス）。機種名は "Samsung Galaxy Watch…"・"Google Pixel Watch…"。イオシスは楽天市場店（alias）の在庫で出す
+  { key: "galaxyWatch", label: "Galaxy Watch", prefix: "Samsung Galaxy Watch" },
+  { key: "pixelWatch", label: "Pixel Watch", prefix: "Google Pixel Watch" },
 ] as const;
 
 export type HealthReport = {
@@ -101,7 +104,7 @@ export async function checkHealth(): Promise<HealthReport> {
       DEVICES.filter((d) => {
         if (!shop[d.key]) return false;
         const own = deviceCounts.get(`${shop.name}:${d.key}`) ?? 0;
-        const viaAlias = d.key === "mac" || d.key === "xperia" || d.key === "aquos" || d.key === "watch" || d.key === "oppo" || d.key === "xiaomi" ? ALIAS_SHOPS.filter((s) => s.alias === shop.name).reduce((n, s) => n + (deviceCounts.get(`${s.name}:${d.key}`) ?? 0), 0) : 0;
+        const viaAlias = d.key === "mac" || d.key === "xperia" || d.key === "aquos" || d.key === "watch" || d.key === "oppo" || d.key === "xiaomi" || d.key === "galaxyWatch" || d.key === "pixelWatch" ? ALIAS_SHOPS.filter((s) => s.alias === shop.name).reduce((n, s) => n + (deviceCounts.get(`${s.name}:${d.key}`) ?? 0), 0) : 0;
         return own + viaAlias === 0;
       }).map((d) => `${shop.label}: ${d.label} が0件`),
     );

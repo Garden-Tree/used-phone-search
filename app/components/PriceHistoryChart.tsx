@@ -3,9 +3,10 @@
 import { useMemo, useState } from 'react';
 import type { PriceHistory, PricePoint } from '@/lib/priceHistory';
 import { yen, storageLabel as gbLabel } from "@/lib/format";
+import { isSmartwatch } from "@/lib/watchCatalog";
 
 // 価格推移の storage=0 は「全容量」の集計
-const storageLabel = (gb: number, model?: string) => (gb === 0 ? (model?.startsWith("Apple Watch") ? "全サイズ" : "全容量") : gbLabel(gb, model));
+const storageLabel = (gb: number, model?: string) => (gb === 0 ? (model !== undefined && isSmartwatch(model) ? "全サイズ" : "全容量") : gbLabel(gb, model));
 
 // グラフの寸法（viewBox 座標。幅は親要素に合わせて伸縮する）
 const W = 640;

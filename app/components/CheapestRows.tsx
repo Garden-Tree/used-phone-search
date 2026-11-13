@@ -1,5 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import DeviceCard, { simLabel, type Device } from "@/app/components/DeviceCard";
+import { isSmartwatch } from "@/lib/watchCatalog";
 
 export type DeviceGroup = { first: Device; rest: Device[] };
 
@@ -28,7 +29,7 @@ export function groupSameShop(devices: Device[]): DeviceGroup[] {
 export function restLabel({ first, rest }: DeviceGroup): string {
   const diffs = [
     rest.some((d) => d.color !== first.color) ? "色" : null,
-    rest.some((d) => simLabel(d) !== simLabel(first)) ? (/^Apple Watch/.test(first.modelName) ? "通信方式" : "SIM") : null,
+    rest.some((d) => simLabel(d) !== simLabel(first)) ? (isSmartwatch(first.modelName) ? "通信方式" : "SIM") : null,
   ].filter(Boolean);
   const min = Math.min(...rest.map((d) => d.price));
   return `他${rest.length}件 ${min.toLocaleString()}円〜${diffs.length > 0 ? `（${diffs.join("・")}違い）` : ""}`;

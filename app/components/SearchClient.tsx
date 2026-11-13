@@ -55,7 +55,10 @@ const loadFile = (key: string) => {
 };
 
 const deviceKeyOf = (name: string) =>
-  /^\s*ipad/i.test(name) ? 'ipad' : /^\s*pixel/i.test(name) ? 'pixel' : /^\s*galaxy/i.test(name) ? 'galaxy' : /^\s*macbook/i.test(name) ? 'mac' : /^\s*xperia/i.test(name) ? 'xperia' : /^\s*aquos/i.test(name) ? 'aquos' : /^\s*apple\s*watch/i.test(name) ? 'watch' : /^\s*oppo/i.test(name) ? 'oppo' : /^\s*xiaomi/i.test(name) ? 'xiaomi' : 'iphone';
+  /^\s*ipad/i.test(name) ? 'ipad' : /^\s*pixel/i.test(name) ? 'pixel' : /^\s*galaxy/i.test(name) ? 'galaxy' : /^\s*macbook/i.test(name) ? 'mac' : /^\s*xperia/i.test(name) ? 'xperia' : /^\s*aquos/i.test(name) ? 'aquos' : /^\s*apple\s*watch/i.test(name) ? 'watch' : /^\s*samsung\s*galaxy\s*watch/i.test(name) ? 'galaxy-watch' : /^\s*google\s*pixel\s*watch/i.test(name) ? 'pixel-watch' : /^\s*oppo/i.test(name) ? 'oppo' : /^\s*xiaomi/i.test(name) ? 'xiaomi' : 'iphone';
+
+/** 検索語が時計の機種名か（Apple Watch・Galaxy Watch・Pixel Watch。storage はケースのサイズ） */
+const WATCH_QUERY = /^\s*(?:apple\s*watch|samsung\s*galaxy\s*watch|google\s*pixel\s*watch)/i;
 
 const toInt = (v: string | null) => {
   if (!v) return undefined;
@@ -210,7 +213,8 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
   if (hasShop) chips.push({ label: shopQuery!, clear: { shop: null } });
   const storage = toInt(params.get('storage'));
   // Apple Watch は storage がケースのサイズ（mm）
-  const watchView = device.key === 'watch' || models.some((q) => /^\s*apple\s*watch/i.test(q));
+  // Galaxy Watch・Pixel Watch（2026-11-13〜）も同じ（機種名の頭は "Samsung Galaxy Watch"・"Google Pixel Watch"）
+  const watchView = device.key === 'watch' || device.key === 'galaxy-watch' || device.key === 'pixel-watch' || models.some((q) => WATCH_QUERY.test(q));
   if (storage !== undefined) chips.push({ label: watchView ? `${storage}mm` : storage >= 1024 ? `${storage / 1024}TB` : `${storage}GB`, clear: { storage: null } });
   const carrierParam = params.get('carrier');
   if (carrierParam) chips.push({ label: carrierParam, clear: { carrier: null } });

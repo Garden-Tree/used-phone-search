@@ -4,6 +4,7 @@ import { findShop } from '@/lib/shops';
 import { YAHOO_MCOM } from '@/lib/yahooMcom';
 import { BUILD_TIME } from '@/lib/buildTime';
 import { storageLabel } from '@/lib/format';
+import { isSmartwatch } from '@/lib/watchCatalog';
 
 // Define the type for the device object
 export type Device = {
@@ -28,6 +29,7 @@ export type Device = {
   memoryGB?: number | null;
 };
 // Apple Watch は storage がケースのサイズ（mm）、carrier が通信方式（GPS／GPS+Cellular）。2026-10-15〜
+// Galaxy Watch・Pixel Watch（2026-11-13〜）も同じ持ち方（carrier は Bluetooth／Wi-Fi／LTE）。見分けは lib/watchCatalog.ts の isSmartwatch
 
 /** 在庫の行を縦に積む白い角丸の入れ物（区切り線つき）。docs/design.md「在庫の行」 */
 export function DeviceList({ children }: { children: React.ReactNode }) {
@@ -97,7 +99,7 @@ export function shopLinkProps(device: Device) {
  * Apple Watch は 1行目にケースのサイズ（46mm）と色・素材、2行目に通信方式と電池。SIM・利用制限はない
  */
 export function deviceKind(d: Pick<Device, 'modelName'>) {
-  return { mac: /^MacBook/.test(d.modelName), watch: /^Apple Watch/.test(d.modelName) };
+  return { mac: /^MacBook/.test(d.modelName), watch: isSmartwatch(d.modelName) };
 }
 
 /** カードの1行目「（機種名）容量・色」。1TB 以上は TB（11/9〜。それまで iPhone は 1024GB と出ていた）。DeviceCard と PickPair で共有 */

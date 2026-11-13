@@ -28,6 +28,8 @@ import {
 import { getBatteryRows, getMedianAt, getMemorySsdRankMatrix, getModelStats, getStorageMedians, getStorageRankMatrix, macCellKey, type MemorySsdRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
 import { MAC_INFO } from "@/lib/macCatalog";
 import { WATCH_INFO, WATCHOS27_IPHONE, isWatchOS27 } from "@/lib/watchCatalog";
+import { GALAXY_WATCH_INFO, GALAXY_WATCH_SOURCE } from "@/lib/galaxyWatchCatalog";
+import { PIXEL_WATCH_INFO, PIXEL_WATCH_SOURCE } from "@/lib/pixelWatchCatalog";
 import { SPEC_ROWS, specOf, specSourceName, specUrl } from "@/lib/iphoneSpecs";
 import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
 import { PIXEL_INFO, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
@@ -246,9 +248,11 @@ export default async function ModelPage({ params }: Props) {
   // MacBook（2026-10-15〜）: 容量×ランクの代わりにメモリ／SSD×ランク、結論はバッテリーの条件なし、予算別ページはまだない
   const mac = device === "mac";
   // Apple Watch（2026-10-15〜）: サイズ（mm）×ランクの表、結論はバッテリーの条件なし（MacBook と同じ）、予算別・検品・買取・回線の枠は出さない
-  const watch = device === "watch";
+  // Galaxy Watch・Pixel Watch（2026-11-13〜）も同じ形（サイズ×ランク・バッテリーの条件なし）。watchOS・世代ごとの表など Apple Watch だけのものは appleWatch
+  const appleWatch = device === "watch";
+  const watch = appleWatch || device === "galaxy-watch" || device === "pixel-watch";
   // Xperia・AQUOS・Apple Watch（2026-10-15〜）・OPPO・Xiaomi（2026-11-12〜）も予算別ページはまだない
-  const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || device === "watch" || device === "oppo" || device === "xiaomi" ? null : device;
+  const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || watch || device === "oppo" || device === "xiaomi" ? null : device;
   const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
   const [stats, historyRaw, batteryRows, storageRows, matrix, macMatrix, budget, goodDevice, statTiles, yearDevice] = await Promise.all([
     getModelStats(model),
@@ -285,6 +289,9 @@ export default async function ModelPage({ params }: Props) {
   const spec = specOf(model);
   const macInfo = MAC_INFO[model];
   const watchInfo = WATCH_INFO[model];
+  // Galaxy Watch・Pixel Watch の基本情報（公式で確かめた値だけ。lib/galaxyWatchCatalog.ts・pixelWatchCatalog.ts）
+  const galaxyWatchInfo = GALAXY_WATCH_INFO[model];
+  const pixelWatchInfo = PIXEL_WATCH_INFO[model];
   const hub = DEVICE_HUB[device];
   const listPath = hub.path;
   const listName = hub.name;
@@ -329,7 +336,7 @@ export default async function ModelPage({ params }: Props) {
         ? (IPADOS27_MODELS.has(model) ? `${model}は iPadOS 27 に対応しています。` : `${model}は iPadOS 27 には対応していません。`)
         : mac
           ? `${model}は macOS 27 Golden Gate に対応しています。`
-        : watch
+        : appleWatch
           ? (isWatchOS27(model) ? `${model}は watchOS 27 に対応しています（Apple 公式）。使うには、${WATCHOS27_IPHONE}が必要です。` : `${model}は watchOS 27 には対応していません（Apple 公式）。`)
         : isAndroidJp(model)
           ? supportSentence(model, nowYm)
@@ -372,10 +379,10 @@ export default async function ModelPage({ params }: Props) {
   // 最新 OS への対応（確かめた情報がある種類だけ。なければ結論に入れない）
   const supported: boolean | undefined = isIphone ? ALL_CATALOG_MODELS.includes(model)
     : isIpad(model) ? IPADOS27_MODELS.has(model)
-    : watch ? isWatchOS27(model)
+    : appleWatch ? isWatchOS27(model)
     : pixel && pixelLeft !== undefined ? pixelLeft > 0
     : undefined;
-  const osName = isIphone ? "iOS 27" : isIpad(model) ? "iPadOS 27" : watch ? "watchOS 27" : pixel ? "Google のアップデート保証" : undefined;
+  const osName = isIphone ? "iOS 27" : isIpad(model) ? "iPadOS 27" : appleWatch ? "watchOS 27" : pixel ? "Google のアップデート保証" : undefined;
   const newMin = newRows[0];
   const verdict = hasStock ? buyVerdict({ model, trend, supported, osName, newDiff: newMin ? newMin.diff : null }) : [];
   // 「今買うべき？」（10/25〜。10/27〜 数字と記号だけ。lib/modelGuide.ts の buyFacts）: 最安値・相場・件数は要約カードにあるので出さない
@@ -405,7 +412,7 @@ export default async function ModelPage({ params }: Props) {
   const galaxy = device === "galaxy";
   // Galaxy は「同じ予算」の代わりに「同じ ○インチの相場」（11/12〜。lib/peerMarkets.ts）。Apple Watch は世代ごとの相場と watchOS 27 の線
   const [wPeers, sPeers] = await Promise.all([
-    hasStock && watch ? watchPeers(model, stats.medianStorage) : Promise.resolve(null),
+    hasStock && appleWatch ? watchPeers(model, stats.medianStorage) : Promise.resolve(null),
     hasStock && galaxy ? screenPeers(model, stats.medianStorage) : Promise.resolve(null),
   ]);
   // 同じ画面サイズの表が出ない Galaxy（比べる機種がない）は今までどおり「同じ予算」
@@ -934,6 +941,27 @@ export default async function ModelPage({ params }: Props) {
                     <p className="mt-3 text-[11px] text-ink-mute leading-relaxed">
                       出典: Apple <a href="https://support.apple.com/ja-jp/108056" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">サポート（Apple Watch を識別する）</a>
                       ・<a href="https://www.apple.com/jp/watchos/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">watchOS の対応機種</a>
+                    </p>
+                  </Accordion>
+                )}
+                {/* Galaxy Watch・Pixel Watch の基本情報（2026-11-13〜。公式で確かめた値だけ。発売年月・更新の期限は確かめられていないので載せない） */}
+                {(galaxyWatchInfo || pixelWatchInfo) && (
+                  <Accordion title={`${model}の基本情報`} hint={(galaxyWatchInfo ?? pixelWatchInfo)!.sizes.map((s) => `${s}mm`).join("・")}>
+                    <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                      <dt className="text-ink-mute font-bold">ケースのサイズ</dt>
+                      <dd>{(galaxyWatchInfo ?? pixelWatchInfo)!.sizes.map((s) => `${s}mm`).join("・")}</dd>
+                      <dt className="text-ink-mute font-bold">通信方式</dt>
+                      <dd>{galaxyWatchInfo ? (galaxyWatchInfo.carriers.length === 1 ? `${galaxyWatchInfo.carriers[0]}（${galaxyWatchInfo.carriers[0]} モデルのみ）` : galaxyWatchInfo.carriers.join("／")) : "Wi-Fi（Bluetooth／Wi-Fi）／LTE（4G LTE）"}</dd>
+                      {pixelWatchInfo && (
+                        <>
+                          <dt className="text-ink-mute font-bold">対応するスマートフォン</dt>
+                          <dd>{pixelWatchInfo.android}のスマートフォン（ほとんどの機種）</dd>
+                        </>
+                      )}
+                    </dl>
+                    <p className="mt-3 text-[11px] text-ink-mute leading-relaxed">
+                      出典: <a href={(galaxyWatchInfo ? GALAXY_WATCH_SOURCE : PIXEL_WATCH_SOURCE).url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">{(galaxyWatchInfo ? GALAXY_WATCH_SOURCE : PIXEL_WATCH_SOURCE).name}</a>
+                      。日本で売られているモデルの情報です。
                     </p>
                   </Accordion>
                 )}

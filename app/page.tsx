@@ -10,6 +10,8 @@ import { AQUOS_MODELS } from "@/lib/aquosCatalog";
 import { WATCH_MODELS } from "@/lib/watchCatalog";
 import { OPPO_MODELS } from "@/lib/oppoCatalog";
 import { XIAOMI_MODELS } from "@/lib/xiaomiCatalog";
+import { GALAXY_WATCH_MODELS } from "@/lib/galaxyWatchCatalog";
+import { PIXEL_WATCH_MODELS } from "@/lib/pixelWatchCatalog";
 import { minPriceByModel } from "@/lib/budgetStats";
 import { yen } from "@/lib/format";
 import { monthJa, reportMonths } from "@/lib/monthlyReport";
@@ -96,6 +98,8 @@ const DEVICE_HUBS: { label: string; path: string; models: string[] }[] = [
   { label: "Apple Watch", path: "/watch", models: WATCH_MODELS },
   { label: "OPPO", path: "/oppo", models: OPPO_MODELS },
   { label: "Xiaomi", path: "/xiaomi", models: XIAOMI_MODELS },
+  { label: "Galaxy Watch", path: "/galaxy-watch", models: GALAXY_WATCH_MODELS },
+  { label: "Pixel Watch", path: "/pixel-watch", models: PIXEL_WATCH_MODELS },
 ];
 
 // シリーズのタイルの色（docs/design.md ではなく 10/16 の決定版の見本どおり）
@@ -110,11 +114,14 @@ const HUB_COLORS: Record<string, string> = {
   AQUOS: "bg-[#9A3412]",
   OPPO: "bg-[#065F46]",
   Xiaomi: "bg-[#C2410C]",
+  "Galaxy Watch": "bg-[#7E22CE]",
+  "Pixel Watch": "bg-[#15803D]",
 };
 // タイルの並び（見本: 件数の多い順ではなく固定）
 const HUB_ORDER = ["iPhone", "iPad", "Apple Watch", "Pixel", "Galaxy", "MacBook", "Xperia", "AQUOS"];
 // OPPO・Xiaomi（2026-11-12〜）は上の8つ（1行で固定）の後ろに、同じ形のタイルで2段目に足す
-const HUB_ORDER_MORE = ["OPPO", "Xiaomi"];
+// Galaxy Watch・Pixel Watch（2026-11-13〜）も2段目に（スマホで4つ＝ちょうど1行）
+const HUB_ORDER_MORE = ["OPPO", "Xiaomi", "Galaxy Watch", "Pixel Watch"];
 
 // 末尾に名前を出す主な店（在庫がある店だけ）
 const MAIN_SHOP_LABELS = ["イオシス", "じゃんぱら", "ソフマップ", "ゲオモバイル", "にこスマ", "ダイワンテレコム"];
@@ -262,7 +269,7 @@ export default async function Home() {
               href={h.path}
               className={`${HUB_COLORS[h.label]} text-white rounded-xl py-3 px-1.5 flex flex-col items-center gap-0.5 hover:opacity-90`}
             >
-              <span className="text-[13px] font-bold">{h.label}</span>
+              <span className="text-[13px] font-bold text-center leading-tight">{h.label}</span>
               {h.n > 0 && <span className="text-[10px] opacity-85">{h.n.toLocaleString()}</span>}
             </Link>
           ))}
