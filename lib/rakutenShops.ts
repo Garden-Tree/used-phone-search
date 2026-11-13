@@ -12,7 +12,7 @@ import { RAKUTEN_MTM_SHOP, normalizeMtmItem } from "@/lib/rakutenMtm";
 import { RAKUTEN_IOSYS_SHOP, normalizeIosysItem } from "@/lib/rakutenIosys";
 import { normalizeIosysMac, normalizeJanparaMac, normalizeSofmapMac } from "@/lib/rakutenMac";
 import { normalizeGeoAndroid, normalizeIosysAndroid, normalizeJanparaAndroid, normalizeSofmapAndroid } from "@/lib/rakutenAndroid";
-import { normalizeGeoWatch, normalizeIosysWatch, normalizeJanparaWatch, normalizeNewsedtechWatch, normalizeSofmapWatch } from "@/lib/rakutenWatch";
+import { WEAR_NAME, normalizeGeoWatch, normalizeIosysWatch, normalizeIosysWear, normalizeJanparaWatch, normalizeJanparaWear, normalizeNewsedtechWatch, normalizeSofmapWatch } from "@/lib/rakutenWatch";
 
 export type { RakutenItem };
 
@@ -41,8 +41,17 @@ const ANDROID_NAME = /Xperia|AQUOS|OPPO|Xiaomi|Redmi|POCO/i;
  * iPad を含むものは iPad 用、Pixel・Galaxy を含むものはそれぞれ用（2026-09-30〜）、
  * Xperia・AQUOS を含むものは Android（日本メーカー）用（2026-10-15〜。Galaxy の次。ゲオ・じゃんぱら・ソフマップが渡す）、
  * OPPO・Xiaomi・Redmi・POCO を含むものも同じ Android 用（2026-11-12〜。lib/rakutenAndroid.ts）、それ以外は iPhone 用の読み取りに回す
+ *
+ * Galaxy Watch・Pixel Watch（2026-11-13〜。wear を渡す店＝じゃんぱらだけ）は、今までの振り分け（byDeviceBase）の前に Watch 用の読み取りを試し、
+ * 行にならなければ（null）今までの振り分けにそのまま回す（今まで行になっていた商品は変わらない。lib/rakutenWatch.ts）
  */
-function byDevice(iphone: Normalize, ipad: ByShop, pixel: ByShop, galaxy: ByShop, shopName: string, mac?: Normalize, android?: ByShop, watch?: Normalize): Normalize {
+function byDevice(iphone: Normalize, ipad: ByShop, pixel: ByShop, galaxy: ByShop, shopName: string, mac?: Normalize, android?: ByShop, watch?: Normalize, wear?: Normalize): Normalize {
+  const base = byDeviceBase(iphone, ipad, pixel, galaxy, shopName, mac, android, watch);
+  if (!wear) return base;
+  return (item) => (WEAR_NAME.test(item.name) && !/MacBook|Apple[ ]?Watch/i.test(item.name) ? wear(item) ?? base(item) : base(item));
+}
+
+function byDeviceBase(iphone: Normalize, ipad: ByShop, pixel: ByShop, galaxy: ByShop, shopName: string, mac?: Normalize, android?: ByShop, watch?: Normalize): Normalize {
   return (item) =>
     /MacBook/i.test(item.name) ? (mac ? mac(item) : null)
     : /Apple[ ]?Watch/i.test(item.name) ? (watch ? watch(item) : null) // Apple Watch（2026-10-15〜。MacBook の次。watch を渡さない店＝キタムラ・エムティーエムは取り込まない。バンド・充電器などは Watch 用の読み取りが落とす）
@@ -56,7 +65,7 @@ function byDevice(iphone: Normalize, ipad: ByShop, pixel: ByShop, galaxy: ByShop
 /** ニューズドテック: Apple Watch（2026-10-15〜）は normalizeNewsedtechItem の前で Watch 用に振り分ける */
 const normalizeNewsedtechOrWatch: Normalize = (item) => (/Apple[ ]?Watch/i.test(item.name) ? normalizeNewsedtechWatch(item) : normalizeNewsedtechItem(item));
 
-/** 楽天市場 商品検索API で取り込むショップ（キーは楽天の shopCode）。iPhone・iPad・Pixel・Galaxy・MacBook（ゲオ以外）・Xperia・AQUOS・OPPO・Xiaomi（ゲオ・じゃんぱら・ソフマップ・イオシス）・Apple Watch（ゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック）を同じショップ名で持つ */
+/** 楽天市場 商品検索API で取り込むショップ（キーは楽天の shopCode）。iPhone・iPad・Pixel・Galaxy・MacBook（ゲオ以外）・Xperia・AQUOS・OPPO・Xiaomi（ゲオ・じゃんぱら・ソフマップ・イオシス）・Apple Watch（ゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック）・Galaxy Watch・Pixel Watch（じゃんぱら・イオシス。2026-11-13〜）を同じショップ名で持つ */
 export const RAKUTEN_SHOPS: Record<string, RakutenShop> = {
   "geo-mobile": {
     shopName: RAKUTEN_GEO_SHOP,
@@ -66,7 +75,7 @@ export const RAKUTEN_SHOPS: Record<string, RakutenShop> = {
   janpara: {
     shopName: RAKUTEN_JANPARA_SHOP,
     alsoReplace: [],
-    normalize: byDevice(normalizeJanparaItem, normalizeJanparaIpad, normalizeJanparaPixel, normalizeJanparaGalaxy, RAKUTEN_JANPARA_SHOP, normalizeJanparaMac, normalizeJanparaAndroid, normalizeJanparaWatch),
+    normalize: byDevice(normalizeJanparaItem, normalizeJanparaIpad, normalizeJanparaPixel, normalizeJanparaGalaxy, RAKUTEN_JANPARA_SHOP, normalizeJanparaMac, normalizeJanparaAndroid, normalizeJanparaWatch, normalizeJanparaWear),
   },
   "akiba-u-shop": {
     shopName: RAKUTEN_SOFMAP_SHOP,
@@ -81,7 +90,8 @@ export const RAKUTEN_SHOPS: Record<string, RakutenShop> = {
   // エムティーエム（2026-10-09〜）
   ekosuta: { shopName: RAKUTEN_MTM_SHOP, alsoReplace: [], normalize: normalizeMtmItem },
   // イオシス（2026-10-08〜）。公式サイトと同じ商品は、取り込みのあと scripts/link-duplicate-shops.ts が公式の行に添えて消す
-  "pc-good": { shopName: RAKUTEN_IOSYS_SHOP, alsoReplace: [], normalize: (item) => (/MacBook/i.test(item.name) ? normalizeIosysMac(item) : /Apple[ ]?Watch/i.test(item.name) ? normalizeIosysWatch(item) : ANDROID_NAME.test(item.name) ? normalizeIosysAndroid(item) : normalizeIosysItem(item)) },
+  // Galaxy Watch・Pixel Watch（2026-11-13〜）は Watch 用の読み取りを試し、行にならなければ今までの振り分けへ
+  "pc-good": { shopName: RAKUTEN_IOSYS_SHOP, alsoReplace: [], normalize: (item) => (/MacBook/i.test(item.name) ? normalizeIosysMac(item) : /Apple[ ]?Watch/i.test(item.name) ? normalizeIosysWatch(item) : (WEAR_NAME.test(item.name) ? normalizeIosysWear(item) : null) ?? (ANDROID_NAME.test(item.name) ? normalizeIosysAndroid(item) : normalizeIosysItem(item))) },
 };
 
 /** 楽天経由の在庫のショップ名（リンクは楽天アフィリエイトだけにする） */

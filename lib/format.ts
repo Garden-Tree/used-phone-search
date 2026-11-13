@@ -1,9 +1,11 @@
+import { isSmartwatch } from "@/lib/watchCatalog";
+
 /** 12345 → "12,345円" */
 export const yen = (n: number) => `${n.toLocaleString()}円`;
 
 /**
  * 容量（GB）の表示。1024 以上は TB（"1024" → "1TB"）。
- * model が Apple Watch のときは、storage が容量ではなくケースのサイズ（mm）なので "46mm"（2026-10-15〜）
+ * model が Apple Watch・Galaxy Watch・Pixel Watch のときは、storage が容量ではなくケースのサイズ（mm）なので "46mm"（2026-10-15〜。Galaxy Watch・Pixel Watch は 2026-11-13〜）
  */
 /** 相場の見出し。相場は在庫がいちばん多い容量の中央値（lib/modelInventory.ts の primaryMedian）なので、その容量を添える（"相場（128GB）"） */
 export function medianLabel(storage: number | null | undefined, model?: string): string {
@@ -12,6 +14,6 @@ export function medianLabel(storage: number | null | undefined, model?: string):
 
 export function storageLabel(gb: number | string, model?: string): string {
   const n = Number(gb);
-  if (model !== undefined && model.startsWith("Apple Watch")) return `${n}mm`;
+  if (model !== undefined && isSmartwatch(model)) return `${n}mm`;
   return n >= 1024 ? `${n / 1024}TB` : `${n}GB`;
 }

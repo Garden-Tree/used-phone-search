@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
+import { WEAR_HUB } from "@/app/components/WearIndexView";
 import { COMPARE_PAIRS, comparePath } from "@/lib/compare";
 import { PICKS, pickPath } from "@/lib/picks";
 import { BUDGETS, GALAXY_BUDGETS, IPAD_BUDGETS, PIXEL_BUDGETS, SUMAHO_BUDGETS, budgetPath, sumahoBudgetPath } from "@/lib/budgets";
@@ -84,6 +85,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/oppo`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/xiaomi`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/watch`, lastModified, changeFrequency: "daily", priority: 0.8 },
+    // Galaxy Watch・Pixel Watch の一覧（2026-11-13〜）。在庫が1件もないあいだ（取り込み前）は noindex なので入れない
+    ...(["galaxy-watch", "pixel-watch"] as const)
+      .filter((kind) => WEAR_HUB[kind].models.some((m) => (stockCounts.get(m) ?? 0) > 0))
+      .map((kind) => ({ url: `${SITE_URL}${WEAR_HUB[kind].path}`, lastModified, changeFrequency: "daily" as const, priority: 0.8 })),
     // 中古パソコン（2026-10-27〜）。在庫が少ないあいだ（取り込み前）は noindex なので入れない
     ...(await (async () => {
       const pc = await getPcItems();

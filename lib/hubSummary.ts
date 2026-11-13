@@ -37,7 +37,7 @@ export function hubWebPage(name: string, path: string, summary: string | null) {
 
 /** タイトル用の短い機種名。頭の「iPhone」などとかっこを外す（「中古iPhoneはiPhone 13」と重なる・値段のかっこと重なるため）。「iPad mini (第6世代)」→「mini 第6世代」 */
 export const shortModelName = (model: string) =>
-  model.replace(/^(iPhone|iPad|Google Pixel|Pixel|Galaxy|Apple Watch|Xperia|AQUOS|MacBook)\s*/, "").replace(/\s*[(（](.+?)[)）]/g, " $1").trim();
+  model.replace(/^(iPhone|iPad|Samsung Galaxy|Google Pixel|Pixel|Galaxy|Apple Watch|Xperia|AQUOS|MacBook)\s*/, "").replace(/\s*[(（](.+?)[)）]/g, " $1").trim();
 
 /**
  * 種類ごとの一覧のタイトル（10/28〜）。検索結果で「いくらから買えるか」が見えるよう、いちばん安い値段と機種を頭に。

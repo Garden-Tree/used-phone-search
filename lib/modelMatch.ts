@@ -7,6 +7,8 @@ import { AQUOS_MODELS } from "@/lib/aquosCatalog";
 import { OPPO_MODELS } from "@/lib/oppoCatalog";
 import { XIAOMI_MODELS } from "@/lib/xiaomiCatalog";
 import { WATCH_MODELS } from "@/lib/watchCatalog";
+import { GALAXY_WATCH_MODELS } from "@/lib/galaxyWatchCatalog";
+import { PIXEL_WATCH_MODELS } from "@/lib/pixelWatchCatalog";
 
 /**
  * 機種名の照合（DB に依存しない部分）。サーバー（lib/deviceSearch.ts）と、
@@ -85,6 +87,22 @@ export function matchesModel(query: string, modelName: string): boolean {
     const tokens = new Set(name.split(/[\s（）()]+/).filter(Boolean));
     return /^apple watch/.test(name) && q.split(/\s+/).every((word) => tokens.has(word));
   }
+  // Galaxy Watch・Pixel Watch（2026-11-13〜）は機種名が "Samsung Galaxy Watch…"・"Google Pixel Watch…"（lib/galaxyWatchCatalog.ts・pixelWatchCatalog.ts）。
+  // Apple Watch と同じく、正式名なら完全一致（「Watch Ultra」が「Watch Ultra2」「Watch Ultra (2025)」に、「Google Pixel Watch」が「Google Pixel Watch 3」に当たらない）、
+  // 正式名でない検索は語ごとにまるごと比べる。下の汎用の経路（先頭の語だけで比べる）に落ちると世代が混ざるので、ここで決める
+  for (const [prefix, models] of [["samsung galaxy watch", GALAXY_WATCH_MODELS], ["google pixel watch", PIXEL_WATCH_MODELS]] as const) {
+    const q = query.trim().toLowerCase();
+    const name = modelName.trim().toLowerCase();
+    const isQuery = q.startsWith(prefix);
+    if (!isQuery && !name.startsWith(prefix)) continue;
+    if (!isQuery) return false;
+    if (models.some((m) => m.toLowerCase() === q)) return q === name;
+    if (!name.startsWith(prefix)) return false;
+    // 頭（"samsung galaxy watch"）の後ろを語に分けて比べる（「Watch7」は "7"、「Watch Ultra (2025)」は "ultra"・"2025"）。頭だけの検索は全機種に当てる
+    const rest = (s: string) => s.slice(prefix.length).split(/[\s（）()]+/).filter(Boolean);
+    const tokens = new Set(rest(name));
+    return rest(q).every((word) => tokens.has(word));
+  }
   // Pixel・Galaxy・Xperia・AQUOS も取り込み時にメーカーの表記（lib/pixelCatalog.ts・galaxyCatalog.ts・xperiaCatalog.ts・aquosCatalog.ts）にそろえている。考え方は iPad と同じ
   // （トークン判定だと「Pixel 9」が「Pixel 9a」「Pixel 9 Pro」に、「Galaxy S24」が「Galaxy S24 Ultra」に、「Xperia 1 V」が「Xperia 1 VI」に、「AQUOS sense7」が「AQUOS sense7 plus」にも当たる。
   // 正式名での検索は完全一致なので、これらは当たらない）
@@ -128,6 +146,9 @@ export const SEARCH_DEVICES = [
   { key: "oppo", label: "OPPO", prefix: "OPPO " },
   { key: "xiaomi", label: "Xiaomi", prefix: "Xiaomi " },
   { key: "watch", label: "Apple Watch", prefix: "Apple Watch" },
+  // Galaxy Watch・Pixel Watch（2026-11-13〜）。機種名の頭は "Samsung "・"Google "（スマホの "Galaxy"・"Pixel" の絞り込みに入らない）
+  { key: "galaxy-watch", label: "Galaxy Watch", prefix: "Samsung Galaxy Watch" },
+  { key: "pixel-watch", label: "Pixel Watch", prefix: "Google Pixel Watch" },
 ] as const;
 
 export const findSearchDevice = (key: string | null | undefined) => SEARCH_DEVICES.find((d) => d.key === key);

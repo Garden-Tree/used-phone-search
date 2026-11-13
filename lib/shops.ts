@@ -30,6 +30,9 @@ export type Shop = {
   xiaomi?: boolean;
   /** Apple Watch も取り込んでいるか（2026-10-15〜。楽天のゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック。イオシスは楽天市場店（alias）の在庫で、公式には Apple Watch がない） */
   watch?: boolean;
+  /** Galaxy Watch・Pixel Watch も取り込んでいるか（2026-11-13〜。楽天のじゃんぱら・イオシスだけ。イオシスは楽天市場店（alias）の在庫。ほかの店は 11/13 の店内検索で0件） */
+  galaxyWatch?: boolean;
+  pixelWatch?: boolean;
   /**
    * バッテリー最大容量の表記。
    * exact: 数値（85% など）／ over80: 「80%以上」「80%未満」だけ（DB には 80・79、未使用品は 100）／
@@ -55,10 +58,10 @@ export type Shop = {
 };
 
 export const SHOPS: Shop[] = [
-  { name: "イオシス", label: "イオシス", watch: true, xperia: true, aquos: true, oppo: true, xiaomi: true, mac: true, galaxy: true, pixel: true, ipad: true, battery: "over80",
+  { name: "イオシス", label: "イオシス", galaxyWatch: true, pixelWatch: true, watch: true, xperia: true, aquos: true, oppo: true, xiaomi: true, mac: true, galaxy: true, pixel: true, ipad: true, battery: "over80",
     warranty: "中古3ヶ月（未使用品は6ヶ月）", redRom: "保証期間に関わらず対象", warrantyShort: "保証3ヶ月", redRomShort: "赤ロム保証",
     guaranteeUrl: "https://iosys.co.jp/guide/support/guarantee.html" },
-  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", marketplace: "rakuten", watch: true, xperia: true, aquos: true, oppo: true, xiaomi: true, mac: true, pixel: true, galaxy: true, ipad: true, battery: "exact",
+  { name: "じゃんぱら（楽天市場店）", label: "じゃんぱら", note: "楽天市場店", marketplace: "rakuten", galaxyWatch: true, pixelWatch: true, watch: true, xperia: true, aquos: true, oppo: true, xiaomi: true, mac: true, pixel: true, galaxy: true, ipad: true, battery: "exact",
     warranty: "商品ごと（iPhone は多くが1ヶ月）", redRom: "永久保証", warrantyShort: "保証 商品ごと", redRomShort: "赤ロム永久",
     guaranteeUrl: "https://www.janpara.co.jp/contents/faq/" },
   { name: "ゲオモバイル（楽天市場店）", label: "ゲオモバイル", note: "楽天市場店", marketplace: "rakuten", watch: true, xperia: true, aquos: true, oppo: true, xiaomi: true, pixel: true, galaxy: true, ipad: true, battery: "none",
@@ -165,9 +168,12 @@ export const OPPO_SHOPS = SHOPS.filter((s) => s.oppo);
 export const XIAOMI_SHOPS = SHOPS.filter((s) => s.xiaomi);
 /** Apple Watch を扱う店（ゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック。キタムラ・エムティーエムは取り込まない） */
 export const WATCH_SHOPS = SHOPS.filter((s) => s.watch);
+/** Galaxy Watch・Pixel Watch を扱う店（じゃんぱら・イオシス。2026-11-13〜） */
+export const GALAXY_WATCH_SHOPS = SHOPS.filter((s) => s.galaxyWatch);
+export const PIXEL_WATCH_SHOPS = SHOPS.filter((s) => s.pixelWatch);
 
 export const shopsFor = (model: string): Shop[] =>
-  /^iPad/.test(model) ? IPAD_SHOPS : /^Pixel/.test(model) ? PIXEL_SHOPS : /^Galaxy/.test(model) ? GALAXY_SHOPS : /^MacBook/.test(model) ? MAC_SHOPS : /^Xperia/.test(model) ? XPERIA_SHOPS : /^AQUOS/.test(model) ? AQUOS_SHOPS : /^OPPO /.test(model) ? OPPO_SHOPS : /^Xiaomi /.test(model) ? XIAOMI_SHOPS : /^Apple Watch/.test(model) ? WATCH_SHOPS : SHOPS;
+  /^Samsung Galaxy Watch/.test(model) ? GALAXY_WATCH_SHOPS : /^Google Pixel Watch/.test(model) ? PIXEL_WATCH_SHOPS : /^iPad/.test(model) ? IPAD_SHOPS : /^Pixel/.test(model) ? PIXEL_SHOPS : /^Galaxy/.test(model) ? GALAXY_SHOPS : /^MacBook/.test(model) ? MAC_SHOPS : /^Xperia/.test(model) ? XPERIA_SHOPS : /^AQUOS/.test(model) ? AQUOS_SHOPS : /^OPPO /.test(model) ? OPPO_SHOPS : /^Xiaomi /.test(model) ? XIAOMI_SHOPS : /^Apple Watch/.test(model) ? WATCH_SHOPS : SHOPS;
 
 /** 「イオシス・じゃんぱら・…」 */
 export const shopLabels = (shops: Shop[] = SHOPS): string => shops.map((s) => s.label).join("・");

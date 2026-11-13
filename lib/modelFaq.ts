@@ -1,5 +1,6 @@
 import { findShop, type Shop } from "@/lib/shops";
 import { medianLabel, storageLabel, yen } from "@/lib/format";
+import { isSmartwatch } from "@/lib/watchCatalog";
 import type { PriceRow } from "@/lib/modelStats";
 import { appleCheckedJa, type NewVsUsedRow } from "@/lib/applePrices";
 
@@ -30,7 +31,7 @@ export function modelDescription(model: string, stats: { minPrice: number | null
   // MacBook（2026-10-15〜）は容量の代わりにメモリ・SSD で比べる
   const mac = /^MacBook/.test(model);
   // Apple Watch（2026-10-15〜）は容量の代わりにケースのサイズ（mm）・通信方式（GPS／GPS+Cellular）で比べる
-  const watch = /^Apple Watch/.test(model);
+  const watch = isSmartwatch(model);
   if (stats.minPrice === null && watch) return `${model}の中古在庫を大手中古ショップから一括比較。ケースのサイズ・通信方式・状態ランク別の最安値をまとめています。`;
   if (stats.minPrice === null) return mac ? `${model}の中古在庫を大手中古ショップから一括比較。メモリ・SSD・状態ランク別の最安値をまとめています。` : `${model}の中古在庫を大手中古ショップから一括比較。容量・状態ランク別の最安値をまとめています。`;
   const top = topStockLabels(stats.byShop).join("・");
@@ -96,7 +97,9 @@ export function buildFaq(p: {
   // MacBook: メモリ・SSD は購入後に増やせない。保証は店・商品ごとに違う
   const macNote = "メモリと SSD は購入後に増やせないので、使い方に合う組み合わせを先に決めてから値段を比べるのがおすすめです。状態ランクは外装の傷の目安で、基準は店ごとに違います。保証は店・商品ごとに違うので、買う前に商品ページで確認してください。";
   // Apple Watch: 通信方式（GPS／GPS+Cellular）とケースのサイズは買ってから変えられない。対応 iPhone は機種ごとに違う
-  const watchNote = "通信方式（GPS／GPS+Cellular）とケースのサイズは買ってから変えられないので、先に決めてから値段を比べるのがおすすめです。GPS+Cellular が単体で通信するには、携帯会社の回線契約が別に必要です。状態ランクは外装の傷の目安で、基準は店ごとに違います。保証は店・商品ごとに違うので、買う前に商品ページで確認してください。";
+  // Galaxy Watch・Pixel Watch（2026-11-13〜）は通信方式の呼び方が違う（Bluetooth／LTE、Wi-Fi／LTE）
+  const [carriers, cellular] = /^Samsung Galaxy Watch/.test(model) ? ["Bluetooth／LTE", "LTE モデル"] : /^Google Pixel Watch/.test(model) ? ["Wi-Fi／LTE", "LTE モデル"] : ["GPS／GPS+Cellular", "GPS+Cellular"];
+  const watchNote = `通信方式（${carriers}）とケースのサイズは買ってから変えられないので、先に決めてから値段を比べるのがおすすめです。${cellular} が単体で通信するには、携帯会社の回線契約が別に必要です。` + "状態ランクは外装の傷の目安で、基準は店ごとに違います。保証は店・商品ごとに違うので、買う前に商品ページで確認してください。";
   const a4 = p.isWatch ? watchNote : p.isMac ? macNote : p.isIphone ? `${battery}${rank}${red}` : `${battery}${rank}`;
 
   const faqs: Faq[] = [

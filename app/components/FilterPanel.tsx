@@ -2,8 +2,10 @@
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { MAC_SHOPS, SHOPS, WATCH_SHOPS } from '@/lib/shops';
+import { GALAXY_WATCH_SHOPS, MAC_SHOPS, PIXEL_WATCH_SHOPS, SHOPS, WATCH_SHOPS } from '@/lib/shops';
 import { WATCH_CARRIERS, WATCH_SIZE_OPTIONS } from '@/lib/watchCatalog';
+import { GALAXY_WATCH_CARRIERS, GALAXY_WATCH_SIZE_OPTIONS } from '@/lib/galaxyWatchCatalog';
+import { PIXEL_WATCH_CARRIERS, PIXEL_WATCH_SIZE_OPTIONS } from '@/lib/pixelWatchCatalog';
 
 export const STORAGE_OPTIONS = [64, 128, 256, 512, 1024];
 export const RANK_OPTIONS = ['S', 'A', 'B', 'C', 'D'];
@@ -67,8 +69,14 @@ export default function FilterPanel({ activeShopNames }: { activeShopNames?: str
     ? SHOP_OPTIONS.filter((o) => o.id === 'all' || o.id === currentShop || activeShopNames.includes(o.id))
     : SHOP_OPTIONS;
   // Apple Watch（2026-10-15〜）: ?device=watch または機種が Apple Watch のとき、Apple Watch を扱う店だけ。容量の代わりにケースのサイズ（mm）、通信方式（GPS／GPS+Cellular）の項目を足す。メモリは出さない
-  const watch = searchParams.get('device') === 'watch' || /^\s*apple\s*watch/i.test(searchParams.get('model') ?? '');
-  const kindShops = mac ? MAC_SHOPS : watch ? WATCH_SHOPS : null;
+  const appleWatch = searchParams.get('device') === 'watch' || /^\s*apple\s*watch/i.test(searchParams.get('model') ?? '');
+  // Galaxy Watch・Pixel Watch（2026-11-13〜）も同じ形（サイズと通信方式の選択肢は機種群ごと。lib/galaxyWatchCatalog.ts・pixelWatchCatalog.ts）
+  const galaxyWatch = searchParams.get('device') === 'galaxy-watch' || /^\s*samsung\s*galaxy\s*watch/i.test(searchParams.get('model') ?? '');
+  const pixelWatch = searchParams.get('device') === 'pixel-watch' || /^\s*google\s*pixel\s*watch/i.test(searchParams.get('model') ?? '');
+  const watch = appleWatch || galaxyWatch || pixelWatch;
+  const watchSizes = galaxyWatch ? GALAXY_WATCH_SIZE_OPTIONS : pixelWatch ? PIXEL_WATCH_SIZE_OPTIONS : WATCH_SIZE_OPTIONS;
+  const watchCarriers: readonly string[] = galaxyWatch ? GALAXY_WATCH_CARRIERS : pixelWatch ? PIXEL_WATCH_CARRIERS : WATCH_CARRIERS;
+  const kindShops = mac ? MAC_SHOPS : galaxyWatch ? GALAXY_WATCH_SHOPS : pixelWatch ? PIXEL_WATCH_SHOPS : watch ? WATCH_SHOPS : null;
   const shopOptions = kindShops ? activeOptions.filter((o) => o.id === 'all' || o.id === currentShop || kindShops.some((s) => s.name === o.id)) : activeOptions;
   const updateParams = useUpdateParams();
 
@@ -125,7 +133,7 @@ export default function FilterPanel({ activeShopNames }: { activeShopNames?: str
 
       <Group title={mac ? 'SSD容量' : watch ? 'サイズ' : '容量'}>
         <div className="flex flex-wrap gap-2">
-          {(mac ? MAC_STORAGE_OPTIONS : watch ? WATCH_SIZE_OPTIONS : STORAGE_OPTIONS).map((val) => {
+          {(mac ? MAC_STORAGE_OPTIONS : watch ? watchSizes : STORAGE_OPTIONS).map((val) => {
             const isActive = searchParams.get('storage') === String(val);
             return (
               <button key={val} type="button" aria-pressed={isActive} onClick={() => toggleValue('storage', String(val))} className={chipClass(isActive)}>
@@ -139,7 +147,7 @@ export default function FilterPanel({ activeShopNames }: { activeShopNames?: str
       {watch && (
         <Group title="通信方式">
           <div className="flex flex-wrap gap-2">
-            {WATCH_CARRIERS.map((val) => {
+            {watchCarriers.map((val) => {
               const isActive = searchParams.get('carrier') === val;
               return (
                 <button key={val} type="button" aria-pressed={isActive} onClick={() => toggleValue('carrier', val)} className={chipClass(isActive)}>

@@ -1,6 +1,10 @@
 import type { Prisma } from "@prisma/client";
 import { batteryOf, rankOf, type RakutenItem } from "@/lib/rakutenCommon";
 import { parseWatch } from "@/lib/watchCatalog";
+import { parseGalaxyWatch } from "@/lib/galaxyWatchCatalog";
+import { parsePixelWatch } from "@/lib/pixelWatchCatalog";
+import { canonicalGalaxyModel } from "@/lib/galaxyCatalog";
+import { canonicalPixelModel } from "@/lib/pixelCatalog";
 import { RAKUTEN_GEO_SHOP } from "@/lib/rakutenGeo";
 import { RAKUTEN_JANPARA_SHOP } from "@/lib/rakutenJanpara";
 import { RAKUTEN_SOFMAP_SHOP } from "@/lib/rakutenSofmap";
@@ -88,4 +92,64 @@ export function normalizeNewsedtechWatch(item: RakutenItem): Row | null {
   const unused = m[1] !== "中古";
   const body = item.name.slice(m.index! + m[0].length);
   return build(RAKUTEN_NEWSEDTECH_SHOP, item, rankFrom(body, item, unused), batteryFrom(item.name, item));
+}
+
+// ---------------------------------------------------------------- Galaxy Watch・Pixel Watch（2026-11-13〜）
+
+/**
+ * 楽天市場店の Galaxy Watch・Pixel Watch（じゃんぱら・イオシス）。rakutenShops.ts が、商品名に Galaxy Watch・Pixel Watch を含むものを先にここへ回し、
+ * 行にならなければ（null）今までの読み取り（スマホの Galaxy・Pixel 用）へ回す（今まで行になっていた商品は変わらない）。
+ * fetch.php の検索語は増やしていない（「Galaxy」「Pixel」で取得済みの商品に入っている。今まではスマホ用の読み取りが落としていた）。
+ * ゲオ・ソフマップ・ニューズドテック・エムティーエムは、2026-11-13 の店内検索で Galaxy Watch・Pixel Watch が0件だったので読まない。
+ *
+ * 機種・ケースのサイズ（mm）・通信方式がそろったものだけ行にする（lib/galaxyWatchCatalog.ts・pixelWatchCatalog.ts）。
+ * バンド・充電器などの付属品、欠品のある個体、海外版は行にしない。持ち方は Apple Watch と同じ
+ * （modelName＝機種、storage＝mm、carrier＝通信方式、simUnlocked=false・networkStatus=null）。
+ *
+ * 商品名の例（scripts/fixtures/rakuten-galaxy-pixel-watch-titles.json に実物がある）:
+ *   じゃんぱら 【中古】SAMSUNG Galaxy Watch8 Bluetoothモデル 44mm SM-L330NZSJXJP [シルバー]【戸塚】保証期間1ヶ月【ランクB】
+ *   じゃんぱら 【中古】Google Pixel Watch4 Wi-Fiモデル 45mm Polished Silver アルミケース/Porcelain アクティブ バンド【神保町】保証期間1ヶ月【ランクA】
+ *   イオシス   SAMSUNG Galaxy Watch7 40mm LTEモデル クリーム SM-L305FZEJSJP【国内版】 [中古] 【当社3ヶ月間保証】 イオシス
+ *   イオシス   Google Google Pixel Watch5 41mm Wi-Fiモデル Matte Blackアルミケース/Obsidianアクティブバンド(第2世代) GA10900-US [中古] 【当社3ヶ月間保証】 イオシス
+ */
+export const WEAR_NAME = /Galaxy\s?Watch|Pixel\s?Watch/i;
+
+function buildWear(shopName: string, item: RakutenItem, conditionRank: string, batteryHealth: number | null): Row | null {
+  if (!item.url || !(item.price > 0)) return null;
+  // スマホの機種名も読める商品名（スマホと時計のセットなど）は、今までどおりスマホ用の読み取りに任せる
+  if (canonicalGalaxyModel(item.name) || canonicalPixelModel(item.name)) return null;
+  const galaxy = parseGalaxyWatch(item.name);
+  const w = galaxy ?? parsePixelWatch(item.name);
+  if (!w) return null;
+  return {
+    manufacturer: galaxy ? "Samsung" : "Google",
+    modelName: w.modelName,
+    storage: w.size,
+    color: w.color,
+    conditionRank,
+    batteryHealth,
+    networkStatus: null,
+    simUnlocked: false,
+    carrier: w.carrier,
+    shopName,
+    price: item.price,
+    url: item.url,
+    isSoldOut: false,
+  };
+}
+
+/** じゃんぱら: 【中古】SAMSUNG／【中古】Google で始まる本体だけ（Ringke・Spigen などのメーカー名で始まる付属品は読まない）。ランクは名前の【ランクA】 */
+export function normalizeJanparaWear(item: RakutenItem): Row | null {
+  const name = item.name;
+  if (!/^【(?:中古|未使用)】(?:SAMSUNG|Google)\s/i.test(name)) return null;
+  return buildWear(RAKUTEN_JANPARA_SHOP, item, rankOf(name.match(/【ランク([A-Z])】/)?.[1], /^【未使用/.test(name)), batteryOf(item));
+}
+
+/** イオシス: ランク・未使用品の見分け・バッテリーは Apple Watch と同じ（「80%以上」を仮定しない） */
+export function normalizeIosysWear(item: RakutenItem): Row | null {
+  const name = item.name;
+  const unused = /^【未使用】|\s未使用\s+(?:【[^】]*】\s*)?イオシス|\[(?:未使用|新品)\]/.test(name);
+  const rank = rankOf(item.rank, unused);
+  const battery = rank === "S" ? 100 : /80%未満|バッテリー劣化/.test(name) ? 79 : batteryOf(item);
+  return buildWear(RAKUTEN_IOSYS_SHOP, item, rank, battery);
 }
