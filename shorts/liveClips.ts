@@ -33,3 +33,37 @@ export function pickLiveClip(date: string): string {
   const day = Math.floor(d.getTime() / 86400000);
   return LIVE_CLIPS[((day % LIVE_CLIPS.length) + LIVE_CLIPS.length) % LIVE_CLIPS.length];
 }
+
+/**
+ * AI で作った0秒目（ai-<名前>.mp4・shorts/assets/stock/・git には入れない）。11/16〜11/22 に実写の0秒目と1日おきに出して比べる。
+ * - 出どころ: Google Flow / Omni 1.2 Flash・2026-11-13 生成。元ファイルは .claude/flow-test/（720x1280・24fps・4秒・音つき）
+ * - 置くときに 1080x1920・24fps・音なしへ変換した（lanczos で拡大・libx264 crf 16）
+ * - 特定の機種として見せない（絵の端末と話す機種は一致しない）。スマホの絵なので、iPad・Mac・Watch のテーマには使わない
+ * - 投稿時: YouTube は「改変または合成されたコンテンツ」を はい、TikTok は AI ラベルをオン
+ * - LIVE_CLIPS（日付のローテーション・2場面目以降の地）には入れない。実写の日が AI にならないように
+ * - render.ts は ai- の素材を 0秒目から使う（実写は 1秒目から）。つかみの場面（1コマ目）だけに敷き、2場面目以降は LIVE_CLIPS の実写
+ */
+export const AI_CLIPS = [
+  "ai-stock.mp4", // 売り場に並ぶ大量の端末。元 flow-4-omni.mp4。2秒以降は列が崩れるので頭の2秒だけ（0〜2秒＋その逆再生で4秒。ループしても崩れた絵は出ない）
+  "ai-battery.mp4", // 手に持った端末・電池の残量アイコン（赤）の画面。元 flow-7-battery.mp4
+  "ai-newold.mp4", // 新しい端末と古い端末を両手で並べる。元 flow-8-newold.mp4
+] as const;
+export type AiClip = (typeof AI_CLIPS)[number];
+
+export const isAiClip = (name: string | undefined): boolean => !!name && name.startsWith("ai-");
+
+/** テーマ → AI の0秒目（make-short.tsx の THEMES の名前）。スマホのテーマだけ。ここにないテーマは null */
+const AI_CLIP_OF: Record<string, AiClip> = {
+  // 在庫数ランキング（スマホ）
+  stock: "ai-stock.mp4", stockandroid: "ai-stock.mp4", stockpixel: "ai-stock.mp4", stockpro: "ai-stock.mp4", stockgalaxy: "ai-stock.mp4",
+  stockmini: "ai-stock.mp4", stockxperia: "ai-stock.mp4", stockaquos: "ai-stock.mp4", stockfold: "ai-stock.mp4",
+  // 電池
+  battery: "ai-battery.mp4", batteryswap: "ai-battery.mp4",
+  // 新旧を比べる（スマホ）
+  gen: "ai-newold.mp4", pixelgen: "ai-newold.mp4", fold: "ai-newold.mp4", newused: "ai-newold.mp4", oldpro: "ai-newold.mp4", overnew: "ai-newold.mp4",
+};
+
+/** `--live ai` のときの素材。対応するテーマでなければ null */
+export function pickAiClip(theme: string): AiClip | null {
+  return AI_CLIP_OF[theme] ?? null;
+}

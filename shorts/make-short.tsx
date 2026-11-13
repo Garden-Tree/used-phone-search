@@ -12,7 +12,7 @@
  */
 import "dotenv/config";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { pickLiveClip } from "./liveClips";
+import { AI_CLIPS, isAiClip, pickAiClip, pickLiveClip } from "./liveClips";
 import { join, resolve } from "node:path";
 import prisma from "@/lib/prisma";
 import { buildDropsScript } from "./themes/drops";
@@ -138,10 +138,19 @@ async function plan() {
   const { comment: _c, ...narration } = defaultNarration(built);
   void _c;
   const script: Script = { ...built, narration, voice: { speaker: THEME_SPEAKER[built.theme], speedScale: DEFAULT_SPEED } };
-  // --live [pexels-<id>.mp4 / pixabay-<id>.mp4]: 実写のつかみ（11/9〜）。素材名がなければ日付で順に選ぶ（shorts/liveClips.ts）
+  // --live [pexels-<id>.mp4 / pixabay-<id>.mp4]（plan のときに付ける。script.json の liveClip に入る）: 実写のつかみ（11/9〜）。素材名がなければ日付で順に選ぶ（shorts/liveClips.ts）
+  // --live ai-<名前>.mp4: AI で作った0秒目（11/16〜・AI_CLIPS）。--live ai ならテーマに合う1本（pickAiClip）。対応がないテーマは止める
   if (flag("live")) {
     const v = opt("live");
-    script.liveClip = v && /^(pexels|pixabay)-/.test(v) ? v : pickLiveClip(today);
+    if (v === "ai") {
+      const ai = pickAiClip(theme);
+      if (!ai) throw new Error(`--live ai: テーマ ${theme} に合う AI の0秒目がありません（shorts/liveClips.ts の AI_CLIP_OF。いまあるのは ${AI_CLIPS.join("・")}）。素材名を --live ai-<名前>.mp4 で指定するか、--live だけ（実写）にしてください`);
+      script.liveClip = ai;
+    } else if (v && v.startsWith("ai-")) {
+      if (!(AI_CLIPS as readonly string[]).includes(v)) throw new Error(`--live ${v}: AI の素材は ${AI_CLIPS.join("・")} のどれか（shorts/liveClips.ts の AI_CLIPS）`);
+      script.liveClip = v;
+    } else script.liveClip = v && /^(pexels|pixabay)-/.test(v) ? v : pickLiveClip(today);
+    if (isAiClip(script.liveClip)) console.log(`AI の0秒目: ${script.liveClip}（投稿時は YouTube「改変または合成されたコンテンツ」＝はい・TikTok は AI ラベルをオン）`);
   }
   mkdirSync(dir, { recursive: true });
   writeFileSync(file, JSON.stringify(script, null, 2) + "\n");
@@ -229,6 +238,12 @@ async function render() {
   const tiktok = flag("tiktok");
   const outs = await renderShort(dir, tiktok ? forTikTok(script) : script, flag("keep-frames"), v === "ALL" ? "all" : (v as "A" | "B" | "C"), !flag("no-voice"), !flag("no-bgm") && !tiktok);
   console.log(`書き出し: ${outs.join(", ")}（${Math.round((Date.now() - t0) / 1000)} 秒）`);
+  // AI の0秒目の回: 投稿時のメモ。youtube.txt は説明欄にそのまま貼るので本文には入れず、同じフォルダの upload-note.txt に書く
+  if (isAiClip(script.liveClip)) {
+    const note = `※投稿時: 改変または合成されたコンテンツ＝はい（AI の0秒目）\nYouTube Studio: 詳細設定の「改変されたコンテンツ」を はい にする\nTikTok: 「AI生成コンテンツ」のラベルをオンにする\n素材: ${script.liveClip}（Google Flow / Omni 1.2 Flash・shorts/liveClips.ts の AI_CLIPS）\nこのメモは説明欄・キャプションには貼らない\n`;
+    writeFileSync(join(dir, "upload-note.txt"), note);
+    console.log(`※投稿時: 改変または合成されたコンテンツ＝はい（AI の0秒目・${script.liveClip}）。TikTok は AI ラベルをオン → ${join(dir, "upload-note.txt")}`);
+  }
 }
 
 /** VOICEVOX の声だけ作って確かめる（エンジンに届くか・話者・読み・長さ）。結果は shorts/out/voice-test.wav */
