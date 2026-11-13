@@ -47,7 +47,8 @@ import ShopBars from "@/app/components/ShopBars";
 import StackedBar from "@/app/components/StackedBar";
 import Sparkline, { recentPoints } from "@/app/components/Sparkline";
 import InspectionTips, { inspectionTips } from "@/app/components/InspectionTips";
-import { getGoodDevice, getYearWarrantyDevice } from "@/lib/modelBest";
+import { getGoodDevice, getMissingChargerCount, getYearWarrantyDevice } from "@/lib/modelBest";
+import ChargerNote from "@/app/components/ChargerNote";
 import PickSummary from "@/app/components/PickSummary";
 import PickPair from "@/app/components/PickPair";
 import { getBuyNowStats } from "@/lib/buyNow";
@@ -286,6 +287,8 @@ export default async function ModelPage({ params }: Props) {
   // Google の表示減の検証（11/12〜・ideas/2026-11-12.md「午後: 表示減の原因の検証」）: この機種だけ 10/19 の版の構成に近づける
   // （相場の推移・週ごと・同じ予算・出典のガイド・条件ごとの最安の3行・回線のタイルを出さない）。2週で GSC の表示が戻るかを見る。対照は iPad Pro 11インチ (第4世代)
   const legacyLayout = LEGACY_LAYOUT_MODELS.has(model);
+  // 充電器が付かない在庫の件数（Galaxy Watch・Pixel Watch だけ。在庫の一覧の下に「充電器は別に必要です」を出す。2026-11-13〜）
+  const missingChargerCount = stats.count > 0 && watch && !appleWatch ? await getMissingChargerCount(model) : 0;
   const spec = specOf(model);
   const macInfo = MAC_INFO[model];
   const watchInfo = WATCH_INFO[model];
@@ -784,6 +787,7 @@ export default async function ModelPage({ params }: Props) {
                     {stats.count.toLocaleString()}件すべて見る ›
                   </Link>
                 </DeviceList>
+                {missingChargerCount > 0 && <ChargerNote model={model} count={missingChargerCount} />}
               </section>
 
               {/* スマホ: 買取（PR）は安い在庫の下（11/3〜。最初の画面は買う人向けの3行を優先。それまでは要約カードの直下） */}

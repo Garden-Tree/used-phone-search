@@ -103,8 +103,10 @@ export function normalizeNewsedtechWatch(item: RakutenItem): Row | null {
  * ゲオ・ソフマップ・ニューズドテック・エムティーエムは、2026-11-13 の店内検索で Galaxy Watch・Pixel Watch が0件だったので読まない。
  *
  * 機種・ケースのサイズ（mm）・通信方式がそろったものだけ行にする（lib/galaxyWatchCatalog.ts・pixelWatchCatalog.ts）。
- * バンド・充電器などの付属品、欠品のある個体、海外版は行にしない。持ち方は Apple Watch と同じ
+ * バンド・充電器などの付属品、海外版は行にしない。持ち方は Apple Watch と同じ
  * （modelName＝機種、storage＝mm、carrier＝通信方式、simUnlocked=false・networkStatus=null）。
+ * 充電器が付かない個体（イオシスの「【専用充電ケーブル欠品】」「【充電ホルダー欠品】」）は行にして、networkStatus に印（"充電ケーブルなし" など）を入れる
+ * （2026-11-13〜。画面は lib/watchCatalog.ts の missingCharger で札を出し、条件つきの枠からは外す）。
  *
  * 商品名の例（scripts/fixtures/rakuten-galaxy-pixel-watch-titles.json に実物がある）:
  *   じゃんぱら 【中古】SAMSUNG Galaxy Watch8 Bluetoothモデル 44mm SM-L330NZSJXJP [シルバー]【戸塚】保証期間1ヶ月【ランクB】
@@ -128,7 +130,7 @@ function buildWear(shopName: string, item: RakutenItem, conditionRank: string, b
     color: w.color,
     conditionRank,
     batteryHealth,
-    networkStatus: null,
+    networkStatus: w.missing,
     simUnlocked: false,
     carrier: w.carrier,
     shopName,

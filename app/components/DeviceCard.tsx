@@ -4,7 +4,7 @@ import { findShop } from '@/lib/shops';
 import { YAHOO_MCOM } from '@/lib/yahooMcom';
 import { BUILD_TIME } from '@/lib/buildTime';
 import { storageLabel } from '@/lib/format';
-import { isSmartwatch } from '@/lib/watchCatalog';
+import { isSmartwatch, missingCharger } from '@/lib/watchCatalog';
 
 // Define the type for the device object
 export type Device = {
@@ -97,7 +97,15 @@ export function shopLinkProps(device: Device) {
 /**
  * MacBook は容量＝SSD（1TB 以上は TB 表記）。2行目はメモリと SSD（電池はあれば）。SIM・利用制限はない。
  * Apple Watch は 1行目にケースのサイズ（46mm）と色・素材、2行目に通信方式と電池。SIM・利用制限はない
+ * 充電器が付かない時計（Galaxy Watch・Pixel Watch。lib/watchCatalog.ts の missingCharger）は、2行目に札「充電ケーブルなし」（2026-11-13〜）
  */
+/** 充電器が付かない個体の札（色だけに頼らず文字で。DeviceCard・PickPair・PickSummary で共有） */
+export function MissingChargerTag({ device }: { device: Pick<Device, 'modelName' | 'networkStatus'> }) {
+  const missing = missingCharger(device);
+  if (!missing) return null;
+  return <span className="inline-block align-baseline px-1.5 py-px rounded bg-[#FFEDD5] text-[#9A3412] text-[11px] font-bold leading-snug whitespace-nowrap">{missing}</span>;
+}
+
 export function deviceKind(d: Pick<Device, 'modelName'>) {
   return { mac: /^MacBook/.test(d.modelName), watch: isSmartwatch(d.modelName) };
 }
@@ -149,6 +157,7 @@ export default function DeviceCard({ device, showModel = true }: { device: Devic
                   <span className={`font-bold ${bat.low ? 'text-warn' : 'text-safe'}`}>電池 {bat.text}</span>
                 </>
               )}
+              {missingCharger(device) && <>{device.carrier || bat ? ' ' : ''}<MissingChargerTag device={device} /></>}
             </span>
           ) : mac ? (
             <span className="text-xs text-gray-700">

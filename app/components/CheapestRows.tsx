@@ -1,18 +1,19 @@
 import { ChevronDown } from "lucide-react";
 import DeviceCard, { simLabel, type Device } from "@/app/components/DeviceCard";
-import { isSmartwatch } from "@/lib/watchCatalog";
+import { isSmartwatch, missingCharger } from "@/lib/watchCatalog";
 
 export type DeviceGroup = { first: Device; rest: Device[] };
 
 /**
  * 安い順の行を、同じ店・同じ容量・同じランクでまとめる（11/6〜・案2B）。MacBook はメモリも同じ行だけ。
- * 電池の%が書いてある行は1台ごとに違うのでまとめない。並びは最初に出た行の順のまま
+ * 電池の%が書いてある行は1台ごとに違うのでまとめない。並びは最初に出た行の順のまま。
+ * 充電器が付かない時計は、付く時計とは別の行にまとめる（札のない行の「他N件」に紛れないように。2026-11-13〜）
  */
 export function groupSameShop(devices: Device[]): DeviceGroup[] {
   const groups: DeviceGroup[] = [];
   const byKey = new Map<string, DeviceGroup>();
   for (const d of devices) {
-    const key = d.batteryHealth === null ? `${d.shopName}|${d.storage}|${d.conditionRank}|${d.memoryGB ?? ""}` : null;
+    const key = d.batteryHealth === null ? `${d.shopName}|${d.storage}|${d.conditionRank}|${d.memoryGB ?? ""}|${missingCharger(d) ?? ""}` : null;
     const group = key ? byKey.get(key) : undefined;
     if (group) {
       group.rest.push(d);

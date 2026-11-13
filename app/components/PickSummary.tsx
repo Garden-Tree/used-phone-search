@@ -1,4 +1,4 @@
-import { shopLinkProps, type Device } from "@/app/components/DeviceCard";
+import { MissingChargerTag, shopLinkProps, type Device } from "@/app/components/DeviceCard";
 import { findShop } from "@/lib/shops";
 import { storageLabel } from "@/lib/format";
 
@@ -32,7 +32,7 @@ export default function PickSummary({ rows, embedded = false }: { rows: Row[]; e
             className={`grid grid-cols-[minmax(0,1fr)_auto_auto] gap-3 items-center py-2 hover:bg-ground ${i > 0 ? "border-t border-line-soft" : ""}`}>
             <span className="flex flex-col min-w-0">
               <span className="text-[13px] font-bold leading-tight">{r.label}</span>
-              <span className="flex flex-wrap text-[11px] text-ink-mute leading-snug">{meta.map((m, j) => <span key={j} className="whitespace-nowrap">{m}{j < meta.length - 1 ? "・" : ""}</span>)}</span>
+              <span className="flex flex-wrap text-[11px] text-ink-mute leading-snug">{meta.map((m, j) => <span key={j} className="whitespace-nowrap">{m}{j < meta.length - 1 ? "・" : ""}</span>)}<span className="ml-1 empty:hidden"><MissingChargerTag device={d} /></span></span>
             </span>
             <b className="text-price text-base tabular-nums">{d.price.toLocaleString()}</b>
             <span className="flex flex-col items-end min-w-[56px] tabular-nums">

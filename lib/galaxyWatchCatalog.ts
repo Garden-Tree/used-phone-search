@@ -1,4 +1,4 @@
-import { ACCESSORY_RE } from "@/lib/watchCatalog";
+import { ACCESSORY_RE, splitMissingCharger } from "@/lib/watchCatalog";
 
 /**
  * Samsung Galaxy Watch のカタログ（機種別ページ /galaxy-watch/[slug]・検索の機種照合・商品名の読み取りで共有する）。2026-11-13〜
@@ -108,7 +108,7 @@ const JP_REGIONS = new Set(["XJP", "SJP", "KDI", "DCM", "SBM", "UQM"]);
 // 型番: SM- ＋ 頭（L300）＋ N（Bluetooth）か F（LTE）＋ 色2文字 ＋ 1文字 ＋ 販路3文字。店によっては頭だけ（SM-L325F）
 const CODE_RE = /SM-([RL]\d{3})[NF]?(?:[A-Z]{2}([A-Z0-9])([A-Z]{3}))?(?![A-Za-z0-9])/g;
 
-// 付属品・欠品のある個体（「専用充電ケーブル欠品」「充電ホルダー欠品」）・対応品。Apple Watch と同じ語（ACCESSORY_RE）に、英語の表記を足す
+// 付属品・欠品のある個体（充電器の欠品は parseGalaxyWatch が先に札を外して印にする。ここに当たるのはそれ以外の欠品）・対応品。Apple Watch と同じ語（ACCESSORY_RE）に、英語の表記を足す
 const NOT_WATCH_RE = /欠品|対応|CASE|Charger|Dock|Watch\s*Band/i;
 
 /** 色（カタカナの語）。じゃんぱらは [チタニウム シルバー]、イオシスは型番の前後に書く。読めなければ "-" */
@@ -121,16 +121,18 @@ function colorOf(t: string): string {
   return words[0] === "チタニウム" && words.length > 1 ? words.slice(0, 2).join("") : words[0];
 }
 
-export type ParsedGalaxyWatch = { modelName: string; size: number; carrier: GalaxyWatchCarrier; color: string };
+/** missing: 充電器が付かない個体の印（"充電ケーブルなし" など。lib/watchCatalog.ts の splitMissingCharger）。付くものは null */
+export type ParsedGalaxyWatch = { modelName: string; size: number; carrier: GalaxyWatchCarrier; color: string; missing: string | null };
 
 /**
  * 商品名から Galaxy Watch の機種・ケースのサイズ（mm）・通信方式・色を決める。そろわないものは null（行にしない）:
- * カタログ外（初代・Watch3・FE・Active）・海外版・付属品・欠品のある個体・サイズが2つ書かれたもの・通信方式が名前にも型番にもないもの・
+ * カタログ外（初代・Watch3・FE・Active）・海外版・付属品・充電器以外の欠品のある個体・サイズが2つ書かれたもの・通信方式が名前にも型番にもないもの・
  * 名前と型番が食い違うもの・日本で売られていない組み合わせ（Watch6 Classic の LTE など）・年が分からない Galaxy Watch Ultra。
  * 機種は名前で決め、型番（SM-L300 など。公式のサポートページにあるもの）があれば突き合わせる。サイズ・通信方式が名前にないときは型番で補う
  */
 export function parseGalaxyWatch(title: string): ParsedGalaxyWatch | null {
-  const t = title.normalize("NFKC");
+  // 「【専用充電ケーブル欠品】」は札を外してから読む（2026-11-13〜。外さないと ACCESSORY_RE の「充電ケーブル」に当たる）
+  const { rest: t, missing } = splitMissingCharger(title.normalize("NFKC"));
   if (!/Galaxy\s?Watch/i.test(t) || ACCESSORY_RE.test(t) || NOT_WATCH_RE.test(t) || /海外/.test(t)) return null;
 
   // 型番（複数あって頭が食い違うものは決めない。日本向けでない末尾は海外版）
@@ -183,5 +185,5 @@ export function parseGalaxyWatch(title: string): ParsedGalaxyWatch | null {
   const carrier = namedCarrier ?? code?.carrier ?? (m[1] ? LTE : null);
   if (!carrier || !info.carriers.includes(carrier)) return null;
 
-  return { modelName, size, carrier, color: colorOf(t.replace(CODE_RE, " ")) };
+  return { modelName, size, carrier, color: colorOf(t.replace(CODE_RE, " ")), missing };
 }

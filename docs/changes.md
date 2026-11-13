@@ -149,3 +149,4 @@
 - 11/13 判断: 機種ページの先頭の枠（3行・PickPair）と店の並びは変えない（やらない）。枠は楽天 50%・にこスマ 28%・Yahoo 20% に送っていて、Yahoo を押す人は減っていない。にこスマは Galaxy・Pixel で条件つき最安。12/4 に28日ぶんで再確認
 - 11/13 夜 ユーザー決定: X の有料プラン（Plus 960円）は一旦そのまま（解約しない）。Galaxy Watch・Pixel Watch の掲載を進める（要求数は増えない・Watch の型を流用。反映は見た目の確認後）。motorola・arrows は fetch.log で要求数を確かめてから
 - 11/13 本番へ: Galaxy Watch 13機種・Pixel Watch 5機種を掲載（/galaxy-watch・/pixel-watch・じゃんぱらとイオシスの楽天店・初回の見込み 約277件）。トップと検索の「Watch」を「Apple Watch」に。fetch.php は変えていない
+- 11/13 ブランチ watch-missing-charger（未反映・親の判断待ち）: Galaxy Watch・Pixel Watch の「充電ケーブル欠品」「充電ホルダー欠品」の個体（イオシス 62件）を札つきで載せる案。印は networkStatus（DB の変更なし）。条件つきの枠（ランクB以上・保証1年）には選ばない。「充電器を楽天で探す」は楽天アフィリエイトの検索リンク（Amazon は使わない＝楽天API の商品のまわりは楽天だけ）
