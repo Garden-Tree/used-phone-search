@@ -91,7 +91,7 @@ export const WATCH_CARRIERS: WatchCarrier[] = ["GPS", "GPS+Cellular"];
 const CELLULAR_RE = /Cellular|セルラー|LTE/i;
 
 // アクセサリ（バンド単体・充電器・ケース・保護フィルムなど）。世代・サイズ・通信方式がそろわないものは、これに当たらなくても落ちる
-const ACCESSORY_RE = /フィルム|保護|ガラス|充電器|充電ケーブル|充電スタンド|チャージャー|ドック|交換用|互換|カバー|ベルト|ストラップ|バンド単体|バンドのみ|ケース単体|スタンド/;
+export const ACCESSORY_RE = /フィルム|保護|ガラス|充電器|充電ケーブル|充電スタンド|チャージャー|ドック|交換用|互換|カバー|ベルト|ストラップ|バンド単体|バンドのみ|ケース単体|スタンド/;
 
 const MATERIALS: [RegExp, string][] = [
   [/アルミニウム|アルミ/, "アルミニウム"],
@@ -188,3 +188,10 @@ export function parseWatch(title: string): ParsedWatch | null {
 
 /** 商品名から機種名だけ決める（決められなければ null） */
 export const canonicalWatchModel = (title: string): string | null => parseWatch(title)?.modelName ?? null;
+
+/**
+ * storage がケースのサイズ（mm）で、carrier が通信方式の機種（Apple Watch・Galaxy Watch・Pixel Watch。2026-11-13〜）。
+ * DB の機種名の頭で見分ける（Galaxy Watch は "Samsung Galaxy Watch…"、Pixel Watch は "Google Pixel Watch…"。lib/galaxyWatchCatalog.ts・pixelWatchCatalog.ts）。
+ * 画面の「46mm」の表示・電池の条件なしの結論・SIM の代わりに通信方式、の分岐に使う。Apple Watch だけのもの（watchOS・世代ごとの表）は isWatch
+ */
+export const isSmartwatch = (model: string) => /^(?:Apple Watch|Samsung Galaxy Watch|Google Pixel Watch)/.test(model);

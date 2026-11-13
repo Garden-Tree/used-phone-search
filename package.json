@@ -16,6 +16,7 @@
     "test:android": "tsx scripts/test-xperia-aquos.ts",
     "test:oppo-xiaomi": "tsx scripts/test-oppo-xiaomi.ts",
     "test:watch": "tsx scripts/test-watch.ts",
+    "test:galaxy-pixel-watch": "tsx scripts/test-galaxy-pixel-watch.ts",
     "x:images": "tsx scripts/make-x-images.tsx",
     "x:market": "tsx scripts/make-x-market-images.tsx",
     "report:monthly": "tsx scripts/make-monthly-report.ts"
