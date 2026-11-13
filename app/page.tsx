@@ -256,7 +256,7 @@ export default async function Home() {
               href={h.path}
               className={`${HUB_COLORS[h.label]} text-white rounded-xl py-3 px-1.5 flex flex-col items-center gap-0.5 hover:opacity-90`}
             >
-              <span className="text-[13px] font-bold">{h.label === "Apple Watch" ? "Watch" : h.label}</span>
+              <span className="text-[13px] font-bold text-center leading-tight">{h.label}</span>
               {h.n > 0 && <span className="text-[10px] opacity-85">{h.n.toLocaleString()}</span>}
             </Link>
           ))}
