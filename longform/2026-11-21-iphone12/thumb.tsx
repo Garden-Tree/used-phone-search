@@ -48,16 +48,18 @@ const PLANS: Record<string, Plan> = {
   B: { tag: "画面修理 4万5,800円", tagPhoto: "画面修理 4万5,800円", tagBg: RED, tagColor: WHITE },
 };
 
+/** 文字と札は画面の端から 60px 以上離す（11/14 ユーザー「隅からは離す・キワキワすぎ」） */
+const EDGE = 60;
 function thumb(p: Plan, photo: string | null) {
   // 写真あり: 13・16 と同じ配置（文字は x 〜890）。写真なし: 文字を大きくして横いっぱいに
-  const s = photo ? { name: 130, q: 220, qy: 192, tagY: 470, tag: 104 } : { name: 150, q: 270, qy: 158, tagY: 466, tag: p.tag.length > 11 ? 108 : 124 };
+  const s = photo ? { name: 130, q: 220, qy: 204, tagY: 482, tag: 104 } : { name: 140, q: 250, qy: 190, tagY: 478, tag: p.tag.length > 11 ? 104 : 120 };
   return (
     <div style={{ width: W, height: H, display: "flex", position: "relative", background: BLUE, fontFamily: FONT, overflow: "hidden" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {photo ? <img src={photo} width={W} height={H} alt="" style={{ position: "absolute", left: 0, top: 0 }} /> : null}
-      <T x={32} y={photo ? 26 : 14}><Outlined text="iPhone 12" size={s.name} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-5} /></T>
-      <T x={26} y={s.qy}><Outlined text="今買い？" size={s.q} color={YELLOW} outer={{ w: 11, c: BLACK }} spacing={-10} /></T>
-      <Tag x={32} y={s.tagY} text={photo ? p.tagPhoto : p.tag} size={s.tag} bg={p.tagBg} color={p.tagColor} />
+      <T x={EDGE} y={48}><Outlined text="iPhone 12" size={s.name} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-5} /></T>
+      <T x={EDGE - 6} y={s.qy}><Outlined text="今買い？" size={s.q} color={YELLOW} outer={{ w: 11, c: BLACK }} spacing={-10} /></T>
+      <Tag x={EDGE} y={s.tagY} pad={18} text={photo ? p.tagPhoto : p.tag} size={s.tag} bg={p.tagBg} color={p.tagColor} />
     </div>
   );
 }
