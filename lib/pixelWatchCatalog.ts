@@ -1,4 +1,4 @@
-import { ACCESSORY_RE } from "@/lib/watchCatalog";
+import { ACCESSORY_RE, splitMissingCharger } from "@/lib/watchCatalog";
 
 /**
  * Google Pixel Watch のカタログ（機種別ページ /pixel-watch/[slug]・検索の機種照合・商品名の読み取りで共有する）。2026-11-13〜
@@ -51,7 +51,7 @@ export const PIXEL_WATCH_CARRIERS: PixelWatchCarrier[] = ["Wi-Fi", "LTE"];
 /** 出典（機種ページ・一覧の注記） */
 export const PIXEL_WATCH_SOURCE = { name: "Google「Google Pixel Watch の技術仕様とデバイスの仕様」", url: "https://support.google.com/googlepixelwatch/answer/12651869?hl=ja" };
 
-// 付属品（Google Pixel Watch Band・ループバンド）・欠品のある個体（「専用充電ケーブル欠品」「充電ホルダー欠品」）。Apple Watch と同じ語（ACCESSORY_RE）に足す
+// 付属品（Google Pixel Watch Band・ループバンド）・充電器以外の欠品のある個体（充電器の欠品は parsePixelWatch が先に札を外して印にする）。Apple Watch と同じ語（ACCESSORY_RE）に足す
 const NOT_WATCH_RE = /欠品|対応|ループ\s*バンド|Watch\s*Band|Charger|Dock/i;
 
 /** ケースの色（「Matte Black アルミケース/Obsidian アクティブ バンド」の Matte Black。バンドの色は読まない）。読めなければ "-" */
@@ -62,15 +62,17 @@ function colorOf(t: string): string {
   return m[1].trim().replace(/([a-z])([A-Z])/g, "$1 $2");
 }
 
-export type ParsedPixelWatch = { modelName: string; size: number; carrier: PixelWatchCarrier; color: string };
+/** missing: 充電器が付かない個体の印（"充電ケーブルなし"・"充電ホルダーなし"。lib/watchCatalog.ts の splitMissingCharger）。付くものは null */
+export type ParsedPixelWatch = { modelName: string; size: number; carrier: PixelWatchCarrier; color: string; missing: string | null };
 
 /**
  * 商品名から Pixel Watch の世代・ケースのサイズ（mm）・通信方式・色を決める。そろわないものは null（行にしない）:
- * バンド・充電器などの付属品・欠品のある個体・海外版と書かれたもの・通信方式（Wi-Fi／LTE）が書かれていないもの・サイズが2つ書かれたもの・カタログにない世代。
+ * バンド・充電器などの付属品・充電器以外の欠品のある個体・海外版と書かれたもの・通信方式（Wi-Fi／LTE）が書かれていないもの・サイズが2つ書かれたもの・カタログにない世代。
  * 初代と 2 は 41mm だけなので、商品名にサイズがなくても 41mm（公式の技術仕様）。3 以降はサイズが書かれていないものは決めない
  */
 export function parsePixelWatch(title: string): ParsedPixelWatch | null {
-  const t = title.normalize("NFKC");
+  // 「【専用充電ケーブル欠品】」「【充電ホルダー欠品】」は札を外してから読む（2026-11-13〜）
+  const { rest: t, missing } = splitMissingCharger(title.normalize("NFKC"));
   // 数字の後ろが数字のもの（「Pixel Watch 45mm パフォーマンスループバンド」）は世代として読まない
   const m = t.match(/Pixel\s?Watch(?:\s?(\d)(?!\d))?/i);
   if (!m || ACCESSORY_RE.test(t) || NOT_WATCH_RE.test(t) || /海外/.test(t)) return null;
@@ -87,5 +89,5 @@ export function parsePixelWatch(title: string): ParsedPixelWatch | null {
   const carrier: PixelWatchCarrier | null = /LTE/i.test(t) ? "LTE" : /Wi-?Fi/i.test(t) ? "Wi-Fi" : null;
   if (!carrier) return null;
 
-  return { modelName, size, carrier, color: colorOf(t) };
+  return { modelName, size, carrier, color: colorOf(t), missing };
 }

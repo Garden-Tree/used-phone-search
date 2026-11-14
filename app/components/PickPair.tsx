@@ -1,4 +1,4 @@
-import { batteryLabel, rankStyle, shopLabel, shopLinkProps, specLine, type Device } from '@/app/components/DeviceCard';
+import { MissingChargerTag, batteryLabel, rankStyle, shopLabel, shopLinkProps, specLine, type Device } from '@/app/components/DeviceCard';
 import { findShop } from '@/lib/shops';
 import { affiliateUrl, isAffiliateUrl } from '@/lib/affiliate';
 import { BUILD_TIME } from '@/lib/buildTime';
@@ -52,6 +52,8 @@ export default function PickPair({ good, year, showModel = false, baseline = nul
                 <span className="min-w-0">
                   {spec}
                   {bat && <> ・ <span className={`font-bold ${bat.low ? 'text-warn' : 'text-safe'}`}>電池 {bat.text}</span></>}
+                  {/* 条件つきの1台には充電器が付かない時計を選ばない（lib/modelBest.ts・SearchClient）。万一選ばれても札は出す */}
+                  {' '}<MissingChargerTag device={d} />
                 </span>
                 {baseline !== null && d.price > baseline && (
                   <span className="text-[11px] text-ink-mute whitespace-nowrap tabular-nums">最安 +{(d.price - baseline).toLocaleString()}円</span>

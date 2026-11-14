@@ -51,7 +51,6 @@
 | 11/26 | Watch・Galaxy の表 | AI 入口↑・店クリック率 37〜39% |
 | 12/11 | 横動画サムネ15本 | CTR 前後4週 |
 | 随時 | A/B 中の横動画10本 | 終了後 thumb-N |
-| 11/14 朝 | Galaxy・Pixel Watch 初回 | 件数 → `watch-missing-charger` を main へ |
 | 11/15 | 16 の回: 朝に相場・昼に固定コメ・埋込 | — |
 | **11/30** | 比較の内部リンク（`CompareCards`） | GSC 比較の表示 404→800/週 |
 | **12/1** | ahamo・Neon 11月 | 4GB 未満なら Free |

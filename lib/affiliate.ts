@@ -11,6 +11,14 @@ export function rakutenAffiliateUrl(itemUrl: string): string {
   return `https://hb.afl.rakuten.co.jp/hgc/${RAKUTEN_AFFILIATE_ID}/?pc=${u}&m=${u}`;
 }
 
+/**
+ * 楽天市場の検索結果（キーワード）への楽天アフィリエイトのリンク（2026-11-13〜。充電器が付かない時計の「充電ケーブルを楽天で探す」）。
+ * 楽天API で取った商品のまわりに置くリンクなので、楽天市場（楽天アフィリエイト）だけにする
+ */
+export function rakutenSearchAffiliateUrl(keyword: string): string {
+  return rakutenAffiliateUrl(`https://search.rakuten.co.jp/search/mall/${encodeURIComponent(keyword)}/`);
+}
+
 // もしもアフィリエイト（Yahoo!ショッピング）のID。どれもリンクの URL に出る公開の値（秘密ではない）。
 // メディア「中古スマホ一括検索」(shop_site_id 692048)・プロモーション 1225（Yahoo!ショッピング 商品購入 1.54%）
 const MOSHIMO_A_ID = "5840289";

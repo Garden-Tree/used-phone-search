@@ -53,7 +53,7 @@ export const WEAR_HUB: Record<WearKind, Hub> = {
     range: "Watch4 以降・Classic・Ultra",
     carriers: "Bluetooth／LTE",
     line: (model) => `${mm(GALAXY_WATCH_INFO[model].sizes)}・${GALAXY_WATCH_INFO[model].carriers.join("／")}`,
-    note: "載せているのは Galaxy Watch4 以降の、日本で売られているモデルです（Watch3 以前・Watch FE・海外版は対象外）。バンドの有無は載せていません。充電器が欠けている個体・バンドや充電器だけの商品は含めていません。",
+    note: "載せているのは Galaxy Watch4 以降の、日本で売られているモデルです（Watch3 以前・Watch FE・海外版は対象外）。バンドの有無は載せていません。充電器が付かない個体は「充電ケーブルなし」の札を付けて載せています。バンドや充電器だけの商品は含めていません。",
     source: GALAXY_WATCH_SOURCE,
   },
   "pixel-watch": {
@@ -66,7 +66,7 @@ export const WEAR_HUB: Record<WearKind, Hub> = {
     range: "初代〜Pixel Watch 5",
     carriers: "Wi-Fi／LTE",
     line: (model) => `${mm(PIXEL_WATCH_INFO[model].sizes)}・Wi-Fi／LTE・${PIXEL_WATCH_INFO[model].android}のスマートフォンに対応`,
-    note: "載せているのは Google Pixel Watch の初代から Pixel Watch 5 までです。バンドの有無は載せていません。充電器が欠けている個体・バンドや充電器だけの商品は含めていません。",
+    note: "載せているのは Google Pixel Watch の初代から Pixel Watch 5 までです。バンドの有無は載せていません。充電器が付かない個体は「充電ケーブルなし」の札を付けて載せています。バンドや充電器だけの商品は含めていません。",
     source: PIXEL_WATCH_SOURCE,
   },
 };

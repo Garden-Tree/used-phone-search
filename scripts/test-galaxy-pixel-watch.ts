@@ -12,7 +12,7 @@ import path from "node:path";
 import { RAKUTEN_SHOPS } from "@/lib/rakutenShops";
 import { GALAXY_WATCH_CATALOG, GALAXY_WATCH_INFO, GALAXY_WATCH_MODELS, isGalaxyWatch, parseGalaxyWatch } from "@/lib/galaxyWatchCatalog";
 import { PIXEL_WATCH_CATALOG, PIXEL_WATCH_INFO, PIXEL_WATCH_MODELS, isPixelWatch, parsePixelWatch } from "@/lib/pixelWatchCatalog";
-import { WATCH_MODELS, isSmartwatch, isWatch } from "@/lib/watchCatalog";
+import { WATCH_MODELS, isSmartwatch, isWatch, missingCharger, splitMissingCharger } from "@/lib/watchCatalog";
 import { GALAXY_MODELS, canonicalGalaxyModel, isGalaxy } from "@/lib/galaxyCatalog";
 import { PIXEL_MODELS, canonicalPixelModel, isPixel } from "@/lib/pixelCatalog";
 import { matchesModel, SEARCH_DEVICES } from "@/lib/modelMatch";
@@ -24,7 +24,8 @@ import { shortModelName } from "@/lib/hubSummary";
 let failures = 0;
 const ng = (msg: string) => { failures++; console.log(`NG ${msg}`); };
 
-type Want = { model: string; size: number; carrier: string; rank: string; color: string; battery?: number | null };
+// missing: 充電器が付かない個体の印（DB の networkStatus に入る。"充電ケーブルなし"・"充電ホルダーなし"）。書かなければ null を期待
+type Want = { model: string; size: number; carrier: string; rank: string; color: string; battery?: number | null; missing?: string };
 // [店の shopCode, 商品名, fetch.php が送る rank, batt, 期待（null は行にしない）]
 type Row = [shop: string, name: string, rank: string | null, batt: number | null, want: Want | null];
 
@@ -123,9 +124,17 @@ const ROWS: Row[] = [
     { model: W("7"), size: 40, carrier: "LTE", rank: "S", color: "グリーン" }],
   // 年が名前になく、型番で決める（…DAJSJP＝2024）。型番もなければ決めない
   ["pc-good", "SAMSUNG Galaxy Watch Ultra LTE 47mm チタニウムグレー【国内版】 [中古] 【当社3ヶ月間保証】 イオシス", "B", null, null],
-  // 充電ケーブル・充電ホルダーが欠けている個体は行にしない（Apple Watch の読み取りと同じ。バンド無しは行にする）
-  ["pc-good", "SAMSUNG 【バンド無し】【専用充電ケーブル欠品】Galaxy Watch8 44mm Bluetoothモデル シルバー SM-L330NZSJXJP [中古] 【当社3ヶ月間保証】 イオシス", "B", null, null],
-  ["pc-good", "Google 【充電ホルダー欠品】Google Pixel Watch4 45mm LTEモデル Matte Blackアルミケース/Obsidianアクティブバンド GA09307-US [中古] 【当社3ヶ月間保証】 イオシス", "B", null, null],
+  // 充電ケーブル・充電ホルダーが付かない個体は行にして、印を networkStatus に入れる（2026-11-13〜。画面で札を出す。バンド無しは印なしで行にする）
+  ["pc-good", "SAMSUNG 【バンド無し】【専用充電ケーブル欠品】Galaxy Watch8 44mm Bluetoothモデル シルバー SM-L330NZSJXJP [中古] 【当社3ヶ月間保証】 イオシス", "B", null,
+    { model: W("8"), size: 44, carrier: "Bluetooth", rank: "B", color: "シルバー", battery: null, missing: "充電ケーブルなし" }],
+  ["pc-good", "Google 【充電ホルダー欠品】Google Pixel Watch4 45mm LTEモデル Matte Blackアルミケース/Obsidianアクティブバンド GA09307-US [中古] 【当社3ヶ月間保証】 イオシス", "B", null,
+    { model: P(" 4"), size: 45, carrier: "LTE", rank: "B", color: "Matte Black", missing: "充電ホルダーなし" }],
+  ["pc-good", "Google 【専用充電ケーブル欠品】【バンド無し】Google Pixel Watch2 LTEモデル Matte Blackアルミケース GA05025-GB [中古] 【当社3ヶ月間保証】 イオシス", "B", null,
+    { model: P(" 2"), size: 41, carrier: "LTE", rank: "B", color: "Matte Black", missing: "充電ケーブルなし" }],
+  // 充電器以外の欠品（実物にはない書き方）は、今までどおり行にしない。充電器だけの商品も行にしない
+  ["pc-good", "SAMSUNG 【本体欠品】Galaxy Watch8 44mm Bluetoothモデル シルバー SM-L330NZSJXJP [中古] 【当社3ヶ月間保証】 イオシス", "B", null, null],
+  ["pc-good", "SAMSUNG 【専用充電ケーブル欠品】【付属品欠品】Galaxy Watch8 44mm Bluetoothモデル シルバー SM-L330NZSJXJP [中古] 【当社3ヶ月間保証】 イオシス", "B", null, null],
+  ["pc-good", "SAMSUNG Galaxy Watch8 44mm 用 充電ケーブル SM-L330NZSJXJP [中古] 【当社3ヶ月間保証】 イオシス", "B", null, null],
   ["pc-good", "Google 【バンド無し】Google Pixel Watch4 41mm Wi-Fiモデル Polished Silverアルミケース GA10830-US [中古] 【当社3ヶ月間保証】 イオシス", "B", null,
     { model: P(" 4"), size: 41, carrier: "Wi-Fi", rank: "B", color: "Polished Silver" }],
   ["pc-good", "Google Google Pixel Watch5 41mm Wi-Fiモデル Matte Blackアルミケース/Obsidianアクティブバンド(第2世代) GA10900-US [中古] 【当社3ヶ月間保証】 イオシス", "A", null,
@@ -160,7 +169,8 @@ ROWS.forEach(([shop, name, rank, batt, want], i) => {
   if (want.battery !== undefined) check("バッテリー", got.batteryHealth ?? null, want.battery);
   check("メーカー", got.manufacturer, want.model.startsWith("Samsung") ? "Samsung" : "Google");
   check("SIM", got.simUnlocked, false);
-  check("利用制限", got.networkStatus ?? null, null);
+  check("充電器の印（networkStatus）", got.networkStatus ?? null, want.missing ?? null);
+  check("札", missingCharger({ modelName: got.modelName, networkStatus: got.networkStatus ?? null }), want.missing ?? null);
   check("メモリ", got.memoryGB ?? null, null);
 });
 
@@ -191,7 +201,7 @@ const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "rak
 function reasonOf(name: string): string {
   const t = name.normalize("NFKC");
   if (!/Galaxy\s?Watch|Pixel\s?Watch/i.test(t)) return "時計の名前がない（検索に掛かった別の商品）";
-  if (/欠品/.test(t)) return "充電ケーブル・充電ホルダーが欠けている個体";
+  if (/欠品/.test(splitMissingCharger(t).rest)) return "充電器以外の欠品";
   if (/海外|SM-[RL]\d{3}[NF][A-Z]{2}[A-Z0-9](?!XJP|SJP|KDI|DCM|SBM|UQM)[A-Z]{3}/.test(t)) return "海外版";
   if (/Band|ループバンド|CASE|Charger|Dock|対応|GALAXYWATCH/i.test(t)) return "付属品（バンド・ケース・充電器）";
   if (/Galaxy\s?Watch\s?(?:\d{2}mm|FE|3|Active)/i.test(t)) return "カタログ外（初代・Watch3・FE）";
@@ -199,6 +209,7 @@ function reasonOf(name: string): string {
   return "その他";
 }
 let total = 0;
+let missingRows = 0;
 const perShop: string[] = [];
 const reasons = new Map<string, number>();
 const perModel = new Map<string, number>();
@@ -231,7 +242,19 @@ for (const [shop, names] of Object.entries(fixture)) {
         const is2025 = /\(2025\)|SM-L705F[A-Z]{2}5/.test(t);
         if (is2025 !== /2025/.test(tail)) ng(`${shop}: Ultra の年の取り違え: ${got.modelName} ← ${name.slice(0, 60)}`);
       }
-      if (/欠品|海外|Band|ループバンド/i.test(t)) ng(`${shop}: 落とすはずの商品が行になった: ${name.slice(0, 60)}`);
+      if (/海外|Band|ループバンド/i.test(t)) ng(`${shop}: 落とすはずの商品が行になった: ${name.slice(0, 60)}`);
+      // 充電器が付かない個体: 商品名の「充電ケーブル欠品」「充電ホルダー欠品」と印が合うこと。札を外した商品名と、印のほかは同じ読み取りになること
+      const kind = t.match(/充電(ケーブル|ホルダー)欠品/)?.[1];
+      const mark = got.networkStatus ?? null;
+      if (mark !== (kind ? `充電${kind}なし` : null)) ng(`${shop}: 充電器の印が違う: ${mark} ← ${name.slice(0, 60)}`);
+      if (missingCharger({ modelName: got.modelName, networkStatus: mark }) !== mark) ng(`${shop}: 札が印と違う: ${name.slice(0, 60)}`);
+      if (/欠品/.test(t) && !kind) ng(`${shop}: 充電器以外の欠品が行になった: ${name.slice(0, 60)}`);
+      if (kind) {
+        missingRows++;
+        const plain = normalize(shop, name.replace(/【(?:専用)?充電(?:ケーブル|ホルダー)欠品】/g, ""), "B", null, total);
+        const same = plain && (["modelName", "storage", "carrier", "color", "conditionRank", "batteryHealth", "shopName", "manufacturer"] as const).every((k) => plain[k] === got[k]);
+        if (!same || (plain.networkStatus ?? null) !== null) ng(`${shop}: 札を外した商品名と読み取りが違う: ${name.slice(0, 60)}`);
+      }
       if (got.shopName !== RAKUTEN_SHOPS[shop].shopName) ng(`${shop}: 店名が違う: ${got.shopName}`);
       wear++;
     } else {
@@ -250,6 +273,12 @@ for (const [shop, names] of Object.entries(fixture)) {
 console.log(`実際の商品名 ${total} 件: 時計の行にした件数（店別） ${perShop.join("・")}`);
 for (const [r, n] of [...reasons].sort((a, b) => b[1] - a[1])) console.log(`  行にしない: ${r} ${n} 件`);
 console.log(`  機種別: ${[...perModel].sort((a, b) => b[1] - a[1]).map(([m, n]) => `${m.replace(/^(Samsung|Google) /, "")} ${n}`).join("・")}`);
+console.log(`  うち充電器が付かない個体（札つき）: ${missingRows} 件`);
+if (missingRows === 0) ng("充電器が付かない個体が1件も行になっていない");
+// 札はスマホ・Apple Watch の行には出ない（利用制限の値 〇・△ や、時計以外の機種名では null）
+for (const [modelName, networkStatus] of [["Galaxy S24", "〇"], ["Galaxy S24", "充電ケーブルなし"], ["Pixel 9", "△"], [W("8"), null], [W("8"), "〇"], [P(" 4"), "-"]] as const) {
+  if (missingCharger({ modelName, networkStatus }) !== null) ng(`札が出ないはずの行に出た: ${modelName} ${networkStatus}`);
+}
 if ((reasons.get("その他") ?? 0) > 0) ng(`理由の分からない読み落としがある（その他 ${reasons.get("その他")} 件）`);
 
 // --- カタログの整合 ---

@@ -10,6 +10,8 @@ import SortSelect from '@/app/components/SortSelect';
 import FilterPanel, { useUpdateParams } from '@/app/components/FilterPanel';
 import AdDisclosure from '@/app/components/AdDisclosure';
 import SimTile from '@/app/components/SimTile';
+import ChargerNote from '@/app/components/ChargerNote';
+import { missingCharger } from '@/lib/watchCatalog';
 import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from '@/lib/catalog';
 import { SEARCH_DEVICES, findSearchDevice, matchesModel, splitModelQuery } from '@/lib/modelMatch';
 import type { InventoryFile, InventoryIndex } from '@/lib/searchData';
@@ -75,6 +77,8 @@ const toInt = (v: string | null) => {
 const isGoodDevice = (d: Device, withBattery: boolean): boolean => {
   const rank = d.conditionRank.toUpperCase();
   if (rank !== 'S' && rank !== 'A' && rank !== 'B') return false;
+  // 充電器が付かない時計は、条件つきの1台に選ばない（lib/modelBest.ts の HAS_CHARGER と同じ。2026-11-13〜）
+  if (missingCharger(d)) return false;
   return !withBattery || rank === 'S' || (d.batteryHealth ?? 0) >= 85;
 };
 
@@ -265,6 +269,13 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
     }
     return best && best.price > minShown ? best : null;
   }, [devices, goodWithBattery, minShown]);
+  // 充電器が付かない時計（札「充電ケーブルなし」）の件数と、充電器の検索語に使う名前（結果が1機種ならその機種、混ざっていれば種類）
+  const [missingCount, chargerModel] = useMemo((): [number, string | null] => {
+    const missing = devices.filter((d) => missingCharger(d));
+    if (missing.length === 0) return [0, null];
+    const names = new Set(missing.map((d) => d.modelName));
+    return [missing.length, names.size === 1 ? missing[0].modelName : /^Samsung/.test(missing[0].modelName) ? 'Galaxy Watch' : 'Pixel Watch'];
+  }, [devices]);
   const goodLabel = goodWithBattery ? 'ランクB以上・バッテリー85%以上でいちばん安い1台' : 'ランクB以上でいちばん安い1台';
   const applyGood = () => updateParams(goodWithBattery ? { minRank: 'B', minBattery: '85', rank: null } : { minRank: 'B', rank: null });
 
@@ -392,6 +403,8 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
                   </DeviceList>
                 </section>
               )}
+              {/* 充電器が付かない時計が結果にあるとき: 「充電器は別に必要です」と楽天の検索へのリンク（2026-11-13〜） */}
+              {chargerModel && <ChargerNote model={chargerModel} count={missingCount} className="mb-2" />}
               {/* 検索条件が変わったら作り直して、表示件数を最初に戻す */}
               <ClientDeviceList key={params.toString()} devices={devices} showModel={models.length !== 1}
                 sim={phoneView ? <SimTile model={pageModel ?? (models.length === 1 ? models[0] : undefined)} className="my-2 md:max-w-2xl" /> : null} />

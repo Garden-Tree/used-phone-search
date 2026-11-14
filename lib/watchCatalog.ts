@@ -195,3 +195,23 @@ export const canonicalWatchModel = (title: string): string | null => parseWatch(
  * 画面の「46mm」の表示・電池の条件なしの結論・SIM の代わりに通信方式、の分岐に使う。Apple Watch だけのもの（watchOS・世代ごとの表）は isWatch
  */
 export const isSmartwatch = (model: string) => /^(?:Apple Watch|Samsung Galaxy Watch|Google Pixel Watch)/.test(model);
+
+/**
+ * 充電器が付かない個体（Galaxy Watch・Pixel Watch。イオシスの商品名の「【専用充電ケーブル欠品】」「【充電ホルダー欠品】」）。
+ * 行にするが、欠品と分かるように印を持つ。印は DeviceInventory.networkStatus に入れる（時計は利用制限がなく、この欄はいつも null だった。
+ * DB の列は増やさない。検索用の JSON にも元から入っている）。値は画面に出す札の文字そのまま（"充電ケーブルなし"・"充電ホルダーなし"）。
+ * 読むときは必ず missingCharger を通す（スマホの利用制限の値 〇・△ と混ざらないよう、時計の機種名のときだけ見る）
+ */
+const MISSING_CHARGER_TAG = /【?(?:専用)?充電(ケーブル|ホルダー)欠品】?/g;
+
+/** 商品名から充電器の欠品の札を外し、印を返す（札を外した残りに「欠品」が残るもの＝ほかの欠品は、今までどおり行にしない） */
+export function splitMissingCharger(title: string): { rest: string; missing: string | null } {
+  const kinds = [...title.matchAll(MISSING_CHARGER_TAG)].map((m) => m[1]);
+  if (kinds.length === 0) return { rest: title, missing: null };
+  return { rest: title.replace(MISSING_CHARGER_TAG, " "), missing: `充電${kinds[0]}なし` };
+}
+
+/** 在庫の行が充電器なしの個体なら札の文字（"充電ケーブルなし"・"充電ホルダーなし"）。そうでなければ null */
+export function missingCharger(d: { modelName: string; networkStatus: string | null }): string | null {
+  return isSmartwatch(d.modelName) && d.networkStatus !== null && /^充電(?:ケーブル|ホルダー)なし$/.test(d.networkStatus) ? d.networkStatus : null;
+}
