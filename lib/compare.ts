@@ -45,6 +45,7 @@ function buildPairs(): [string, string][] {
     ["iPad (第9世代)", "iPad (第10世代)"],
     ["iPad (第10世代)", "iPad (A16)"],
     ["iPad (A16)", "iPad Air 11インチ (M3)"],
+    ["iPad (A16)", "iPad Air (第5世代)"], // 新しい無印と中古の Air（11/14: GSC に「ipad 11-inchと中古のipad air、どっちがお得？」・相場が近い）
     ["iPad (第10世代)", "iPad Air (第5世代)"],
     ["iPad mini (第6世代)", "iPad mini (A17 Pro)"],
     ["iPad mini (第6世代)", "iPad (第10世代)"],

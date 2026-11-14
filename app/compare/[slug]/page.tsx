@@ -348,6 +348,11 @@ function PixelUpdateTable({ a, b }: { a: string; b: string }) {
   );
 }
 
+/** 「15 Plus」を「15 Plus（プラス）」に。見出しの最初の1回だけ（11/14: GSC で「iphone15 15プラス 違い」などカタカナの問いが 35〜45位。本文に「プラス」が無かった） */
+function withPlusReading(model: string): string {
+  return / Plus$/.test(model) ? `${model}（プラス）` : model;
+}
+
 export default async function ComparePage({ params }: Props) {
   const { slug } = await params;
   const pair = slugToPair(slug);
@@ -419,7 +424,7 @@ export default async function ComparePage({ params }: Props) {
         </nav>
 
         <h1 className="text-2xl md:text-3xl font-bold text-ink mb-3">
-          {a} と {b} の違い<br className="md:hidden" /> 中古はどっちがお得？
+          {withPlusReading(a)} と {/ Plus$/.test(a) ? b : withPlusReading(b)} の違い<br className="md:hidden" /> 中古はどっちがお得？
         </h1>
         <DiffBox a={a} b={b} sa={sa} sb={sb} />
         {/* 表があるときは、選び方のひと言（違いで判断…）は表と重なるので省き、値段の1文だけにする（ファーストビューを文字で埋めない） */}
