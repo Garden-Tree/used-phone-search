@@ -85,6 +85,7 @@
   - 判定だけ試す: `npx tsx scripts/check-health.ts --report <health.json> [--previous <health.json>]`（`--report` は DB を読まない）
 - **取得が止まった店の在庫を隠す**（2026-10-23〜。`scraper/common.py` の `hide_stale_inventory`）: スクレイパー4店（にこスマ・イオシス・エムモバ・ダイワンテレコム）は、最終更新が **12時間超** なら在庫を全部 `isSoldOut` にする（行は消さない）。取得が戻れば洗い替えで自動的に表示に戻る。画面の店数も自動で減る（`lib/activeShops.ts`）。全部隠した店の「更新なし」は監視では警告だけ（`/health.json` の `hidden`）
 - **イオシスの公式サイトは取得しない**（11/3〜）。11/2 21時台から Actions の取得が全ページ 403（3回続けて）。別の IP（自宅サーバーなど）から取るのは店の拒否の回避になるのでしない。`scraper.yaml` の `iosis_limit` と `run_all_scrapers.py` の既定を 0 に。戻すのはイオシスに許可を得たときだけ（200 に）
+  - 通るようになったかは `gh workflow run iosis-probe.yaml`（1ページだけ・DB を使わない）で確かめる。11/14 も 403
   - イオシスを隠しているあいだは、楽天市場店（`ALIAS_SHOPS`）の在庫がイオシスとして出る（公式の行がないので隠されない）
 - Yahoo・Amazon・楽天の取り込みの失敗の扱いは今までどおり（楽天は自動のやり直しあり）
 - 警告は実行の Summary の Annotations に出る（通知メールは来ない）。サイト構造の変更・続くアクセス拒否は、在庫の古さか「0件」の2回目で失敗になる
