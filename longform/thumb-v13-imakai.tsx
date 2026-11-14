@@ -12,6 +12,8 @@
  * - 型1 問い＋数字の札／型2 問い＋答えの印（○△）／型3 機種の数字だけ大きく／型4 言い切り（比較用）
  * - 色: 13＝緑、16＝オレンジ。型2 は暗い地、型3 は白い地
  * - クレジットは各フォルダの thumb-credit-N.txt と同じ（写真は同じ）
+ * - 文字と札は画面の端から 60px 以上離す（EDGE。11/14 ユーザー「隅からは離す・キワキワすぎ」。iPhone 12 の回の thumb.tsx と同じ余白）
+ * - 片方の機種だけ出すときは末尾に 13 か 16（例: npx tsx longform/thumb-v13-imakai.tsx 16）。公開済みの回の画像を上書きしないため
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -22,6 +24,8 @@ import { notoSansJp } from "@/lib/ogFont";
 const W = 1280, H = 720;
 const RED = "#E11D1D", YELLOW = "#FFE100", BLACK = "#0B0B0F", WHITE = "#FFFFFF";
 const FONT = "Noto Sans JP";
+/** 文字と札は画面の端から 60px 以上離す（ふち取りの文字は字面の余白のぶん 6px 左へ） */
+const EDGE = 60;
 
 function Layer({ name }: { name: string }) {
   const buf = readFileSync(join(__dirname, "assets", "v13-layers", `${name}.png`));
@@ -95,56 +99,57 @@ const M16: Model = {
 const q1 = (m: Model) => (
   <Frame bg={m.bright}>
     <Layer name={`${m.key}-wide`} />
-    <T x={32} y={26}><Outlined text={m.name} size={130} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-5} /></T>
-    <T x={26} y={192}><Outlined text="今買い？" size={220} color={YELLOW} outer={{ w: 11, c: BLACK }} spacing={-10} /></T>
-    <Tag x={32} y={470} text={m.tag1.text} size={m.tag1.size} bg={WHITE} color={BLACK} />
+    <T x={EDGE} y={48}><Outlined text={m.name} size={130} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-5} /></T>
+    <T x={EDGE - 6} y={204}><Outlined text="今買い？" size={220} color={YELLOW} outer={{ w: 11, c: BLACK }} spacing={-10} /></T>
+    <Tag x={EDGE} y={482} pad={18} text={m.tag1.text} size={m.tag1.size} bg={WHITE} color={BLACK} />
   </Frame>
 );
 // 型2（問い＋答えの印）: 機種名 120 ／ 今買い？ 190 ＋ ○△ 210（図形）／ 札 104。端末は narrow（x 1000〜）・暗い地
 const q2 = (m: Model) => (
   <Frame bg={m.dark}>
     <Layer name={`${m.key}-narrow`} />
-    <T x={32} y={36}><Outlined text={m.name} size={120} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-4} /></T>
-    <T x={26} y={212}><Outlined text="今買い？" size={190} color={YELLOW} outer={{ w: 10, c: BLACK }} spacing={-10} /></T>
-    <Mark x={768} y={202} size={210} kind={m.mark.kind} color={m.mark.color} />
-    <Tag x={32} y={486} text={m.tag2.text} size={m.tag2.size} bg={WHITE} color={BLACK} />
+    <T x={EDGE} y={50}><Outlined text={m.name} size={120} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-4} /></T>
+    <T x={EDGE - 6} y={214}><Outlined text="今買い？" size={186} color={YELLOW} outer={{ w: 10, c: BLACK }} spacing={-10} /></T>
+    <Mark x={784} y={206} size={204} kind={m.mark.kind} color={m.mark.color} />
+    <Tag x={EDGE} y={486} pad={18} text={m.tag2.text} size={m.tag2.size} bg={WHITE} color={BLACK} />
   </Frame>
 );
 // 型3（機種の数字だけ大きく）: 13／16 340 ＋ は 160 ／ 今買い？ 190 ／ 札 110。「iPhone」の語は端末の写真に任せて省く・白い地
 const q3 = (m: Model) => (
   <Frame bg={WHITE_BG}>
     <Layer name={`${m.key}-wide`} />
-    <T x={22} y={-46}>
-      <Outlined text={m.num} size={340} color={m.accent} outer={{ w: 11, c: BLACK }} spacing={-14} />
+    <T x={EDGE - 10} y={-10}>
+      <Outlined text={m.num} size={300} color={m.accent} outer={{ w: 11, c: BLACK }} spacing={-14} />
       <div style={{ display: "flex", marginLeft: 22, marginBottom: 34 }}><Plain text="は" size={160} color={BLACK} /></div>
     </T>
-    <T x={26} y={314}><Outlined text="今買い？" size={190} color={RED} inner={{ w: 7, c: WHITE }} outer={{ w: 6, c: BLACK }} spacing={-10} /></T>
-    <Tag x={32} y={536} text={m.tag3} size={110} bg={BLACK} color={YELLOW} />
+    <T x={EDGE - 6} y={304}><Outlined text="今買い？" size={184} color={RED} inner={{ w: 7, c: WHITE }} outer={{ w: 6, c: BLACK }} spacing={-10} /></T>
+    <Tag x={EDGE} y={520} pad={18} text={m.tag3} size={108} bg={BLACK} color={YELLOW} />
   </Frame>
 );
 // 型4（言い切り・比較用）13: 機種名 130 ／ 今も買い 220 ／ 札 条件は電池85% 110
 const q4_13 = (m: Model) => (
   <Frame bg={m.bright}>
     <Layer name="13-wide" />
-    <T x={32} y={26}><Outlined text={m.name} size={130} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-5} /></T>
-    <T x={26} y={192}><Outlined text="今も買い" size={220} color={YELLOW} outer={{ w: 11, c: BLACK }} spacing={-12} /></T>
-    <Tag x={32} y={470} text="条件は電池85%" size={110} bg={WHITE} color={BLACK} />
+    <T x={EDGE} y={48}><Outlined text={m.name} size={130} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-5} /></T>
+    <T x={EDGE - 6} y={204}><Outlined text="今も買い" size={220} color={YELLOW} outer={{ w: 11, c: BLACK }} spacing={-12} /></T>
+    <Tag x={EDGE} y={482} pad={18} text="条件は電池85%" size={110} bg={WHITE} color={BLACK} />
   </Frame>
 );
 // 型4（言い切り・比較用）16: 機種名 120 ／ 新品と 116 ＋ 1.9万円差 196（主役）／ 札 今買い？ 112
 const q4_16 = (m: Model) => (
   <Frame bg={m.bright}>
     <Layer name="16-wide" />
-    <T x={32} y={22}><Outlined text={m.name} size={120} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-4} /></T>
-    <T x={32} y={168}><Outlined text="新品と" size={116} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-4} /></T>
-    <T x={30} y={308}><Outlined text="1.9万円差" size={196} color={YELLOW} outer={{ w: 10, c: BLACK }} spacing={-11} /></T>
-    <Tag x={32} y={544} text="今買い？" size={112} bg={WHITE} color={RED} />
+    <T x={EDGE} y={46}><Outlined text={m.name} size={120} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-4} /></T>
+    <T x={EDGE} y={174}><Outlined text="新品と" size={116} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-4} /></T>
+    <T x={EDGE - 2} y={300}><Outlined text="1.9万円差" size={196} color={YELLOW} outer={{ w: 10, c: BLACK }} spacing={-11} /></T>
+    <Tag x={EDGE} y={516} pad={18} text="今買い？" size={112} bg={WHITE} color={RED} />
   </Frame>
 );
 
 (async () => {
   const fonts = await notoSansJp(readFileSync(__filename, "utf8"));
-  for (const m of [M13, M16]) {
+  const only = process.argv[2];
+  for (const m of [M13, M16].filter((x) => !only || x.key === only)) {
     const plans: Record<string, ReactNode> = { Q1: q1(m), Q2: q2(m), Q3: q3(m), Q4: m.key === "13" ? q4_13(m) : q4_16(m) };
     for (const [name, node] of Object.entries(plans)) {
       const res = new ImageResponse(<>{node}</>, { width: W, height: H, fonts });
