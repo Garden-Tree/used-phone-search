@@ -136,3 +136,4 @@
   - thumb-N に差し替え（4本・テストの記録は消えた）: 128GB 6xT8CuQi0J4・Duo Foz4YDEnV1U・Pro と Air 7NQettpZxHk・中古MacBook 0mnQbnBO_dE（写真は Pexels・Unsplash でクレジット不要）
   - 終了だが除外: 折りたたみ bAVv69vtRlA（写真と数字の食い違い）
   - まだ実行中（残り日数の表示なし）: 地雷・BEST5・M1 Air・Pixel・iPad 何世代まで。終わったら thumb-N に（Pixel は説明欄に CC BY 4.0 Miyako Fujimiya のクレジットを足す。iPad は写真を直してから）
+- 22:54〜58 作り直し: 上の4本（11/13 作）は文字・札が端に付いていた → 端から 60px の thumb-N2 に差し替え（`longform/thumb-n2-edge.tsx`）。Duo は写真を機種の分からない黒いスマホ → iPhone 16 Pro Max の実写（Commons・Padgriffin・CC BY 4.0）に変え、説明欄にクレジットを1行。Pro と Air は「Airで」164px・「十分」220px に縮めた（104px 以上）
