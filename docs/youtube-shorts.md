@@ -74,7 +74,7 @@ npx tsx shorts/make-short.tsx <テーマ> render --tiktok   # TikTok 用の shor
 
 - 1本ごとに、検品担当のひと言（人の判断）を入れる。完全自動の量産はしない。
 - 画面の配置
-  - 上 250px・下 440px は YouTube の表示で隠れる。ここには何も置かない。
+  - 上 280px・下 480px は YouTube・TikTok の表示で隠れる。読ませるもの（文字・数字・棒・札）は置かない。右の 190px には行の右の端の数字を置かない（11/14〜・`shorts/scenes.tsx` の `SAFE`。地の色・実写・飾りは端まで敷いてよい）。確かめは `npx tsx shorts/safe-check.tsx`。
   - 左右の余白は 80px。文字は中央そろえ。
   - 見出しの帯と白いカードを使う。地・帯の色と形・カードの縁・強調色・つかみはテーマごとに変える（10/22〜・`shorts/looks.ts`。表は shorts/README.md）。
   - 確かめるときは `npx tsx shorts/stills.tsx` の静止画の一覧（`shorts/out/looks-contact.png`）で見る。mp4 の書き出しは重いので、確かめのためには作らない。

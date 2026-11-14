@@ -1,6 +1,7 @@
 /**
  * 場面ごとの 1 コマ（1080x1920）。t は場面の開始からの秒数。
- * 配置: 上 250px は YouTube の UI で空け、見出しの帯（y250〜570・3行の大きな文字）・内容（y590〜1400）・注記（y1420〜）、下 440px 以上は空ける。
+ * 配置: 読ませるもの（文字・数字・棒・札）はすべて「安全な帯」SAFE（y280〜1440）の中に置く。見出しの帯（y280〜572）・内容（y578〜1358）・注記（y1364〜1440）。
+ * 地の色・実写・飾りの線は端まで敷いてよい。確かめ方は shorts/safe-check.tsx（帯の外に出た場面を数える・帯の線を引いた画像）
  * 左右の余白は 80px（内容の幅 920）で、文字はすべて中央そろえ。見出しの帯はどの場面にも出して、途中から見た人にも話題が分かるようにする
  */
 import type { CSSProperties, ReactElement, ReactNode } from "react";
@@ -15,8 +16,29 @@ export const H = 1920;
 export const FPS = 30;
 const MARGIN = 80;
 const CW = W - MARGIN * 2; // 920
-const HEADER = { top: 250, height: 320 };
-const BODY = { top: 590, height: 810 };
+/**
+ * 安全な帯（11/14 ユーザー「ショートの上と下は、文字とか置かないでほしい（被って見えないから）」）。
+ * YouTube ショート・TikTok の再生画面は、上に検索・タブ、下にタイトル・チャンネル名・曲名、右にいいね等のボタンが重なる。
+ * 読ませるものは y: top 〜 H−bottom に収め、右端 right px には行の右端の数字を置かない。
+ * 値は公式のものではない（YouTube は数値を出していない）。11/14 に調べた範囲では、道具・解説サイトごとに 上 120〜288・下 250〜672・右 120〜192px とばらつく
+ * （tool-nudge.pages.dev/youtube-shorts-safe-zone と socialync.io/tools/safe-zones/youtube-shorts は 上288・下672、ほかは 下 380 前後・右 120〜190）。
+ * 上と右は広い側（288・192）に寄せ、下は 672 だと内容が 960px しか残らないので 480（説明・チャンネル名・曲名の3行が載る高さ）にした。実機で被ったらここを直す
+ */
+export const SAFE = { top: 280, bottom: 480, right: 190 };
+/** 読ませるものの下の端（y1440）と右の端（x890） */
+const SAFE_BOTTOM = H - SAFE.bottom;
+const SAFE_RIGHT = W - SAFE.right;
+export const HEADER = { top: SAFE.top, height: 292 };
+export const BODY = { top: 578, height: 780 };
+/**
+ * 図だけの場面の内容は高さ 810〜820（幅 920）で組んであるので、Frame が 780/820（約95%）に縮めて BODY に入れる（左を軸に縮めるので、右の端は x955 になる）。
+ * 帯の文字と注記は縮めない。実写モードの場面（Live*）と締めの関連動画の札は縮めず、そのままの大きさで帯に入るように組む
+ */
+const BODY_DESIGN = 820;
+/** 下の注記（2行まで） */
+export const NOTE = { top: 1364, height: SAFE_BOTTOM - 1364 };
+/** 広告の回は帯の上の左に「PR」を置くので、見出しの帯をその分だけ下げる */
+const headerOf = (s: Script) => (s.theme === "rakutenmobile" ? { top: HEADER.top + 64, height: HEADER.height - 64 } : HEADER);
 /** 見出しの帯の文字（上の小さな行・大きな2行） */
 const HEAD_SUB = (s: Script) => s.theme === "rakutenmobile" ? `料金は公式・中古は大手中古ショップ${s.shopCount}店の相場`
   : s.theme === "kaitorishop" ? `毎週更新・買取価格は${s.shopCount}店の公式`
@@ -207,7 +229,7 @@ const rate = (r: number) => r.toFixed(1);
 
 const row = { display: "flex", justifyContent: "center", alignItems: "center", whiteSpace: "nowrap" } as const;
 
-/** 見出しの帯（形と色はテーマの look。上端 y250・高さ 320 はどの形でも同じ） */
+/** 見出しの帯（形と色はテーマの look。上端 y280・高さ 292 はどの形でも同じ。行間を詰めて文字の大きさは保つ） */
 function Band({ s, L }: { s: Script; L: Look }) {
   const b = L.band;
   const tab = b.shape === "tab";
@@ -215,19 +237,20 @@ function Band({ s, L }: { s: Script; L: Look }) {
   // 文字の幅: pill は丸い端の分、tab は左の余白の分だけ狭く
   const frame = b.shape === "frame";
   const tw = full ? CW : b.shape === "pill" ? CW - 160 : tab ? CW - 110 : frame ? CW - 90 : CW - 60;
-  const radius = full ? 0 : b.shape === "pill" ? HEADER.height / 2 : b.shape === "tab" ? "0 28px 28px 0" : b.shape === "leaf" ? "110px 0 110px 0" : frame ? 44 : 28;
+  const hd = headerOf(s);
+  const radius = full ? 0 : b.shape === "pill" ? hd.height / 2 : b.shape === "tab" ? "0 28px 28px 0" : b.shape === "leaf" ? "110px 0 110px 0" : frame ? 44 : 28;
   const title = HEAD_TITLE(s);
   return (
     <div style={{
-      position: "absolute", left: full ? 0 : MARGIN, top: HEADER.top, width: full ? W : CW, height: HEADER.height, display: "flex", flexDirection: "column",
+      position: "absolute", left: full ? 0 : MARGIN, top: hd.top, width: full ? W : CW, height: hd.height, display: "flex", flexDirection: "column",
       alignItems: tab ? "flex-start" : "center", justifyContent: "center", paddingLeft: tab ? 60 : 0,
       background: b.fill, borderRadius: radius, color: b.text, border: frame ? `10px solid ${b.stripe ?? b.text}` : "none",
       boxShadow: tab && b.stripe ? `-18px 0 0 0 ${b.stripe}` : "none",
     }}>
       {/* 実写モード（11/9）: 小さい上の行（毎週更新・店の数）は出さず、題名だけを大きく（小さい文字は実写の上で読めない） */}
-      {!s.liveClip && <div style={{ ...row, fontSize: FIT(HEAD_SUB(s), tw, 52), fontWeight: 700, color: b.sub }}>{HEAD_SUB(s)}</div>}
+      {!s.liveClip && <div style={{ ...row, fontSize: FIT(HEAD_SUB(s), tw, 48), fontWeight: 700, lineHeight: 1.15, color: b.sub }}>{HEAD_SUB(s)}</div>}
       {title.map((l, i) => (
-        <div key={i} style={{ ...row, fontSize: Math.min(...title.map((x) => FIT(x, tw, s.liveClip ? 124 : 104))), fontWeight: 900, lineHeight: 1.15, marginTop: i ? 0 : 6 }}>{l}</div>
+        <div key={i} style={{ ...row, fontSize: Math.min(...title.map((x) => FIT(x, tw, s.liveClip ? 124 : 104))), fontWeight: 900, lineHeight: 1.12, marginTop: i ? 0 : 4 }}>{l}</div>
       ))}
       {b.shape === "underline" && b.stripe && (
         <div style={{ position: "absolute", left: 0, bottom: 0, width: CW, height: 16, borderRadius: 8, background: b.stripe }} />
@@ -237,25 +260,29 @@ function Band({ s, L }: { s: Script; L: Look }) {
 }
 
 /**
- * 広告の回（rakutenmobile）の「PR」の札。どの場面にも、見出しの帯のすぐ上の左に小さく出す（最初から最後まで。楽天アフィの決まり・shorts-ideas.md）。
+ * 広告の回（rakutenmobile）の「PR」の札。どの場面にも、安全な帯の上の端（y280）の左に小さく出し、見出しの帯はその下に置く（headerOf）（最初から最後まで。楽天アフィの決まり・shorts-ideas.md）。
  * 色は地の上の文字（fg）の枠と文字なので、コントラストは地の文字と同じ
  */
 function PrMark({ L }: { L: Look }) {
   return (
-    <div style={{ position: "absolute", left: MARGIN, top: HEADER.top - 66, display: "flex", fontSize: 36, fontWeight: 900, lineHeight: 1.2, color: L.fg, border: `3px solid ${L.fg}`, borderRadius: 10, padding: "2px 16px", background: L.bg }}>PR</div>
+    <div style={{ position: "absolute", left: MARGIN, top: SAFE.top, display: "flex", fontSize: 36, fontWeight: 900, lineHeight: 1.2, color: L.fg, border: `3px solid ${L.fg}`, borderRadius: 10, padding: "2px 16px", background: L.bg }}>PR</div>
   );
 }
 
-function Frame({ s, children, header = true, footer = true, body = BODY }: { s: Script; children: ReactNode; header?: boolean; footer?: boolean; body?: { top: number; height: number } }) {
+function Frame({ s, children, header = true, footer = true, body = BODY, design }: { s: Script; children: ReactNode; header?: boolean; footer?: boolean; body?: { top: number; height: number }; design?: number }) {
   const L = lookOf(s);
+  // 図だけの場面の内容は 810 の高さで組んだものを BODY の高さに縮める（BODY_DESIGN）
+  // design: 内容を組んだときの高さ。body より高ければ、その比で縮めて入れる（締めの関連動画の札は中央を軸に）
+  const dh = design ?? (body === BODY && !s.liveClip ? BODY_DESIGN : body.height);
+  const box = dh > body.height ? { top: body.top - (dh - body.height) / 2, height: dh, transform: `scale(${(body.height / dh).toFixed(4)})`, transformOrigin: design ? "center center" : "left center" } : { top: body.top, height: body.height };
   return (
     <div style={{ width: W, height: H, display: "flex", position: "relative", background: L.bg, fontFamily: "Noto Sans JP", color: L.fg }}>
       {s.theme === "rakutenmobile" && <PrMark L={L} />}
       {header && <Band s={s} L={L} />}
-      <div style={{ position: "absolute", left: MARGIN, top: body.top, width: CW, height: body.height, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>{children}</div>
+      <div style={{ position: "absolute", left: MARGIN, width: CW, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", ...box }}>{children}</div>
       {footer && !s.liveClip && (
         // 「\n」で行を分ける（長い注記が 24px でも幅に入らないとき。rakutenmobile）。大きさはいちばん長い行で決める
-        <div style={{ position: "absolute", left: MARGIN, top: 1420, width: CW, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.4, fontSize: Math.min(...FOOT(s).split("\n").map((l) => FIT(l, CW, isStock(s) ? 36 : 30, 24))), fontWeight: 500, color: L.sub, whiteSpace: "nowrap" }}>
+        <div style={{ position: "absolute", left: MARGIN, top: NOTE.top, width: CW, height: NOTE.height, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.25, fontSize: Math.min(Math.floor(NOTE.height / 1.25 / FOOT(s).split("\n").length), ...FOOT(s).split("\n").map((l) => FIT(l, CW, isStock(s) ? 36 : 30, 24))), fontWeight: 500, color: L.sub, whiteSpace: "nowrap" }}>
           {FOOT(s).split("\n").map((l) => <div key={l} style={{ display: "flex" }}>{l}</div>)}
         </div>
       )}
@@ -862,9 +889,10 @@ function Trend({ s, t }: { s: DropsScript; t: number }) {
     <Frame s={s}>
       {title}
       <ChartCard s={s} points={points} p={prog(t, 0, 1.3)} labels={false} mark={mark} />
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", width: CW, marginTop: 28, opacity: shown }}>
-        <span style={{ ...row, width: 340, justifyContent: "flex-start", fontSize: FIT(startText, 340, 40), fontWeight: 900, color: lookOf(s).sub }}>{startText}</span>
-        <span style={{ ...row, width: 560, justifyContent: "flex-end", fontSize: FIT(endText, 560, 72), fontWeight: 900, color: lookOf(s).accentOnBg }}>{endText}</span>
+      {/* 右の端の「いまの値」は右のボタン（x890〜）にかからないよう、行を左に寄せて幅を 850 に */}
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", alignSelf: "flex-start", width: CW - 70, marginTop: 28, opacity: shown }}>
+        <span style={{ ...row, width: 330, justifyContent: "flex-start", fontSize: FIT(startText, 330, 40), fontWeight: 900, color: lookOf(s).sub }}>{startText}</span>
+        <span style={{ ...row, width: 510, justifyContent: "flex-end", fontSize: FIT(endText, 510, 72), fontWeight: 900, color: lookOf(s).accentOnBg }}>{endText}</span>
       </div>
     </Frame>
   );
@@ -921,9 +949,11 @@ function Comment({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   );
 }
 
-/** 締めの関連動画の札: 横動画のサムネの幅（画面の約72%・16:9）と、札・サムネ・矢印を置く範囲（上 250px・下 440px の YouTube の表示を避ける） */
+/** 締めの関連動画の札: 横動画のサムネの幅（画面の約72%・16:9）と、札・サムネ・矢印を置く範囲（安全な帯 SAFE の中） */
 const REL_THUMB = { w: 780, h: Math.round((780 * 9) / 16) };
-const REL_BODY = { top: 270, height: 1200 };
+const REL_BODY = (s: Script) => { const top = s.theme === "rakutenmobile" ? SAFE.top + 64 : SAFE.top; return { top, height: SAFE_BOTTOM - top }; };
+/** 札・サムネ・矢印を組んだときの高さ（Frame がこの比で縮めて REL_BODY に入れる） */
+const REL_DESIGN = 1200;
 
 function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   const out = s.scenes.outro;
@@ -946,7 +976,7 @@ function Outro({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
     // 関連動画（横動画）のサムネを、声の「くわしい解説は…」に合わせて出す（relatedLong.ts）。上の文字は小さくして詰め、重ならないようにする
     const p = prog(t, o?.rel ?? 2.2 * k, 0.4);
     return (
-      <Frame s={s} header={false} footer={false} body={REL_BODY}>
+      <Frame s={s} header={false} footer={false} body={REL_BODY(s)} design={REL_DESIGN}>
         <div style={col}>
           <div style={{ ...col, opacity: prog(t, 0, 0.25) }}>{out.lines.map((l, i) => bold(l, 72, { marginBottom: 10 }, i))}</div>
           <div style={{ ...col, opacity: prog(t, 0.6 * k, 0.4) }}>
@@ -1525,8 +1555,8 @@ function KaitoriSwapReveal({ s, t }: { s: KaitoriSwapScript; t: number }) {
             <div style={{ display: "flex", width: Math.max(8, w(r.sell)), height: 44, background: C.budget, borderRadius: "14px 0 0 14px" }} />
             <div style={{ display: "flex", width: Math.max(4, w(r.add)), height: 44, background: amber, borderRadius: "0 14px 14px 0" }} />
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", width: BAR, marginTop: 8 }}>
-            <div style={{ ...row, fontSize: FIT(sellText, BAR / 2 + 60, 40, 26), fontWeight: 900, color: C.budget }}>{sellText}</div>
+          <div style={{ display: "flex", justifyContent: "space-between", width: BAR - 40, marginTop: 8 }}>
+            <div style={{ ...row, fontSize: FIT(sellText, BAR / 2 + 40, 40, 26), fontWeight: 900, color: C.budget }}>{sellText}</div>
             <div style={{ ...row, fontSize: FIT(addText, BAR / 2 - 80, 40, 26), fontWeight: 900, color: amber }}>{addText}</div>
           </div>
         </div>
@@ -2064,7 +2094,8 @@ function StockReveal({ s, t }: { s: StockScript; t: number }) {
   const share = `${stockScope(s)}全体の${rate(r.share)}%`;
   const price = `相場 ${n(r.median)}円（${r.storage}）`;
   const LABEL = 124;
-  const BAR = CW - 60 - LABEL - 20;
+  // 棒の右の端の件数が右のボタン（x890〜）にかからないよう、棒の幅を 40 だけ短く
+  const BAR = CW - 60 - LABEL - 20 - 40;
   return (
     <Frame s={s}>
       <div style={{ ...row, fontSize: 52, fontWeight: 900, marginBottom: 4, opacity: prog(t, 0, 0.25) }}>1位は…</div>
@@ -2125,6 +2156,7 @@ const liveText = (color: string, size: number) => ({ display: "flex", fontSize: 
 
 /**
  * 実写のつかみ（11/9・ユーザー決定）: 地は透明（render.ts が Pexels の実写に重ねる）。上に2行、下に図1つが 0〜0.9秒で動く。
+ * 11/14〜 2行は安全な帯の上の端（y280）から、図は下の端（y1440）で終わるように置く（それまでは y150〜 と 〜y1760 で、アプリの表示と被っていた）
  * 帯・問い・注記は出さない（他チャンネルの伸びた回は 1コマ目が実写＋1〜2行だけ。ideas/2026-11-08-analysis.md）
  */
 function LiveHook({ s, t }: { s: Script; t: number }) {
@@ -2133,7 +2165,7 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
   const c = COUNT(t);
   const values = liveValues(s);
   const top = (
-    <div style={{ position: "absolute", left: 0, top: 150, width: W, display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <div style={{ position: "absolute", left: 0, top: SAFE.top, width: W, display: "flex", flexDirection: "column", alignItems: "center" }}>
       <div style={liveText(C.white, Math.min(120, FIT(l1, CW, 120)))}>{l1}</div>
       <div style={{ ...liveText(LIVE_RED, Math.min(180, FIT(l2, CW, 180))), marginTop: 6 }}>{l2}</div>
     </div>
@@ -2143,15 +2175,15 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
     const items = s.scenes.ranking.items;
     figure = (
       <>
-        <div style={{ position: "absolute", left: 70, top: H - 520, display: "flex", alignItems: "center", width: 940, height: 150, background: "rgba(255,255,255,0.92)", borderRadius: 36 }}>
+        <div style={{ position: "absolute", left: 70, top: SAFE_BOTTOM - 374, display: "flex", alignItems: "center", width: 940, height: 150, background: "rgba(255,255,255,0.92)", borderRadius: 36 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(60, Math.round(600 * g)), height: 150, background: SITE.price, borderRadius: 36, color: C.white, fontSize: 100, fontWeight: 900, overflow: "hidden" }}>{g > 0.6 ? "？？？" : ""}</div>
         </div>
-        <div style={{ position: "absolute", left: 0, top: H - 330, width: W, ...liveText(LIVE_RED, 140), justifyContent: "center" }}>{`${n(Math.round(items[0].count * c))}件`}</div>
+        <div style={{ position: "absolute", left: 0, top: SAFE_BOTTOM - 196, width: W, ...liveText(LIVE_RED, 140), justifyContent: "center" }}>{`${n(Math.round(items[0].count * c))}件`}</div>
       </>
     );
   } else if (s.theme === "battery") {
     figure = (
-      <div style={{ position: "absolute", left: (W - 300) / 2, top: H - 580, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{ position: "absolute", left: (W - 300) / 2, top: SAFE_BOTTOM - 456, display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ display: "flex", width: 100, height: 28, background: C.white, borderRadius: "12px 12px 0 0" }} />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", width: 300, height: 400, padding: 16, borderRadius: 36, boxShadow: `0 0 0 12px ${C.white}` }}>
           <div style={{ display: "flex", width: "100%", height: Math.max(10, Math.round(350 * 0.95 * g)), background: SITE.safe, borderRadius: 20 }} />
@@ -2170,7 +2202,7 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
     );
     const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : ["", ""];
     figure = (
-      <div style={{ position: "absolute", left: 0, top: H - 640, width: W, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 80 }}>
+      <div style={{ position: "absolute", left: 0, top: SAFE_BOTTOM - 444, width: W, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 80 }}>
         {bar(values[0], "rgba(255,255,255,0.8)", la, C.white)}
         {bar(values[1], LIVE_RED, lb, LIVE_RED)}
       </div>
@@ -2178,7 +2210,7 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
   } else {
     const d = liveDiff(s);
     figure = (
-      <div style={{ position: "absolute", left: 0, top: H - 620, width: W, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{ position: "absolute", left: 0, top: SAFE_BOTTOM - 510, width: W, display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ ...liveText(LIVE_RED, 290), letterSpacing: -6 }}>{n(Math.round(d * c))}</div>
         <div style={liveText(LIVE_RED, 130)}>円</div>
       </div>
@@ -2215,7 +2247,9 @@ const LIVE_BADGE = [C.gold, C.silver, C.bronze];
 
 function LiveRanking({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   const rows = liveRows(s);
-  const RH = 300;
+  // 3行で内容の高さ（780）に入る高さ。文字は右のボタン（x890〜）にかからない幅で決める
+  const RH = 256;
+  const TW = SAFE_RIGHT - MARGIN - 180;
   return (
     <Frame s={s} footer={false}>
       <div style={{ display: "flex", flexDirection: "column", width: CW }}>
@@ -2227,8 +2261,8 @@ function LiveRanking({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
             <div key={i} style={{ display: "flex", alignItems: "center", height: RH, opacity: p, transform: `translateX(${Math.round((1 - p) * 60)}px)` }}>
               <div style={{ ...row, width: 150, height: 92, fontSize: 56, fontWeight: 900, color: C.white, background: LIVE_BADGE[i], borderRadius: 24, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>{`${i + 1}位`}</div>
               <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", marginLeft: 30, width: CW - 180 }}>
-                <div style={{ ...liveText(C.white, FIT(label, CW - 180, i === 0 ? 110 : 84)), lineHeight: 1.1 }}>{label}</div>
-                {i !== 0 && r.value && <div style={{ ...liveText(LIVE_RED, FIT(r.value, CW - 180, 96)), marginTop: 6 }}>{r.value}</div>}
+                <div style={{ ...liveText(C.white, FIT(label, TW / 0.92, i === 0 ? 110 : 84)), lineHeight: 1.1 }}>{label}</div>
+                {i !== 0 && r.value && <div style={{ ...liveText(LIVE_RED, FIT(r.value, TW / 0.92, 96)), marginTop: 6 }}>{r.value}</div>}
               </div>
             </div>
           );
@@ -2250,7 +2284,8 @@ function LiveReveal({ s, t }: { s: Script; t: number }) {
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.3, 0.25), transform: `scale(${pop})` }}>
         <div style={{ ...row, width: 220, height: 96, fontSize: 60, fontWeight: 900, color: C.white, background: C.gold, borderRadius: 24, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>1位</div>
         <div style={{ ...liveText(C.white, FIT(r.label, CW, 120)), marginTop: 40, lineHeight: 1.1 }}>{r.label}</div>
-        {r.value && <div style={{ ...liveText(LIVE_RED, FIT(r.value, CW, 190)), marginTop: 20 }}>{value}</div>}
+        {/* 中央そろえで右のボタン（x890〜）にかからない幅（700px）まで */}
+        {r.value && <div style={{ ...liveText(LIVE_RED, FIT(r.value, (SAFE_RIGHT - W / 2) * 2 / 0.92, 190)), marginTop: 20 }}>{value}</div>}
       </div>
     </Frame>
   );

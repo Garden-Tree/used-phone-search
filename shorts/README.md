@@ -54,6 +54,7 @@ npx tsx shorts/make-short.tsx drops render --no-voice  # VOICEVOX の声を入�
 npx tsx shorts/make-short.tsx --voice-test "今週いちばん値下がりした中古iPhoneは？"   # 声だけ試す（shorts/out/voice-test.wav）。--speaker 3 / --speaker ずんだもん/ノーマル・--speed 1.25
 npx tsx shorts/stills.tsx [drops budget …]            # 動画を作らず、各テーマの最新の台本から つかみ・ランキング・1位の発表 の静止画（shorts/out/looks/）と一覧 shorts/out/looks-contact.png を作る
 npx tsx shorts/stills.tsx --outro [plusmax …]          # 締めの最後のコマだけ（関連動画の札・横動画のサムネ）。shorts/out/looks/<テーマ>-outro.png と looks-contact-outro.png
+npx tsx shorts/safe-check.tsx [stockxperia …|--dir <フォルダ>]  # 安全な帯（y280〜1440・scenes.tsx の SAFE）の外に文字・数字・棒が出ていないかを全場面で確かめる（✗ を数える・帯の線を引いた画像は shorts/out/safe/）
 npx tsx shorts/make-short.tsx --voice-dump script     # 最後に書いた台本の全ナレーションの読み（エンジンの読み → 直した読み）を出す。"テキスト" でも可。--speaker で話者を変えて試せる
 ```
 
@@ -292,7 +293,7 @@ YouTube オーディオライブラリで曲を選んでダウンロードし、
 
 関連動画につながるテーマ（`types.ts` の RELATED_LONG_THEMES）は、締めの「▼ くわしい解説は 下の関連動画で」の札が出るまで締めの動きを延ばす（`scenes.tsx` の TIMELINE。10/23 まで札が動画に出ていなかった）。
 
-締めの横動画のサムネ（10/26〜）: 関連動画につながるテーマは、締めで声の「くわしい解説は、下の関連動画からどうぞ」に合わせて、札「くわしい解説はこちら」・横動画のサムネ（幅780px・16:9）・「▼ 下の関連動画から ▼」を出す。上の文字は小さくして詰める（y270〜1470）。
+締めの横動画のサムネ（10/26〜）: 関連動画につながるテーマは、締めで声の「くわしい解説は、下の関連動画からどうぞ」に合わせて、札「くわしい解説はこちら」・横動画のサムネ（幅780px・16:9）・「▼ 下の関連動画から ▼」を出す。上の文字は小さくして詰める（安全な帯 y280〜1440 の中。11/14〜）。
 
 - テーマ → 横動画（ID・題・`longform/<フォルダ>`）は `shorts/relatedLong.ts` の RELATED_LONG だけに書く。YouTube Studio の「関連動画」もこの表と同じにする。
   - provs・promax・probudget・plusvs・minie・plusmax → Proと無印（Bmp5EgeiqW0）／budget・drops・newused・overnew → いま買うならどれ（R1Aki2b5mds）／battery・batteryswap・storage・rank・unused → 買ってはいけない（amx5UxG6wpI）／gen・ios27line・oldpro → 何世代まで（T7ltgSB-4XM）／bigbudget → 大きい画面（2026-10-28-big-screen・ID は公開後）／rakutenmobile → 楽天モバイル（2026-10-31-rakuten-mobile・ID は公開後。それまで RELATED_LONG_THEMES に入れない）／ipadbudget → iPad どれ（SHyQRQ8wAic。声の誘導がないので札は出ない）
