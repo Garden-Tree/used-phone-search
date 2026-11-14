@@ -1,0 +1,18 @@
+# イオシス公式が Actions からの取得を通すかの切り分け（手動だけ・DB を使わない・一覧の1ページ目を1回だけ）。
+# スクレイパーと同じ User-Agent・同じ URL。403 なら何もしない（回避はしない。docs/operations.md）
+name: Iosys probe
+on:
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: probe
+        run: |
+          ua="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+          code=$(curl -s -o page.html -w '%{http_code}' -m 20 -A "$ua" "https://iosys.co.jp/items/smartphone/iphone?page=1")
+          echo "status: $code"
+          echo "bytes: $(wc -c < page.html)"
+          echo "li.item: $(grep -o '<li[^>]*class="[^"]*item[^"]*"' page.html | wc -l)"
+          head -c 300 page.html | tr '\n' ' '
