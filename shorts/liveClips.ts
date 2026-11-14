@@ -44,7 +44,7 @@ export function pickLiveClip(date: string): string {
  * - render.ts は ai- の素材を 0秒目から使う（実写は 1秒目から）。つかみの場面（1コマ目）だけに敷き、2場面目以降は LIVE_CLIPS の実写
  */
 export const AI_CLIPS = [
-  "ai-stock.mp4", // 売り場に並ぶ大量の端末。元 flow-4-omni.mp4。2秒以降は列が崩れるので頭の2秒だけ（0〜2秒＋その逆再生で4秒。ループしても崩れた絵は出ない）
+  "ai-stock.mp4", // 売り場に並ぶ大量の端末。元 flow-4-omni.mp4。約0.9秒から真ん中の列が消えていく（11/14 の初回の書き出しで 1.2〜2.5秒目に崩れた絵が出た）ので、元の 2〜18 コマ目（0.08〜0.75秒）だけを 2.5倍にゆっくり（minterpolate）＋その逆再生で約3.2秒。ループしても崩れた絵は出ない。前の版（0〜2秒）は .claude/flow-test/ai-stock-v1-0to2s.mp4
   "ai-battery.mp4", // 手に持った端末・電池の残量アイコン（赤）の画面。元 flow-7-battery.mp4
   "ai-newold.mp4", // 新しい端末と古い端末を両手で並べる。元 flow-8-newold.mp4
 ] as const;
@@ -56,7 +56,8 @@ export const isAiClip = (name: string | undefined): boolean => !!name && name.st
 const AI_CLIP_OF: Record<string, AiClip> = {
   // 在庫数ランキング（スマホ）
   stock: "ai-stock.mp4", stockandroid: "ai-stock.mp4", stockpixel: "ai-stock.mp4", stockpro: "ai-stock.mp4", stockgalaxy: "ai-stock.mp4",
-  stockmini: "ai-stock.mp4", stockxperia: "ai-stock.mp4", stockaquos: "ai-stock.mp4", stockfold: "ai-stock.mp4",
+  // stockmini は iPad mini の回なので入れない（スマホの絵と食い違う）
+  stockxperia: "ai-stock.mp4", stockaquos: "ai-stock.mp4", stockfold: "ai-stock.mp4",
   // 電池
   battery: "ai-battery.mp4", batteryswap: "ai-battery.mp4",
   // 新旧を比べる（スマホ）

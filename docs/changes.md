@@ -46,6 +46,7 @@
 
 | 日 | 場所 | 変更 | 判定 |
 | --- | --- | --- | --- |
+| 11/14 | ショート | AI の0秒目 `ai-stock.mp4` を作り直し（初回の書き出しで 1.2〜2.5秒目に列が崩れた絵 → 元の 0.08〜0.75秒だけを 2.5倍にゆっくり＋逆再生）。`stockmini`（iPad mini）は AI_CLIP_OF から外す。11/16 朝の回は stockxperia（`shorts/out/2026-11-16-stockxperia`） | 11/23 |
 | 11/11 | ショート | 台帳 `shorts/published.md`（`python shorts/ledger.py` で作り直す・ネタ被りの確認）・折りたたみの在庫数 `stockfold` を追加。gen は1位が 10/23・10/25 と同じ（16 Pro→15 Pro）なので見送り、ipadgen（1位が M5→M4 に変わった）を作る | |
 | 11/9 | ショートの締め（`Outro`）のリファクタ | 実写モードの縁取り・注記・問いの大きさを関数にまとめた（見た目は変えない。過去の回の締め 372コマが前と同じ画素）。satori は Fragment の中の縁取り（textShadow）で文字が消えるので Fragment は使わない | なし |
 | 11/9 | ショート 11/10 の2本 | 実写モードの初回: 7:00 Pixel 在庫数（VMdEbtMTaC4）・12:30 電池（KnxuaktKNHA・関連動画 GcXIO15l6fU）。声あり。iPad・Watch の在庫数は前回と同じ並びで見送り | 11/12 視聴を継続 |
