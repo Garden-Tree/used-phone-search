@@ -36,6 +36,11 @@ const DEVICES = [
   { key: "pixelWatch", label: "Pixel Watch", prefix: "Google Pixel Watch" },
 ] as const;
 
+// 扱う店だが、行になる在庫がほぼ無い「店:種類」。0件でも問題にしない（店ごと止まれば最終更新の古さで分かる）。
+// イオシスの OPPO: 楽天市場店の検索では約45件当たるが、商品名に容量がないものは行にしない（lib/rakutenAndroid.ts・推測しない）ので、
+// 行になるのは 0〜1件（11/13 朝 1件 → 夜から 0件で監視が毎回失敗になった）。在庫が入れば画面にはそのまま出る（lib/shops.ts は変えない）
+const SPARSE_KINDS = new Set(["イオシス:oppo"]);
+
 export type HealthReport = {
   ok: boolean;
   checkedAt: string;
@@ -102,7 +107,7 @@ export async function checkHealth(): Promise<HealthReport> {
     // 扱うはずの種類が0件の店（その種類の一覧だけ取れなかった・読み取りが壊れたなど）
     const missing = SHOPS.flatMap((shop) =>
       DEVICES.filter((d) => {
-        if (!shop[d.key]) return false;
+        if (!shop[d.key] || SPARSE_KINDS.has(`${shop.name}:${d.key}`)) return false;
         const own = deviceCounts.get(`${shop.name}:${d.key}`) ?? 0;
         const viaAlias = d.key === "mac" || d.key === "xperia" || d.key === "aquos" || d.key === "watch" || d.key === "oppo" || d.key === "xiaomi" || d.key === "galaxyWatch" || d.key === "pixelWatch" ? ALIAS_SHOPS.filter((s) => s.alias === shop.name).reduce((n, s) => n + (deviceCounts.get(`${s.name}:${d.key}`) ?? 0), 0) : 0;
         return own + viaAlias === 0;
