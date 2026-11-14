@@ -6,6 +6,9 @@
  * - 数字は script.md のものだけ: 相場（64GB）3万6,080円・Apple の画面修理 4万5,800円
  * - 端末の写真: longform/assets/v13-layers/12-wide.png があれば右に置く（x 917〜。13・16 と同じ配置）。
  *   無ければ写真なしの配置（文字を大きく）。Commons の iPhone 12 は CC BY-SA だけだった（11/14。SOURCES.md）
+ * - 11/14 決定は B 案（赤札）。写真は Unsplash の Thai Nguyen（IegLpS8Eay8・パープル・Unsplash License。assets/stock-photo/SOURCES.md）。
+ *   層は python longform/2026-11-21-iphone12/thumb-prep.py（cut layer → この tsx → contact series）。端末は x 918〜1265
+ *   写真なしの B は thumb-B-nophoto.png。写真ありの札は「修理 4万5,800円」（「画面修理」は 104px だと x 890 を越える）
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -38,7 +41,7 @@ const Tag = ({ x, y, text, size, bg, color, pad = 24 }: { x: number; y: number; 
   </div>
 );
 
-/** tagPhoto は写真を右に置くとき（文字は x 〜890 まで）の短い札。写真ありの配置はまだ見ていない（素材なし・11/14） */
+/** tagPhoto は写真を右に置くとき（文字は x 〜890 まで）の短い札。写真ありの配置は 11/14 に PNG で確認（札の右端 x 840・端末 x 918〜） */
 type Plan = { tag: string; tagPhoto: string; tagBg: string; tagColor: string };
 const PLANS: Record<string, Plan> = {
   A: { tag: "相場 3万6,080円", tagPhoto: "相場 3万6,080円", tagBg: WHITE, tagColor: BLACK },

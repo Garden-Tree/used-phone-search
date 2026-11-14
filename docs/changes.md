@@ -156,3 +156,4 @@
 - 11/14 本番へ: 充電ケーブルなしの Watch（札「充電ケーブルなし」）を main に入れた。初回取り込み 277件・18機種を確認後
 - 11/14 監視: 「イオシス: OPPO が0件」を問題にしない（`lib/health.ts` の `SPARSE_KINDS`）。イオシス楽天の OPPO は商品名に容量がなく行にならないものが大半で、行は 0〜1件（11/13 朝 1件→夜から 0件）。Actions が5回続けて失敗になり、本当の障害が埋もれるため。`lib/shops.ts`・fetch.php は変えていない（在庫が入れば画面に出る）
 - 11/14 ショートの0秒目の AI クリップ（電池）を作り直して差し替え: 前の版は黒い画面に顔の映り込みと稲妻マーク → 机の上・真上から・人物なし・稲妻なしの版（Flow・Omni 1.2 Flash・4秒・12クレジット）。`shorts/assets/stock/ai-battery.mp4`（前の版は `ai-battery-old.mp4`。どちらも git 管理外）。元は `.claude/flow-test/flow-10-battery.mp4`
+- 11/14 ユーザー決定: 横動画「中古iPhone 12は今買い？」のサムネは B 案（赤札）＋実機の写真。写真は Unsplash の Thai Nguyen「iPhone 12」パープル（https://unsplash.com/photos/IegLpS8Eay8 ・Unsplash License・タグ「iPhone 12」。説明文は無し）を切り抜き（`longform/2026-11-21-iphone12/thumb-prep.py`）。写真ありの札は「修理 4万5,800円」（「画面修理」は 104px で端末に届くため）。写真なしの版は `thumb-B-nophoto.png`。Commons の CC BY-SA の候補は使っていない
