@@ -87,7 +87,14 @@ const ROWS: Row[] = [
   ["akiba-u-shop", "【中古】XIAOMI Leica Leitzphone powered by Xiaomi 1TB ブラック MZB0MREJP SIMフリー 【262-ud】", "B", null, null],
   ["akiba-u-shop", "【中古】XIAOMI REDMI Pad 2 9.7 64GB グラファイトグレー Wi-Fi 【295-ud】", "B", null, null],
   // --- イオシス楽天市場店（pc-good）。容量が名前にないものは行にしない（推測しない） ---
+  // キャリア版の型番（OPG05）は容量の表にない（au の製品ページで確かめられない）→ null
   ["pc-good", "OPPO Reno13A OPG05 アイスブルー 【UQmobile版SIMフリー】 OPPO 当社3ヶ月間保証 中古 イオシス", "B", null, null],
+  // SIMフリー版の型番は OPPO 公式のスペックで容量が1種類だけ → 表の容量（11/14〜）
+  ["pc-good", "OPPO Reno11A CPH2603 ダークグリーン 【国内版SIMフリー】 OPPO 当社3ヶ月間保証 中古 イオシス", "A", null,
+    { model: "OPPO Reno11 A", storage: 128, carrier: "国内版", rank: "A", color: "ダークグリーン", battery: 80 }],
+  ["pc-good", "OPPO Reno14 5G CPH2737 オパールホワイト 【国内版SIMフリー】 OPPO 当社3ヶ月間保証 中古 イオシス", "A", null,
+    { model: "OPPO Reno14 5G", storage: 256, carrier: "国内版", rank: "A", color: "オパールホワイト", battery: 80 }],
+  ["pc-good", "OPPO Reno9A A301OP ムーンホワイト 【Y!mobile版SIMフリー】 OPPO 当社3ヶ月間保証 中古 イオシス", "A", null, null],
   ["pc-good", "Xiaomi14T XIG07 256GB チタンブルー 【au版SIMフリー】 Xiaomi （小米） 当社3ヶ月間保証 中古 イオシス", "B", null,
     { model: "Xiaomi 14T", storage: 256, carrier: "au", rank: "B", color: "チタンブルー", battery: 80, sim: true }],
   ["pc-good", "OPPO Reno15 A CPH2801 128GB トワイライトネイビー 【国内版SIMフリー】 OPPO 当社3ヶ月間保証 中古 イオシス", "A", null,

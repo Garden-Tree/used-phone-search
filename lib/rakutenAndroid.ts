@@ -3,7 +3,7 @@ import { batteryOf, carrierOf, networkStatusOf, rankOf, toStorage, type RakutenI
 import { codeKey, codeTokens } from "@/lib/androidCommon";
 import { AQUOS_NAME_RE, canonicalAquosModel } from "@/lib/aquosCatalog";
 import { XPERIA_NAME_RE, canonicalXperiaModel } from "@/lib/xperiaCatalog";
-import { canonicalOppoModel } from "@/lib/oppoCatalog";
+import { OPPO_CODE_RE, canonicalOppoModel } from "@/lib/oppoCatalog";
 import { canonicalXiaomiModel } from "@/lib/xiaomiCatalog";
 import { androidInfoOf } from "@/lib/androidInfo";
 import { RAKUTEN_IOSYS_SHOP, core, parseCarrier, parseNetworkStatus } from "@/lib/rakutenIosys";
@@ -229,10 +229,30 @@ function storageFromDocomoCode(raw: string): number {
   return 0;
 }
 
+// OPPO の SIMフリー版の型番 → 容量（GB）。どれも国内では容量が1種類だけの機種（2026-11-14 に OPPO 公式の各機種スペック
+// https://www.oppo.com/jp/smartphones/<series>/<model>/specs/ で確かめた。SIMフリー版の値）。イオシス楽天は OPPO の商品名に容量を書かない（11/14 で約45件が落ちていた）。
+// キャリア版（OPGxx・A×××OP）は au・Y!mobile の製品ページが無くなっていて確かめられないので入れない（推測しない）
+const OPPO_CODE_STORAGE: Record<string, number> = {
+  CPH2651: 512, // Find X8
+  CPH2737: 256, // Reno14 5G
+  CPH2541: 256, // Reno10 Pro 5G
+  CPH2699: 128, CPH2603: 128, CPH2523: 128, CPH2353: 128, // Reno13 A・11 A・9 A・7 A
+  CPH2735: 128, CPH2725: 128, CPH2639: 128, CPH2557: 128, CPH2385: 128, // A5 5G・A5x・A3 5G・A79 5G・A77
+  CPH2309: 64, CPH2303: 64, // A55s 5G・A54 5G
+};
+
+function storageFromOppoCode(raw: string): number {
+  for (const m of raw.normalize("NFKC").matchAll(OPPO_CODE_RE)) {
+    const gb = OPPO_CODE_STORAGE[m[0].toUpperCase()];
+    if (gb) return gb;
+  }
+  return 0;
+}
+
 // イオシス 楽天市場店。商品名の例:
 //   【ネットワーク利用制限−】Xperia1 VII SO-51F スレートブラック 【docomo版SIMフリー】 SONY 当社6ヶ月保証 イオシス
 //   Xperia5 V SO-53D ブラック 【docomo版SIMフリー】 SONY 当社3ヶ月間保証 中古 イオシス
-// 容量は名前にない。名前にあればそれ、なければドコモの型番の表（上）で決め、決められなければ行にしない（推測しない）。
+// 容量は名前にない。名前にあればそれ、なければドコモ・OPPO の型番の表（上）で決め、決められなければ行にしない（推測しない）。
 // ランクは fetch.php が送る item.rank、バッテリーは normalizeIosysItem と同じ（未使用 100・「80%未満」79・それ以外 80）
 export function normalizeIosysAndroid(item: Item): Row | null {
   if (!item.url || !(item.price > 0)) return null;
@@ -246,7 +266,7 @@ export function normalizeIosysAndroid(item: Item): Row | null {
 
   // 「12GB/256GB」（メモリ/容量）は後ろが容量
   const sm = raw.match(/\d+GB\/(\d+)(GB|TB)/) ?? raw.match(/(\d+)(GB|TB)/);
-  const storage = sm ? toStorage(sm[1], sm[2]) : storageFromDocomoCode(raw);
+  const storage = sm ? toStorage(sm[1], sm[2]) : storageFromDocomoCode(raw) || storageFromOppoCode(raw);
   if (!storage) return null;
 
   const carrier = parseCarrier(raw);

@@ -30,7 +30,7 @@
 - **YouTube 予約は2日後まで**・声はずんだもん（比べる型は青山）
 - **X**: 11/11〜表示が急落 → 当面は返事への返信と投稿1日1本・RTなし
 - **ショート**: 11/15 から1日1本（7時）。横動画は「◯◯は今買い？」型。在庫数・電池・新旧比較の型だけ・**0秒目は実写＋2行＋図1つ（`--live`）**。11/16〜 AI（`--live ai`・開示オン）と1日おき
-- **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・OPPO・Xiaomi・Apple／Galaxy／Pixel Watch（storage＝mm）
+- **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac・Xperia・AQUOS・OPPO・Xiaomi・Apple／Galaxy／Pixel Watch（storage＝mm・ケーブルなしは札）
 - **中古パソコン** `/pc`（`PcInventory`）。PC WRAP・Qualit・PC next・Be-Stock は A8、他は楽天
 
 ## 確認台帳（計測・判定）
