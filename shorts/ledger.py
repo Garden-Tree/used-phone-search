@@ -19,7 +19,7 @@ for d in sorted(os.listdir(OUT)):
     s = json.load(open(sp, encoding="utf-8"))
     shorts.append({"dir": d, "date": d[:10], "theme": s.get("theme") or re.sub(r"^\d{4}-\d{2}-\d{2}-", "", d),
                    "title": ((s.get("youtube") or {}).get("title") or "").replace("|", "／"),
-                   "live": "実写" if s.get("liveClip") else "", "ids": []})
+                   "live": ("AI" if str(s.get("liveClip")).startswith("ai-") else "実写") if s.get("liveClip") else "", "ids": []})
 themes = sorted({x["theme"] for x in shorts}, key=len, reverse=True)
 
 for p in sorted(glob.glob(os.path.join(ROOT, "ideas", "2026-*.md"))):

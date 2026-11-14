@@ -40,7 +40,7 @@
 
 | 日付 | テーマ | タイトル | 動画ID | 0秒目 |
 | --- | --- | --- | --- | --- |
-| 2026-11-16 | stockxperia | 中古でいちばん多いXperiaは1 VI！在庫445件ランキング | dUDPo5YxD1U | 実写 |
+| 2026-11-16 | stockxperia | 中古でいちばん多いXperiaは1 VI！在庫445件ランキング | dUDPo5YxD1U | AI |
 | 2026-11-15 | stockmac | 中古でいちばん多いMacBookはAir M1！在庫549件ランキング | gEuQbmDnKmc | 実写 |
 | 2026-11-15 | pixelgen | Pixel 11 Pro XL→10 Pro XLで約4.1万円安い！Pixel 1世代前ランキング | - | 実写 |
 | 2026-11-14 | stock | 中古でいちばん多いiPhoneはSE（第3世代）！在庫3,441件ランキング | - | 実写 |
