@@ -8,7 +8,7 @@
  *   無ければ写真なしの配置（文字を大きく）。Commons の iPhone 12 は CC BY-SA だけだった（11/14。SOURCES.md）
  * - 11/14 決定は B 案（赤札）。写真は Unsplash の Thai Nguyen（IegLpS8Eay8・パープル・Unsplash License。assets/stock-photo/SOURCES.md）。
  *   層は python longform/2026-11-21-iphone12/thumb-prep.py（cut layer → この tsx → contact series）。端末は x 918〜1265
- *   写真なしの B は thumb-B-nophoto.png。写真ありの札は「修理 4万5,800円」（「画面修理」は 104px だと x 890 を越える）
+ *   写真なしの B は thumb-B-nophoto.png。写真ありの札も「画面修理 4万5,800円」（端末に少し被る。11/14 ユーザー「ちょっと被っても大丈夫」）
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -45,7 +45,7 @@ const Tag = ({ x, y, text, size, bg, color, pad = 24 }: { x: number; y: number; 
 type Plan = { tag: string; tagPhoto: string; tagBg: string; tagColor: string };
 const PLANS: Record<string, Plan> = {
   A: { tag: "相場 3万6,080円", tagPhoto: "相場 3万6,080円", tagBg: WHITE, tagColor: BLACK },
-  B: { tag: "画面修理 4万5,800円", tagPhoto: "修理 4万5,800円", tagBg: RED, tagColor: WHITE },
+  B: { tag: "画面修理 4万5,800円", tagPhoto: "画面修理 4万5,800円", tagBg: RED, tagColor: WHITE },
 };
 
 function thumb(p: Plan, photo: string | null) {
