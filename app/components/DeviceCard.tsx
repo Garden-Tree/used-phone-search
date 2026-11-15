@@ -115,7 +115,10 @@ export function deviceKind(d: Pick<Device, 'modelName'>) {
 /** カードの1行目「（機種名）容量・色」。1TB 以上は TB（11/9〜。それまで iPhone は 1024GB と出ていた）。DeviceCard と PickPair で共有 */
 export function specLine(d: Device, showModel: boolean): string {
   const modelName = d.modelName.replace(/iPhone(\d+)/i, 'iPhone $1');
-  return `${showModel ? `${modelName} ` : ''}${storageLabel(d.storage, d.modelName)}・${d.color}`;
+  // 色が「-」や空（Mac デスクトップの楽天の商品など）は色の部分を出さない（11/15〜）
+  const color = d.color?.trim();
+  const colorPart = color && color !== '-' ? `・${color}` : '';
+  return `${showModel ? `${modelName} ` : ''}${storageLabel(d.storage, d.modelName)}${colorPart}`;
 }
 
 export default function DeviceCard({ device, showModel = true }: { device: Device; showModel?: boolean }) {

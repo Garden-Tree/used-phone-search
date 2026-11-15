@@ -635,8 +635,8 @@ export default async function ModelPage({ params }: Props) {
 
   const priceLists = (
     <>
-      {/* MacBook・Apple Watch はバッテリーの表記がない店が多いので、在庫がなければ出さない */}
-      {!((mac || watch) && batteryRows.length === 0) && (
+      {/* MacBook・Apple Watch はバッテリーの表記がない店が多いので、在庫がなければ出さない。Mac デスクトップは電池がないので出さない（11/15〜） */}
+      {!deskInfo && !((mac || watch) && batteryRows.length === 0) && (
         <Accordion title="バッテリー最大容量別の最安値" hint="80〜95%">
           {/* 多くの店で最大容量は値段に反映されていないので、少し足すだけで状態のよい個体が買えることを見せる */}
           <PriceList rows={batteryRows} labelOf={(k) => `${k}%以上`}

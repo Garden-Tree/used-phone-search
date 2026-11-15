@@ -15,7 +15,8 @@ export const MIN_RANK_OPTIONS = ['A', 'B'];
 export const BATTERY_OPTIONS = [80, 85, 90, 95];
 // MacBook の絞り込み（2026-10-15〜）。容量は SSD、メモリは MacBook だけの項目
 export const MAC_STORAGE_OPTIONS = [256, 512, 1024, 2048];
-export const MAC_MEMORY_OPTIONS = [8, 16, 24, 32, 36, 48, 64];
+// 96GB 以上は Mac Studio（と MacBook Pro の Max）向け（11/15〜。parseMacDesktopSpec は 512GB まで読む）
+export const MAC_MEMORY_OPTIONS = [8, 16, 24, 32, 36, 48, 64, 96, 128, 192, 256, 512];
 // 楽天市場店は「じゃんぱら（楽天）」のように短く出す
 const SHOP_OPTIONS = [
   { id: 'all', name: 'すべて' },
