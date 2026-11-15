@@ -168,7 +168,8 @@ async function renderOne(dir: string, script: Script, variant: Variant, fonts: A
       const name = idx === 0 ? script.liveClip : LIVE_CLIPS[(start + idx) % LIVE_CLIPS.length];
       const clip = resolve(__dirname, "assets/stock", name);
       if (!existsSync(clip)) throw new Error(`実写の素材がありません: ${clip}（shorts/assets/stock/ に置く。git には入れない）`);
-      const dark = sc.id === "hook" ? "eq=brightness=-0.15" : "eq=brightness=-0.32:saturation=0.7,gblur=sigma=3";
+      // 11/15〜 つかみも暗めに（-0.15→-0.3。明るい実写に文字と図が重なると読みにくい。視聴を継続の高い回は地が暗かった）
+      const dark = sc.id === "hook" ? "eq=brightness=-0.3" : "eq=brightness=-0.32:saturation=0.7,gblur=sigma=3";
       // 素材より場面が長いとき（締め 10秒など）に映像が先に切れないよう、素材はループさせる
       // AI の0秒目（ai-・4秒しかない）は頭から使う。実写は今までどおり 1秒目から
       run(["-y", "-stream_loop", "-1", "-ss", name.startsWith("ai-") ? "0" : "1", "-i", clip, "-framerate", String(FPS), "-i", join(sd, "f%04d.png"),

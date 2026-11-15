@@ -2135,6 +2135,11 @@ function liveValues(s: Script): [number, number] | null {
   if (isNewVsOld(s)) return [s.scenes.newModel.price, r.median];
   return null;
 }
+/** 1世代前の型（行に newerMedian・olderMedian がある） */
+function isGenType(s: Script): boolean {
+  const r = (s.scenes as { ranking?: { items?: Record<string, unknown>[] } }).ranking?.items?.[0];
+  return !!r && typeof r.newerMedian === "number" && typeof r.olderMedian === "number";
+}
 /** 実写のつかみの差（数字だけの型・2行目の既定） */
 function liveDiff(s: Script): number {
   const r = (s.scenes as { ranking?: { items?: Record<string, unknown>[] } }).ranking?.items?.[0] as Record<string, number> | undefined;
@@ -2147,6 +2152,9 @@ export function liveLinesOf(s: Script): string[] {
   if (isStock(s)) return ["中古で", `いちばん多い${stockScope(s)}は`];
   if (s.theme === "battery") return ["電池90%台は", `+${n(liveDiff(s))}円`];
   if (isNewVsOld(s)) return ["中古の旧型なら", `${(liveDiff(s) / 10000).toFixed(1)}万円安い`];
+  // 1世代前の型（gen・ipadgen・macgen・pixelgen・watchgen）: 11/15〜 何の話かを文字で出し、答えの金額は伏せる
+  // （「差は 34,400円」だけの回は視聴を継続 21〜24%、「いちばん多い〜は ？？？」の在庫の型は 45〜55%。ideas/2026-11-14-youtube-research.md）
+  if (isGenType(s)) return ["1世代前にすると", "？？？円安い"];
   return ["差は", `${n(liveDiff(s))}円`];
 }
 /** 文字の縁取り（satori は text-stroke が効かないので 8方向の影）＋落ちる影 */
@@ -2200,7 +2208,8 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
         <div style={{ ...liveText(color, 66), marginTop: 14 }}>{label}</div>
       </div>
     );
-    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : ["", ""];
+    // ラベルのない四角2つは何の比較か分からないので、1世代前の型は「最新」「1世代前」を付ける（11/15〜）
+    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : isGenType(s) ? ["最新", "1世代前"] : ["", ""];
     figure = (
       <div style={{ position: "absolute", left: 0, top: SAFE_BOTTOM - 444, width: W, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 80 }}>
         {bar(values[0], "rgba(255,255,255,0.8)", la, C.white)}
