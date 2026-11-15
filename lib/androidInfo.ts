@@ -7,8 +7,12 @@ import { AQUOS_INFO, isAquos } from "@/lib/aquosCatalog";
 import { XPERIA_INFO, isXperia } from "@/lib/xperiaCatalog";
 import { OPPO_INFO, isOppo } from "@/lib/oppoCatalog";
 import { XIAOMI_INFO, isXiaomi } from "@/lib/xiaomiCatalog";
+import { MOTOROLA_INFO, isMotorola } from "@/lib/motorolaCatalog";
+import { ARROWS_INFO, isArrows } from "@/lib/arrowsCatalog";
 
-export const androidInfoOf = (model: string): AndroidInfo | undefined => XPERIA_INFO[model] ?? AQUOS_INFO[model] ?? OPPO_INFO[model] ?? XIAOMI_INFO[model];
+// motorola・arrows（2026-11-15〜。lib/motorolaCatalog.ts・arrowsCatalog.ts）も同じ形で引ける
+export const androidInfoOf = (model: string): AndroidInfo | undefined =>
+  XPERIA_INFO[model] ?? AQUOS_INFO[model] ?? OPPO_INFO[model] ?? XIAOMI_INFO[model] ?? MOTOROLA_INFO[model] ?? ARROWS_INFO[model];
 
 export const isAndroidJp = (model: string) => isXperia(model) || isAquos(model);
 
@@ -87,6 +91,18 @@ export function updateSource(model: string): { name: string; url: string }[] {
     return [
       { name: "Xiaomi「スマートフォン」", url: "https://www.mi.com/jp/" },
       { name: "au「Xiaomiの製品情報一覧」", url: "https://www.au.com/support/service/mobile/manual/smartphone/xiaomi/" },
+    ];
+  }
+  if (isMotorola(model)) {
+    return [
+      { name: "motorola「all smartphones」", url: "https://www.motorola.com/jp/ja/smartphones" },
+      { name: "ソフトバンク「スマートフォン」", url: "https://www.softbank.jp/mobile/products/smartphone/" },
+    ];
+  }
+  if (isArrows(model)) {
+    return [
+      { name: "FCNT「arrows」", url: "https://www.fcnt.com/product/arrows/" },
+      { name: "au「FCNTの製品情報一覧」", url: "https://www.au.com/support/service/mobile/manual/smartphone/fcnt/" },
     ];
   }
   return isXperia(model)

@@ -28,6 +28,8 @@ import { isXperia } from "@/lib/xperiaCatalog";
 import { isAquos } from "@/lib/aquosCatalog";
 import { isOppo } from "@/lib/oppoCatalog";
 import { isXiaomi } from "@/lib/xiaomiCatalog";
+import { isMotorola } from "@/lib/motorolaCatalog";
+import { isArrows } from "@/lib/arrowsCatalog";
 import { isSmartwatch } from "@/lib/watchCatalog";
 import type { RakutenItem } from "@/lib/rakutenCommon";
 import { AMAZON_RENEWED_SHOP } from "@/lib/amazonRenewed";
@@ -205,8 +207,8 @@ async function main() {
     }
   }
   const startedAt = Date.now();
-  // MacBook・Xperia・AQUOS・Apple Watch（2026-10-15〜）・OPPO・Xiaomi（2026-11-12〜）・Galaxy Watch・Pixel Watch（2026-11-13〜）は Amazon の整備済み品の検索に含めない（iPhone・iPad・Pixel・Galaxy だけ）
-  const searchModels = ALL_DEVICE_PAGE_MODELS.filter((m) => !isMac(m) && !isXperia(m) && !isAquos(m) && !isSmartwatch(m) && !isOppo(m) && !isXiaomi(m));
+  // MacBook・Xperia・AQUOS・Apple Watch（2026-10-15〜）・OPPO・Xiaomi（2026-11-12〜）・Galaxy Watch・Pixel Watch（2026-11-13〜）・motorola・arrows（2026-11-15〜）は Amazon の整備済み品の検索に含めない（iPhone・iPad・Pixel・Galaxy だけ）
+  const searchModels = ALL_DEVICE_PAGE_MODELS.filter((m) => !isMac(m) && !isXperia(m) && !isAquos(m) && !isSmartwatch(m) && !isOppo(m) && !isXiaomi(m) && !isMotorola(m) && !isArrows(m));
   const models = dry ? searchModels.slice(0, 3) : searchModels;
   console.log(`機種 ${models.length} 件 × 最大 ${MAX_PAGES} ページ = 最大 ${models.length * MAX_PAGES} リクエスト（約 ${Math.ceil((models.length * MAX_PAGES * INTERVAL_MS) / 60000)} 分。1日の上限 8,640）`);
 

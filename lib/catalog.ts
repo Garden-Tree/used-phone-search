@@ -9,6 +9,8 @@ import { OPPO_CATALOG, OPPO_MODELS, isOppo } from "@/lib/oppoCatalog";
 import { XIAOMI_CATALOG, XIAOMI_MODELS, isXiaomi } from "@/lib/xiaomiCatalog";
 import { GALAXY_WATCH_CATALOG, GALAXY_WATCH_MODELS, isGalaxyWatch } from "@/lib/galaxyWatchCatalog";
 import { PIXEL_WATCH_CATALOG, PIXEL_WATCH_MODELS, isPixelWatch } from "@/lib/pixelWatchCatalog";
+import { MOTOROLA_CATALOG, MOTOROLA_MODELS, isMotorola } from "@/lib/motorolaCatalog";
+import { ARROWS_CATALOG, ARROWS_MODELS, isArrows } from "@/lib/arrowsCatalog";
 
 // iOS 27（2026年9月配信）対応モデルのカタログ（トップページ・sitemap で共有）。
 // iOS 27 は iOS 26 と同じく iPhone 11 以降・SE 第2/第3世代が対象。
@@ -81,8 +83,8 @@ export const ALL_CATALOG_MODELS = IPHONE_CATALOG.flatMap((s) => s.models);
 /** モデル別ページを持つ全 iPhone（新しい順） */
 export const ALL_PAGE_MODELS = [...ALL_CATALOG_MODELS, ...LEGACY_SERIES.flatMap((s) => s.models)];
 
-/** モデル別ページを持つ全機種（iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch）。価格推移の記録・sitemap・slug の解決に使う。MacBook・Xperia・AQUOS・Apple Watch は末尾（2026-10-15〜。既存機種の並びは変えない）。OPPO・Xiaomi はさらにその後ろ（2026-11-12〜）。Galaxy Watch・Pixel Watch は末尾（2026-11-13〜） */
-export const ALL_DEVICE_PAGE_MODELS = [...ALL_PAGE_MODELS, ...IPAD_MODELS, ...PIXEL_MODELS, ...GALAXY_MODELS, ...MAC_MODELS, ...XPERIA_MODELS, ...AQUOS_MODELS, ...WATCH_MODELS, ...OPPO_MODELS, ...XIAOMI_MODELS, ...GALAXY_WATCH_MODELS, ...PIXEL_WATCH_MODELS];
+/** モデル別ページを持つ全機種（iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch）。価格推移の記録・sitemap・slug の解決に使う。MacBook・Xperia・AQUOS・Apple Watch は末尾（2026-10-15〜。既存機種の並びは変えない）。OPPO・Xiaomi はさらにその後ろ（2026-11-12〜）。Galaxy Watch・Pixel Watch は末尾（2026-11-13〜）。motorola・arrows はさらにその後ろ（2026-11-15〜） */
+export const ALL_DEVICE_PAGE_MODELS = [...ALL_PAGE_MODELS, ...IPAD_MODELS, ...PIXEL_MODELS, ...GALAXY_MODELS, ...MAC_MODELS, ...XPERIA_MODELS, ...AQUOS_MODELS, ...WATCH_MODELS, ...OPPO_MODELS, ...XIAOMI_MODELS, ...GALAXY_WATCH_MODELS, ...PIXEL_WATCH_MODELS, ...MOTOROLA_MODELS, ...ARROWS_MODELS];
 
 const ORDINAL: Record<string, string> = { "1": "1st", "2": "2nd", "3": "3rd" };
 
@@ -102,14 +104,14 @@ export function slugToModel(slug: string): string | undefined {
 
 export const isIpad = (model: string) => /^iPad/.test(model);
 
-export type Device = "iphone" | "ipad" | "pixel" | "galaxy" | "mac" | "xperia" | "aquos" | "watch" | "oppo" | "xiaomi" | "galaxy-watch" | "pixel-watch";
+export type Device = "iphone" | "ipad" | "pixel" | "galaxy" | "mac" | "xperia" | "aquos" | "watch" | "oppo" | "xiaomi" | "galaxy-watch" | "pixel-watch" | "motorola" | "arrows";
 
 /**
  * 機種の種類（URL の先頭の /iphone・/ipad・/pixel・/galaxy・/mac・/xperia・/aquos・/watch・/oppo・/xiaomi・/galaxy-watch・/pixel-watch と同じ）。
  * Galaxy Watch・Pixel Watch（2026-11-13〜）は機種名が "Samsung Galaxy Watch…"・"Google Pixel Watch…" で、"Galaxy"・"Pixel" では始まらない（スマホと混ざらない）
  */
 export const deviceOf = (model: string): Device =>
-  isGalaxyWatch(model) ? "galaxy-watch" : isPixelWatch(model) ? "pixel-watch" : isIpad(model) ? "ipad" : isPixel(model) ? "pixel" : isGalaxy(model) ? "galaxy" : isMac(model) ? "mac" : isXperia(model) ? "xperia" : isAquos(model) ? "aquos" : isWatch(model) ? "watch" : isOppo(model) ? "oppo" : isXiaomi(model) ? "xiaomi" : "iphone";
+  isGalaxyWatch(model) ? "galaxy-watch" : isPixelWatch(model) ? "pixel-watch" : isIpad(model) ? "ipad" : isPixel(model) ? "pixel" : isGalaxy(model) ? "galaxy" : isMac(model) ? "mac" : isXperia(model) ? "xperia" : isAquos(model) ? "aquos" : isWatch(model) ? "watch" : isOppo(model) ? "oppo" : isXiaomi(model) ? "xiaomi" : isMotorola(model) ? "motorola" : isArrows(model) ? "arrows" : "iphone";
 
 /** 機種の種類ごとの一覧ページ（パンくず）とメーカー（構造化データ） */
 export const DEVICE_HUB: Record<Device, { path: string; name: string; brand: string }> = {
@@ -125,6 +127,8 @@ export const DEVICE_HUB: Record<Device, { path: string; name: string; brand: str
   xiaomi: { path: "/xiaomi", name: "中古Xiaomi", brand: "Xiaomi" },
   "galaxy-watch": { path: "/galaxy-watch", name: "中古Galaxy Watch", brand: "Samsung" },
   "pixel-watch": { path: "/pixel-watch", name: "中古Pixel Watch", brand: "Google" },
+  motorola: { path: "/motorola", name: "中古motorola", brand: "Motorola" },
+  arrows: { path: "/arrows", name: "中古arrows", brand: "FCNT" },
 };
 
 export function modelPagePath(model: string): string {
@@ -133,7 +137,7 @@ export function modelPagePath(model: string): string {
 
 /** 同じシリーズの他モデル */
 export function siblingModels(model: string): string[] {
-  const group = [...IPHONE_CATALOG, ...LEGACY_SERIES, ...IPAD_CATALOG, ...PIXEL_CATALOG, ...GALAXY_CATALOG, ...MAC_CATALOG, ...XPERIA_CATALOG, ...AQUOS_CATALOG, ...WATCH_CATALOG, ...OPPO_CATALOG, ...XIAOMI_CATALOG, ...GALAXY_WATCH_CATALOG, ...PIXEL_WATCH_CATALOG].find((s) => s.models.includes(model));
+  const group = [...IPHONE_CATALOG, ...LEGACY_SERIES, ...IPAD_CATALOG, ...PIXEL_CATALOG, ...GALAXY_CATALOG, ...MAC_CATALOG, ...XPERIA_CATALOG, ...AQUOS_CATALOG, ...WATCH_CATALOG, ...OPPO_CATALOG, ...XIAOMI_CATALOG, ...GALAXY_WATCH_CATALOG, ...PIXEL_WATCH_CATALOG, ...MOTOROLA_CATALOG, ...ARROWS_CATALOG].find((s) => s.models.includes(model));
   return group ? group.models.filter((m) => m !== model) : [];
 }
 

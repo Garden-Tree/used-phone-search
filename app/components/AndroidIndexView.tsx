@@ -12,14 +12,16 @@ import { medianLabel, yen } from "@/lib/format";
 import { shopLabels, type Shop } from "@/lib/shops";
 import { OPPO_CATALOG, OPPO_MODELS } from "@/lib/oppoCatalog";
 import { XIAOMI_CATALOG, XIAOMI_MODELS } from "@/lib/xiaomiCatalog";
-import { activeAquosShops, activeOppoShops, activeXiaomiShops, activeXperiaShops } from "@/lib/activeShops";
+import { MOTOROLA_CATALOG, MOTOROLA_MODELS } from "@/lib/motorolaCatalog";
+import { ARROWS_CATALOG, ARROWS_MODELS } from "@/lib/arrowsCatalog";
+import { activeAquosShops, activeArrowsShops, activeMotorolaShops, activeOppoShops, activeXiaomiShops, activeXperiaShops } from "@/lib/activeShops";
 
 /**
  * 中古Xperia（/xperia）・中古AQUOS（/aquos）の機種一覧（2026-10-15〜）。中身は同じなので1つの部品にして、
  * app/xperia/page.tsx・app/aquos/page.tsx から使う（/galaxy の一覧と同じ作り。目的別・予算別・比較ページはまだない）。
- * 中古OPPO（/oppo）・中古Xiaomi（/xiaomi）も同じ部品（2026-11-12〜）
+ * 中古OPPO（/oppo）・中古Xiaomi（/xiaomi）も同じ部品（2026-11-12〜）。中古motorola（/motorola）・中古arrows（/arrows）も（2026-11-15〜）
  */
-export type AndroidKind = "xperia" | "aquos" | "oppo" | "xiaomi";
+export type AndroidKind = "xperia" | "aquos" | "oppo" | "xiaomi" | "motorola" | "arrows";
 
 export const ANDROID_HUB = {
   xperia: {
@@ -70,6 +72,31 @@ export const ANDROID_HUB = {
     since: "2020年以降の機種",
     releasedNote: "発売は日本で最初に出た売り場の発売日（かっこ内が売り場）",
     sourceNote: <>型番は au「<a href="https://www.au.com/support/service/mobile/manual/smartphone/xiaomi/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">Xiaomiの製品情報一覧</a>」とソフトバンクのオンラインマニュアル、発売は各社の発表と Xiaomi「<a href="https://www.mi.com/jp/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">Xiaomi Japan</a>」</>,
+  },
+  // motorola・arrows（2026-11-15〜。lib/motorolaCatalog.ts・arrowsCatalog.ts）。OS・セキュリティ更新の方針は載せない
+  motorola: {
+    label: "motorola",
+    path: "/motorola",
+    name: "中古motorola",
+    models: MOTOROLA_MODELS,
+    catalog: MOTOROLA_CATALOG,
+    shops: activeMotorolaShops,
+    seriesNote: "razr・edge・moto g・moto e の2021年以降の機種",
+    since: "2021年以降の機種",
+    releasedNote: "発売はキャリア版で公式の発売日を確かめられた機種だけ（かっこ内が売り場。SIMフリー版は公式ページに発売日の記載がないので出さない）",
+    sourceNote: <>機種は motorola「<a href="https://www.motorola.com/jp/ja/smartphones" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">all smartphones</a>」、キャリア版はソフトバンク「<a href="https://www.softbank.jp/mobile/products/smartphone/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">スマートフォン</a>」・ドコモ・Y!mobile の製品ページ</>,
+  },
+  arrows: {
+    label: "arrows",
+    path: "/arrows",
+    name: "中古arrows",
+    models: ARROWS_MODELS,
+    catalog: ARROWS_CATALOG,
+    shops: activeArrowsShops,
+    seriesNote: "arrows Alpha・We・N・Be の2020年以降の機種",
+    since: "2020年以降の機種",
+    releasedNote: "発売は日本で最初に出た売り場の発売日（かっこ内が売り場）",
+    sourceNote: <>型番と発売日は FCNT「<a href="https://www.fcnt.com/product/arrows/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">arrows</a>」の各機種の仕様と、ドコモの製品仕様・au「<a href="https://www.au.com/support/service/mobile/manual/smartphone/fcnt/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">FCNTの製品情報一覧</a>」・ソフトバンクのオンラインマニュアル</>,
   },
 } as const;
 

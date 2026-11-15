@@ -253,7 +253,8 @@ export default async function ModelPage({ params }: Props) {
   const appleWatch = device === "watch";
   const watch = appleWatch || device === "galaxy-watch" || device === "pixel-watch";
   // Xperia・AQUOS・Apple Watch（2026-10-15〜）・OPPO・Xiaomi（2026-11-12〜）も予算別ページはまだない
-  const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || watch || device === "oppo" || device === "xiaomi" ? null : device;
+  // motorola・arrows（2026-11-15〜）も同じ
+  const budgetDevice: BudgetDevice | null = device === "mac" || device === "xperia" || device === "aquos" || watch || device === "oppo" || device === "xiaomi" || device === "motorola" || device === "arrows" ? null : device;
   const emptyMatrix: StorageRankMatrix = { storages: [], ranks: [], cells: new Map() };
   const [stats, historyRaw, batteryRows, storageRows, matrix, macMatrix, budget, goodDevice, statTiles, yearDevice] = await Promise.all([
     getModelStats(model),
@@ -564,7 +565,7 @@ export default async function ModelPage({ params }: Props) {
   );
 
   // ---- 回線・買取（PR）のタイル。リンク・data-shop-click・rel は今までと同じ。1x1 の計測画像は下で1回だけ出す ----
-  const showSim = hasStock && !legacyLayout && (device === "iphone" || device === "pixel" || device === "galaxy" || device === "xperia" || device === "aquos" || device === "oppo" || device === "xiaomi");
+  const showSim = hasStock && !legacyLayout && (device === "iphone" || device === "pixel" || device === "galaxy" || device === "xperia" || device === "aquos" || device === "oppo" || device === "xiaomi" || device === "motorola" || device === "arrows");
   const showBuyback = hasStock && !mac && !watch;
   const showRepair = hasStock && device === "iphone";
   // 「直す？買い替える？」の1つ上の世代の相場（この機種の相場と同じ容量。在庫3件以上のときだけ。DB は件数と中央値の1行）

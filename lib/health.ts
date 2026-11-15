@@ -34,7 +34,14 @@ const DEVICES = [
   // Galaxy Watch・Pixel Watch は 2026-11-13〜（じゃんぱら・イオシス）。機種名は "Samsung Galaxy Watch…"・"Google Pixel Watch…"。イオシスは楽天市場店（alias）の在庫で出す
   { key: "galaxyWatch", label: "Galaxy Watch", prefix: "Samsung Galaxy Watch" },
   { key: "pixelWatch", label: "Pixel Watch", prefix: "Google Pixel Watch" },
+  // motorola・arrows は 2026-11-15〜（Xperia・AQUOS と同じ4店。イオシスは楽天市場店（alias）の在庫で出す）
+  { key: "motorola", label: "motorola", prefix: "motorola " },
+  { key: "arrows", label: "arrows", prefix: "arrows " },
 ] as const;
+
+// 取り込みが始まるまで（サーバーの fetch.php に検索語を足すまで）は全店で0件になる種類。全店の合計が0件のあいだは「店: ○○ が0件」を出さない
+// （コードを先に反映しても監視が毎回失敗にならないように。1店でも入れば、ほかの店の0件は今までどおり問題にする）
+const PENDING_UNTIL_INGESTED = new Set<string>(["motorola", "arrows"]);
 
 // 扱う店だが、行になる在庫がほぼ無い「店:種類」。0件でも問題にしない（店ごと止まれば最終更新の古さで分かる）。
 // イオシスの OPPO: 楽天市場店の検索では約45件当たるが、商品名に容量がないものは行にしない（lib/rakutenAndroid.ts・推測しない）ので、
@@ -105,11 +112,13 @@ export async function checkHealth(): Promise<HealthReport> {
     const snapshotStale = !snapshotDate || snapshotDate < yesterday;
 
     // 扱うはずの種類が0件の店（その種類の一覧だけ取れなかった・読み取りが壊れたなど）
+    const kindTotal = (key: string) => [...deviceCounts].reduce((n, [k, v]) => (k.endsWith(`:${key}`) ? n + v : n), 0);
     const missing = SHOPS.flatMap((shop) =>
       DEVICES.filter((d) => {
         if (!shop[d.key] || SPARSE_KINDS.has(`${shop.name}:${d.key}`)) return false;
+        if (PENDING_UNTIL_INGESTED.has(d.key) && kindTotal(d.key) === 0) return false;
         const own = deviceCounts.get(`${shop.name}:${d.key}`) ?? 0;
-        const viaAlias = d.key === "mac" || d.key === "xperia" || d.key === "aquos" || d.key === "watch" || d.key === "oppo" || d.key === "xiaomi" || d.key === "galaxyWatch" || d.key === "pixelWatch" ? ALIAS_SHOPS.filter((s) => s.alias === shop.name).reduce((n, s) => n + (deviceCounts.get(`${s.name}:${d.key}`) ?? 0), 0) : 0;
+        const viaAlias = d.key === "mac" || d.key === "xperia" || d.key === "aquos" || d.key === "watch" || d.key === "oppo" || d.key === "xiaomi" || d.key === "galaxyWatch" || d.key === "pixelWatch" || d.key === "motorola" || d.key === "arrows" ?ALIAS_SHOPS.filter((s) => s.alias === shop.name).reduce((n, s) => n + (deviceCounts.get(`${s.name}:${d.key}`) ?? 0), 0) : 0;
         return own + viaAlias === 0;
       }).map((d) => `${shop.label}: ${d.label} が0件`),
     );

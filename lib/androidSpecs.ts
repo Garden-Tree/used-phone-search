@@ -15,6 +15,8 @@ import { AQUOS_INFO } from "@/lib/aquosCatalog";
 import { XPERIA_INFO } from "@/lib/xperiaCatalog";
 import { OPPO_SPECS } from "@/lib/oppoCatalog";
 import { XIAOMI_SPECS } from "@/lib/xiaomiCatalog";
+import { MOTOROLA_SPECS } from "@/lib/motorolaCatalog";
+import { ARROWS_SPECS } from "@/lib/arrowsCatalog";
 
 /** "2024-11" → "2024年11月"、"2023" → "2023年"（月が分からない機種） */
 const jaReleased = (s: string | null | undefined): string => {
@@ -89,4 +91,4 @@ export const XPERIA_SPECS: Record<string, IphoneSpec> = Object.fromEntries([
  * OPPO・Xiaomi（2026-11-12〜。lib/oppoCatalog.ts・xiaomiCatalog.ts の公式の値）も引ける（比較の組はまだ足していない）
  */
 export const compareSpecOf = (model: string): IphoneSpec | undefined =>
-  specOf(model) ?? AQUOS_SPECS[model] ?? XPERIA_SPECS[model] ?? OPPO_SPECS[model] ?? XIAOMI_SPECS[model];
+  specOf(model) ?? AQUOS_SPECS[model] ?? XPERIA_SPECS[model] ?? OPPO_SPECS[model] ?? XIAOMI_SPECS[model] ?? MOTOROLA_SPECS[model] ?? ARROWS_SPECS[model];

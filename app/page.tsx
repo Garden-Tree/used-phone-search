@@ -12,6 +12,8 @@ import { OPPO_MODELS } from "@/lib/oppoCatalog";
 import { XIAOMI_MODELS } from "@/lib/xiaomiCatalog";
 import { GALAXY_WATCH_MODELS } from "@/lib/galaxyWatchCatalog";
 import { PIXEL_WATCH_MODELS } from "@/lib/pixelWatchCatalog";
+import { MOTOROLA_MODELS } from "@/lib/motorolaCatalog";
+import { ARROWS_MODELS } from "@/lib/arrowsCatalog";
 import { minPriceByModel } from "@/lib/budgetStats";
 import { yen } from "@/lib/format";
 import { monthJa, reportMonths } from "@/lib/monthlyReport";
@@ -100,6 +102,8 @@ const DEVICE_HUBS: { label: string; path: string; models: string[] }[] = [
   { label: "Xiaomi", path: "/xiaomi", models: XIAOMI_MODELS },
   { label: "Galaxy Watch", path: "/galaxy-watch", models: GALAXY_WATCH_MODELS },
   { label: "Pixel Watch", path: "/pixel-watch", models: PIXEL_WATCH_MODELS },
+  { label: "motorola", path: "/motorola", models: MOTOROLA_MODELS },
+  { label: "arrows", path: "/arrows", models: ARROWS_MODELS },
 ];
 
 // シリーズのタイルの色（docs/design.md ではなく 10/16 の決定版の見本どおり）
@@ -116,12 +120,15 @@ const HUB_COLORS: Record<string, string> = {
   Xiaomi: "bg-[#C2410C]",
   "Galaxy Watch": "bg-[#7E22CE]",
   "Pixel Watch": "bg-[#15803D]",
+  motorola: "bg-[#1E3A8A]",
+  arrows: "bg-[#BE123C]",
 };
 // タイルの並び（見本: 件数の多い順ではなく固定）
 const HUB_ORDER = ["iPhone", "iPad", "Apple Watch", "Pixel", "Galaxy", "MacBook", "Xperia", "AQUOS"];
 // OPPO・Xiaomi（2026-11-12〜）は上の8つ（1行で固定）の後ろに、同じ形のタイルで2段目に足す
 // Galaxy Watch・Pixel Watch（2026-11-13〜）も2段目に（スマホで4つ＝ちょうど1行）
-const HUB_ORDER_MORE = ["OPPO", "Xiaomi", "Galaxy Watch", "Pixel Watch"];
+// motorola・arrows（2026-11-15〜）はその後ろ（既存の4つの位置は変えない）
+const HUB_ORDER_MORE = ["OPPO", "Xiaomi", "Galaxy Watch", "Pixel Watch", "motorola", "arrows"];
 
 // 末尾に名前を出す主な店（在庫がある店だけ）
 const MAIN_SHOP_LABELS = ["イオシス", "じゃんぱら", "ソフマップ", "ゲオモバイル", "にこスマ", "ダイワンテレコム"];

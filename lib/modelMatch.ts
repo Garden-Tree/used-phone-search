@@ -6,6 +6,8 @@ import { XPERIA_MODELS } from "@/lib/xperiaCatalog";
 import { AQUOS_MODELS } from "@/lib/aquosCatalog";
 import { OPPO_MODELS } from "@/lib/oppoCatalog";
 import { XIAOMI_MODELS } from "@/lib/xiaomiCatalog";
+import { MOTOROLA_MODELS } from "@/lib/motorolaCatalog";
+import { ARROWS_MODELS } from "@/lib/arrowsCatalog";
 import { WATCH_MODELS } from "@/lib/watchCatalog";
 import { GALAXY_WATCH_MODELS } from "@/lib/galaxyWatchCatalog";
 import { PIXEL_WATCH_MODELS } from "@/lib/pixelWatchCatalog";
@@ -107,7 +109,8 @@ export function matchesModel(query: string, modelName: string): boolean {
   // （トークン判定だと「Pixel 9」が「Pixel 9a」「Pixel 9 Pro」に、「Galaxy S24」が「Galaxy S24 Ultra」に、「Xperia 1 V」が「Xperia 1 VI」に、「AQUOS sense7」が「AQUOS sense7 plus」にも当たる。
   // 正式名での検索は完全一致なので、これらは当たらない）
   // OPPO・Xiaomi（2026-11-12〜）も同じ（「OPPO A5 5G」が「OPPO A55s 5G」に、「Xiaomi 14T」が「Xiaomi 14T Pro」に当たらない）
-  for (const [prefix, models] of [["pixel", PIXEL_MODELS], ["galaxy", GALAXY_MODELS], ["xperia", XPERIA_MODELS], ["aquos", AQUOS_MODELS], ["oppo", OPPO_MODELS], ["xiaomi", XIAOMI_MODELS]] as const) {
+  // motorola・arrows（2026-11-15〜）も同じ（「motorola razr 50」が「motorola razr 50 ultra」に、「arrows We2」が「arrows We2 Plus」に当たらない）
+  for (const [prefix, models] of [["pixel", PIXEL_MODELS], ["galaxy", GALAXY_MODELS], ["xperia", XPERIA_MODELS], ["aquos", AQUOS_MODELS], ["oppo", OPPO_MODELS], ["xiaomi", XIAOMI_MODELS], ["motorola", MOTOROLA_MODELS], ["arrows", ARROWS_MODELS]] as const) {
     const isQuery = query.trim().toLowerCase().startsWith(prefix);
     if (!isQuery && !modelName.trim().toLowerCase().startsWith(prefix)) continue;
     if (!isQuery) return false;
@@ -149,6 +152,9 @@ export const SEARCH_DEVICES = [
   // Galaxy Watch・Pixel Watch（2026-11-13〜）。機種名の頭は "Samsung "・"Google "（スマホの "Galaxy"・"Pixel" の絞り込みに入らない）
   { key: "galaxy-watch", label: "Galaxy Watch", prefix: "Samsung Galaxy Watch" },
   { key: "pixel-watch", label: "Pixel Watch", prefix: "Google Pixel Watch" },
+  // motorola・arrows（2026-11-15〜）。タブの末尾に足す（今までのタブの並びは変えない）
+  { key: "motorola", label: "motorola", prefix: "motorola " },
+  { key: "arrows", label: "arrows", prefix: "arrows " },
 ] as const;
 
 export const findSearchDevice = (key: string | null | undefined) => SEARCH_DEVICES.find((d) => d.key === key);

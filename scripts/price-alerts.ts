@@ -93,6 +93,8 @@ const HASHTAG: Record<Device, string> = {
   xiaomi: "#中古Xiaomi",
   "galaxy-watch": "#GalaxyWatch",
   "pixel-watch": "#PixelWatch",
+  motorola: "#中古motorola",
+  arrows: "#中古arrows",
 };
 
 // ── 型 ───────────────────────────────────────────────────

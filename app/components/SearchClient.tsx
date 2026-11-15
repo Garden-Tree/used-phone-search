@@ -57,7 +57,7 @@ const loadFile = (key: string) => {
 };
 
 const deviceKeyOf = (name: string) =>
-  /^\s*ipad/i.test(name) ? 'ipad' : /^\s*pixel/i.test(name) ? 'pixel' : /^\s*galaxy/i.test(name) ? 'galaxy' : /^\s*macbook/i.test(name) ? 'mac' : /^\s*xperia/i.test(name) ? 'xperia' : /^\s*aquos/i.test(name) ? 'aquos' : /^\s*apple\s*watch/i.test(name) ? 'watch' : /^\s*samsung\s*galaxy\s*watch/i.test(name) ? 'galaxy-watch' : /^\s*google\s*pixel\s*watch/i.test(name) ? 'pixel-watch' : /^\s*oppo/i.test(name) ? 'oppo' : /^\s*xiaomi/i.test(name) ? 'xiaomi' : 'iphone';
+  /^\s*ipad/i.test(name) ? 'ipad' : /^\s*pixel/i.test(name) ? 'pixel' : /^\s*galaxy/i.test(name) ? 'galaxy' : /^\s*macbook/i.test(name) ? 'mac' : /^\s*xperia/i.test(name) ? 'xperia' : /^\s*aquos/i.test(name) ? 'aquos' : /^\s*apple\s*watch/i.test(name) ? 'watch' : /^\s*samsung\s*galaxy\s*watch/i.test(name) ? 'galaxy-watch' : /^\s*google\s*pixel\s*watch/i.test(name) ? 'pixel-watch' : /^\s*oppo/i.test(name) ? 'oppo' : /^\s*xiaomi/i.test(name) ? 'xiaomi' : /^\s*motorola/i.test(name) ? 'motorola' : /^\s*arrows/i.test(name) ? 'arrows' : 'iphone';
 
 /** 検索語が時計の機種名か（Apple Watch・Galaxy Watch・Pixel Watch。storage はケースのサイズ） */
 const WATCH_QUERY = /^\s*(?:apple\s*watch|samsung\s*galaxy\s*watch|google\s*pixel\s*watch)/i;
@@ -134,7 +134,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
     : undefined;
 
   // 回線のタイル（PR）を出すのはスマホの絞り込みのときだけ（iPad・MacBook・Apple Watch には出さない）
-  const PHONE_KEYS = ['iphone', 'pixel', 'galaxy', 'xperia', 'aquos', 'oppo', 'xiaomi'];
+  const PHONE_KEYS = ['iphone', 'pixel', 'galaxy', 'xperia', 'aquos', 'oppo', 'xiaomi', 'motorola', 'arrows'];
   const phoneView = models.length > 0 ? models.every((q) => PHONE_KEYS.includes(deviceKeyOf(q))) : PHONE_KEYS.includes(device.key);
 
   // 読み込んだ結果は「どの条件の分か」と一緒に持つ（条件が変わったら、読み終わるまでは読み込み中として扱う）
