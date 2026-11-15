@@ -98,7 +98,8 @@ const isVariantWord = (x: NameToken | undefined): boolean =>
 export function buildNameMatcher(models: readonly string[], brand: string, series: readonly string[]): (raw: string) => string | null {
   const patterns: { tokens: string[]; model: string }[] = [];
   const full = models.map((m) => ({ model: m, tokens: nameTokens(m) }));
-  const stemOf = (t: string[]) => (t.length > 2 && t[t.length - 2] === "5" && t[t.length - 1] === "g" ? t.slice(0, -2) : null);
+  // 語幹がブランドの語だけになるもの（"arrows 5G" → "arrows"）は語幹で当てない（2026-11-15。OPPO・Xiaomi には該当する機種がなく結果は変わらない）
+  const stemOf = (t: string[]) => (t.length > 3 && t[t.length - 2] === "5" && t[t.length - 1] === "g" ? t.slice(0, -2) : null);
   const key = (t: string[]) => t.join(" ");
   const fullKeys = new Set(full.map((f) => key(f.tokens)));
   const stemCount = new Map<string, number>();

@@ -5,6 +5,8 @@ import { AQUOS_NAME_RE, canonicalAquosModel } from "@/lib/aquosCatalog";
 import { XPERIA_NAME_RE, canonicalXperiaModel } from "@/lib/xperiaCatalog";
 import { OPPO_CODE_RE, canonicalOppoModel } from "@/lib/oppoCatalog";
 import { canonicalXiaomiModel } from "@/lib/xiaomiCatalog";
+import { MOTOROLA_STORAGE_ANY, MOTOROLA_STORAGE_SIMFREE, canonicalMotorolaModel } from "@/lib/motorolaCatalog";
+import { canonicalArrowsModel, storageFromArrowsCode } from "@/lib/arrowsCatalog";
 import { androidInfoOf } from "@/lib/androidInfo";
 import { RAKUTEN_IOSYS_SHOP, core, parseCarrier, parseNetworkStatus } from "@/lib/rakutenIosys";
 
@@ -24,6 +26,9 @@ import { RAKUTEN_IOSYS_SHOP, core, parseCarrier, parseNetworkStatus } from "@/li
  * - 色: 商品名の日本語の語（型番・英字の機種名・容量を書く位置が店ごとにゆれるため）
  * - キャリア: carrierOf と同じ決まり（UQ mobile → au、Y!mobile・ワイモバイル → SoftBank、楽天・Rakuten → 楽天モバイル）。mineo など MVNO だけなら null
  * - SIM ロック: 発売日が公式で確かめられていない機種は、商品名に「SIMフリー」「ロック解除」がなければ SIM ロックありとして扱う
+ *
+ * motorola・arrows（2026-11-15〜）も同じ4店をここで読む（機種名は lib/motorolaCatalog.ts・arrowsCatalog.ts）。色・キャリア・SIM ロックは OPPO・Xiaomi と同じ扱い。
+ * 店の書き方の違い（ゲオの "[256G]"・"[128GB ]"、じゃんぱらの容量なし・"PANTONE Laurel Oak(ローレルオーク)" の色）は *_MA_RE と maColorOf で読む
  */
 
 type Item = RakutenItem;
@@ -53,9 +58,16 @@ const SONY = { manufacturer: "Sony" } as const;
 const SHARP = { manufacturer: "Sharp" } as const;
 const OPPO = { manufacturer: "OPPO" } as const;
 const XIAOMI = { manufacturer: "Xiaomi" } as const;
+const MOTOROLA = { manufacturer: "Motorola" } as const;
+const FCNT = { manufacturer: "FCNT" } as const;
 
-type Maker = "Sony" | "Sharp" | "OPPO" | "Xiaomi";
-const isOx = (maker: Maker) => maker === "OPPO" || maker === "Xiaomi";
+type Maker = "Sony" | "Sharp" | "OPPO" | "Xiaomi" | "Motorola" | "FCNT";
+/** OPPO・Xiaomi と同じ読み方（色・キャリア・SIM ロック）にするメーカー。motorola・arrows（2026-11-15〜）も含む */
+const isOx = (maker: Maker) => maker === "OPPO" || maker === "Xiaomi" || maker === "Motorola" || maker === "FCNT";
+const isMa = (maker: Maker) => maker === "Motorola" || maker === "FCNT";
+
+/** motorola・arrows の商品名か（rakutenShops.ts の振り分けにも使う） */
+export const MOTOROLA_ARROWS_NAME = /motorola|(?<![A-Za-z])moto\s?[ge]\d|razr|(?<![A-Za-z])edge\s?\d{2}|arrows/i;
 
 /** 機種名と、その機種のメーカー。読み取れなければ null */
 function modelOf(raw: string): { modelName: string; manufacturer: Maker } | null {
@@ -75,6 +87,14 @@ function modelOf(raw: string): { modelName: string; manufacturer: Maker } | null
     const modelName = canonicalXiaomiModel(raw);
     return modelName ? { modelName, ...XIAOMI } : null;
   }
+  if (/arrows/i.test(raw)) {
+    const modelName = canonicalArrowsModel(raw);
+    return modelName ? { modelName, ...FCNT } : null;
+  }
+  if (MOTOROLA_ARROWS_NAME.test(raw)) {
+    const modelName = canonicalMotorolaModel(raw);
+    return modelName ? { modelName, ...MOTOROLA } : null;
+  }
   return null;
 }
 
@@ -89,6 +109,25 @@ function oxColorOf(...candidates: (string | undefined)[]): string {
       .map((w) => (w.match(/[ぁ-んァ-ヶー一-龠]+/g) ?? []).join(""))
       .filter(Boolean);
     if (words.length > 0) return words.join(" ");
+  }
+  return "-";
+}
+
+/**
+ * motorola・arrows の色: OPPO・Xiaomi と同じ読み方に、「mineo版」などの売り場の注記を除き、日本語の色がなければ括弧の中の日本語
+ * （"PANTONE Impenetrable(インペネトラブルグレイ)" → "インペネトラブルグレイ"）、それもなければ "PANTONE" の後ろの英語（"PANTONE Black Oyster" → "Black Oyster"）
+ */
+function maColorOf(...candidates: (string | undefined)[]): string {
+  const cs = candidates.map((c) => c?.normalize("NFKC").replace(/\S+版(?=\s|$)/g, " "));
+  const c = oxColorOf(...cs);
+  if (c !== "-") return c;
+  for (const x of cs) {
+    const inParen = x?.match(/\(([^)]*[ァ-ヶ][^)]*)\)/)?.[1];
+    if (inParen) return inParen.trim();
+  }
+  for (const x of cs) {
+    const en = x?.match(/PANTONE\s+([A-Za-z][A-Za-z ]*?)(?=\s+\d|\s*$|\s+[A-Z0-9-]{5,})/)?.[1];
+    if (en) return en.trim();
   }
   return "-";
 }
@@ -126,21 +165,30 @@ const GEO_RE = /((?:Xperia|AQUOS)[^[]*?)\s*\[(\d+)(GB|TB)\]\s*(.*)$/;
 // ゲオの OPPO・Xiaomi: 【中古】【安心保証】 OPPO A5 5G OPG06[128GB] au ホワイト／… Xiaomi Redmi 15 5G[128GB] SoftBank ミッドナイトブラック
 const GEO_OX_RE = /((?:OPPO|Xiaomi|Redmi|POCO)[^[]*?)\s*\[(\d+)(GB|TB)\]\s*(.*)$/i;
 
+// ゲオの motorola・arrows（容量が "[256G]"・"[128GB/8GB]"・"[128GB ]"、SIM フリーが機種名の前に来ることがある）:
+//   【中古】【安心保証】 motorola razr 50s[256G] SoftBank コアラグレイ／… SIMフリー moto g100[128GB] (5G) イリディセントスカイ／… arrows 5G F-51A[128GB ] docomo チタニウムシルバー
+const GEO_MA_RE = /((?:SIMフリー\s+)?(?:MOTOROLA|motorola|moto|edge|razr|arrows)[^[]*?)\s*\[\s*(\d+)\s*(GB|TB|G)\b[^\]]*\]\s*(.*)$/i;
+const isMaName = (name: string) => MOTOROLA_ARROWS_NAME.test(name) && !/Xperia|AQUOS|OPPO|Xiaomi|Redmi|POCO/i.test(name);
+
 export function normalizeGeoAndroid(shopName: string, item: Item): Row | null {
-  const m = item.name.match(GEO_RE) ?? item.name.match(GEO_OX_RE);
+  const ma = isMaName(item.name);
+  const m = ma ? item.name.match(GEO_MA_RE) : item.name.match(GEO_RE) ?? item.name.match(GEO_OX_RE);
   if (!m || !item.url || !(item.price > 0)) return null;
-  const [, modelPart, size, unit, restRaw] = m;
+  const [, modelPart, size, unitRaw, restRaw] = m;
+  const unit = unitRaw.toUpperCase() === "TB" ? "TB" : unitRaw;
   const model = modelOf(modelPart);
   if (!model) return null;
   const rest = restRaw.trim().replace(/^SIMロック解除\s*/, "");
   const carrierMatch = rest.match(/^(SIMフリー|docomo|au|SoftBank|楽天モバイル|Y!mobile|UQ\s*(?:mobile|モバイル))\s*/i);
   const color = carrierMatch ? rest.slice(carrierMatch[0].length) : rest;
+  // motorola・arrows で SIM フリーが機種名の前にある商品（"SIMフリー moto g100[128GB]"）は国内版
+  const carrierRaw = carrierMatch?.[1] ?? (ma && /^SIMフリー/.test(modelPart) ? "SIMフリー" : null);
   return row(item, model.modelName, model.manufacturer, item.name, {
     storage: toStorage(size, unit),
-    color: isOx(model.manufacturer) ? oxColorOf(color) : colorOf(color),
+    color: isMa(model.manufacturer) ? maColorOf(color) : isOx(model.manufacturer) ? oxColorOf(color) : colorOf(color),
     conditionRank: rankOf(item.rank),
     batteryHealth: null, // ゲオの楽天店はバッテリーの記載がない
-    carrier: carrierMatch ? (isOx(model.manufacturer) ? oxCarrier : androidCarrier)(carrierMatch[1]) : null,
+    carrier: carrierRaw ? (isOx(model.manufacturer) ? oxCarrier : androidCarrier)(carrierRaw) : null,
     shopName,
   });
 }
@@ -158,7 +206,49 @@ const JANPARA_RE =
 const JANPARA_OX_RE =
   /^【(中古|未使用)】\s*(?:Oppo|Xiaomi)\s+(?:(\S+)\s+)?【([^】]+)】\s*(.*?)\s+(?:\d+GB\s+)?(\d+)\s*(GB|TB)\b([^【]*)【[^】]*】\s*保証期間[^【]*(?:【ランク([A-Z])】)?/i;
 
+// じゃんぱらの motorola・arrows（メーカーは "MOTOROLA"・"FCNT"・"Fujitsu"。SIM の欄は【SIMフリー】【SIMロック解除済み】【SIMロックあり】）:
+//   【中古】MOTOROLA 国内版 【SIMフリー】 motorola edge 60 8GB 128GB PANTONE ジブラルタルシーネイビー【ECセンター】保証期間1ヶ月【ランクA】
+//   【中古】Fujitsu docomo 【SIMロック解除済み】 arrows Be4 ゴールド 3GB 32GB F-41A【府中ル・シーニュ】保証期間1ヶ月【ランクC】
+// 容量が書かれていない商品（"moto g06 PANTONE Laurel Oak(ローレルオーク)【津田沼】保証期間3ヶ月"）は、公式で容量が1つだけの機種ならその容量（motorolaStorageOf）
+const JANPARA_MA_RE =
+  /^【(中古|未使用)】\s*(?:MOTOROLA|FCNT|Fujitsu)\s+(?:(\S+)\s+)?【([^】]+)】\s*(.*?)\s+(?:\d+GB\s+)?(\d+)\s*(GB|TB)\b([^【]*)【[^】]*】\s*保証期間[^【]*(?:【ランク([A-Z])】)?/i;
+const JANPARA_MA_NOSIZE_RE =
+  /^【(中古|未使用)】\s*(?:MOTOROLA|FCNT|Fujitsu)\s+(?:(\S+)\s+)?【([^】]+)】\s*([^【]*?)\s*【[^】]*】\s*保証期間[^【]*(?:【ランク([A-Z])】)?/i;
+
+/** 容量の書かれていない motorola の商品の容量（キャリア専売で1容量の機種、または国内版で SIMフリー版の容量が1つの機種）。決まらなければ 0 */
+function motorolaStorageOf(modelName: string, label: string): number {
+  return MOTOROLA_STORAGE_ANY[modelName] ?? (/国内/.test(label) ? MOTOROLA_STORAGE_SIMFREE[modelName] ?? 0 : 0);
+}
+
+function normalizeJanparaMa(shopName: string, item: Item): Row | null {
+  if (!item.url || !(item.price > 0)) return null;
+  const model = modelOf(item.name);
+  if (!model) return null;
+  const m = item.name.match(JANPARA_MA_RE);
+  let condition: string, carrierLabel: string, modelPart: string, after: string, rankRaw: string | undefined, storage: number;
+  if (m) {
+    [, condition, carrierLabel = "", , modelPart, , , after, rankRaw] = m;
+    storage = toStorage(m[5], m[6]);
+  } else {
+    const n = item.name.match(JANPARA_MA_NOSIZE_RE);
+    if (!n) return null;
+    [, condition, carrierLabel = "", , modelPart, rankRaw] = n;
+    after = "";
+    storage = model.manufacturer === "Motorola" ? motorolaStorageOf(model.modelName, carrierLabel) : 0;
+    if (!storage) return null;
+  }
+  return row(item, model.modelName, model.manufacturer, item.name, {
+    storage,
+    color: maColorOf(modelPart, after),
+    conditionRank: rankOf(rankRaw, condition === "未使用"),
+    batteryHealth: batteryOf(item),
+    carrier: oxCarrier(carrierLabel),
+    shopName,
+  });
+}
+
 export function normalizeJanparaAndroid(shopName: string, item: Item): Row | null {
+  if (/^【(?:中古|未使用)】\s*(?:MOTOROLA|FCNT|Fujitsu)\s/i.test(item.name)) return normalizeJanparaMa(shopName, item);
   const m = item.name.match(JANPARA_RE) ?? item.name.match(JANPARA_OX_RE);
   if (!m || !item.url || !(item.price > 0)) return null;
   const [, condition, carrierLabel = "", , modelPart, size, unit, after, rankRaw] = m;
@@ -187,7 +277,8 @@ const SOFMAP_RE = /^【(中古|未使用)[^】]*】\s*(?:\S+?\([^)]*\))?\s*((?:X
 const SOFMAP_OX_RE = /^【(中古|未使用)[^】]*】\s*(.*?)\s+(\d+)\s*(GB|TB)\s+(.*?)\s*(?:【[^】]*】)?\s*$/i;
 
 export function normalizeSofmapAndroid(shopName: string, item: Item): Row | null {
-  const m = item.name.match(SOFMAP_RE) ?? (/OPPO|Xiaomi|Redmi|POCO/i.test(item.name) ? item.name.match(SOFMAP_OX_RE) : null);
+  // motorola・arrows（2026-11-15〜）も同じ形: 【中古】Motorola(モトローラ) moto g66j 5G 128GB グレーミスト PB810001JP SIMフリー 【198-ud】
+  const m = item.name.match(SOFMAP_RE) ?? (/OPPO|Xiaomi|Redmi|POCO/i.test(item.name) || isMaName(item.name) ? item.name.match(SOFMAP_OX_RE) : null);
   if (!m || !item.url || !(item.price > 0)) return null;
   const [, condition, , size, unit, restRaw] = m;
   const model = modelOf(item.name);
@@ -195,7 +286,7 @@ export function normalizeSofmapAndroid(shopName: string, item: Item): Row | null
   const [first = ""] = restRaw.split(/\s+/);
   return row(item, model.modelName, model.manufacturer, item.name, {
     storage: toStorage(size, unit),
-    color: isOx(model.manufacturer) ? oxColorOf(first) : colorOf(first),
+    color: isMa(model.manufacturer) ? maColorOf(first) : isOx(model.manufacturer) ? oxColorOf(first) : colorOf(first),
     conditionRank: rankOf(item.rank, condition === "未使用"),
     batteryHealth: batteryOf(item),
     // 型番の後ろに「Softbank SIMフリー」のように書かれる。キャリアの記載がなければ国内版
@@ -266,16 +357,19 @@ export function normalizeIosysAndroid(item: Item): Row | null {
 
   // 「12GB/256GB」（メモリ/容量）は後ろが容量
   const sm = raw.match(/\d+GB\/(\d+)(GB|TB)/) ?? raw.match(/(\d+)(GB|TB)/);
-  const storage = sm ? toStorage(sm[1], sm[2]) : storageFromDocomoCode(raw) || storageFromOppoCode(raw);
+  // OPPO・Xiaomi は【UQmobile版SIMフリー】【Y!mobile版SIMフリー】【Rakuten版SIMフリー】【mineo版SIMフリー】が多いので、括弧の中から読む
+  const label = raw.match(/【([^】]*?)版SIMフリー】/)?.[1];
+  // motorola・arrows（2026-11-15〜）: arrows は型番の表（lib/arrowsCatalog.ts）、motorola は公式で容量が1つだけの機種（キャリア専売・国内版の SIMフリー版）
+  const ma = isMa(model.manufacturer);
+  const maStorage = model.manufacturer === "FCNT" ? storageFromArrowsCode(raw) : model.manufacturer === "Motorola" ? motorolaStorageOf(model.modelName, label ?? "") : 0;
+  const storage = sm ? toStorage(sm[1], sm[2]) : ma ? maStorage : storageFromDocomoCode(raw) || storageFromOppoCode(raw);
   if (!storage) return null;
 
   const carrier = parseCarrier(raw);
   // 色は、先頭の【…】を除いて、後ろの【docomo版SIMフリー】の手前までの語（機種名・型番・容量を除く）
   const body = raw.replace(/^(?:【[^】]*】)+/, "").split("【")[0];
   const ox = isOx(model.manufacturer);
-  const color = ox ? oxColorOf(body) : colorOf(body);
-  // OPPO・Xiaomi は【UQmobile版SIMフリー】【Y!mobile版SIMフリー】【Rakuten版SIMフリー】【mineo版SIMフリー】が多いので、括弧の中から読む
-  const label = raw.match(/【([^】]*?)版SIMフリー】/)?.[1];
+  const color = ma ? maColorOf(body) : ox ? oxColorOf(body) : colorOf(body);
   const oxCarrierValue = label === undefined ? (carrier === "Apple" ? "国内版" : carrier) : /国内/.test(label) ? "国内版" : oxCarrier(label);
   return {
     manufacturer: model.manufacturer, modelName: model.modelName, storage, color: color === "-" ? "不明" : color,

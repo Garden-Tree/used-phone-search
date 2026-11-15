@@ -11,7 +11,7 @@ import { RAKUTEN_KITAMURA_SHOP, normalizeKitamuraItem } from "@/lib/rakutenKitam
 import { RAKUTEN_MTM_SHOP, normalizeMtmItem } from "@/lib/rakutenMtm";
 import { RAKUTEN_IOSYS_SHOP, normalizeIosysItem } from "@/lib/rakutenIosys";
 import { normalizeIosysMac, normalizeJanparaMac, normalizeSofmapMac } from "@/lib/rakutenMac";
-import { normalizeGeoAndroid, normalizeIosysAndroid, normalizeJanparaAndroid, normalizeSofmapAndroid } from "@/lib/rakutenAndroid";
+import { MOTOROLA_ARROWS_NAME, normalizeGeoAndroid, normalizeIosysAndroid, normalizeJanparaAndroid, normalizeSofmapAndroid } from "@/lib/rakutenAndroid";
 import { WEAR_NAME, normalizeGeoWatch, normalizeIosysWatch, normalizeIosysWear, normalizeJanparaWatch, normalizeJanparaWear, normalizeNewsedtechWatch, normalizeSofmapWatch } from "@/lib/rakutenWatch";
 
 export type { RakutenItem };
@@ -33,8 +33,9 @@ type Normalize = RakutenShop["normalize"];
 
 type ByShop = (shopName: string, item: RakutenItem) => ReturnType<Normalize>;
 
-/** Android（rakutenAndroid.ts）に回す商品名: Xperia・AQUOS（2026-10-15〜）・OPPO・Xiaomi（Redmi・POCO。2026-11-12〜） */
-const ANDROID_NAME = /Xperia|AQUOS|OPPO|Xiaomi|Redmi|POCO/i;
+/** Android（rakutenAndroid.ts）に回す商品名: Xperia・AQUOS（2026-10-15〜）・OPPO・Xiaomi（Redmi・POCO。2026-11-12〜）・motorola・arrows（2026-11-15〜） */
+const ANDROID_NAME_BASE = /Xperia|AQUOS|OPPO|Xiaomi|Redmi|POCO/i;
+const ANDROID_NAME = { test: (name: string) => ANDROID_NAME_BASE.test(name) || MOTOROLA_ARROWS_NAME.test(name) };
 
 /**
  * 商品名に MacBook を含むものは Mac 用（2026-10-15〜。最初に判定する。mac を渡さない店＝ゲオは MacBook を取り込まない）、
