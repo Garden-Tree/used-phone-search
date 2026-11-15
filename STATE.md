@@ -66,7 +66,7 @@
 ## 次にやる（順序）
 
 ```
-1. 競合の薄い機種群を足す（ideas/11-13）
+1. 競合の薄い機種群（motorola・arrows はブランチ add-motorola-arrows・11/20 判断）
 2. 横動画「今買い？」型（ideas/11-13-longform-plan）
 ```
 
