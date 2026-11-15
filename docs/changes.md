@@ -178,3 +178,4 @@
 - 11/15 ショートの1世代前の型のつかみを直す（ユーザー了承）: 0秒目を「差は 34,400円」→「1世代前にすると／？？？円安い」、四角2つに「最新」「1世代前」、つかみの実写を暗く（-0.15→-0.3）。初回は 11/17 の watchgen。判定は直した回5本の視聴を継続が 21〜24%→40% 以上で採用（ideas/2026-11-14-youtube-research.md）
 - 11/15 ショートの0秒目の AI クリップに Watch を追加（ユーザー「watchの素材をflowで作ってみて」）: 暗い部屋の木の机に置いた手首・無地の黒い画面の角型スマートウォッチ・黒いベルト・ゆっくり寄る（顔・文字・ロゴ・アイコンなしと指示）。Flow・Omni 1.2 Flash・9:16・4秒・12クレジット（1回で採用・残り 78・11/23 リセット）。`shorts/assets/stock/ai-watch.mp4`（1080x1920・24fps・音なし・git 管理外）。元は `.claude/flow-test/flow-watch.mp4`（720x1280）。0.2秒・2秒目に顔・文字・ロゴ・崩れなし。右に竜頭のある角型で Apple Watch に似た形なので、特定の機種として見せない。`--live ai` への割り当て（liveClips.ts の AI_CLIPS・AI_CLIP_OF）はまだ
 - 11/15 月曜の AI の問いに2問（⑬iPhone 15 Pro 相場・⑭18 Pro Max 最安値）を足した（Bing の grounding query に出ていた・docs/measurement.md）
+- 11/15 次に足す製品の調査（ideas/2026-11-15）: Mac デスクトップ＞Surface＞Switch の順。motorola・arrows は検索数が小さい（arrows 88/月）ので、作り終えてもブランチに置いて 11/20 に決める
