@@ -37,6 +37,8 @@ export const VIDEOS = {
   watchDore: { id: "WcYKNKIuH4c", title: "中古Apple Watch、いま買うならどれ？Series 9が3.8万円で正解｜SE・Series・Ultraを8,654件の相場で比較【2026年11月】", minutes: 10, asOf: "2026-11-11", heading: "いま買うならどの Apple Watch かを動画で見る" },
   // 11/13 夕方に公開（13 は今買いか。14・15 との差と、買う前に見る3つ。/iphone/iphone-13 に）
   iphone13Now: { id: "RZDic1sW4p0", title: "中古iPhone 13は今買い？相場5万800円｜14・15との差と、買う前に見る3つ【2026年11月】", minutes: 9, asOf: "2026-11-13", heading: "iPhone 13 がいま買いかを動画で見る" },
+  // 11/15 12:00 公開（16 は今買いか。新品との差・未使用品・ランクBの256GB。/iphone/iphone-16 に）
+  iphone16Now: { id: "YSnBsKwo_2c", title: "中古iPhone 16は今買い？新品との差は1万9,000円｜未使用品は新品より高い【2026年11月】", minutes: 9, asOf: "2026-11-13", heading: "iPhone 16 がいま買いかを動画で見る" },
 } satisfies Record<string, Video>;
 
 /**
@@ -48,6 +50,7 @@ export function videoForModel(model: string): Video | null {
   if (/^iPhone (17e|18 Pro( Max)?)$/.test(model)) return VIDEOS.jirai;
   // 機種そのものの回がある機種は、Proと無印の回より先に（1ページに1本）
   if (model === "iPhone 13") return VIDEOS.iphone13Now;
+  if (model === "iPhone 16") return VIDEOS.iphone16Now;
   if (/^iPhone 1[3-7]( Pro( Max)?)?$/.test(model)) return VIDEOS.proOrStandard;
   // 4択の回の中心（中古の M5 Pro 24GB・1TB と、16インチ M5 Pro）
   if (/^MacBook Pro 1[46]インチ M5 Pro$/.test(model)) return VIDEOS.mbpProled;
