@@ -47,7 +47,7 @@ const OTHER_PREFIX = "other-";
 
 // 機種名の先頭で種類を見分ける（DB 版の検索の startsWith と同じく大文字小文字を区別）。どれでもない名前は検索に出さない
 const deviceOfName = (name: string): Device | null =>
-  name.startsWith("iPhone") ? "iphone" : name.startsWith("iPad") ? "ipad" : name.startsWith("Pixel") ? "pixel" : name.startsWith("Galaxy") ? "galaxy" : name.startsWith("MacBook") ? "mac" : name.startsWith("Xperia") ? "xperia" : name.startsWith("AQUOS") ? "aquos" : name.startsWith("Apple Watch") ? "watch" : name.startsWith("OPPO ") ? "oppo" : name.startsWith("Xiaomi ") ? "xiaomi" : name.startsWith("Samsung Galaxy Watch") ? "galaxy-watch" : name.startsWith("Google Pixel Watch") ? "pixel-watch" : null;
+  name.startsWith("iPhone") ? "iphone" : name.startsWith("iPad") ? "ipad" : name.startsWith("Pixel") ? "pixel" : name.startsWith("Galaxy") ? "galaxy" : name.startsWith("MacBook") || name.startsWith("Mac mini") || name.startsWith("iMac") || name.startsWith("Mac Studio") ? "mac" : name.startsWith("Xperia") ? "xperia" : name.startsWith("AQUOS") ? "aquos" : name.startsWith("Apple Watch") ? "watch" : name.startsWith("OPPO ") ? "oppo" : name.startsWith("Xiaomi ") ? "xiaomi" : name.startsWith("Samsung Galaxy Watch") ? "galaxy-watch" : name.startsWith("Google Pixel Watch") ? "pixel-watch" : null;
 
 /** ファイル名（拡張子なし）の一覧。在庫の有無にかかわらず全機種＋種類ごとの other を書き出す（ブラウザ側で 404 を出さないため） */
 export function inventoryFileKeys(): string[] {

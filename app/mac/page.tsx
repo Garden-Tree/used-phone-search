@@ -6,11 +6,11 @@ import AdDisclosure from "@/app/components/AdDisclosure";
 import { getModelMarket } from "@/lib/marketStats";
 import { hubSummary, hubWebPage, hubTitle } from "@/lib/hubSummary";
 import { modelPagePath } from "@/lib/catalog";
-import { MAC_INFO, MAC_MODELS } from "@/lib/macCatalog";
+import { MAC_DESKTOP_CATALOG, MAC_DESKTOP_INFO, MAC_DESKTOP_MODELS, MAC_INFO, MAC_MODELS } from "@/lib/macCatalog";
 import { SITE_NAME, SITE_URL, OG_BASE } from "@/lib/site";
 import { medianLabel, yen } from "@/lib/format";
 import { shopLabels, type Shop } from "@/lib/shops";
-import { activeMacShops } from "@/lib/activeShops";
+import { activeMacDesktopShops, activeMacShops } from "@/lib/activeShops";
 
 // 中古MacBook の機種一覧（2026-10-15〜）。在庫はビルド（1日4回）のたびに更新
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
@@ -44,6 +44,11 @@ export default async function MacIndexPage() {
   // 相場（中央値）・最安値・件数。/pixel・機種ページと同じ集計
   const stats = await getModelMarket(MAC_MODELS);
   const total = [...stats.values()].reduce((n, r) => n + r.count, 0);
+  // Mac デスクトップ（2026-11-15〜）。MacBook の件数・相場の文には混ぜない
+  const deskStats = await getModelMarket(MAC_DESKTOP_MODELS);
+  const deskStock = MAC_DESKTOP_MODELS.filter((m) => (deskStats.get(m)?.count ?? 0) > 0);
+  const deskTotal = deskStock.reduce((n, m) => n + (deskStats.get(m)?.count ?? 0), 0);
+  const deskShops = deskTotal > 0 ? await activeMacDesktopShops() : [];
 
   // 冒頭の1文（/iphone と同じ形。AI の概要・「MacBook 中古 相場」の検索向け。10/28〜）
   const summary = hubSummary("MacBook", MAC_MODELS, stats, shops.length);
@@ -121,6 +126,55 @@ export default async function MacIndexPage() {
             </section>
           );
         })}
+
+        {/* Mac デスクトップ（Mac mini・iMac・Mac Studio。2026-11-15〜）。在庫がある機種だけ（在庫が入るまでは欄ごと出さない。上の MacBook の欄・件数・タイトルは変えない） */}
+        {deskStock.length > 0 && (
+          <section className="my-8">
+            <h2 className="text-xl font-bold mb-1">Mac デスクトップ（Mac mini・iMac・Mac Studio）</h2>
+            <p className="text-[13px] text-ink-mute mb-3">
+              {deskShops.length > 0 && `${shopLabels(deskShops)}の`}中古 <strong>{deskTotal.toLocaleString()}件</strong>。Apple シリコン搭載モデルだけです（Intel は対象外）。
+            </p>
+            {MAC_DESKTOP_CATALOG.map(({ series, models }) => {
+              const rows = models.filter((m) => deskStock.includes(m));
+              if (rows.length === 0) return null;
+              return (
+                <div key={series} className="mb-4">
+                  <h3 className="text-base font-bold mb-2">{series}</h3>
+                  <div className="bg-white rounded-xl border border-line overflow-hidden">
+                    {rows.map((model, i) => {
+                      const s = deskStats.get(model);
+                      const info = MAC_DESKTOP_INFO[model];
+                      return (
+                        <Link
+                          key={model}
+                          href={modelPagePath(model)}
+                          className={`grid grid-cols-[auto_auto_1fr] md:grid-cols-[1fr_8.5rem_7.5rem_4.5rem] gap-x-5 gap-y-1.5 px-5 py-3 hover:bg-ground items-center ${i > 0 ? "border-t border-line-soft" : ""}`}
+                        >
+                          <span className="min-w-0 col-span-3 md:col-span-1">
+                            <span className="block font-bold text-ink">{model} <span className="text-gray-300">›</span></span>
+                            <span className="block text-[11px] text-ink-mute">{`${info.year}年発売・${info.chip}${info.family === "iMac" ? "・24インチ" : ""}`}</span>
+                          </span>
+                          <span className="whitespace-nowrap md:text-right">
+                            {s && <><span className="block text-[10px] text-ink-mute">{medianLabel(s.medianStorage, model)}</span><span className="font-bold text-ink">{yen(s.medianPrice)}</span></>}
+                          </span>
+                          <span className="whitespace-nowrap md:text-right">
+                            {s && <><span className="block text-[10px] text-ink-mute">最安値</span><span className="font-bold text-price">{yen(s.minPrice)}</span></>}
+                          </span>
+                          <span className="text-right self-end whitespace-nowrap text-sm text-ink-mute">{(s?.count ?? 0).toLocaleString()}件</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+            <p className="text-xs text-ink-mute leading-relaxed">
+              出典: Apple「<a href="https://support.apple.com/ja-jp/102852" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">Mac mini の識別</a>」
+              「<a href="https://support.apple.com/ja-jp/108054" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">iMac の識別</a>」
+              「<a href="https://support.apple.com/ja-jp/102231" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">Mac Studio の識別</a>」
+            </p>
+          </section>
+        )}
 
         <p className="text-xs text-ink-mute leading-relaxed">
           発売年は Apple 公式の情報です。出典: Apple「<a href="https://support.apple.com/ja-jp/102869" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-800">MacBook Air の識別</a>」

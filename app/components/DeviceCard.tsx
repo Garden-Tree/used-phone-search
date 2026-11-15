@@ -5,6 +5,7 @@ import { YAHOO_MCOM } from '@/lib/yahooMcom';
 import { BUILD_TIME } from '@/lib/buildTime';
 import { storageLabel } from '@/lib/format';
 import { isSmartwatch, missingCharger } from '@/lib/watchCatalog';
+import { MAC_NAME_RE } from '@/lib/macCatalog';
 
 // Define the type for the device object
 export type Device = {
@@ -107,7 +108,8 @@ export function MissingChargerTag({ device }: { device: Pick<Device, 'modelName'
 }
 
 export function deviceKind(d: Pick<Device, 'modelName'>) {
-  return { mac: /^MacBook/.test(d.modelName), watch: isSmartwatch(d.modelName) };
+  // Mac デスクトップ（Mac mini・iMac・Mac Studio。2026-11-15〜）も MacBook と同じくメモリ／SSD
+  return { mac: MAC_NAME_RE.test(d.modelName), watch: isSmartwatch(d.modelName) };
 }
 
 /** カードの1行目「（機種名）容量・色」。1TB 以上は TB（11/9〜。それまで iPhone は 1024GB と出ていた）。DeviceCard と PickPair で共有 */

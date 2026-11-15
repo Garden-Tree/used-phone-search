@@ -29,7 +29,8 @@ export const topStockLabels = (byShop: PriceRow[], n = 3): string[] =>
 /** 検索結果に出る説明文（約110字以内。重要な数字を先頭に） */
 export function modelDescription(model: string, stats: { minPrice: number | null; medianPrice: number | null; medianStorage?: number | null; count: number; shopCount: number; byShop: PriceRow[]; byStorage?: PriceRow[] }): string {
   // MacBook（2026-10-15〜）は容量の代わりにメモリ・SSD で比べる
-  const mac = /^MacBook/.test(model);
+  // Mac デスクトップ（Mac mini・iMac・Mac Studio。2026-11-15〜）も同じ
+  const mac = /^(?:MacBook|Mac mini|iMac|Mac Studio)/.test(model);
   // Apple Watch（2026-10-15〜）は容量の代わりにケースのサイズ（mm）・通信方式（GPS／GPS+Cellular）で比べる
   const watch = isSmartwatch(model);
   if (stats.minPrice === null && watch) return `${model}の中古在庫を大手中古ショップから一括比較。ケースのサイズ・通信方式・状態ランク別の最安値をまとめています。`;

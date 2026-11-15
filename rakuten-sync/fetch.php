@@ -44,6 +44,12 @@ const KEYWORDS = ['iPhone', 'iPad', 'Pixel', 'Galaxy'];
 // MacBook は 2026-10-15〜、Apple シリコンの在庫がある3店だけ（読み取りは lib/rakutenMac.ts）。
 // ほかの店で「MacBook」を引くとモニタ・ケーブルが数万件当たり、要求数の上限（MAX_REQUESTS）を超えて店ごと失敗するため
 const MAC_SHOP_CODES = ['janpara', 'akiba-u-shop', 'pc-good'];
+// Mac デスクトップ（Mac mini・iMac・Mac Studio）は 2026-11-15〜（ブランチ add-mac-desktop。サーバーへの反映はまだ）。同じ3店だけ（ゲオの楽天店にはほぼない）。
+// 読み取りは lib/rakutenMac.ts（機種は lib/macCatalog.ts の canonicalMacDesktopModel。Intel・周辺機器は落とす）。
+// 要求数の見込み（2026-11-15 の楽天の店内検索・5,000円以上の件数。1ページ30件）: じゃんぱら Mac mini 約175件＝6・iMac 約27件＝1・Mac Studio 約5件＝1、
+// ソフマップ 約96＝4・約39＝2・約3＝1、イオシス 約34＝2・約2＝1・約17＝1（イオシスの iMac・Mac Studio は MacBook などの関連が当たるだけ）
+// → 3店で 約 19 要求（1店あたり 3〜8）。API は 1円以上で引くので、件数が少し多くなっても 1店あたりの上限 1500 には遠い。取得時間は 1店あたり +数秒〜10秒
+const MAC_DESKTOP_KEYWORDS = ['Mac mini', 'iMac', 'Mac Studio'];
 // Xperia・AQUOS は 2026-10-15〜、ゲオ・じゃんぱら・ソフマップ・イオシスの4店だけ（読み取りは lib/rakutenAndroid.ts）。
 // ニューズドテック・キタムラ・エムティーエムは件数が少ないので引かない。
 // 要求数の概算（MAX_REQUESTS=1500 に収まるか）: ゲオは Xperia 約1,200件・AQUOS 約1,250件の追加で、1ページ30件 → 約 41＋42 ＝ 約 85 要求
@@ -259,7 +265,7 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
         return true;
     }
 
-    $keywords = in_array($shopCode, MAC_SHOP_CODES, true) ? array_merge(KEYWORDS, ['MacBook']) : KEYWORDS;
+    $keywords = in_array($shopCode, MAC_SHOP_CODES, true) ? array_merge(KEYWORDS, ['MacBook'], MAC_DESKTOP_KEYWORDS) : KEYWORDS;
     if (in_array($shopCode, ANDROID_SHOP_CODES, true)) $keywords = array_merge($keywords, ANDROID_KEYWORDS);
     if (in_array($shopCode, WATCH_SHOP_CODES, true)) $keywords = array_merge($keywords, WATCH_KEYWORDS);
     foreach ($keywords as $keyword) {

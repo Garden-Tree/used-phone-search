@@ -1,7 +1,7 @@
 import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { PIXEL_MODELS } from "@/lib/pixelCatalog";
 import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
-import { MAC_MODELS } from "@/lib/macCatalog";
+import { MAC_DESKTOP_MODELS, MAC_MODELS } from "@/lib/macCatalog";
 import { XPERIA_MODELS } from "@/lib/xperiaCatalog";
 import { AQUOS_MODELS } from "@/lib/aquosCatalog";
 import { OPPO_MODELS } from "@/lib/oppoCatalog";
@@ -74,6 +74,19 @@ export function matchesModel(query: string, modelName: string): boolean {
     if (MAC_MODELS.some((m) => m.toLowerCase() === q)) return q === name;
     return /^macbook/.test(name) && q.split(/\s+/).every((word) => name.includes(word));
   }
+  // Mac デスクトップ（2026-11-15〜）も正式名（「Mac mini M4」「iMac M3」「Mac Studio M2 Ultra」）にそろえている。
+  // 正式名なら完全一致（「Mac mini M4」が「Mac mini M4 Pro」に当たらない）、大まかな検索（「Mac mini」）は語がすべて含まれる機種に当てる
+  const desktopRe = /^\s*(?:mac\s*mini|imac|mac\s*studio)(?![a-z])/i;
+  const desktopQuery = desktopRe.test(query);
+  if (desktopQuery || desktopRe.test(modelName)) {
+    if (!desktopQuery) return false;
+    const norm = (s: string) => s.trim().toLowerCase().replace(/^mac\s*mini/, "mac mini").replace(/^mac\s*studio/, "mac studio");
+    const q = norm(query);
+    const name = norm(modelName);
+    if (MAC_DESKTOP_MODELS.some((m) => m.toLowerCase() === q)) return q === name;
+    const family = (s: string) => s.split(/\s+/).slice(0, s.startsWith("imac") ? 1 : 2).join(" ");
+    return family(q) === family(name) && q.split(/\s+/).every((word) => name.split(/\s+/).includes(word));
+  }
   // Apple Watch も取り込み時に lib/watchCatalog.ts の正式名（「Apple Watch Series 10」「Apple Watch SE（第2世代）」）にそろえている（2026-10-15〜）。
   // 汎用の経路だと先頭の語が同じ "apple" になり、世代が混ざる。正式名なら完全一致にする
   // （Series 1 と Series 10・11・12、Ultra と Ultra 2、SE（第1世代）と SE 3 を取り違えない）。正式名でない検索（「Apple Watch」）は、語がすべて含まれる機種に当てる
@@ -140,7 +153,8 @@ export const SEARCH_DEVICES = [
   { key: "ipad", label: "iPad", prefix: "iPad" },
   { key: "pixel", label: "Pixel", prefix: "Pixel" },
   { key: "galaxy", label: "Galaxy", prefix: "Galaxy" },
-  { key: "mac", label: "MacBook", prefix: "MacBook" },
+  // Mac は MacBook と Mac デスクトップ（Mac mini・iMac・Mac Studio。2026-11-15〜）。DB 版の検索は lib/deviceSearch.ts で頭の語の OR にする
+  { key: "mac", label: "Mac", prefix: "MacBook" },
   { key: "xperia", label: "Xperia", prefix: "Xperia" },
   { key: "aquos", label: "AQUOS", prefix: "AQUOS" },
   { key: "oppo", label: "OPPO", prefix: "OPPO " },

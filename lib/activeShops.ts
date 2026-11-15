@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
-import { AQUOS_SHOPS, GALAXY_WATCH_SHOPS, MAC_SHOPS, OPPO_SHOPS, PIXEL_WATCH_SHOPS, SHOPS, WATCH_SHOPS, XIAOMI_SHOPS, XPERIA_SHOPS, findShop, shopsFor, type Shop } from "@/lib/shops";
+import { MAC_DESKTOP_PREFIXES, isMacDesktop } from "@/lib/macCatalog";
+import { AQUOS_SHOPS, GALAXY_WATCH_SHOPS, MAC_DESKTOP_SHOPS, MAC_SHOPS, OPPO_SHOPS, PIXEL_WATCH_SHOPS, SHOPS, WATCH_SHOPS, XIAOMI_SHOPS, XPERIA_SHOPS, findShop, shopsFor, type Shop } from "@/lib/shops";
 
 /**
  * いま在庫が1件以上見える（isSoldOut=false）店だけの一覧。ページに出す「○店」の数はこれで数える。
@@ -77,11 +78,14 @@ export async function activeMacShops(): Promise<Shop[]> {
  */
 const activeByPrefix = new Map<string, Promise<Set<string>>>();
 
-function activePrefixShopNames(prefix: string, fallback: Shop[]): Promise<Set<string>> {
+// prefix は配列も渡せる（Mac デスクトップ: "Mac mini"・"iMac"・"Mac Studio" の OR。2026-11-15〜）
+function activePrefixShopNames(prefixes: string | readonly string[], fallback: Shop[]): Promise<Set<string>> {
+  const list = typeof prefixes === "string" ? [prefixes] : [...prefixes];
+  const prefix = list.join("|");
   let p = activeByPrefix.get(prefix);
   if (!p) {
     p = prisma.deviceInventory
-      .groupBy({ by: ["shopName"], where: { isSoldOut: false, modelName: { startsWith: prefix } }, _count: { _all: true } })
+      .groupBy({ by: ["shopName"], where: { isSoldOut: false, OR: list.map((s) => ({ modelName: { startsWith: s } })) }, _count: { _all: true } })
       .then((rows) => {
         const names = new Set<string>();
         for (const r of rows) {
@@ -144,9 +148,16 @@ export async function activePixelWatchShops(): Promise<Shop[]> {
   return PIXEL_WATCH_SHOPS.filter((s) => names.has(s.name));
 }
 
+/** Mac デスクトップ（Mac mini・iMac・Mac Studio）の在庫がいまある店（MAC_DESKTOP_SHOPS のうち。2026-11-15〜） */
+export async function activeMacDesktopShops(): Promise<Shop[]> {
+  const names = await activePrefixShopNames(MAC_DESKTOP_PREFIXES, MAC_DESKTOP_SHOPS);
+  return MAC_DESKTOP_SHOPS.filter((s) => names.has(s.name));
+}
+
 /** 機種の種類（iPad なら iPad を扱う店など）ごとの、いま在庫がある店。MacBook・Xperia・AQUOS・Apple Watch はその種類の在庫がある店 */
 export const activeShopsFor = (model: string) =>
   /^MacBook/.test(model) ? activeMacShops()
+  : isMacDesktop(model) ? activeMacDesktopShops()
   : /^Xperia/.test(model) ? activeXperiaShops()
   : /^AQUOS/.test(model) ? activeAquosShops()
   : /^OPPO /.test(model) ? activeOppoShops()

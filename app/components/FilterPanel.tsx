@@ -4,6 +4,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { GALAXY_WATCH_SHOPS, MAC_SHOPS, PIXEL_WATCH_SHOPS, SHOPS, WATCH_SHOPS } from '@/lib/shops';
 import { WATCH_CARRIERS, WATCH_SIZE_OPTIONS } from '@/lib/watchCatalog';
+import { MAC_QUERY_RE } from '@/lib/macCatalog';
 import { GALAXY_WATCH_CARRIERS, GALAXY_WATCH_SIZE_OPTIONS } from '@/lib/galaxyWatchCatalog';
 import { PIXEL_WATCH_CARRIERS, PIXEL_WATCH_SIZE_OPTIONS } from '@/lib/pixelWatchCatalog';
 
@@ -64,7 +65,8 @@ export default function FilterPanel({ activeShopNames }: { activeShopNames?: str
   // 在庫がない店は出さない（ビルド時に渡される）。URL で選ばれている店は、解除できるよう残す。未指定なら全店
   const currentShop = searchParams.get('shop');
   // MacBook を見ているとき（?device=mac または機種が MacBook）は、MacBook を扱う店だけ・容量は SSD・メモリの項目を足す
-  const mac = searchParams.get('device') === 'mac' || /^\s*macbook/i.test(searchParams.get('model') ?? '');
+  // Mac デスクトップ（Mac mini・iMac・Mac Studio。2026-11-15〜）も同じ
+  const mac = searchParams.get('device') === 'mac' || MAC_QUERY_RE.test(searchParams.get('model') ?? '');
   const activeOptions = activeShopNames
     ? SHOP_OPTIONS.filter((o) => o.id === 'all' || o.id === currentShop || activeShopNames.includes(o.id))
     : SHOP_OPTIONS;

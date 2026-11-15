@@ -11,6 +11,7 @@ import { RAKUTEN_KITAMURA_SHOP, normalizeKitamuraItem } from "@/lib/rakutenKitam
 import { RAKUTEN_MTM_SHOP, normalizeMtmItem } from "@/lib/rakutenMtm";
 import { RAKUTEN_IOSYS_SHOP, normalizeIosysItem } from "@/lib/rakutenIosys";
 import { normalizeIosysMac, normalizeJanparaMac, normalizeSofmapMac } from "@/lib/rakutenMac";
+import { MAC_DESKTOP_TITLE_RE } from "@/lib/macCatalog";
 import { normalizeGeoAndroid, normalizeIosysAndroid, normalizeJanparaAndroid, normalizeSofmapAndroid } from "@/lib/rakutenAndroid";
 import { WEAR_NAME, normalizeGeoWatch, normalizeIosysWatch, normalizeIosysWear, normalizeJanparaWatch, normalizeJanparaWear, normalizeNewsedtechWatch, normalizeSofmapWatch } from "@/lib/rakutenWatch";
 
@@ -54,6 +55,8 @@ function byDevice(iphone: Normalize, ipad: ByShop, pixel: ByShop, galaxy: ByShop
 function byDeviceBase(iphone: Normalize, ipad: ByShop, pixel: ByShop, galaxy: ByShop, shopName: string, mac?: Normalize, android?: ByShop, watch?: Normalize): Normalize {
   return (item) =>
     /MacBook/i.test(item.name) ? (mac ? mac(item) : null)
+    // Mac デスクトップ（Mac mini・iMac・Mac Studio。2026-11-15〜）。mac を渡す店だけ（ゲオは今までどおり）。周辺機器・Intel は Mac の読み取りが落とす
+    : mac && MAC_DESKTOP_TITLE_RE.test(item.name) ? mac(item)
     : /Apple[ ]?Watch/i.test(item.name) ? (watch ? watch(item) : null) // Apple Watch（2026-10-15〜。MacBook の次。watch を渡さない店＝キタムラ・エムティーエムは取り込まない。バンド・充電器などは Watch 用の読み取りが落とす）
     : /iPad/.test(item.name) ? ipad(shopName, item)
     : /Pixel/i.test(item.name) ? pixel(shopName, item)
@@ -91,7 +94,7 @@ export const RAKUTEN_SHOPS: Record<string, RakutenShop> = {
   ekosuta: { shopName: RAKUTEN_MTM_SHOP, alsoReplace: [], normalize: normalizeMtmItem },
   // イオシス（2026-10-08〜）。公式サイトと同じ商品は、取り込みのあと scripts/link-duplicate-shops.ts が公式の行に添えて消す
   // Galaxy Watch・Pixel Watch（2026-11-13〜）は Watch 用の読み取りを試し、行にならなければ今までの振り分けへ
-  "pc-good": { shopName: RAKUTEN_IOSYS_SHOP, alsoReplace: [], normalize: (item) => (/MacBook/i.test(item.name) ? normalizeIosysMac(item) : /Apple[ ]?Watch/i.test(item.name) ? normalizeIosysWatch(item) : (WEAR_NAME.test(item.name) ? normalizeIosysWear(item) : null) ?? (ANDROID_NAME.test(item.name) ? normalizeIosysAndroid(item) : normalizeIosysItem(item))) },
+  "pc-good": { shopName: RAKUTEN_IOSYS_SHOP, alsoReplace: [], normalize: (item) => (/MacBook/i.test(item.name) || MAC_DESKTOP_TITLE_RE.test(item.name) ? normalizeIosysMac(item) : /Apple[ ]?Watch/i.test(item.name) ? normalizeIosysWatch(item) : (WEAR_NAME.test(item.name) ? normalizeIosysWear(item) : null) ?? (ANDROID_NAME.test(item.name) ? normalizeIosysAndroid(item) : normalizeIosysItem(item))) },
 };
 
 /** 楽天経由の在庫のショップ名（リンクは楽天アフィリエイトだけにする） */

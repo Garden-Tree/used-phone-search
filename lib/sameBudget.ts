@@ -1,6 +1,7 @@
 import { ALL_DEVICE_PAGE_MODELS, deviceOf, type Device } from "@/lib/catalog";
 import { getModelMarket, type ModelMarket } from "@/lib/marketStats";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
+import { isMacDesktop } from "@/lib/macCatalog";
 
 /**
  * 「同じ予算で買える他の機種」（機種ページ・2026-10-23〜）: 同じ種類（iPhone・iPad など）で、相場（在庫がいちばん多い容量の中央値）が
@@ -30,7 +31,8 @@ export async function sameBudgetModels(model: string, median: number, n = 3): Pr
   try {
     const market = await marketOf(deviceOf(model));
     return [...market.entries()]
-      .filter(([m, v]) => m !== model && v.count >= MIN_COUNT && Math.abs(v.medianPrice - median) <= median * WIDTH)
+      // Mac は MacBook どうし・デスクトップ（2026-11-15〜）どうしで比べる（ノートとデスクトップは用途が違う）
+      .filter(([m, v]) => m !== model && isMacDesktop(m) === isMacDesktop(model) && v.count >= MIN_COUNT && Math.abs(v.medianPrice - median) <= median * WIDTH)
       .map(([m, v]) => ({ model: m, market: v, diff: v.medianPrice - median }))
       .sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff))
       .slice(0, n);

@@ -13,6 +13,7 @@
     "normalize:ipad": "tsx scripts/normalize-ipad-models.ts",
     "test:normalize": "tsx scripts/test-normalizers.ts",
     "test:mac": "tsx scripts/test-mac-normalize.ts",
+    "test:mac-desktop": "tsx scripts/test-mac-desktop.ts",
     "test:android": "tsx scripts/test-xperia-aquos.ts",
     "test:oppo-xiaomi": "tsx scripts/test-oppo-xiaomi.ts",
     "test:watch": "tsx scripts/test-watch.ts",

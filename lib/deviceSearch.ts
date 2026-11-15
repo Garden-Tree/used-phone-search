@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { ranksAtLeast } from "@/lib/rankFilter";
 import prisma from "@/lib/prisma";
 import { findSearchDevice, matchesModel } from "@/lib/modelMatch";
+import { MAC_DESKTOP_PREFIXES } from "@/lib/macCatalog";
 
 // 照合と種類の切り替えは lib/modelMatch.ts（ブラウザでも使う）
 export { SEARCH_DEVICES, findSearchDevice, matchesModel, splitModelQuery } from "@/lib/modelMatch";
@@ -71,6 +72,7 @@ export function buildWhere(p: SearchParams): Prisma.DeviceInventoryWhereInput {
   // ショップだけ指定の一覧はトップの在庫数（全種類の合計）と揃えるため全種類を含める（MacBook は 2026-10-15〜 ページができるまで除く。トップの数え方と同じ）
   const device = findSearchDevice(p.device);
   if (p.modelNames) and.push({ modelName: { in: p.modelNames } });
+  else if (device?.key === "mac") and.push({ OR: ["MacBook", ...MAC_DESKTOP_PREFIXES].map((p) => ({ modelName: { startsWith: p } })) });
   else if (device) and.push({ modelName: { startsWith: device.prefix } });
   else if (!p.shop || p.shop === "all") and.push({ modelName: { startsWith: "iPhone" } });
   else and.push({ NOT: { modelName: { startsWith: "MacBook" } } });

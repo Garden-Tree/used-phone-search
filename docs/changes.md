@@ -179,3 +179,4 @@
 - 11/15 ショートの0秒目の AI クリップに Watch を追加（ユーザー「watchの素材をflowで作ってみて」）: 暗い部屋の木の机に置いた手首・無地の黒い画面の角型スマートウォッチ・黒いベルト・ゆっくり寄る（顔・文字・ロゴ・アイコンなしと指示）。Flow・Omni 1.2 Flash・9:16・4秒・12クレジット（1回で採用・残り 78・11/23 リセット）。`shorts/assets/stock/ai-watch.mp4`（1080x1920・24fps・音なし・git 管理外）。元は `.claude/flow-test/flow-watch.mp4`（720x1280）。0.2秒・2秒目に顔・文字・ロゴ・崩れなし。右に竜頭のある角型で Apple Watch に似た形なので、特定の機種として見せない。`--live ai` への割り当て（liveClips.ts の AI_CLIPS・AI_CLIP_OF）はまだ
 - 11/15 月曜の AI の問いに2問（⑬iPhone 15 Pro 相場・⑭18 Pro Max 最安値）を足した（Bing の grounding query に出ていた・docs/measurement.md）
 - 11/15 次に足す製品の調査（ideas/2026-11-15）: Mac デスクトップ＞Surface＞Switch の順。motorola・arrows は検索数が小さい（arrows 88/月）ので、作り終えてもブランチに置いて 11/20 に決める
+- 11/15 Mac デスクトップ（Mac mini 7・iMac 4・Mac Studio 8 機種。Apple シリコンだけ）をブランチ add-mac-desktop に作った（本番・サーバーの fetch.php は未反映）。楽天3店の Apple シリコン 約260件／Intel 約70件・要求数 +約19/回（ideas/2026-11-15-mac-desktop.md）

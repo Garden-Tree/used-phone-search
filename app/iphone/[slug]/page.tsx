@@ -26,7 +26,7 @@ import {
   slugToModel,
 } from "@/lib/catalog";
 import { getBatteryRows, getMedianAt, getMemorySsdRankMatrix, getModelStats, getStorageMedians, getStorageRankMatrix, macCellKey, type MemorySsdRankMatrix, type PriceRow, type StorageRankMatrix } from "@/lib/modelStats";
-import { MAC_INFO } from "@/lib/macCatalog";
+import { MAC_DESKTOP_INFO, MAC_INFO } from "@/lib/macCatalog";
 import { WATCH_INFO, WATCHOS27_IPHONE, isWatchOS27 } from "@/lib/watchCatalog";
 import { GALAXY_WATCH_INFO, GALAXY_WATCH_SOURCE } from "@/lib/galaxyWatchCatalog";
 import { PIXEL_WATCH_INFO, PIXEL_WATCH_SOURCE } from "@/lib/pixelWatchCatalog";
@@ -291,13 +291,15 @@ export default async function ModelPage({ params }: Props) {
   const missingChargerCount = stats.count > 0 && watch && !appleWatch ? await getMissingChargerCount(model) : 0;
   const spec = specOf(model);
   const macInfo = MAC_INFO[model];
+  const deskInfo = MAC_DESKTOP_INFO[model];
   const watchInfo = WATCH_INFO[model];
   // Galaxy Watch・Pixel Watch の基本情報（公式で確かめた値だけ。lib/galaxyWatchCatalog.ts・pixelWatchCatalog.ts）
   const galaxyWatchInfo = GALAXY_WATCH_INFO[model];
   const pixelWatchInfo = PIXEL_WATCH_INFO[model];
   const hub = DEVICE_HUB[device];
   const listPath = hub.path;
-  const listName = hub.name;
+  // Mac デスクトップ（2026-11-15〜）は /mac の中の「Mac デスクトップ」の欄へ（パンくずの名前だけ変える。MacBook のページは今までどおり）
+  const listName = deskInfo ? "中古Mac（MacBook・デスクトップ）" : hub.name;
   const pixel = PIXEL_INFO[model];
   const pixelUntil = updateUntil(model);
   // 保証の残り（ビルドのたびに作り直すので、その時点の年月で計算する）
@@ -917,6 +919,34 @@ export default async function ModelPage({ params }: Props) {
                           : <a href="https://support.apple.com/ja-jp/108052" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">サポート（MacBook Pro の識別）</a>}
                       ・<a href="https://www.apple.com/jp/os/macos/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">macOS の対応機種</a>
                       {/^M[12] (Pro|Max)$/.test(macInfo.chip) && "。チップは機種名どおりで、Apple の識別ページの本文には記載がありません"}
+                    </p>
+                  </Accordion>
+                )}
+                {/* Mac デスクトップ（Mac mini・iMac・Mac Studio。2026-11-15〜）の基本スペック（Apple 公式の識別ページで確かめた値だけ。lib/macCatalog.ts の MAC_DESKTOP_INFO） */}
+                {deskInfo && (
+                  <Accordion title={`${model}の基本スペック`} hint={`${deskInfo.year}年発売`}>
+                    <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                      <dt className="text-ink-mute font-bold">発売</dt>
+                      <dd>{deskInfo.year}年</dd>
+                      <dt className="text-ink-mute font-bold">チップ</dt>
+                      <dd>{deskInfo.chip}</dd>
+                      {deskInfo.family === "iMac" && (
+                        <>
+                          <dt className="text-ink-mute font-bold">画面サイズ</dt>
+                          <dd>24インチ</dd>
+                        </>
+                      )}
+                      <dt className="text-ink-mute font-bold">対応 OS</dt>
+                      <dd>macOS 27 Golden Gate に対応</dd>
+                      <dt className="text-ink-mute font-bold">Apple の識別名</dt>
+                      <dd>{deskInfo.appleName}</dd>
+                    </dl>
+                    <p className="mt-3 text-[11px] text-ink-mute leading-relaxed">
+                      出典: Apple{" "}
+                      <a href={deskInfo.source} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">
+                        サポート（{deskInfo.family === "mini" ? "Mac mini" : deskInfo.family === "iMac" ? "iMac" : "Mac Studio"} の識別）
+                      </a>
+                      ・<a href="https://www.apple.com/jp/os/macos/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-brand-600">macOS の対応機種</a>
                     </p>
                   </Accordion>
                 )}

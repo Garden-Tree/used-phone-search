@@ -1,7 +1,7 @@
 import { IPAD_CATALOG, IPAD_MODELS } from "@/lib/ipadCatalog";
 import { PIXEL_CATALOG, PIXEL_MODELS, isPixel } from "@/lib/pixelCatalog";
 import { GALAXY_CATALOG, GALAXY_MODELS, isGalaxy } from "@/lib/galaxyCatalog";
-import { MAC_CATALOG, MAC_MODELS, isMac } from "@/lib/macCatalog";
+import { MAC_CATALOG, MAC_DESKTOP_CATALOG, MAC_DESKTOP_MODELS, MAC_MODELS, isMac } from "@/lib/macCatalog";
 import { XPERIA_CATALOG, XPERIA_MODELS, isXperia } from "@/lib/xperiaCatalog";
 import { AQUOS_CATALOG, AQUOS_MODELS, isAquos } from "@/lib/aquosCatalog";
 import { WATCH_CATALOG, WATCH_MODELS, isWatch } from "@/lib/watchCatalog";
@@ -81,8 +81,8 @@ export const ALL_CATALOG_MODELS = IPHONE_CATALOG.flatMap((s) => s.models);
 /** モデル別ページを持つ全 iPhone（新しい順） */
 export const ALL_PAGE_MODELS = [...ALL_CATALOG_MODELS, ...LEGACY_SERIES.flatMap((s) => s.models)];
 
-/** モデル別ページを持つ全機種（iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch）。価格推移の記録・sitemap・slug の解決に使う。MacBook・Xperia・AQUOS・Apple Watch は末尾（2026-10-15〜。既存機種の並びは変えない）。OPPO・Xiaomi はさらにその後ろ（2026-11-12〜）。Galaxy Watch・Pixel Watch は末尾（2026-11-13〜） */
-export const ALL_DEVICE_PAGE_MODELS = [...ALL_PAGE_MODELS, ...IPAD_MODELS, ...PIXEL_MODELS, ...GALAXY_MODELS, ...MAC_MODELS, ...XPERIA_MODELS, ...AQUOS_MODELS, ...WATCH_MODELS, ...OPPO_MODELS, ...XIAOMI_MODELS, ...GALAXY_WATCH_MODELS, ...PIXEL_WATCH_MODELS];
+/** モデル別ページを持つ全機種（iPhone・iPad・Pixel・Galaxy・MacBook・Xperia・AQUOS・Apple Watch）。価格推移の記録・sitemap・slug の解決に使う。MacBook・Xperia・AQUOS・Apple Watch は末尾（2026-10-15〜。既存機種の並びは変えない）。OPPO・Xiaomi はさらにその後ろ（2026-11-12〜）。Galaxy Watch・Pixel Watch は末尾（2026-11-13〜）。Mac デスクトップ（Mac mini・iMac・Mac Studio。/mac/<slug>）はさらにその後ろ（2026-11-15〜） */
+export const ALL_DEVICE_PAGE_MODELS = [...ALL_PAGE_MODELS, ...IPAD_MODELS, ...PIXEL_MODELS, ...GALAXY_MODELS, ...MAC_MODELS, ...XPERIA_MODELS, ...AQUOS_MODELS, ...WATCH_MODELS, ...OPPO_MODELS, ...XIAOMI_MODELS, ...GALAXY_WATCH_MODELS, ...PIXEL_WATCH_MODELS, ...MAC_DESKTOP_MODELS];
 
 const ORDINAL: Record<string, string> = { "1": "1st", "2": "2nd", "3": "3rd" };
 
@@ -133,7 +133,7 @@ export function modelPagePath(model: string): string {
 
 /** 同じシリーズの他モデル */
 export function siblingModels(model: string): string[] {
-  const group = [...IPHONE_CATALOG, ...LEGACY_SERIES, ...IPAD_CATALOG, ...PIXEL_CATALOG, ...GALAXY_CATALOG, ...MAC_CATALOG, ...XPERIA_CATALOG, ...AQUOS_CATALOG, ...WATCH_CATALOG, ...OPPO_CATALOG, ...XIAOMI_CATALOG, ...GALAXY_WATCH_CATALOG, ...PIXEL_WATCH_CATALOG].find((s) => s.models.includes(model));
+  const group = [...IPHONE_CATALOG, ...LEGACY_SERIES, ...IPAD_CATALOG, ...PIXEL_CATALOG, ...GALAXY_CATALOG, ...MAC_CATALOG, ...XPERIA_CATALOG, ...AQUOS_CATALOG, ...WATCH_CATALOG, ...OPPO_CATALOG, ...XIAOMI_CATALOG, ...GALAXY_WATCH_CATALOG, ...PIXEL_WATCH_CATALOG, ...MAC_DESKTOP_CATALOG].find((s) => s.models.includes(model));
   return group ? group.models.filter((m) => m !== model) : [];
 }
 

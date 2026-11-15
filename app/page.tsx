@@ -4,7 +4,7 @@ import { ALL_DEVICE_PAGE_MODELS, IPHONE_CATALOG, modelPagePath, slugToModel } fr
 import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { PIXEL_MODELS } from "@/lib/pixelCatalog";
 import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
-import { MAC_MODELS } from "@/lib/macCatalog";
+import { MAC_DESKTOP_MODELS, MAC_MODELS } from "@/lib/macCatalog";
 import { XPERIA_MODELS } from "@/lib/xperiaCatalog";
 import { AQUOS_MODELS } from "@/lib/aquosCatalog";
 import { WATCH_MODELS } from "@/lib/watchCatalog";
@@ -92,7 +92,8 @@ const DEVICE_HUBS: { label: string; path: string; models: string[] }[] = [
   { label: "iPad", path: "/ipad", models: IPAD_MODELS },
   { label: "Pixel", path: "/pixel", models: PIXEL_MODELS },
   { label: "Galaxy", path: "/galaxy", models: GALAXY_MODELS },
-  { label: "MacBook", path: "/mac", models: MAC_MODELS },
+  // Mac デスクトップ（Mac mini・iMac・Mac Studio。2026-11-15〜）も /mac に載せるので、タイルは「Mac」で件数に含める
+  { label: "Mac", path: "/mac", models: [...MAC_MODELS, ...MAC_DESKTOP_MODELS] },
   { label: "Xperia", path: "/xperia", models: XPERIA_MODELS },
   { label: "AQUOS", path: "/aquos", models: AQUOS_MODELS },
   { label: "Apple Watch", path: "/watch", models: WATCH_MODELS },
@@ -109,7 +110,7 @@ const HUB_COLORS: Record<string, string> = {
   "Apple Watch": "bg-[#B45309]",
   Pixel: "bg-[#166534]",
   Galaxy: "bg-[#6D28D9]",
-  MacBook: "bg-[#374151]",
+  Mac: "bg-[#374151]",
   Xperia: "bg-[#1E40AF]",
   AQUOS: "bg-[#9A3412]",
   OPPO: "bg-[#065F46]",
@@ -118,7 +119,7 @@ const HUB_COLORS: Record<string, string> = {
   "Pixel Watch": "bg-[#15803D]",
 };
 // タイルの並び（見本: 件数の多い順ではなく固定）
-const HUB_ORDER = ["iPhone", "iPad", "Apple Watch", "Pixel", "Galaxy", "MacBook", "Xperia", "AQUOS"];
+const HUB_ORDER = ["iPhone", "iPad", "Apple Watch", "Pixel", "Galaxy", "Mac", "Xperia", "AQUOS"];
 // OPPO・Xiaomi（2026-11-12〜）は上の8つ（1行で固定）の後ろに、同じ形のタイルで2段目に足す
 // Galaxy Watch・Pixel Watch（2026-11-13〜）も2段目に（スマホで4つ＝ちょうど1行）
 const HUB_ORDER_MORE = ["OPPO", "Xiaomi", "Galaxy Watch", "Pixel Watch"];

@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { batteryOf, rankOf, type RakutenItem } from "@/lib/rakutenCommon";
-import { canonicalMacModel, parseMacSpec } from "@/lib/macCatalog";
+import { canonicalMacDesktopModel, canonicalMacModel, parseMacDesktopSpec, parseMacSpec } from "@/lib/macCatalog";
 import { RAKUTEN_JANPARA_SHOP } from "@/lib/rakutenJanpara";
 import { RAKUTEN_SOFMAP_SHOP } from "@/lib/rakutenSofmap";
 import { RAKUTEN_IOSYS_SHOP } from "@/lib/rakutenIosys";
@@ -8,6 +8,10 @@ import { RAKUTEN_IOSYS_SHOP } from "@/lib/rakutenIosys";
 /**
  * 楽天市場店の MacBook（2026-10-15〜）。じゃんぱら・ソフマップ・イオシスの商品1件を DeviceInventory の行にする。
  * rakutenShops.ts の byDevice が、商品名に MacBook を含むものをここへ回す。
+ * 2026-11-15〜（ブランチ add-mac-desktop）は Mac mini・iMac・Mac Studio（MAC_DESKTOP_TITLE_RE）も回す。機種名は canonicalMacDesktopModel。
+ *   じゃんぱら   【中古】Apple Mac mini M4(CPU:10C/GPU:10C) 16GB/256GB シルバー MU9D3J/A (M4・2024)【ECセンター】保証期間1ヶ月【ランクA】
+ *   ソフマップ   【中古】Apple(アップル) Mac mini Late-2024 MU9D3J／A Apple M4 10コアCPU_10コアGPU 16GB SSD256GB シルバー 〔26.3 Tahoe〕
+ *   イオシス     中古パソコン Mac mini MU9D3J/A Late 2024【Apple M4/16GB/256GB SSD】 Apple 当社3ヶ月間保証 イオシス
  *
  * ゲオは商品名にメモリ・SSD がない（部品番号と年だけ）ので取り込まない（関数を作らない）。
  * ニューズドテック・キタムラ・エムティーエムは MacBook を取らない。
@@ -32,9 +36,13 @@ const colorOf = (candidate: string | undefined): string => (candidate && KATAKAN
 const ACCESSORY = /ケース|フィルム|カバー|スキン|バッグ|スタンド|ハブ|キーボードカバー/;
 
 function build(shopName: string, item: RakutenItem, conditionRank: string, color: string): Row | null {
-  if (!item.url || !(item.price > 0) || ACCESSORY.test(item.name)) return null;
-  const modelName = canonicalMacModel(item.name);
-  const { memoryGB, ssdGB } = parseMacSpec(item.name);
+  if (!item.url || !(item.price > 0)) return null;
+  // MacBook と Mac デスクトップ（Mac mini・iMac・Mac Studio。2026-11-15〜）。デスクトップの周辺機器は canonicalMacDesktopModel が落とす
+  // （iMac の商品名には「スタンド」が入ることがあるので、MacBook 用の ACCESSORY はデスクトップには当てない）
+  const book = /MacBook/i.test(item.name);
+  if (book && ACCESSORY.test(item.name)) return null;
+  const modelName = book ? canonicalMacModel(item.name) : canonicalMacDesktopModel(item.name);
+  const { memoryGB, ssdGB } = book ? parseMacSpec(item.name) : parseMacDesktopSpec(item.name);
   if (modelName === null || memoryGB === null || ssdGB === null) return null;
   return {
     manufacturer: "Apple",

@@ -172,8 +172,11 @@ export const WATCH_SHOPS = SHOPS.filter((s) => s.watch);
 export const GALAXY_WATCH_SHOPS = SHOPS.filter((s) => s.galaxyWatch);
 export const PIXEL_WATCH_SHOPS = SHOPS.filter((s) => s.pixelWatch);
 
+/** Mac デスクトップ（Mac mini・iMac・Mac Studio。2026-11-15〜）を扱う店。楽天市場店の3店（じゃんぱら・ソフマップ・イオシス）だけで、MacBook だけの店（PC WRAP・Qualit）は入れない */
+export const MAC_DESKTOP_SHOPS = SHOPS.filter((s) => s.mac);
+
 export const shopsFor = (model: string): Shop[] =>
-  /^Samsung Galaxy Watch/.test(model) ? GALAXY_WATCH_SHOPS : /^Google Pixel Watch/.test(model) ? PIXEL_WATCH_SHOPS : /^iPad/.test(model) ? IPAD_SHOPS : /^Pixel/.test(model) ? PIXEL_SHOPS : /^Galaxy/.test(model) ? GALAXY_SHOPS : /^MacBook/.test(model) ? MAC_SHOPS : /^Xperia/.test(model) ? XPERIA_SHOPS : /^AQUOS/.test(model) ? AQUOS_SHOPS : /^OPPO /.test(model) ? OPPO_SHOPS : /^Xiaomi /.test(model) ? XIAOMI_SHOPS : /^Apple Watch/.test(model) ? WATCH_SHOPS : SHOPS;
+  /^Samsung Galaxy Watch/.test(model) ? GALAXY_WATCH_SHOPS : /^Google Pixel Watch/.test(model) ? PIXEL_WATCH_SHOPS : /^iPad/.test(model) ? IPAD_SHOPS : /^Pixel/.test(model) ? PIXEL_SHOPS : /^Galaxy/.test(model) ? GALAXY_SHOPS : /^MacBook/.test(model) ? MAC_SHOPS : /^(?:Mac mini|iMac|Mac Studio)/.test(model) ? MAC_DESKTOP_SHOPS : /^Xperia/.test(model) ? XPERIA_SHOPS : /^AQUOS/.test(model) ? AQUOS_SHOPS : /^OPPO /.test(model) ? OPPO_SHOPS : /^Xiaomi /.test(model) ? XIAOMI_SHOPS : /^Apple Watch/.test(model) ? WATCH_SHOPS : SHOPS;
 
 /** 「イオシス・じゃんぱら・…」 */
 export const shopLabels = (shops: Shop[] = SHOPS): string => shops.map((s) => s.label).join("・");

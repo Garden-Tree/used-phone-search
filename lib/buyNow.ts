@@ -34,6 +34,7 @@ export function previousGeneration(model: string): string | null {
   } else if (/^Pixel \d+/.test(model)) cand = stepNumber(model, /^(Pixel )(\d+)(.*)$/);
   else if (/^Galaxy/.test(model)) cand = stepNumber(model, /^(Galaxy (?:S|Z Fold|Z Flip|A))(\d+)(.*)$/);
   else if (/^MacBook/.test(model)) cand = stepNumber(model, /^(.* M)(\d)(( Pro| Max)?)$/);
+  else if (/^(?:Mac mini|iMac|Mac Studio)/.test(model)) cand = stepNumber(model, /^(.* M)(\d)(( Pro| Max| Ultra)?)$/);
   else if (/^AQUOS/.test(model)) cand = stepNumber(model, /^(AQUOS (?:R|sense|wish))(\d+)(( pro| plus)?)$/);
   else if (/^Apple Watch (Series|Ultra) \d+/.test(model)) cand = stepNumber(model, /^(Apple Watch (?:Series|Ultra) )(\d+)()$/);
   else if (/^Xperia/.test(model)) {

@@ -1,4 +1,4 @@
-import { MAC_MODELS } from "@/lib/macCatalog";
+import { MAC_DESKTOP_MODELS, MAC_MODELS } from "@/lib/macCatalog";
 import { modelToSlug } from "@/lib/catalog";
 
 // 中古MacBook の機種別ページの OGP 画像。中身は iPhone と共通（最安値・SSD 容量別の最安値入り）
@@ -9,5 +9,6 @@ export const dynamicParams = false;
 export const alt = "中古MacBookの最安値・価格比較";
 
 export function generateStaticParams() {
-  return MAC_MODELS.map((model) => ({ slug: modelToSlug(model) }));
+  // Mac デスクトップ（2026-11-15〜）も同じ形の画像
+  return [...MAC_MODELS, ...MAC_DESKTOP_MODELS].map((model) => ({ slug: modelToSlug(model) }));
 }

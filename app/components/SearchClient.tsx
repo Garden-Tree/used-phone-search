@@ -12,6 +12,7 @@ import AdDisclosure from '@/app/components/AdDisclosure';
 import SimTile from '@/app/components/SimTile';
 import ChargerNote from '@/app/components/ChargerNote';
 import { missingCharger } from '@/lib/watchCatalog';
+import { MAC_QUERY_RE } from '@/lib/macCatalog';
 import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from '@/lib/catalog';
 import { SEARCH_DEVICES, findSearchDevice, matchesModel, splitModelQuery } from '@/lib/modelMatch';
 import type { InventoryFile, InventoryIndex } from '@/lib/searchData';
@@ -57,7 +58,7 @@ const loadFile = (key: string) => {
 };
 
 const deviceKeyOf = (name: string) =>
-  /^\s*ipad/i.test(name) ? 'ipad' : /^\s*pixel/i.test(name) ? 'pixel' : /^\s*galaxy/i.test(name) ? 'galaxy' : /^\s*macbook/i.test(name) ? 'mac' : /^\s*xperia/i.test(name) ? 'xperia' : /^\s*aquos/i.test(name) ? 'aquos' : /^\s*apple\s*watch/i.test(name) ? 'watch' : /^\s*samsung\s*galaxy\s*watch/i.test(name) ? 'galaxy-watch' : /^\s*google\s*pixel\s*watch/i.test(name) ? 'pixel-watch' : /^\s*oppo/i.test(name) ? 'oppo' : /^\s*xiaomi/i.test(name) ? 'xiaomi' : 'iphone';
+  /^\s*ipad/i.test(name) ? 'ipad' : /^\s*pixel/i.test(name) ? 'pixel' : /^\s*galaxy/i.test(name) ? 'galaxy' : MAC_QUERY_RE.test(name) ? 'mac' : /^\s*xperia/i.test(name) ? 'xperia' : /^\s*aquos/i.test(name) ? 'aquos' : /^\s*apple\s*watch/i.test(name) ? 'watch' : /^\s*samsung\s*galaxy\s*watch/i.test(name) ? 'galaxy-watch' : /^\s*google\s*pixel\s*watch/i.test(name) ? 'pixel-watch' : /^\s*oppo/i.test(name) ? 'oppo' : /^\s*xiaomi/i.test(name) ? 'xiaomi' : 'iphone';
 
 /** 検索語が時計の機種名か（Apple Watch・Galaxy Watch・Pixel Watch。storage はケースのサイズ） */
 const WATCH_QUERY = /^\s*(?:apple\s*watch|samsung\s*galaxy\s*watch|google\s*pixel\s*watch)/i;
@@ -242,7 +243,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
   // 一覧の上に添える「ランクB以上・バッテリー85%以上でいちばん安い1台」（10/25〜。機種ページの「安い在庫」の1台と同じ条件・同じ文言）。
   // 読み込んだ配列から選ぶだけ（通信は増やさない）。並びは価格のままで、この行は条件つきの1台だと分かる見出しを付ける。
   // 条件がすでに適用されているとき（バッテリー85%以上・ランクB以上／ランクS・A・Bの完全一致）と、いちばん安い在庫がもう条件に当たるとき（同じ行が2回出る）は出さない
-  const macView = device.key === 'mac' || models.some((q) => /^\s*macbook/i.test(q));
+  const macView = device.key === 'mac' || models.some((q) => MAC_QUERY_RE.test(q));
   const goodWithBattery = !(macView || watchView);
   const rankParam = params.get('rank');
   const goodAlreadyApplied =
@@ -310,7 +311,7 @@ export default function SearchClient({ activeShopNames }: { activeShopNames?: st
               )}
             </p>
             {/* バッテリー85%以上だけに1回で切り替える（10/23〜。最初は全件・安い順のまま。MacBook・Apple Watch はバッテリーを書かない店が多いので出さない） */}
-            {!(device.key === 'mac' || watchView || models.some((q) => /^\s*macbook/i.test(q))) && (
+            {!(device.key === 'mac' || watchView || models.some((q) => MAC_QUERY_RE.test(q))) && (
               <button type="button" aria-pressed={mb === 85}
                 onClick={() => updateParams({ minBattery: mb === 85 ? null : '85' })}
                 className={`h-9 px-3.5 rounded-full border text-[13px] font-bold flex items-center gap-1 ${
