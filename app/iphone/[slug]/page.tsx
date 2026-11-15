@@ -535,13 +535,14 @@ export default async function ModelPage({ params }: Props) {
     : null;
 
   const summaryCard = (pc: boolean) => (
-    <div className={`bg-white border border-line rounded-xl flex flex-col ${pc ? "p-4 gap-3.5" : "p-3.5 gap-3"}`}>
+    // PC の固定バーは詰める（11/15 ユーザー「右の固定バーが下まで見えてない」: 高さ 約1,170px が画面 949px に入らなかった）
+    <div className={`bg-white border border-line rounded-xl flex flex-col ${pc ? "p-3.5 gap-2.5" : "p-3.5 gap-3"}`}>
       {pc && <p className="text-sm font-bold">{model}</p>}
       {pc ? (
         <>
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col">
             <span className="text-[11px] text-ink-mute">最安値</span>
-            <span className="text-4xl font-bold text-price leading-[1.1]">{stats.minPrice!.toLocaleString()}<span className="text-[15px]">円</span></span>
+            <span className="text-[32px] font-bold text-price leading-[1.1]">{stats.minPrice!.toLocaleString()}<span className="text-[15px]">円</span></span>
           </div>
           <div className="flex justify-between">
             <div className="flex flex-col"><span className="text-[11px] text-ink-mute">{medianLabel(stats.medianStorage, model)}</span><span className="text-xl font-bold">{yen(stats.medianPrice!)}</span></div>
@@ -556,9 +557,9 @@ export default async function ModelPage({ params }: Props) {
       )}
       {!pc && pickRows && <PickSummary rows={pickRows} embedded />}
       {priceBand}
-      <StatTiles tiles={statTiles} />
-      {pc && (pickRows ? <PickSummary rows={pickRows} embedded /> : safeLine(true))}
-      {listButton}
+      <StatTiles tiles={statTiles} compact={pc} />
+      {pc && (pickRows ? <PickSummary rows={pickRows} embedded compact /> : safeLine(true))}
+      {pc ? <a href="#list" className="h-10 rounded-xl bg-brand-600 hover:bg-brand-800 text-white flex items-center justify-center gap-1.5 text-sm font-bold">在庫を見る<ArrowDown className="w-[18px] h-[18px]" aria-hidden="true" /></a> : listButton}
     </div>
   );
 
@@ -1135,7 +1136,10 @@ export default async function ModelPage({ params }: Props) {
         </div>
 
         {/* PC: 右の固定サマリー */}
-        <aside className="hidden md:flex flex-col gap-3 sticky top-[68px]" aria-label={`${model}のサマリー`}>
+        {/* 11/15〜 価格のカードは流れ、スクロールした後は「最安値の1行・在庫を見る・回線」の小さい枠だけ固定する
+            （ユーザー「回線のタイルをちゃんと映したい」: 1.3倍の拡大でバー全体 約1,500px が画面 949px に入らず、回線が見えていなかった。
+            右のバーの回線のクリックは placement=side_sim で数える。12/1 に判定） */}
+        <aside className="hidden md:flex flex-col gap-2.5 self-stretch" aria-label={`${model}のサマリー`}>
           {hasPrices ? (
             summaryCard(true)
           ) : (
@@ -1144,7 +1148,21 @@ export default async function ModelPage({ params }: Props) {
               {statBlock(true)}
             </div>
           )}
-          {simTile}
+          {(hasPrices || simTile) && (
+            // 回線が上・最安値の枠が下（開いたときに価格のカードの直下へ「最安値・在庫を見る」が2回並ばないように）
+            <div className="sticky top-[68px] flex flex-col gap-2.5">
+              {simTile && <div data-placement="side_sim">{simTile}</div>}
+              {hasPrices && (
+                <div className="bg-white border border-line rounded-xl px-3.5 py-3 flex items-center justify-between gap-3">
+                  <span className="flex flex-col min-w-0">
+                    <span className="text-[11px] text-ink-mute truncate">{model} 最安値</span>
+                    <span className="text-xl font-bold text-price leading-tight">{yen(stats.minPrice!)}〜</span>
+                  </span>
+                  <a href="#list" className="shrink-0 h-10 px-4 rounded-xl bg-brand-600 hover:bg-brand-800 text-white flex items-center gap-1 text-sm font-bold">在庫を見る<ArrowDown className="w-4 h-4" aria-hidden="true" /></a>
+                </div>
+              )}
+            </div>
+          )}
         </aside>
       </main>
 
