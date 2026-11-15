@@ -38,7 +38,7 @@ export function pickLiveClip(date: string): string {
  * AI で作った0秒目（ai-<名前>.mp4・shorts/assets/stock/・git には入れない）。11/16〜11/22 に実写の0秒目と1日おきに出して比べる。
  * - 出どころ: Google Flow / Omni 1.2 Flash・2026-11-13 生成。元ファイルは .claude/flow-test/（720x1280・24fps・4秒・音つき）
  * - 置くときに 1080x1920・24fps・音なしへ変換した（lanczos で拡大・libx264 crf 16）
- * - 特定の機種として見せない（絵の端末と話す機種は一致しない）。スマホの絵なので、iPad・Mac・Watch のテーマには使わない
+ * - 特定の機種として見せない（絵の端末と話す機種は一致しない）。スマホの絵なので、iPad・Mac のテーマには使わない（Watch は 11/15〜 ai-watch.mp4）
  * - 投稿時: YouTube は「改変または合成されたコンテンツ」を はい、TikTok は AI ラベルをオン
  * - LIVE_CLIPS（日付のローテーション・2場面目以降の地）には入れない。実写の日が AI にならないように
  * - render.ts は ai- の素材を 0秒目から使う（実写は 1秒目から）。つかみの場面（1コマ目）だけに敷き、2場面目以降は LIVE_CLIPS の実写
@@ -47,6 +47,7 @@ export const AI_CLIPS = [
   "ai-stock.mp4", // 売り場に並ぶ大量の端末。元 flow-4-omni.mp4。約0.9秒から真ん中の列が消えていく（11/14 の初回の書き出しで 1.2〜2.5秒目に崩れた絵が出た）ので、元の 2〜18 コマ目（0.08〜0.75秒）だけを 2.5倍にゆっくり（minterpolate）＋その逆再生で約3.2秒。ループしても崩れた絵は出ない。前の版（0〜2秒）は .claude/flow-test/ai-stock-v1-0to2s.mp4
   "ai-battery.mp4", // 手に持った端末・電池の残量アイコン（赤）の画面。元 flow-7-battery.mp4
   "ai-newold.mp4", // 新しい端末と古い端末を両手で並べる。元 flow-8-newold.mp4
+  "ai-watch.mp4", // 手首の角型のスマートウォッチ（暗い机・ロゴなし）。元 flow-watch.mp4（11/15 生成・12クレジット）。Apple Watch に似た形だが機種として見せない
 ] as const;
 export type AiClip = (typeof AI_CLIPS)[number];
 
@@ -54,6 +55,8 @@ export const isAiClip = (name: string | undefined): boolean => !!name && name.st
 
 /** テーマ → AI の0秒目（make-short.tsx の THEMES の名前）。スマホのテーマだけ。ここにないテーマは null */
 const AI_CLIP_OF: Record<string, AiClip> = {
+  // Apple Watch のテーマ（11/15〜）
+  watchgen: "ai-watch.mp4", watchbudget: "ai-watch.mp4", stockwatch: "ai-watch.mp4",
   // 在庫数ランキング（スマホ）
   stock: "ai-stock.mp4", stockandroid: "ai-stock.mp4", stockpixel: "ai-stock.mp4", stockpro: "ai-stock.mp4", stockgalaxy: "ai-stock.mp4",
   // stockmini は iPad mini の回なので入れない（スマホの絵と食い違う）
