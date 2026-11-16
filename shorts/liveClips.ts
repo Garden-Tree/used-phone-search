@@ -61,6 +61,8 @@ const AI_CLIP_OF: Record<string, AiClip> = {
   stock: "ai-stock.mp4", stockandroid: "ai-stock.mp4", stockpixel: "ai-stock.mp4", stockpro: "ai-stock.mp4", stockgalaxy: "ai-stock.mp4",
   // stockmini は iPad mini の回なので入れない（スマホの絵と食い違う）
   stockxperia: "ai-stock.mp4", stockaquos: "ai-stock.mp4", stockfold: "ai-stock.mp4",
+  // stockup・stockdown（11/16〜・先週からの在庫の増減。iPhone）
+  stockup: "ai-stock.mp4", stockdown: "ai-stock.mp4",
   // 電池
   battery: "ai-battery.mp4", batteryswap: "ai-battery.mp4",
   // 新旧を比べる（スマホ）
