@@ -35,3 +35,4 @@ GSC のレポートが更新されたら、サイトマップの絞り込みの�
 - 11/14 14時台: **リクエスト 4件**（11時台の未登録4件 /compare/xperia-10-vi-vs-xperia-10-vii・xperia-1-v-vs-xperia-1-vi・xperia-1-vi-vs-xperia-1-vii・xperia-10-vi-vs-xperia-1-vi。どれも「検出 - インデックス未登録」だった）。割り当て超過なし（11時台の超過は 11/13 夜から24時間たっていなかったため、の読みと合う）。プロパティは URL プレフィックス型（https://used.gadelog.com/）で開く。次は (a) iphone-16-pro-vs-iphone-16-pro-max から
 - 11/14 夜: 反映後に出す → /compare/ipad-a16-vs-ipad-air-5th-gen（新規）。/compare/iphone-15-vs-iphone-15-plus は登録済みならリクエストしない（決まり）
 - 11/14 19時台（site_only で反映後）: /compare/ipad-a16-vs-ipad-air-5th-gen をリクエスト（優先クロール キューに追加）。/compare/iphone-15-vs-iphone-15-plus は登録済みなので出さない。Bing の URL 送信で両方送った（残り 98/100）
+- 11/16 夜 Bing URL の送信: ipad-pro-11-m4・galaxy-s25-ultra・galaxy-s24-ultra（Bing で発見のみ・未クロールだった。ユーザー了承）。残り 97/100
