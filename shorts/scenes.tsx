@@ -2172,7 +2172,7 @@ function liveDiff(s: Script): number {
 /** 実写のつかみの2行の既定（1行8字まで） */
 export function liveLinesOf(s: Script): string[] {
   if (s.liveLines?.length) return s.liveLines;
-  if (isStockChange(s)) return ["先週から", `いちばん${s.theme === "stockdown" ? "減った" : "増えた"}中古iPhoneは`];
+  if (isStockChange(s)) return ["先週から", `いちばん${s.theme === "stockdown" ? "減った" : "増えた"}iPhoneは`];
   if (isStock(s)) return ["中古で", `いちばん多い${stockScope(s)}は`];
   if (s.theme === "battery") return ["電池90%台は", `+${n(liveDiff(s))}円`];
   if (isNewVsOld(s)) return ["中古の旧型なら", `${(liveDiff(s) / 10000).toFixed(1)}万円安い`];
