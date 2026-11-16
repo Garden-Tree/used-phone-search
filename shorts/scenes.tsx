@@ -2156,6 +2156,8 @@ function liveValues(s: Script): [number, number] | null {
   if (typeof r.baseMedian === "number" && typeof r.proMedian === "number") return [r.baseMedian, r.proMedian];
   if (typeof r.newerMedian === "number" && typeof r.olderMedian === "number") return [r.newerMedian, r.olderMedian];
   if (isNewVsOld(s)) return [s.scenes.newModel.price, r.median];
+  // drops: 1位の先週と今週の相場（11/16〜 金額は文字に出さず、棒の下がり方だけ見せる）
+  if (s.theme === "drops" && typeof r.before === "number" && typeof r.after === "number") return [r.before, r.after];
   return null;
 }
 /** 1世代前の型（行に newerMedian・olderMedian がある） */
@@ -2179,6 +2181,8 @@ export function liveLinesOf(s: Script): string[] {
   // 1世代前の型（gen・ipadgen・macgen・pixelgen・watchgen）: 11/15〜 何の話かを文字で出し、答えの金額は伏せる
   // （「差は 34,400円」だけの回は視聴を継続 21〜24%、「いちばん多い〜は ？？？」の在庫の型は 45〜55%。ideas/2026-11-14-youtube-research.md）
   if (isGenType(s)) return ["1世代前にすると", "？？？円安い"];
+  // drops: 11/16〜 同じく何の話かを出して答え（機種・下げ幅）は伏せる（それまでは既定の「差は／0円」になっていた。行に diff がない）
+  if (s.theme === "drops") return ["今週いちばん", "値下がりしたのは？"];
   return ["差は", `${n(liveDiff(s))}円`];
 }
 /** 文字の縁取り（satori は text-stroke が効かないので 8方向の影）＋落ちる影 */
@@ -2233,7 +2237,7 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
       </div>
     );
     // ラベルのない四角2つは何の比較か分からないので、1世代前の型は「最新」「1世代前」を付ける（11/15〜）
-    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : isGenType(s) ? ["最新", "1世代前"] : ["", ""];
+    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : isGenType(s) ? ["最新", "1世代前"] : s.theme === "drops" ? ["先週", "今週"] : ["", ""];
     figure = (
       <div style={{ position: "absolute", left: 0, top: SAFE_BOTTOM - 444, width: W, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 80 }}>
         {bar(values[0], "rgba(255,255,255,0.8)", la, C.white)}
