@@ -48,6 +48,9 @@ export const AI_CLIPS = [
   "ai-battery.mp4", // 手に持った端末・電池の残量アイコン（赤）の画面。元 flow-7-battery.mp4
   "ai-newold.mp4", // 新しい端末と古い端末を両手で並べる。元 flow-8-newold.mp4
   "ai-watch.mp4", // 手首の角型のスマートウォッチ（暗い机・ロゴなし）。元 flow-watch.mp4（11/15 生成・12クレジット）。Apple Watch に似た形だが機種として見せない
+  "ai-budget.mp4", // 暗い木の机・伏せた無地のスマホの横に手が紙幣（額面・肖像の読めない汎用）を置く。元 flow-budget.mp4（11/16 生成・12クレジット）
+  "ai-rank.mp4", // 暗い机・卓上ライト・無地の背面の薄い傷を指先で指す。元 flow-rank.mp4（11/16 生成・12クレジット。1回目は背面にリンゴのロゴの影が出て不採用＝計24クレジット）
+  "ai-drops.mp4", // 暗い売り場の棚に並ぶ無地のスマホ・白紙の値札・横にゆっくり。元 flow-drops.mp4（11/16 生成・12クレジット）
 ] as const;
 export type AiClip = (typeof AI_CLIPS)[number];
 
@@ -67,6 +70,12 @@ const AI_CLIP_OF: Record<string, AiClip> = {
   battery: "ai-battery.mp4", batteryswap: "ai-battery.mp4",
   // 新旧を比べる（スマホ）
   gen: "ai-newold.mp4", pixelgen: "ai-newold.mp4", fold: "ai-newold.mp4", newused: "ai-newold.mp4", oldpro: "ai-newold.mp4", overnew: "ai-newold.mp4",
+  // 予算別（11/16〜・スマホ。ipadbudget・macbudget はスマホの絵と食い違うので入れない・watchbudget は上の ai-watch）
+  budget: "ai-budget.mp4", pixelbudget: "ai-budget.mp4", probudget: "ai-budget.mp4", foldbudget: "ai-budget.mp4", galaxybudget: "ai-budget.mp4", bigbudget: "ai-budget.mp4",
+  // ランク・未使用・容量（11/16〜）
+  rank: "ai-rank.mp4", unused: "ai-rank.mp4", storage: "ai-rank.mp4",
+  // 値下がり（11/16〜）
+  drops: "ai-drops.mp4",
 };
 
 /** `--live ai` のときの素材。対応するテーマでなければ null */
