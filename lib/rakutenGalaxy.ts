@@ -82,7 +82,7 @@ export function normalizeJanparaGalaxy(shopName: string, item: Item): Row | null
 // ソフマップ:
 //   【中古】SAMSUNG(サムスン) Galaxy S24 256GB アンバーイエロー SC-51E docomo SIMフリー 【269-ud】
 //   【中古】GALAXY(ギャラクシー) Galaxy S22 Ultra 256GB バーガンディ SCG14 au SIMフリー 【352-ud】
-const SOFMAP_RE = /^【(中古|未使用)[^】]*】\s*(?:\S+?\([^)]*\))?\s*(Galaxy.*?)\s+(\d+)\s*(GB|TB)\s+(.*?)\s*(?:【[^】]*】)?\s*$/i;
+const SOFMAP_RE = /^【(中古|未使用)[^】]*】\s*(?:\S+?\([^)]*\)|NTTドコモ|docomo|au)?\s*(?:〔展示品〕)?\s*(Galaxy.*?)\s+(\d+)\s*(GB|TB)\s+(.*?)\s*(?:【[^】]*】)?\s*$/i;
 
 export function normalizeSofmapGalaxy(shopName: string, item: Item): Row | null {
   const m = item.name.match(SOFMAP_RE);

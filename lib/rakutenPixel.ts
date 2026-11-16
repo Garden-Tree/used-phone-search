@@ -84,7 +84,7 @@ export function normalizeJanparaPixel(shopName: string, item: Item): Row | null 
 // ソフマップ:
 //   【中古】GOOGLE(グーグル) Google Pixel 6a 128GB セージ GB17L au SIMフリー 【305-ud】
 //   【中古】GOOGLE(グーグル) Google Pixel 10a 128GB Berry PIXEL10A128 SIMフリー 【196-ud】
-const SOFMAP_RE = /^【(中古|未使用)[^】]*】\s*(?:GOOGLE\s*\(グーグル\))?\s*(?:Google\s+)?(Pixel.*?)\s+(\d+)\s*(GB|TB)\s+(.*?)\s*(?:【[^】]*】)?\s*$/;
+const SOFMAP_RE = /^【(中古|未使用)[^】]*】\s*(?:GOOGLE\s*\(グーグル\)|NTTドコモ|docomo|au|SoftBank)?\s*(?:〔展示品〕)?\s*(?:Google\s+)?(Pixel.*?)\s+(\d+)\s*(GB|TB)\s+(.*?)\s*(?:【[^】]*】)?\s*$/;
 
 export function normalizeSofmapPixel(shopName: string, item: Item): Row | null {
   const m = item.name.match(SOFMAP_RE);

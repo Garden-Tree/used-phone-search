@@ -2299,5 +2299,35 @@
   "modelName": "iPad Pro 12.9インチ (第3世代)",
   "simUnlocked": true,
   "carrier": "Wi-Fiモデル"
+ },
+ {
+  "manufacturer": "Apple",
+  "modelName": "iPhone 17 Pro Max",
+  "storage": 256,
+  "color": "シルバー（展示品）",
+  "conditionRank": "A",
+  "batteryHealth": null,
+  "networkStatus": null,
+  "simUnlocked": true,
+  "carrier": "国内版SIMフリー",
+  "shopName": "ソフマップ（楽天市場店）",
+  "price": 1000,
+  "url": "https://item.rakuten.co.jp/x/1/",
+  "isSoldOut": false
+ },
+ {
+  "manufacturer": "Apple",
+  "modelName": "iPhone 12 Pro",
+  "storage": 512,
+  "color": "グラファイト",
+  "conditionRank": "B",
+  "batteryHealth": null,
+  "networkStatus": null,
+  "simUnlocked": true,
+  "carrier": "docomo",
+  "shopName": "ソフマップ（楽天市場店）",
+  "price": 1000,
+  "url": "https://item.rakuten.co.jp/x/1/",
+  "isSoldOut": false
  }
 ]

@@ -216,6 +216,8 @@ const CORPUS: [string, string, string | null, string | null, number | null][] = 
  ["amazon","【整備済み品】 Apple iPad (第６世代) Wi-Fi + Cellular 32GB シルバー (整備済み品)",null,null,null],
  ["amazon","【整備済み品】 Apple iPad Air (第４世代) Wi-Fi 64GB スカイブルー (整備済み品)",null,null,null],
  ["amazon","【整備済み品】Apple iPad Pro 12.9インチ (第３世代) Wi-Fi 64GB シルバー",null,null,null],
+ ["akiba-u-shop","【中古】Apple(アップル) 〔展示品〕 iPhone17 Pro Max 256GB シルバー 3P125J／A SIMフリー 【377-ud】","A","SIMフリー",null],
+ ["akiba-u-shop","【中古】NTTドコモ iPhone12 Pro 512GB グラファイト MGMF3J／A SIMフリー 【262-ud】","B","docomoロック解除SIMフリー",null],
 ];
 const FIXTURE = "scripts/fixtures/rakuten-normalize.expected.json";
 let failures = 0;

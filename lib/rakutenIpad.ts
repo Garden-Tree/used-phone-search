@@ -45,7 +45,7 @@ export function normalizeJanparaIpad(shopName: string, item: Item): Row | null {
 // ソフマップ:
 //   【中古】Apple(アップル) iPad Pro 11インチ 第2世代 256GB スペースグレイ MXE42J／A SIMフリー 【269-ud】
 //   【中古】Apple(アップル) iPad mini(A17 Pro) 256GB スペースグレイ MXNA3J／A Wi-Fi 【258-ud】
-const SOFMAP_RE = /^【(中古|未使用)[^】]*】\s*(?:Apple\s*\(アップル\))?\s*(iPad.*?)\s+(\d+)\s*(GB|TB)\s+(.*?)\s*(?:【[^】]*】)?\s*$/;
+const SOFMAP_RE = /^【(中古|未使用)[^】]*】\s*(?:Apple\s*\(アップル\)|NTTドコモ|docomo|au|SoftBank)?\s*(?:〔展示品〕)?\s*(iPad.*?)\s+(\d+)\s*(GB|TB)\s+(.*?)\s*(?:【[^】]*】)?\s*$/;
 
 export function normalizeSofmapIpad(shopName: string, item: Item): Row | null {
   const m = item.name.match(SOFMAP_RE);
