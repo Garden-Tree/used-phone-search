@@ -182,3 +182,4 @@
 - 11/15 Mac デスクトップ（Mac mini 7・iMac 4・Mac Studio 8 機種。Apple シリコンだけ）をブランチ add-mac-desktop に作った（本番・サーバーの fetch.php は未反映）。楽天3店の Apple シリコン 約260件／Intel 約70件・要求数 +約19/回（ideas/2026-11-15-mac-desktop.md）
 - 11/15 Mac デスクトップ（Mac mini・iMac・Mac Studio・19機種）を本番へ（ユーザー了承）: 出す前に 色「-」を出さない・デスクトップは電池の欄なし・/mac の題を「中古Mac…（MacBook・Mac mini・iMac）」・OG alt「中古Mac」・検索のメモリに 96〜512GB を直して main へ。サーバーの rakuten-sync/fetch.php にキーワード Mac mini・iMac・Mac Studio（3店）。/health の監視には入れていない（在庫が入ってから決める）
 - 11/16 ショートのテーマ stockup（先週から在庫がいちばん増えた中古iPhone・PriceSnapshot の storage=0 で7日前と比べる・今週30件以上・`--down`/stockdown で減った順）をブランチ shorts-stockup に作った（未マージ・試しの書き出しのみ・投稿なし）。「3件」をサンゲンと読むので READING_FIXES に「3ケン」
+- 11/16 やらない: Yahoo の 429（リユスマ）。1回の実行で約30回目の要求が毎回 Yahoo の短時間の回数制限に当たるだけで、2回の再試行（約60秒）で必ず通り、在庫は欠けていない（10/9 から既知・docs/operations.md）。回復が遅れて店が失敗するようになったら「25回ごとに60秒休む」を入れる
