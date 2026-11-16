@@ -2,8 +2,10 @@
  * 安全な帯（scenes.tsx の SAFE）の外に、読ませるもの（文字・数字・棒・札）が出ていないかを確かめる。動画は書き出さない。
  *   npx tsx shorts/safe-check.tsx [テーマ…] [--dir <台本のフォルダ>] [--out <画像の置き場所>]
  * テーマごとに shorts/out の最新の台本（--dir があればその台本だけ）で、全場面の動きの終わりのコマを、台本のまま・実写モード・図だけの両方で作り、
- * 地の色と違う画素がある y の範囲を出す。帯の外（y < top・y > 1920−bottom）に出ていたら「✗」、見出しの帯・内容・注記の間に食い込んでいたら「△」。
- * 画像には帯の境界（赤）と右のボタンの幅（橙）の線を引いて <out>（既定 shorts/out/safe）に書き、一覧 contact-N.png に並べる。右の幅は目で見る
+ * 地の色と違う画素がある y の範囲と、帯の中のいちばん右の x を出す。帯の外（y < top・y > 1920−bottom）か右のボタンの帯（x > 1080−right）に出ていたら「✗」、
+ * 見出しの帯・内容・注記の間に食い込んでいたら「△」。右は 11/16〜 数える（それまでは目で見るだけで、長い行が x940〜1000 まで出ていた）。
+ * 地と同じ色で端まで敷いた帯（見出しの帯の full など）は、同じ行の左の端と比べるので数えない。
+ * 画像には帯の境界（赤）と右のボタンの幅（橙）の線を引いて <out>（既定 shorts/out/safe）に書き、一覧 contact-N.png に並べる
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -25,21 +27,21 @@ function allText(v: unknown): string {
   return "";
 }
 
-/** 地（左上の画素）と違う画素がある行。透明の地（実写モード）は、ぼかした影を数えないよう不透明度で見る */
-async function rowsUsed(png: Buffer): Promise<boolean[]> {
+/** 地（左上の画素）と違う画素がある行と、帯の中（y top〜H−bottom）のいちばん右の x。透明の地（実写モード）は、ぼかした影を数えないよう不透明度で見る */
+async function rowsUsed(png: Buffer): Promise<{ used: boolean[]; right: number }> {
   const { data } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const bg = [data[0], data[1], data[2], data[3]];
   const clear = bg[3] < 16;
   const diff = (i: number, j: number) => Math.abs(data[i] - data[j]) + Math.abs(data[i + 1] - data[j + 1]) + Math.abs(data[i + 2] - data[j + 2]);
   const used: boolean[] = new Array(H).fill(false);
+  // 地にグラデーションがある見た目（DROPS など）は、同じ行の左の端の画素と比べる
+  const on = (x: number, y: number) => { const i = (y * W + x) * 4; return clear ? data[i + 3] > 150 : diff(i, 0) > 40 && diff(i, y * W * 4) > 40; };
+  let right = -1;
   for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      const i = (y * W + x) * 4;
-      // 地にグラデーションがある見た目（DROPS など）は、同じ行の左の端の画素と比べる
-      if (clear ? data[i + 3] > 150 : diff(i, 0) > 40 && diff(i, y * W * 4) > 40) { used[y] = true; break; }
-    }
+    for (let x = 0; x < W; x++) if (on(x, y)) { used[y] = true; break; }
+    if (y >= SAFE.top && y <= H - SAFE.bottom) for (let x = W - 1; x > right; x--) if (on(x, y)) { right = x; break; }
   }
-  return used;
+  return { used, right };
 }
 
 const guides = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
@@ -82,16 +84,17 @@ async function main() {
             console.log(`- ${script.theme} ${mode} ${v} ${sc.id}: 作れません（${(e as Error).message.slice(0, 60)}）`);
             continue;
           }
-          const used = await rowsUsed(png);
+          const { used, right } = await rowsUsed(png);
           const top = used.indexOf(true);
           const bottom = used.lastIndexOf(true);
-          const out = top >= 0 && (top < SAFE.top || bottom > H - SAFE.bottom);
+          const outRight = right > W - SAFE.right;
+          const out = top >= 0 && (top < SAFE.top || bottom > H - SAFE.bottom || outRight);
           // 見出しの帯と内容の間・内容と注記の間（締めは帯がないので見ない）
           const gap = sc.id !== "outro" && [[HEADER.top + HEADER.height, BODY.top], [BODY.top + BODY.height, NOTE.top]].some(([a, b]) => used.slice(a + 1, b - 1).some(Boolean)) && !(mode === "live" && sc.id === "hook");
           if (out) bad++;
           else if (gap) warn++;
           const name = `${script.theme}-${mode}-${v}-${sc.id}.png`;
-          console.log(`${out ? "✗" : gap ? "△" : "○"} ${script.theme} ${mode} ${v} ${sc.id}: y ${top}〜${bottom}${out ? "（帯の外）" : gap ? "（帯・内容・注記の間に食い込み）" : ""}`);
+          console.log(`${out ? "✗" : gap ? "△" : "○"} ${script.theme} ${mode} ${v} ${sc.id}: y ${top}〜${bottom}・右 x${right}${out ? (outRight ? "（右のボタンの帯）" : "（帯の外）") : gap ? "（帯・内容・注記の間に食い込み）" : ""}`);
           const file = join(dir, name);
           // 透明の地は灰色に敷いて見えるように
           writeFileSync(file, await sharp(png).flatten({ background: "#555" }).composite([{ input: guides }]).png().toBuffer());

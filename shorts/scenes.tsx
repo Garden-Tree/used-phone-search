@@ -2,7 +2,8 @@
  * 場面ごとの 1 コマ（1080x1920）。t は場面の開始からの秒数。
  * 配置: 読ませるもの（文字・数字・棒・札）はすべて「安全な帯」SAFE（y280〜1440）の中に置く。見出しの帯（y280〜572）・内容（y578〜1358）・注記（y1364〜1440）。
  * 地の色・実写・飾りの線は端まで敷いてよい。確かめ方は shorts/safe-check.tsx（帯の外に出た場面を数える・帯の線を引いた画像）
- * 左右の余白は 80px（内容の幅 920）で、文字はすべて中央そろえ。見出しの帯はどの場面にも出して、途中から見た人にも話題が分かるようにする
+ * 読ませるものの箱は x70〜890（幅 BOX 820。右の 190px はアプリのボタンが重なるので空ける・11/16）で、文字はすべてその箱の中で中央そろえ（中心は x480）。
+ * 図だけの場面の内容は幅 CW 920 で組み、Frame が BOX に縮める。見出しの帯・注記・実写モードの文字は BOX で組む。見出しの帯はどの場面にも出して、途中から見た人にも話題が分かるようにする
  */
 import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { fitFontSize } from "@/lib/ogFont";
@@ -14,12 +15,11 @@ import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isSto
 export const W = 1080;
 export const H = 1920;
 export const FPS = 30;
-const MARGIN = 80;
-const CW = W - MARGIN * 2; // 920
+const MARGIN = 70;
 /**
  * 安全な帯（11/14 ユーザー「ショートの上と下は、文字とか置かないでほしい（被って見えないから）」）。
  * YouTube ショート・TikTok の再生画面は、上に検索・タブ、下にタイトル・チャンネル名・曲名、右にいいね等のボタンが重なる。
- * 読ませるものは y: top 〜 H−bottom に収め、右端 right px には行の右端の数字を置かない。
+ * 読ませるものは y: top 〜 H−bottom・x: 〜W−right に収める（11/16〜 右も safe-check で数える。ユーザー「開けるようにして」）。
  * 値は公式のものではない（YouTube は数値を出していない）。11/14 に調べた範囲では、道具・解説サイトごとに 上 120〜288・下 250〜672・右 120〜192px とばらつく
  * （tool-nudge.pages.dev/youtube-shorts-safe-zone と socialync.io/tools/safe-zones/youtube-shorts は 上288・下672、ほかは 下 380 前後・右 120〜190）。
  * 上と右は広い側（288・192）に寄せ、下は 672 だと内容が 960px しか残らないので 480（説明・チャンネル名・曲名の3行が載る高さ）にした。実機で被ったらここを直す
@@ -28,10 +28,14 @@ export const SAFE = { top: 280, bottom: 480, right: 190 };
 /** 読ませるものの下の端（y1440）と右の端（x890） */
 const SAFE_BOTTOM = H - SAFE.bottom;
 const SAFE_RIGHT = W - SAFE.right;
+/** 読ませるものを置く箱の幅（x70〜890 の 820）。11/16 まで左右対称の 920（x80〜1000）で、長い行が右のボタンの帯に入っていた */
+const BOX = SAFE_RIGHT - MARGIN;
+/** 図だけの場面の内容を組む幅（11/16 までの内容の幅）。Frame がこれを BOX−16 に縮めて入れる（804/920 ≈ 87%） */
+const CW = 920;
 export const HEADER = { top: SAFE.top, height: 292 };
 export const BODY = { top: 578, height: 780 };
 /**
- * 図だけの場面の内容は高さ 810〜820（幅 920）で組んであるので、Frame が 780/820（約95%）に縮めて BODY に入れる（左を軸に縮めるので、右の端は x955 になる）。
+ * 図だけの場面の内容は高さ 810〜820・幅 920 で組んであるので、Frame が 804/920（約87%。高さの 780/820 より小さい）に縮めて BODY に入れる（左を軸に縮めるので、右の端は x874。縁・影の分を残す）。
  * 帯の文字と注記は縮めない。実写モードの場面（Live*）と締めの関連動画の札は縮めず、そのままの大きさで帯に入るように組む
  */
 const BODY_DESIGN = 820;
@@ -241,14 +245,14 @@ function Band({ s, L }: { s: Script; L: Look }) {
   const full = b.shape === "full";
   // 文字の幅: pill は丸い端の分、tab は左の余白の分だけ狭く
   const frame = b.shape === "frame";
-  const tw = full ? CW : b.shape === "pill" ? CW - 160 : tab ? CW - 110 : frame ? CW - 90 : CW - 60;
+  const tw = full ? BOX : b.shape === "pill" ? BOX - 160 : tab ? BOX - 110 : frame ? BOX - 90 : BOX - 60;
   const hd = headerOf(s);
   const radius = full ? 0 : b.shape === "pill" ? hd.height / 2 : b.shape === "tab" ? "0 28px 28px 0" : b.shape === "leaf" ? "110px 0 110px 0" : frame ? 44 : 28;
   const title = HEAD_TITLE(s);
   return (
     <div style={{
-      position: "absolute", left: full ? 0 : MARGIN, top: hd.top, width: full ? W : CW, height: hd.height, display: "flex", flexDirection: "column",
-      alignItems: tab ? "flex-start" : "center", justifyContent: "center", paddingLeft: tab ? 60 : 0,
+      position: "absolute", left: full ? 0 : MARGIN, top: hd.top, width: full ? W : BOX, height: hd.height, display: "flex", flexDirection: "column",
+      alignItems: tab ? "flex-start" : "center", justifyContent: "center", paddingLeft: tab ? 60 : full ? MARGIN : 0, paddingRight: full ? W - SAFE_RIGHT : 0,
       background: b.fill, borderRadius: radius, color: b.text, border: frame ? `10px solid ${b.stripe ?? b.text}` : "none",
       boxShadow: tab && b.stripe ? `-18px 0 0 0 ${b.stripe}` : "none",
     }}>
@@ -258,7 +262,7 @@ function Band({ s, L }: { s: Script; L: Look }) {
         <div key={i} style={{ ...row, fontSize: Math.min(...title.map((x) => FIT(x, tw, s.liveClip ? 124 : 104))), fontWeight: 900, lineHeight: 1.12, marginTop: i ? 0 : 4 }}>{l}</div>
       ))}
       {b.shape === "underline" && b.stripe && (
-        <div style={{ position: "absolute", left: 0, bottom: 0, width: CW, height: 16, borderRadius: 8, background: b.stripe }} />
+        <div style={{ position: "absolute", left: 0, bottom: 0, width: BOX, height: 16, borderRadius: 8, background: b.stripe }} />
       )}
     </div>
   );
@@ -274,20 +278,25 @@ function PrMark({ L }: { L: Look }) {
   );
 }
 
-function Frame({ s, children, header = true, footer = true, body = BODY, design }: { s: Script; children: ReactNode; header?: boolean; footer?: boolean; body?: { top: number; height: number }; design?: number }) {
+function Frame({ s, children, header = true, footer = true, body = BODY, design, wide = CW }: { s: Script; children: ReactNode; header?: boolean; footer?: boolean; body?: { top: number; height: number }; design?: number; wide?: number }) {
   const L = lookOf(s);
   // 図だけの場面の内容は 810 の高さで組んだものを BODY の高さに縮める（BODY_DESIGN）
   // design: 内容を組んだときの高さ。body より高ければ、その比で縮めて入れる（締めの関連動画の札は中央を軸に）
+  // wide: 内容を組んだ幅。BOX より広ければ、その比でも縮める（小さいほうの比。左を軸に縮めるので右の端は x890 まで）
   const dh = design ?? (body === BODY && !s.liveClip ? BODY_DESIGN : body.height);
-  const box = dh > body.height ? { top: body.top - (dh - body.height) / 2, height: dh, transform: `scale(${(body.height / dh).toFixed(4)})`, transformOrigin: design ? "center center" : "left center" } : { top: body.top, height: body.height };
+  // 図だけの場面は、カードの縁・影・札の輪（box-shadow）が幅の外へ数 px 出るので、その分（16px）を残して縮める
+  const k = Math.min(1, body.height / dh, wide > BOX ? (BOX - 16) / wide : 1);
+  // 中央を軸に縮めるときは、箱の中心（x480）に内容の中心をそろえる
+  const left = design ? MARGIN + (BOX - wide) / 2 : MARGIN;
+  const box = k < 1 ? { top: body.top - (dh - body.height) / 2, height: dh, transform: `scale(${k.toFixed(4)})`, transformOrigin: design ? "center center" : "left center" } : { top: body.top, height: body.height };
   return (
     <div style={{ width: W, height: H, display: "flex", position: "relative", background: L.bg, fontFamily: "Noto Sans JP", color: L.fg }}>
       {s.theme === "rakutenmobile" && <PrMark L={L} />}
       {header && <Band s={s} L={L} />}
-      <div style={{ position: "absolute", left: MARGIN, width: CW, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", ...box }}>{children}</div>
+      <div style={{ position: "absolute", left, width: wide, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", ...box }}>{children}</div>
       {footer && !s.liveClip && (
         // 「\n」で行を分ける（長い注記が 24px でも幅に入らないとき。rakutenmobile）。大きさはいちばん長い行で決める
-        <div style={{ position: "absolute", left: MARGIN, top: NOTE.top, width: CW, height: NOTE.height, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.25, fontSize: Math.min(Math.floor(NOTE.height / 1.25 / FOOT(s).split("\n").length), ...FOOT(s).split("\n").map((l) => FIT(l, CW, isStock(s) ? 36 : 30, 24))), fontWeight: 500, color: L.sub, whiteSpace: "nowrap" }}>
+        <div style={{ position: "absolute", left: MARGIN, top: NOTE.top, width: BOX, height: NOTE.height, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.25, fontSize: Math.min(Math.floor(NOTE.height / 1.25 / FOOT(s).split("\n").length), ...FOOT(s).split("\n").map((l) => FIT(l, BOX, isStock(s) ? 36 : 30, 20))), fontWeight: 500, color: L.sub, whiteSpace: "nowrap" }}>
           {FOOT(s).split("\n").map((l) => <div key={l} style={{ display: "flex" }}>{l}</div>)}
         </div>
       )}
@@ -932,7 +941,7 @@ function HookChart({ s, t }: { s: DropsScript; t: number }) {
     <Frame s={s}>
       <div style={{ ...row, fontSize: FIT(heading, CW, 64), fontWeight: 900, marginBottom: 30 }}>{heading}</div>
       <ChartCard s={s} points={points} p={prog(t, 0.3, 2.5)} labels={false} chartH={520} />
-      <div style={{ ...row, fontSize: 110, fontWeight: 900, color: lookOf(s).accentOnBg, marginTop: 36, opacity: clamp((t - 2.8) / 0.3) }}>{`${periodOf(s).span}−${n(h.drop)}円`}</div>
+      <div style={{ ...row, fontSize: FIT(`${periodOf(s).span}−${n(h.drop)}円`, CW, 110), fontWeight: 900, color: lookOf(s).accentOnBg, marginTop: 36, opacity: clamp((t - 2.8) / 0.3) }}>{`${periodOf(s).span}−${n(h.drop)}円`}</div>
     </Frame>
   );
 }
@@ -2201,9 +2210,9 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
   const c = COUNT(t);
   const values = liveValues(s);
   const top = (
-    <div style={{ position: "absolute", left: 0, top: SAFE.top, width: W, display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <div style={liveText(C.white, Math.min(120, FIT(l1, CW, 120)))}>{l1}</div>
-      <div style={{ ...liveText(LIVE_RED, Math.min(180, FIT(l2, CW, 180))), marginTop: 6 }}>{l2}</div>
+    <div style={{ position: "absolute", left: MARGIN, top: SAFE.top, width: BOX, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={liveText(C.white, Math.min(120, FIT(l1, BOX - 30, 120)))}>{l1}</div>
+      <div style={{ ...liveText(LIVE_RED, Math.min(180, FIT(l2, BOX - 30, 180))), marginTop: 6 }}>{l2}</div>
     </div>
   );
   let figure: ReactNode;
@@ -2211,15 +2220,15 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
     const items = s.scenes.ranking.items;
     figure = (
       <>
-        <div style={{ position: "absolute", left: 70, top: SAFE_BOTTOM - 374, display: "flex", alignItems: "center", width: 940, height: 150, background: "rgba(255,255,255,0.92)", borderRadius: 36 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(60, Math.round(600 * g)), height: 150, background: SITE.price, borderRadius: 36, color: C.white, fontSize: 100, fontWeight: 900, overflow: "hidden" }}>{g > 0.6 ? "？？？" : ""}</div>
+        <div style={{ position: "absolute", left: MARGIN, top: SAFE_BOTTOM - 374, display: "flex", alignItems: "center", width: BOX, height: 150, background: "rgba(255,255,255,0.92)", borderRadius: 36 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(60, Math.round(BOX * 0.64 * g)), height: 150, background: SITE.price, borderRadius: 36, color: C.white, fontSize: 100, fontWeight: 900, overflow: "hidden" }}>{g > 0.6 ? "？？？" : ""}</div>
         </div>
-        <div style={{ position: "absolute", left: 0, top: SAFE_BOTTOM - 196, width: W, ...liveText(LIVE_RED, 140), justifyContent: "center" }}>{isStockChange(s) ? stockDiff(items[0], c) : `${n(Math.round(items[0].count * c))}件`}</div>
+        <div style={{ position: "absolute", left: MARGIN, top: SAFE_BOTTOM - 196, width: BOX, ...liveText(LIVE_RED, 140), justifyContent: "center" }}>{isStockChange(s) ? stockDiff(items[0], c) : `${n(Math.round(items[0].count * c))}件`}</div>
       </>
     );
   } else if (s.theme === "battery") {
     figure = (
-      <div style={{ position: "absolute", left: (W - 300) / 2, top: SAFE_BOTTOM - 456, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{ position: "absolute", left: MARGIN + (BOX - 300) / 2, top: SAFE_BOTTOM - 456, display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ display: "flex", width: 100, height: 28, background: C.white, borderRadius: "12px 12px 0 0" }} />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", width: 300, height: 400, padding: 16, borderRadius: 36, boxShadow: `0 0 0 12px ${C.white}` }}>
           <div style={{ display: "flex", width: "100%", height: Math.max(10, Math.round(350 * 0.95 * g)), background: SITE.safe, borderRadius: 20 }} />
@@ -2239,7 +2248,7 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
     // ラベルのない四角2つは何の比較か分からないので、1世代前の型は「最新」「1世代前」を付ける（11/15〜）
     const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : isGenType(s) ? ["最新", "1世代前"] : s.theme === "drops" ? ["先週", "今週"] : ["", ""];
     figure = (
-      <div style={{ position: "absolute", left: 0, top: SAFE_BOTTOM - 444, width: W, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 80 }}>
+      <div style={{ position: "absolute", left: MARGIN, top: SAFE_BOTTOM - 444, width: BOX, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 80 }}>
         {bar(values[0], "rgba(255,255,255,0.8)", la, C.white)}
         {bar(values[1], LIVE_RED, lb, LIVE_RED)}
       </div>
@@ -2247,8 +2256,8 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
   } else {
     const d = liveDiff(s);
     figure = (
-      <div style={{ position: "absolute", left: 0, top: SAFE_BOTTOM - 510, width: W, display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <div style={{ ...liveText(LIVE_RED, 290), letterSpacing: -6 }}>{n(Math.round(d * c))}</div>
+      <div style={{ position: "absolute", left: MARGIN, top: SAFE_BOTTOM - 510, width: BOX, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ ...liveText(LIVE_RED, FIT(n(d), BOX, 290)), letterSpacing: -6 }}>{n(Math.round(d * c))}</div>
         <div style={liveText(LIVE_RED, 130)}>円</div>
       </div>
     );
@@ -2287,10 +2296,10 @@ function LiveRanking({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   const rows = liveRows(s);
   // 3行で内容の高さ（780）に入る高さ。文字は右のボタン（x890〜）にかからない幅で決める
   const RH = 256;
-  const TW = SAFE_RIGHT - MARGIN - 180;
+  const TW = BOX - 180;
   return (
-    <Frame s={s} footer={false}>
-      <div style={{ display: "flex", flexDirection: "column", width: CW }}>
+    <Frame s={s} footer={false} wide={BOX}>
+      <div style={{ display: "flex", flexDirection: "column", width: BOX }}>
         {rows.map((r, i) => {
           const at = o?.at?.[i] ?? (o?.start ?? 0.5) + (o?.gap ?? 1.6) * (rows.length - 1 - i);
           const p = i === 0 ? 1 : prog(t, at, ROW_FADE);
@@ -2298,9 +2307,9 @@ function LiveRanking({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
           return (
             <div key={i} style={{ display: "flex", alignItems: "center", height: RH, opacity: p, transform: `translateX(${Math.round((1 - p) * 60)}px)` }}>
               <div style={{ ...row, width: 150, height: 92, fontSize: 56, fontWeight: 900, color: C.white, background: LIVE_BADGE[i], borderRadius: 24, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>{`${i + 1}位`}</div>
-              <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", marginLeft: 30, width: CW - 180 }}>
-                <div style={{ ...liveText(C.white, FIT(label, TW / 0.92, i === 0 ? 110 : 84)), lineHeight: 1.1 }}>{label}</div>
-                {i !== 0 && r.value && <div style={{ ...liveText(LIVE_RED, FIT(r.value, TW / 0.92, 96)), marginTop: 6 }}>{r.value}</div>}
+              <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", marginLeft: 30, width: BOX - 180 }}>
+                <div style={{ ...liveText(C.white, FIT(label, TW, i === 0 ? 110 : 84)), lineHeight: 1.1 }}>{label}</div>
+                {i !== 0 && r.value && <div style={{ ...liveText(LIVE_RED, FIT(r.value, TW, 96)), marginTop: 6 }}>{r.value}</div>}
               </div>
             </div>
           );
@@ -2318,12 +2327,11 @@ function LiveReveal({ s, t }: { s: Script; t: number }) {
   const value = m ? `${m[1]}${n(Math.round(target * c))}${m[3]}` : r.value;
   const pop = 0.8 + 0.2 * back((t - 0.3) / 0.5);
   return (
-    <Frame s={s} footer={false}>
+    <Frame s={s} footer={false} wide={BOX}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: prog(t, 0.3, 0.25), transform: `scale(${pop})` }}>
         <div style={{ ...row, width: 220, height: 96, fontSize: 60, fontWeight: 900, color: C.white, background: C.gold, borderRadius: 24, boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>1位</div>
-        <div style={{ ...liveText(C.white, FIT(r.label, CW, 120)), marginTop: 40, lineHeight: 1.1 }}>{r.label}</div>
-        {/* 中央そろえで右のボタン（x890〜）にかからない幅（700px）まで */}
-        {r.value && <div style={{ ...liveText(LIVE_RED, FIT(r.value, (SAFE_RIGHT - W / 2) * 2 / 0.92, 190)), marginTop: 20 }}>{value}</div>}
+        <div style={{ ...liveText(C.white, FIT(r.label, BOX - 30, 120)), marginTop: 40, lineHeight: 1.1 }}>{r.label}</div>
+        {r.value && <div style={{ ...liveText(LIVE_RED, FIT(r.value, BOX - 30, 190)), marginTop: 20 }}>{value}</div>}
       </div>
     </Frame>
   );
@@ -2331,9 +2339,9 @@ function LiveReveal({ s, t }: { s: Script; t: number }) {
 
 function LiveComment({ s, t, o }: { s: Script; t: number; o: Scene["o"] }) {
   const { lines } = s.scenes.comment;
-  const size = Math.min(...lines.map((l) => FIT(l, CW, 96, 48)));
+  const size = Math.min(...lines.map((l) => FIT(l, BOX - 30, 96, 48)));
   return (
-    <Frame s={s} footer={false}>
+    <Frame s={s} footer={false} wide={BOX}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         {lines.map((l, i) => (
           <div key={i} style={{ ...liveText(C.white, size), marginBottom: 30, opacity: prog(t, (o?.start ?? 0.4) + i * (o?.gap ?? 1.0), 0.25) }}>{l}</div>
