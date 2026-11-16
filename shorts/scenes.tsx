@@ -9,7 +9,7 @@ import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
 import { relatedThumb } from "./relatedLong";
-import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type ProVsRow, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type KaitoriShopScript, type KaitoriSwapScript, type KaitoriSwapRow, type Script } from "./types";
+import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, isStockChange, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type ProVsRow, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type StockRow, type KaitoriShopScript, type KaitoriSwapScript, type KaitoriSwapRow, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -43,6 +43,7 @@ const headerOf = (s: Script) => (s.theme === "rakutenmobile" ? { top: HEADER.top
 const HEAD_SUB = (s: Script) => s.theme === "rakutenmobile" ? `料金は公式・中古は大手中古ショップ${s.shopCount}店の相場`
   : s.theme === "kaitorishop" ? `毎週更新・買取価格は${s.shopCount}店の公式`
   // 在庫数ランキング（11/3〜）: 「在庫数ランキング」は上の小さな行へ（大きな2行を短くして文字を大きく。ユーザー「タイトルを大きく」）
+  : isStockChange(s) ? `在庫数の変化・大手中古ショップ${s.shopCount}店`
   : isStock(s) ? `在庫数ランキング・大手中古ショップ${s.shopCount}店`
   : `${s.theme === "drops" && s.period ? "毎日集計" : "毎週更新"}・大手中古ショップ${s.shopCount}店の相場`;
 const HEAD_TITLE = (s: Script) =>
@@ -57,6 +58,8 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "watchgen" ? ["Apple Watch", "1世代前でいくら安い？"] : s.theme === "macgen" ? ["MacBook Air", "1世代前でいくら安い？"]
     : s.theme === "ipadgen" ? ["iPad", "1世代前でいくら安い？"] : s.theme === "pixelgen" ? ["Google Pixel", "1世代前でいくら安い？"]
     // 在庫数ランキング: 11/3〜 「中古でいちばん多い／（種類）」の短い2行に（1行目に種類まで入れると幅で 55px ほどに縮んでいた）
+    // stockup・stockdown（11/16〜）: 先週からの在庫の増減
+    : isStockChange(s) ? ["先週から在庫が", `いちばん${s.theme === "stockdown" ? "減った" : "増えた"}中古iPhone`]
     : isStock(s) ? ["中古でいちばん多い", s.theme === "stock" ? "iPhone" : s.theme === "stockandroid" ? "Androidスマホ" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : s.theme === "stockmini" ? "iPad mini" : s.theme === "stockxperia" ? "Xperia" : s.theme === "stockaquos" ? "AQUOS" : s.theme === "stockipadpro" ? "iPad Pro" : s.theme === "stockipadair" ? "iPad Air" : s.theme === "stockfold" ? "折りたたみスマホ" : "Google Pixel"]
     : s.theme === "ultravs" ? ["Apple Watch UltraとSeries", "中古ならいくら違う？"]
     : s.theme === "watchbudget" ? ["予算ぴったりで買える", "中古Apple Watch"] : s.theme === "mbpvsair" ? ["MacBook ProとAir", "中古ならどっちが安い？"]
@@ -84,6 +87,8 @@ const FOOT = (s: Script) =>
 watchOS 27対応はApple公式`
     : s.theme === "mbpvsair" ? `${s.date.replace(/-/g, "/")}・新品はApple公式（同じ16GB・1TB）
 中古は同じメモリ・SSDの中央値`
+    : isStockChange(s) ? `${(s.fromDate ?? "").replace(/-/g, "/")}→${(s.toDate ?? s.date).replace(/-/g, "/")}・件数は販売中の在庫（全容量）
+今週${s.minCount ?? 30}件以上の機種・相場は在庫最多の容量の中央値`
     : s.theme === "stockwatch" ? `${s.date.replace(/-/g, "/")}・件数はジャンク品を除く販売中の在庫
 相場は在庫がいちばん多いケースのサイズの中央値`
     : isStock(s) ? `${s.date.replace(/-/g, "/")}・件数はジャンク品を除く販売中の在庫
@@ -200,7 +205,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
   if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
     || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "kaitoriswap" || s.theme === "overnew" || isNewVsOld(s) || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen"
-    || s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "stockgalaxy" || s.theme === "stockmini" || s.theme === "stockxperia" || s.theme === "stockaquos" || s.theme === "stockipadpro" || s.theme === "stockipadair" || s.theme === "stockfold" || s.theme === "ultravs" || s.theme === "mbpvsair" || s.theme === "kaitorishop") return [
+    || s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "stockgalaxy" || s.theme === "stockmini" || s.theme === "stockxperia" || s.theme === "stockaquos" || s.theme === "stockipadpro" || s.theme === "stockipadair" || s.theme === "stockfold" || isStockChange(s) || s.theme === "ultravs" || s.theme === "mbpvsair" || s.theme === "kaitorishop") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
   ];
   if (v === "B") return [
@@ -2041,13 +2046,19 @@ function TierTotals({ s, t }: { s: RakutenMobileScript; t: number }) {
  * stock・stockandroid（10/27〜・在庫数ランキング）の名前。行・1位・棒の札で使う（長い Android の名前は幅に合わせて縮む）
  * "iPhone SE (第3世代)" はそのまま（行の幅で縮む）
  */
-const stockScope = (s: StockScript) => (s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpixel" ? "Pixel" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : s.theme === "stockmini" ? "iPad mini" : s.theme === "stockxperia" ? "Xperia" : s.theme === "stockaquos" ? "AQUOS" : s.theme === "stockipadpro" ? "iPad Pro" : s.theme === "stockipadair" ? "iPad Air" : s.theme === "stockfold" ? "折りたたみスマホ" : "Android");
+const stockScope = (s: StockScript) => (s.theme === "stock" || isStockChange(s) ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpixel" ? "Pixel" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : s.theme === "stockmini" ? "iPad mini" : s.theme === "stockxperia" ? "Xperia" : s.theme === "stockaquos" ? "AQUOS" : s.theme === "stockipadpro" ? "iPad Pro" : s.theme === "stockipadair" ? "iPad Air" : s.theme === "stockfold" ? "折りたたみスマホ" : "Android");
+
+/** stockup・stockdown: 増減の符号つき（"+123件"・"−45件"） */
+const stockDiff = (r: StockRow, k = 1) => `${(r.diff ?? 0) >= 0 ? "+" : "−"}${n(Math.round(Math.abs(r.diff ?? 0) * k))}件`;
+const stockPct = (r: StockRow) => `${(r.pct ?? 0) >= 0 ? "+" : "−"}${rate(Math.abs(r.pct ?? 0))}%`;
+/** 棒の長さに使う値（stock は件数、stockup・stockdown は増減の大きさ） */
+const stockBar = (s: StockScript, r: StockRow) => (isStockChange(s) ? Math.abs(r.diff ?? 0) : r.count);
 
 /** stock・stockandroid: 問い＋在庫の数の横の棒3本（1位・2位・3位。機種は伏せ、1位の棒だけ強調色）＋「最多 ○件」 */
 function StockHook({ s, t }: { s: StockScript; t: number }) {
   const L = lookOf(s);
   const items = s.scenes.ranking.items;
-  const max = items[0].count;
+  const max = Math.max(1, stockBar(s, items[0]));
   const BAR = CW - 60 - 150 - 20;
   return (
     <Frame s={s}>
@@ -2058,12 +2069,14 @@ function StockHook({ s, t }: { s: StockScript; t: number }) {
           <div key={i} style={{ display: "flex", alignItems: "center", width: CW - 60, marginTop: i ? 36 : 0 }}>
             <div style={{ ...row, width: 150, fontSize: 60, fontWeight: 900, color: C.white, background: BADGE[i], borderRadius: 22, padding: "6px 0" }}>{`${i + 1}位`}</div>
             <div style={{ display: "flex", alignItems: "center", width: BAR, marginLeft: 20 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(40, Math.round(((BAR * r.count) / max) * GROW(t))), height: 96, borderRadius: 20, background: i === 0 ? L.accent : C.line, color: C.white, fontSize: 64, fontWeight: 900, overflow: "hidden" }}>{i === 0 && GROW(t) > 0.6 ? "？？？" : ""}</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(40, Math.round(((BAR * stockBar(s, r)) / max) * GROW(t))), height: 96, borderRadius: 20, background: i === 0 ? L.accent : C.line, color: C.white, fontSize: 64, fontWeight: 900, overflow: "hidden" }}>{i === 0 && GROW(t) > 0.6 ? "？？？" : ""}</div>
             </div>
           </div>
         ))}
       </div>
-      <Teaser s={s} label="最多" value={`${n(Math.round(items[0].count * COUNT(t)))}件`} mt={50} />
+      {isStockChange(s)
+        ? <Teaser s={s} label={s.theme === "stockdown" ? "最大の減少" : "最大の増加"} value={stockDiff(items[0], COUNT(t))} mt={50} />
+        : <Teaser s={s} label="最多" value={`${n(Math.round(items[0].count * COUNT(t)))}件`} mt={50} />}
     </Frame>
   );
 }
@@ -2073,10 +2086,16 @@ function StockRanking({ s, t, o }: { s: StockScript; t: number; o: Scene["o"] })
   const items = s.scenes.ranking.items.slice(0, RANK_SHOWN).map((it) => ({
     model: it.model,
     // 11/3〜 件数と相場を縦に積む（横に並べると相場が幅で 35px ほどに縮んでいた）
-    cells: [
-      { text: `${n(it.count)}件`, w: 680, max: 84, color: lookOf(s).accent },
-      { text: `相場 ${n(it.median)}円（${it.storage}）`, w: 680, max: 44, color: C.muted },
-    ],
+    cells: isStockChange(s)
+      // stockup・stockdown: 増減（大）と率、下段は 先週→今週 の件数
+      ? [
+        { text: `${stockDiff(it)}（${stockPct(it)}）`, w: 680, max: 84, color: lookOf(s).accent },
+        { text: `先週${n(it.prev ?? 0)}件 → 今週${n(it.count)}件`, w: 680, max: 44, color: C.muted },
+      ]
+      : [
+        { text: `${n(it.count)}件`, w: 680, max: 84, color: lookOf(s).accent },
+        { text: `相場 ${n(it.median)}円（${it.storage}）`, w: 680, max: 44, color: C.muted },
+      ],
   }));
   return <RankRows s={s} t={t} o={o} items={items} stack />;
 }
@@ -2091,8 +2110,12 @@ function StockReveal({ s, t }: { s: StockScript; t: number }) {
   const r = items[0];
   const pop = 0.8 + 0.2 * back((t - 0.6) / 0.6);
   const grow = prog(t, 0.8, 0.7);
-  const share = `${stockScope(s)}全体の${rate(r.share)}%`;
-  const price = `相場 ${n(r.median)}円（${r.storage}）`;
+  const change = isStockChange(s);
+  // stockup・stockdown: 大きな数字は増減、その下に 先週→今週 の件数と率
+  const share = change ? `先週${n(r.prev ?? 0)}件 → 今週${n(r.count)}件` : `${stockScope(s)}全体の${rate(r.share)}%`;
+  const price = change ? `先週から${stockPct(r)}・相場 ${n(r.median)}円（${r.storage}）` : `相場 ${n(r.median)}円（${r.storage}）`;
+  const big = change ? stockDiff(r) : `${n(r.count)}件`;
+  const bigNow = change ? stockDiff(r, prog(t, 1.0, 0.9)) : `${n(Math.round(r.count * prog(t, 1.0, 0.9)))}件`;
   const LABEL = 124;
   // 棒の右の端の件数が右のボタン（x890〜）にかからないよう、棒の幅を 40 だけ短く
   const BAR = CW - 60 - LABEL - 20 - 40;
@@ -2103,7 +2126,7 @@ function StockReveal({ s, t }: { s: StockScript; t: number }) {
         <div style={{ ...row, fontSize: FIT(r.model, CW - 60, 100), fontWeight: 900 }}>{r.model}</div>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
           <div style={{ ...row, fontSize: 52, fontWeight: 900, color: C.navy, marginRight: 14 }}>在庫</div>
-          <div style={{ ...row, fontSize: FIT(`${n(r.count)}件`, CW - 260, 116), fontWeight: 900, color: L.accent, lineHeight: 1.1 }}>{`${n(Math.round(r.count * prog(t, 1.0, 0.9)))}件`}</div>
+          <div style={{ ...row, fontSize: FIT(big, CW - 260, 116), fontWeight: 900, color: L.accent, lineHeight: 1.1 }}>{bigNow}</div>
         </div>
         <div style={{ ...row, fontSize: FIT(share, CW - 60, 52), fontWeight: 900, color: C.navy }}>{share}</div>
         <div style={{ ...row, fontSize: FIT(price, CW - 60, 46), fontWeight: 900, color: C.muted, marginTop: 2 }}>{price}</div>
@@ -2114,9 +2137,9 @@ function StockReveal({ s, t }: { s: StockScript; t: number }) {
               <div style={{ display: "flex", flexDirection: "column", width: BAR, marginLeft: 20 }}>
                 <div style={{ display: "flex", alignItems: "baseline", width: BAR }}>
                   <div style={{ ...row, fontSize: FIT(b.model, BAR - 200, 40, 28), fontWeight: 900, color: C.navy }}>{b.model}</div>
-                  <div style={{ ...row, fontSize: 40, fontWeight: 900, color: i === 0 ? L.accent : C.muted, marginLeft: "auto" }}>{`${n(b.count)}件`}</div>
+                  <div style={{ ...row, fontSize: 40, fontWeight: 900, color: i === 0 ? L.accent : C.muted, marginLeft: "auto" }}>{change ? stockDiff(b) : `${n(b.count)}件`}</div>
                 </div>
-                <div style={{ display: "flex", width: Math.max(8, Math.round(((BAR * b.count) / r.count) * grow)), height: 22, background: i === 0 ? L.accent : C.silver, borderRadius: 10, marginTop: 2 }} />
+                <div style={{ display: "flex", width: Math.max(8, Math.round(((BAR * stockBar(s, b)) / Math.max(1, stockBar(s, r))) * grow)), height: 22, background: i === 0 ? L.accent : C.silver, borderRadius: 10, marginTop: 2 }} />
               </div>
             </div>
           ))}
@@ -2149,6 +2172,7 @@ function liveDiff(s: Script): number {
 /** 実写のつかみの2行の既定（1行8字まで） */
 export function liveLinesOf(s: Script): string[] {
   if (s.liveLines?.length) return s.liveLines;
+  if (isStockChange(s)) return ["先週から", `いちばん${s.theme === "stockdown" ? "減った" : "増えた"}中古iPhoneは`];
   if (isStock(s)) return ["中古で", `いちばん多い${stockScope(s)}は`];
   if (s.theme === "battery") return ["電池90%台は", `+${n(liveDiff(s))}円`];
   if (isNewVsOld(s)) return ["中古の旧型なら", `${(liveDiff(s) / 10000).toFixed(1)}万円安い`];
@@ -2186,7 +2210,7 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
         <div style={{ position: "absolute", left: 70, top: SAFE_BOTTOM - 374, display: "flex", alignItems: "center", width: 940, height: 150, background: "rgba(255,255,255,0.92)", borderRadius: 36 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: Math.max(60, Math.round(600 * g)), height: 150, background: SITE.price, borderRadius: 36, color: C.white, fontSize: 100, fontWeight: 900, overflow: "hidden" }}>{g > 0.6 ? "？？？" : ""}</div>
         </div>
-        <div style={{ position: "absolute", left: 0, top: SAFE_BOTTOM - 196, width: W, ...liveText(LIVE_RED, 140), justifyContent: "center" }}>{`${n(Math.round(items[0].count * c))}件`}</div>
+        <div style={{ position: "absolute", left: 0, top: SAFE_BOTTOM - 196, width: W, ...liveText(LIVE_RED, 140), justifyContent: "center" }}>{isStockChange(s) ? stockDiff(items[0], c) : `${n(Math.round(items[0].count * c))}件`}</div>
       </>
     );
   } else if (s.theme === "battery") {
@@ -2243,6 +2267,7 @@ function liveRows(s: Script): LiveRow[] {
   const str = (v: unknown) => (typeof v === "string" ? v : "");
   const num = (v: unknown) => (typeof v === "number" ? v : 0);
   return items.map((r) => {
+    if (isStockChange(s)) return { label: str(r.model), value: stockDiff(r as unknown as StockRow) };
     if (isStock(s)) return { label: str(r.model), value: `${n(num(r.count))}件` };
     if (s.theme === "battery") return { label: str(r.model), value: `+${n(num(r.diff))}円` };
     if (typeof r.proMedian === "number") return { label: str(r.pro), value: `${num(r.diff) >= 0 ? "+" : "−"}${n(Math.abs(num(r.diff)))}円` };

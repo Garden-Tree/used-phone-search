@@ -181,6 +181,9 @@ export const LOOKS: Record<Script["theme"], Look> = {
   stockipadpro: { ...CONDITION, hook: "bars" },
   stockipadair: { ...CONDITION, hook: "bars" },
   stockfold: { ...CONDITION, hook: "bars" },
+  // stockup・stockdown（11/16〜・先週からの在庫の増減）: 在庫数ランキングと同じ ④ CONDITION＋横の棒（棒は増減の大きさ）
+  stockup: { ...CONDITION, hook: "bars" },
+  stockdown: { ...CONDITION, hook: "bars" },
   launch: { ...DROPS, hook: "split" },
   // kaitoriswap（11/3〜）: 前後の在庫数ランキング（④ CONDITION）と続かないよう ③ VERSUS。つかみは batteryswap と同じ式の札（場面の部品は SwapHook）
   kaitoriswap: { ...VERSUS, hook: "equation" },

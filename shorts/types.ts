@@ -435,11 +435,17 @@ export type IpadMiniScript = Common & {
  * stock・stockandroid の1行: 機種ごとの販売中の在庫（ジャンク品を除く）の件数と、範囲の合計に対する割合（share・%・小数1桁）、
  * 相場（在庫がいちばん多い容量 storage の中央値 median。機種ページ・getModelMarket と同じ）。storageCount はその容量の在庫数（ジャンク品も含む・相場の母数）
  */
-export type StockRow = { model: string; count: number; share: number; storage: string; storageGb: number; median: number; storageCount: number };
+export type StockRow = { model: string; count: number; share: number; storage: string; storageGb: number; median: number; storageCount: number;
+  /** stockup・stockdown（11/16〜）だけ: 先週の件数・増減（count − prev）・率（prev に対して %・小数1桁） */
+  prev?: number; diff?: number; pct?: number };
 
 /** テーマ stock「中古でいちばん出回っているiPhoneは？在庫数ランキング」・stockandroid（同じ Android 版。Pixel・Galaxy・Xperia・AQUOS）（10/27〜。shorts/themes/stock.ts） */
 export type StockScript = Common & {
-  theme: "stock" | "stockandroid" | "stockmac" | "stockipad" | "stockwatch" | "stockpixel" | "stockpro" | "stockgalaxy" | "stockmini" | "stockxperia" | "stockaquos" | "stockipadpro" | "stockipadair" | "stockfold";
+  theme: "stock" | "stockandroid" | "stockmac" | "stockipad" | "stockwatch" | "stockpixel" | "stockpro" | "stockgalaxy" | "stockmini" | "stockxperia" | "stockaquos" | "stockipadpro" | "stockipadair" | "stockfold" | "stockup" | "stockdown";
+  /** stockup・stockdown だけ: 比べた記録の日（先週・今週）と、入れた機種の今週の件数の下限 */
+  fromDate?: string;
+  toDate?: string;
+  minCount?: number;
   scenes: {
     /** 範囲の全機種の件数の合計（割合の分母）と機種の数 */
     total: number;
@@ -487,6 +493,8 @@ export const isBudget = (s: Script): s is BudgetScript => s.theme === "budget" |
 /** provs・promax・plusvs・plusmax（2機種の差のランキング・場面を共有） */
 export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "ultravs";
 /** stock・stockandroid・stockmac（在庫数ランキング・場面を共有） */
-export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "stockgalaxy" || s.theme === "stockmini" || s.theme === "stockxperia" || s.theme === "stockaquos" || s.theme === "stockipadpro" || s.theme === "stockipadair" || s.theme === "stockfold";
+export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "stockgalaxy" || s.theme === "stockmini" || s.theme === "stockxperia" || s.theme === "stockaquos" || s.theme === "stockipadpro" || s.theme === "stockipadair" || s.theme === "stockfold" || s.theme === "stockup" || s.theme === "stockdown";
+/** stockup・stockdown（11/16〜・先週からの在庫の増減。場面は stock と同じで、数字は増減） */
+export const isStockChange = (s: Script): s is StockScript & { theme: "stockup" | "stockdown" } => s.theme === "stockup" || s.theme === "stockdown";
 /** ipadmini・mbpnew・mbpproled（新型と中古の旧型・場面を共有） */
 export const isNewVsOld = (s: Script): s is IpadMiniScript => s.theme === "ipadmini" || s.theme === "mbpnew" || s.theme === "mbpproled" || s.theme === "launch";

@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { isNewVsOld, hasRelatedLong, isBudget, isStock, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type StockScript, type KaitoriShopScript, type KaitoriSwapScript, type Script, type VoiceConfig } from "./types";
+import { isNewVsOld, hasRelatedLong, isBudget, isStock, isStockChange, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NarrationKey, type NewUsedScript, type ProVsScript, type BatteryScript, type GenScript, type StorageScript, type RankScript, type Ios27Script, type BatterySwapScript, type OverNewScript, type MinieScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type StockScript, type KaitoriShopScript, type KaitoriSwapScript, type Script, type VoiceConfig } from "./types";
 import { TUNING_VERSION, dictHash, ensureDictionary, clarifyTe, lengthenLongVowels, moraLengths, tuneKana, type AccentPhrase } from "./voiceTuning";
 
 export const VOICEVOX_URL = (process.env.VOICEVOX_URL ?? "http://127.0.0.1:50021").replace(/\/$/, "");
@@ -82,7 +82,7 @@ function baseNarration(s: Script): Partial<Record<NarrationKey, string>> {
     : s.theme === "minie" ? minieNarration(s) : s.theme === "unused" ? unusedNarration(s) : s.theme === "oldpro" ? oldProNarration(s) : s.theme === "mbpvsair" ? mbpVsAirNarration(s) : s.theme === "kaitorishop" ? kaitoriShopNarration(s)
     : s.theme === "rakutenmobile" ? rakutenMobileNarration(s) : isNewVsOld(s) ? (s.theme === "launch" ? launchNarration(s) : s.theme === "mbpnew" ? mbpNewNarration(s) : s.theme === "mbpproled" ? mbpProledNarration(s) : ipadMiniNarration(s))
     : s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen" ? deviceGenNarration(s)
-    : isStock(s) ? stockNarration(s) : dropsNarration(s);
+    : isStockChange(s) ? stockChangeNarration(s) : isStock(s) ? stockNarration(s) : dropsNarration(s);
 }
 
 /**
@@ -304,6 +304,25 @@ function stockNarration(s: StockScript): Partial<Record<NarrationKey, string>> {
     hook: `中古でいちばん出回っている${scope}は…？`,
     ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${say(items[i].model)}、在庫${items[i].count.toLocaleString()}件。相場は${yen(items[i].median)}です。`).join(""),
     reveal: `1位は${say(top.model)}。在庫は${top.count.toLocaleString()}件で、${scope === "Androidスマホ" ? "Android" : scope}全体の、およそ${Math.round(top.share)}%です。相場は${s.theme === "stockwatch" ? "ケース" : ""}${top.storage}で、${yen(top.median)}です。`,
+    comment: commentSentence(s.scenes.comment.lines),
+    outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、どの機種にしますか？",
+  };
+}
+
+/**
+ * stockup・stockdown の既定（11/16〜）: hook 問い / ranking 3位・2位を1文ずつ（「3位はiPhone 15、先週から120件増えて、456件です。」）
+ * reveal 1位の先週→今週の件数・増減・相場（率は画面だけ。声が14秒になったので 11/16 に外した） / comment ひと言の本文だけ / outro は stock と同じ
+ */
+function stockChangeNarration(s: StockScript): Partial<Record<NarrationKey, string>> {
+  const items = s.scenes.ranking.items;
+  const top = items[0];
+  const down = s.theme === "stockdown";
+  const verb = down ? "減って" : "増えて";
+  const abs = (v?: number) => Math.abs(v ?? 0).toLocaleString();
+  return {
+    hook: `先週から在庫がいちばん${down ? "減った" : "増えた"}中古iPhoneは…？`,
+    ranking: [2, 1].filter((i) => items[i]).map((i) => `${i + 1}位は${items[i].model}、先週から${abs(items[i].diff)}件${verb}、${items[i].count.toLocaleString()}件です。`).join(""),
+    reveal: `1位は${top.model}。在庫は先週の${(top.prev ?? 0).toLocaleString()}件から${top.count.toLocaleString()}件に、${abs(top.diff)}件${down ? "減りました" : "増えました"}。相場は${top.storage}で、${yen(top.median)}です。`,
     comment: commentSentence(s.scenes.comment.lines),
     outro: "全機種の相場は、プロフィールのリンクから見られます。あなたなら、どの機種にしますか？",
   };
@@ -689,6 +708,8 @@ export function narrationOf(s: Script): Partial<Record<NarrationKey, string>> {
 export const READING_FIXES: [RegExp, string][] = [
   [/高すぎ/g, "たかすぎ"], [/新すぎ/g, "あたらしすぎ"], [/古すぎ/g, "ふるすぎ"], [/古め/g, "ふるめ"], [/大きすぎ/g, "おおきすぎ"],
   [/新しめ/g, "あたらしめ"], [/万件/g, "万けん"],
+  // stockup（11/16・つむぎ）: 「1,753件」の「3件」を「サンゲン」と読む
+  [/3件/g, "3ケン"],
   // batteryswap（10/25・ずんだもん）: 「1つ上」を「ヒトツジョウ」と読む
   [/1つ上/g, "ひとつうえ"],
   // Apple Watch 横動画（11/11 ユーザー）: 「血中酸素」を読み違える
