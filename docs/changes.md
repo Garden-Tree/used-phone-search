@@ -197,3 +197,4 @@
 - 11/17 ショート: デスクトップMac（Mac mini・iMac・Mac Studio）の在庫数ランキング `stockmacdesk` を追加（stock.ts の kind "macdesk"・青山龍星・AI の0秒目は対応させない）。読みに Mac mini／iMac／Mac Studio／Mac を足した。plan は 2026-11-21-stockmacdesk（1位 Mac mini M4 145件・上位3つとも Mac mini）。書き出しはまだ
 - 11/17 これまでの動画の一覧 docs/videos.md（scripts/video-index.ts で shorts/out・longform の youtube.txt と docs/video-metrics.tsv から作る）。ネタ出しの前に読む（CLAUDE.md・youtube-shorts スキル・longform/README）。ユーザーの依頼
 - 11/17 ショート: 状態ランクの差 rank の iPad・Pixel 版 `rankipad`（iPadOS 27 対応・つむぎ）・`rankpixel`（アップデート保証あり・青山龍星・AI の0秒目 ai-rank）を追加（rank は毎月1位が同じのため）。rank 系の実写の0秒目を「ランクAとCで／？？？円違う」＋ランクA・C の2本の棒に（それまでは既定の「差は／N円」で答えを出していた）。差0以下は ★注意 のログで外す。plan は 2026-11-22-rankipad（1位 iPad Pro 11 第2世代 A−C 13,350円）・2026-11-23-rankpixel（1位 Pixel 10 Pro Fold 38,980円）。書き出しはまだ
+- 11/17 横動画の順番: 15→BF→12月BEST5→16e 半年レビュー・売るならどこ（gadelog.com の記事をネタに。ユーザー OK）。店選びの作り直しは 10/24 の再生数を見てから
