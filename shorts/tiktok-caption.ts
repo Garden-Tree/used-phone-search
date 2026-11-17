@@ -41,6 +41,7 @@ const BASE_TAGS: Partial<Record<Script["theme"], string[]>> = {
   stockipadpro: ["#中古iPad", "#iPadPro"],
   stockipadair: ["#中古iPad", "#iPadAir"],
   stockfold: ["#中古スマホ", "#折りたたみスマホ"],
+  stockmacdesk: ["#中古Mac", "#Macmini", "#中古パソコン"],
   launch: ["#MacBookPro", "#iPadmini", "#中古MacBook"],
   ultravs: ["#AppleWatch", "#AppleWatchUltra", "#中古"],
 };
@@ -76,6 +77,7 @@ const THEME_TAG: Partial<Record<Script["theme"], string>> = {
   stockipadpro: "#ランキング",
   stockipadair: "#ランキング",
   stockfold: "#ランキング",
+  stockmacdesk: "#ランキング",
   launch: "#新型",
   kaitoriswap: "#買取",
 };

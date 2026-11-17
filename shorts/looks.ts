@@ -181,6 +181,7 @@ export const LOOKS: Record<Script["theme"], Look> = {
   stockipadpro: { ...CONDITION, hook: "bars" },
   stockipadair: { ...CONDITION, hook: "bars" },
   stockfold: { ...CONDITION, hook: "bars" },
+  stockmacdesk: { ...CONDITION, hook: "bars" },
   // stockup・stockdown（11/16〜・先週からの在庫の増減）: 在庫数ランキングと同じ ④ CONDITION＋横の棒（棒は増減の大きさ）
   stockup: { ...CONDITION, hook: "bars" },
   stockdown: { ...CONDITION, hook: "bars" },

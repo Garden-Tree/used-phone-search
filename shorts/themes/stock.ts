@@ -1,7 +1,7 @@
 /**
  * テーマ「中古でいちばん出回っている iPhone／Android は？ 在庫数ランキング」（10/27〜）。
  * stock＝iPhone、stockandroid＝Android（Pixel・Galaxy・Xperia・AQUOS をまとめて）、stockmac＝MacBook（10/29〜・lib/macCatalog.ts）、
- * stockipad＝iPad（11/2〜・lib/ipadCatalog.ts）、stockwatch＝Apple Watch（11/2〜・lib/watchCatalog.ts。DB の storage はケースの mm で、相場は在庫がいちばん多いケースのサイズの中央値）。場面・行・選び方は同じで、機種の範囲・ひと言・説明欄だけ違う
+ * stockmacdesk＝Mac mini・iMac・Mac Studio（11/17〜）、stockipad＝iPad（11/2〜・lib/ipadCatalog.ts）、stockwatch＝Apple Watch（11/2〜・lib/watchCatalog.ts。DB の storage はケースの mm で、相場は在庫がいちばん多いケースのサイズの中央値）。場面・行・選び方は同じで、機種の範囲・ひと言・説明欄だけ違う
  *
  * 選び方（台本・説明欄・動画で同じ。主観は入れない）:
  * - 機種はサイトに機種ページのある機種（iPhone は lib/catalog.ts の ALL_PAGE_MODELS、Android は lib/pixelCatalog.ts・galaxyCatalog.ts・
@@ -21,14 +21,14 @@ import { PIXEL_MODELS, isPixel, jaMonth, updateUntil } from "@/lib/pixelCatalog"
 import { GALAXY_MODELS } from "@/lib/galaxyCatalog";
 import { XPERIA_MODELS } from "@/lib/xperiaCatalog";
 import { AQUOS_MODELS } from "@/lib/aquosCatalog";
-import { MAC_MODELS } from "@/lib/macCatalog";
+import { MAC_DESKTOP_MODELS, MAC_DESKTOP_PREFIXES, MAC_MODELS } from "@/lib/macCatalog";
 import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { WATCH_MODELS } from "@/lib/watchCatalog";
 import { GALAXY_SHOPS, IPAD_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
-import { activeAquosShops, activeMacShops, activeShops, activeWatchShops, activeXperiaShops } from "@/lib/activeShops";
+import { activeAquosShops, activeMacDesktopShops, activeMacShops, activeShops, activeWatchShops, activeXperiaShops } from "@/lib/activeShops";
 import type { StockRow, StockScript } from "../types";
 
-export type StockKind = "iphone" | "android" | "mac" | "ipad" | "watch" | "pixel" | "pro" | "galaxy" | "mini" | "xperia" | "aquos" | "ipadpro" | "ipadair" | "fold";
+export type StockKind = "iphone" | "android" | "mac" | "ipad" | "watch" | "pixel" | "pro" | "galaxy" | "mini" | "xperia" | "aquos" | "ipadpro" | "ipadair" | "fold" | "macdesk";
 const SHOWN = 3;
 
 const man = (n: number) => n.toLocaleString();
@@ -61,6 +61,8 @@ const KINDS = {
   ipadair: { theme: "stockipadair", models: IPAD_MODELS.filter((m) => m.startsWith("iPad Air")), prefixes: ["iPad Air"], label: "iPad Air" },
   // stockfold（11/11〜）: 折りたたみ（Galaxy Z Fold・Z Flip と Pixel の Fold）。在庫数の型でまだ出していない種類
   fold: { theme: "stockfold", models: [...GALAXY_MODELS.filter((m) => /Z (Fold|Flip)/.test(m)), ...PIXEL_MODELS.filter((m) => /Fold/.test(m))], prefixes: ["Galaxy Z", "Pixel"], label: "折りたたみスマホ" },
+  // stockmacdesk（11/17〜）: Mac デスクトップ（lib/macCatalog.ts の MAC_DESKTOP_MODELS。Mac mini・iMac・Mac Studio）。相場の容量は SSD。MacBook の回（stockmac）と1位が変わる
+  macdesk: { theme: "stockmacdesk", models: MAC_DESKTOP_MODELS, prefixes: [...MAC_DESKTOP_PREFIXES], label: "デスクトップMac" },
   pro: { theme: "stockpro", models: ALL_PAGE_MODELS.filter((m) => /\sPro( Max)?$/.test(m)), prefixes: ["iPhone"], label: "iPhone Pro" },
 } as const;
 
@@ -111,6 +113,7 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
   const shops = kind === "iphone" || kind === "pro"
     ? await activeShops(SHOPS)
     : kind === "mac" ? await activeMacShops()
+    : kind === "macdesk" ? await activeMacDesktopShops()
     : kind === "ipad" || kind === "mini" || kind === "ipadpro" || kind === "ipadair" ? await activeShops(IPAD_SHOPS)
     : kind === "watch" ? await activeWatchShops()
     : kind === "pixel" ? await activeShops(PIXEL_SHOPS)
@@ -127,7 +130,7 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
   // Mac: Apple シリコンの MacBook はメモリを後から増やせない。在庫が多い機種はメモリ・SSD の構成を選べる
   const lines = kind === "iphone" || kind === "pro"
     ? ["在庫が多い機種ほど", "電池の%と保証を", "比べて選べます"]
-    : kind === "mac" ? ["在庫が多い機種ほど", "メモリとSSDの", "構成を選べます"]
+    : kind === "mac" || kind === "macdesk" ? ["在庫が多い機種ほど", "メモリとSSDの", "構成を選べます"]
     // iPad: 同じ機種でも Wi-Fi と Cellular・容量が分かれる。Watch: 中古はバンド・充電ケーブルが付かない在庫もある（watchgen と同じ声かけ）
     : kind === "ipad" || kind === "ipadpro" || kind === "ipadair" ? ["在庫が多い機種ほど", "容量と通信方式を", "選んで買えます"]
     : kind === "watch" ? ["中古のWatchは", "電池の最大容量と", "バンドの付属を確認"]
@@ -147,9 +150,9 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
   const rawTitle = `中古でいちばん多い${k.label}は${titleName(kind, top.model)}！在庫${man(top.count)}件ランキング`;
   const title = rawTitle.length <= 60 ? rawTitle : `中古でいちばん多い${k.label}は？在庫${man(top.count)}件ランキング`;
   const rowText = (r: StockRow, i: number) => `${i + 1}位 ${r.model} 在庫${man(r.count)}件（${r.share.toFixed(1)}%）・相場${man(r.median)}円（${r.storage}）`;
-  const scope = kind === "iphone" ? "iPhone" : kind === "pro" ? "iPhone Pro（Pro・Pro Max）" : kind === "mac" ? "MacBook（Air・Pro・Neo）" : kind === "ipad" ? "iPad（無印・Air・Pro・mini）" : kind === "xperia" ? "Xperia" : kind === "aquos" ? "AQUOS" : kind === "ipadpro" ? "iPad Pro" : kind === "ipadair" ? "iPad Air" : kind === "mini" ? "iPad mini（A17 Pro・第6世代・第5世代）" : kind === "watch" ? "Apple Watch（Series・Ultra・SE）" : kind === "pixel" ? "Google Pixel" : kind === "galaxy" ? "Galaxy（S・A・Z）" : kind === "fold" ? "折りたたみスマホ（Galaxy Z Fold・Z Flip・Pixel Fold）" : "Android（Pixel・Galaxy・Xperia・AQUOS）";
+  const scope = kind === "iphone" ? "iPhone" : kind === "pro" ? "iPhone Pro（Pro・Pro Max）" : kind === "mac" ? "MacBook（Air・Pro・Neo）" : kind === "macdesk" ? "デスクトップMac（Mac mini・iMac・Mac Studio）" : kind === "ipad" ? "iPad（無印・Air・Pro・mini）" : kind === "xperia" ? "Xperia" : kind === "aquos" ? "AQUOS" : kind === "ipadpro" ? "iPad Pro" : kind === "ipadair" ? "iPad Air" : kind === "mini" ? "iPad mini（A17 Pro・第6世代・第5世代）" : kind === "watch" ? "Apple Watch（Series・Ultra・SE）" : kind === "pixel" ? "Google Pixel" : kind === "galaxy" ? "Galaxy（S・A・Z）" : kind === "fold" ? "折りたたみスマホ（Galaxy Z Fold・Z Flip・Pixel Fold）" : "Android（Pixel・Galaxy・Xperia・AQUOS）";
   const description = [
-    `中古でいちばん出回っている${scope}は？ 大手中古ショップの在庫の数のランキングです。1位は${top.model}で、在庫${man(top.count)}件。${k.label}全体の${top.share.toFixed(1)}%です。相場は${kind === "mac" ? "SSD " : kind === "watch" ? "ケース " : ""}${top.storage}で${man(top.median)}円。`,
+    `中古でいちばん出回っている${scope}は？ 大手中古ショップの在庫の数のランキングです。1位は${top.model}で、在庫${man(top.count)}件。${k.label}全体の${top.share.toFixed(1)}%です。相場は${kind === "mac" || kind === "macdesk" ? "SSD " : kind === "watch" ? "ケース " : ""}${top.storage}で${man(top.median)}円。`,
     "",
     ...items.map(rowText),
     "",
@@ -157,7 +160,8 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
     "",
     // utm で YouTube から来た人を GA で数える（canonical は印なしなので検索には影響しない）
     `${top.model}の店ごとの在庫と最安値: https://used.gadelog.com${modelPagePath(top.model)}?${utm(date, theme)}`,
-    kind === "mac" ? `中古MacBookの全機種の相場: https://used.gadelog.com/mac?${utm(date, theme)}`
+    kind === "macdesk" ? `中古Mac（MacBook・Mac mini・iMac・Mac Studio）の全機種の相場: https://used.gadelog.com/mac?${utm(date, theme)}`
+    : kind === "mac" ? `中古MacBookの全機種の相場: https://used.gadelog.com/mac?${utm(date, theme)}`
     : kind === "ipad" || kind === "mini" ? `中古iPadの全機種の相場: https://used.gadelog.com/ipad?${utm(date, theme)}`
     : kind === "watch" ? `Apple Watch 全機種の中古相場: https://used.gadelog.com/watch?${utm(date, theme)}`
     : kind === "pixel" ? `Google Pixel 全機種の中古相場・アップデート保証の期限: https://used.gadelog.com/pixel?${utm(date, theme)}`
@@ -185,6 +189,6 @@ export async function buildStockScript(date: string, kind: StockKind): Promise<S
         question: "あなたなら どれにする？",
       },
     },
-    youtube: { title, description, hashtags: kind === "pro" ? ["#中古iPhone", "#iPhonePro"] : kind === "iphone" ? ["#中古iPhone", "#iPhone"] : kind === "mac" ? ["#MacBook", "#中古MacBook"] : kind === "xperia" ? ["#Xperia", "#中古スマホ"] : kind === "aquos" ? ["#AQUOS", "#中古スマホ"] : kind === "ipadpro" ? ["#iPadPro", "#中古iPad"] : kind === "ipadair" ? ["#iPadAir", "#中古iPad"] : kind === "mini" ? ["#iPadmini", "#中古iPad"] : kind === "ipad" ? ["#iPad", "#中古iPad"] : kind === "watch" ? ["#AppleWatch", "#中古"] : kind === "pixel" ? ["#Pixel", "#中古スマホ"] : kind === "galaxy" ? ["#Galaxy", "#中古スマホ"] : kind === "fold" ? ["#折りたたみスマホ", "#中古スマホ"] : ["#中古スマホ", "#Android"] },
+    youtube: { title, description, hashtags: kind === "pro" ? ["#中古iPhone", "#iPhonePro"] : kind === "iphone" ? ["#中古iPhone", "#iPhone"] : kind === "mac" ? ["#MacBook", "#中古MacBook"] : kind === "macdesk" ? ["#Macmini", "#中古Mac"] : kind === "xperia" ? ["#Xperia", "#中古スマホ"] : kind === "aquos" ? ["#AQUOS", "#中古スマホ"] : kind === "ipadpro" ? ["#iPadPro", "#中古iPad"] : kind === "ipadair" ? ["#iPadAir", "#中古iPad"] : kind === "mini" ? ["#iPadmini", "#中古iPad"] : kind === "ipad" ? ["#iPad", "#中古iPad"] : kind === "watch" ? ["#AppleWatch", "#中古"] : kind === "pixel" ? ["#Pixel", "#中古スマホ"] : kind === "galaxy" ? ["#Galaxy", "#中古スマホ"] : kind === "fold" ? ["#折りたたみスマホ", "#中古スマホ"] : ["#中古スマホ", "#Android"] },
   };
 }

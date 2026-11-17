@@ -297,7 +297,7 @@ function deviceGenNarration(s: DeviceGenScript): Partial<Record<NarrationKey, st
 function stockNarration(s: StockScript): Partial<Record<NarrationKey, string>> {
   const items = s.scenes.ranking.items;
   const top = items[0];
-  const scope = s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpixel" ? "Google Pixel" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : s.theme === "stockmini" ? "iPad mini" : s.theme === "stockxperia" ? "Xperia" : s.theme === "stockaquos" ? "AQUOS" : s.theme === "stockipadpro" ? "iPad Pro" : s.theme === "stockipadair" ? "iPad Air" : s.theme === "stockfold" ? "折りたたみスマホ" : "Androidスマホ";
+  const scope = s.theme === "stock" ? "iPhone" : s.theme === "stockmac" ? "MacBook" : s.theme === "stockipad" ? "iPad" : s.theme === "stockwatch" ? "Apple Watch" : s.theme === "stockpixel" ? "Google Pixel" : s.theme === "stockpro" ? "iPhone Pro" : s.theme === "stockgalaxy" ? "Galaxy" : s.theme === "stockmini" ? "iPad mini" : s.theme === "stockxperia" ? "Xperia" : s.theme === "stockaquos" ? "AQUOS" : s.theme === "stockipadpro" ? "iPad Pro" : s.theme === "stockipadair" ? "iPad Air" : s.theme === "stockfold" ? "折りたたみスマホ" : s.theme === "stockmacdesk" ? "デスクトップMac" : "Androidスマホ";
   // stockipad・stockwatch（11/2〜）: iPad の「(M4)」は読点に（spokenModel）。Watch は問いで「Apple Watch」と言うので行では「Series 9」だけ読む
   const say = (model: string) => (s.theme === "stockwatch" ? model.replace(/^Apple Watch\s+/, "") : s.theme === "stockipad" ? spokenModel(model) : model);
   return {
@@ -730,6 +730,8 @@ export function speakable(text: string): string {
     // ios27line（10/25）: 「iOS」を1字ずつ読まない・iPhone X／XS／XR は Apple の読み（テン）。longform/script.ts の forVoice と同じ
     [/iOS/g, "アイオーエス"], [/\bXS\b/g, "テンエス"], [/\bXR\b/g, "テンアール"], [/\bX\b/g, "テン"],
     [/iPhone/g, "アイフォン"], [/iPad/g, "アイパッド"], [/MacBook/g, "マックブック"], [/Apple Watch/g, "アップルウォッチ"],
+    // stockmacdesk（11/17）: Mac デスクトップ（Mac mini・iMac・Mac Studio）と単独の Mac。mini の規則より前に
+    [/\bMac\s*mini\b/g, "マックミニ"], [/\biMac\b/g, "アイマック"], [/\bMac\s*Studio\b/g, "マックスタジオ"], [/\bMac\b/g, "マック"],
     // watchgen・macgen（10/27）: Watch 単独・Series・Ultra の世代（Apple の読みに合わせ英語の数）・M チップ（エムワン〜）・ケースの mm
     [/\bWatch\b/g, "ウォッチ"], [/\bSeries\b/g, "シリーズ"], [/\bUltra\s*2\b/g, "ウルトラツー"], [/\bUltra\s*3\b/g, "ウルトラスリー"], [/\bUltra\s*4\b/g, "ウルトラフォー"],
     // stockwatch（11/2）: Apple Watch SE 3 を「エスイイサン」と読んだので Ultra と同じ英語の数に
