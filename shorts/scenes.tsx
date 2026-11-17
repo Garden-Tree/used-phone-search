@@ -2167,7 +2167,14 @@ function liveValues(s: Script): [number, number] | null {
   if (isNewVsOld(s)) return [s.scenes.newModel.price, r.median];
   // drops: 1位の先週と今週の相場（11/16〜 金額は文字に出さず、棒の下がり方だけ見せる）
   if (s.theme === "drops" && typeof r.before === "number" && typeof r.after === "number") return [r.before, r.after];
+  // storage: 1位の小さい容量と次の容量の相場（11/17〜 金額は伏せ、棒の差だけ見せる）
+  if (s.theme === "storage" && typeof r.fromMedian === "number" && typeof r.toMedian === "number") return [r.fromMedian, r.toMedian];
   return null;
+}
+/** storage の棒の札（1位の容量。例「128GB」「256GB」） */
+function storageLabels(s: Script): [string, string] {
+  const r = (s.scenes as { ranking?: { items?: Record<string, unknown>[] } }).ranking?.items?.[0];
+  return [String(r?.from ?? ""), String(r?.to ?? "")];
 }
 /** 1世代前の型（行に newerMedian・olderMedian がある） */
 function isGenType(s: Script): boolean {
@@ -2192,6 +2199,8 @@ export function liveLinesOf(s: Script): string[] {
   if (isGenType(s)) return ["1世代前にすると", "？？？円安い"];
   // drops: 11/16〜 同じく何の話かを出して答え（機種・下げ幅）は伏せる（それまでは既定の「差は／0円」になっていた。行に diff がない）
   if (s.theme === "drops") return ["今週いちばん", "値下がりしたのは？"];
+  // storage: 11/17〜 同じく答え（差額）を伏せる（それまでは「差は／5,500円」と下の数字で答えを2回出していた）
+  if (s.theme === "storage") return ["容量を上げると", "？？？円高い"];
   return ["差は", `${n(liveDiff(s))}円`];
 }
 /** 文字の縁取り（satori は text-stroke が効かないので 8方向の影）＋落ちる影 */
@@ -2246,7 +2255,7 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
       </div>
     );
     // ラベルのない四角2つは何の比較か分からないので、1世代前の型は「最新」「1世代前」を付ける（11/15〜）
-    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : isGenType(s) ? ["最新", "1世代前"] : s.theme === "drops" ? ["先週", "今週"] : ["", ""];
+    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : isGenType(s) ? ["最新", "1世代前"] : s.theme === "drops" ? ["先週", "今週"] : s.theme === "storage" ? storageLabels(s) : ["", ""];
     figure = (
       <div style={{ position: "absolute", left: MARGIN, top: SAFE_BOTTOM - 444, width: BOX, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 80 }}>
         {bar(values[0], "rgba(255,255,255,0.8)", la, C.white)}
