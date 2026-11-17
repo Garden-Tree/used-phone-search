@@ -12,7 +12,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = process.cwd();
-const norm = (t: string) => t.replace(/\s+/g, "").replace(/！/g, "!").replace(/？/g, "?");
+const norm = (t: string) => t.replace(/【PR】/g, "").replace(/\s+/g, "").replace(/！/g, "!").replace(/？/g, "?");
 const cell = (t: string) => t.replace(/\|/g, "／").replace(/\r?\n/g, " ").trim();
 
 type Metric = { id: string; views: string; vvs: string; subs: string; date: string };

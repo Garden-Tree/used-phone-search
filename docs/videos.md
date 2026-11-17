@@ -119,7 +119,7 @@
 | 2026-10-29 | mbp-m6 | 新型MacBook Pro M6 買う？中古のM5・M4にする？差は5.3万〜7.9万円｜新旧の違いと中古の相場で比べた | 10/27 に発表された新しい MacBook Pro 14インチ（M6・11/6 発売）と、中古の M5・M4・M1 Pro を、Apple 公式の値段・仕様と、Mac を扱う大 | 44 | iAzTGx6wsTs |
 | 2026-10-30 | ipad-mini | 新型iPad mini（A20 Pro）買う？中古のA17 Proにする？差は3.6万円｜新旧の違いと中古の相場で比べた | 10/27 に発表された新しい iPad mini（A20 Pro・11/6 発売）と、中古の旧型（A17 Pro・第6世代・第5世代）を、Apple 公式の値段・仕様と、iPad | 86 | N2slZY_hJ9s |
 | 2026-10-31 | mbp-proled | MacBook Pro、どれ買う？新型PROLED・新型M6・今のモデル・中古の4択を値段と違いで比べた | 今選べる MacBook Pro 14インチの4つ（10/28 発表の「PROLED XDRディスプレイ搭載MacBook Pro」・10/27 発表の M6・併売の今のミニLED | 11 | goOpevlUKTw |
-| 2026-10-31 | rakuten-mobile | 【PR】中古iPhone＋楽天モバイル、2年でいくら？5機種×3段階の総額を相場で計算 | 【PR】この動画は楽天アフィリエイトの広告を含みます。 |  |  |
+| 2026-10-31 | rakuten-mobile | 【PR】中古iPhone＋楽天モバイル、2年でいくら？5機種×3段階の総額を相場で計算 | 【PR】この動画は楽天アフィリエイトの広告を含みます。 | 26 | Ua3ZRui2G4w |
 | 2026-11-01 | mbp-vs-mba | MacBook ProとAir、何が違う？新品で11.5万円差｜Proにしかない6つと、Airで十分な人 | MacBook Pro と MacBook Air の違い（画面・端子・電池・スピーカー・チップ）と値段を、Apple 公式の値段・仕様と、Mac を扱う大手中古ショップ5店の相場 | 220 | 7NQettpZxHk |
 | 2026-11-01 | monthly | 中古iPhoneおすすめBEST5【2026年11月】4万・5万・7万・10万・15万円の正解を3.7万件の相場で | 2026年11月の中古iPhoneのおすすめを、予算別に5台選びました。 | 216 | FJ18j4Nw22I |
 | 2026-11-02 | macbook | 【中古MacBook】いま買うならどれ？10万・12万・15万・20万円の正解を相場で選んだ（Air・Pro・Neo） | 中古のMacBook（macOS 27 対応の Apple シリコンの Air・Pro と MacBook Neo）を、MacBook の在庫がある大手中古ショップ3店・1,990 | 16 | 0mnQbnBO_dE |
