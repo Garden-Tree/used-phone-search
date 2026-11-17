@@ -195,3 +195,4 @@
 - 11/17 ショート storage の0秒目を「容量を上げると／？？？円高い」＋容量の2本の棒に（それまでは差額を上と下で2回出していた。1世代前・drops と同じく答えを伏せる）
 - 11/17 X にスパム・偽装行為のラベル（検証のあと）→ 12/1 まで Claude は X を触らない（ユーザー OK）。ユーザーが手で1日1本まで・URL なし。夕方の動画の投稿は取りやめ
 - 11/17 ショート: デスクトップMac（Mac mini・iMac・Mac Studio）の在庫数ランキング `stockmacdesk` を追加（stock.ts の kind "macdesk"・青山龍星・AI の0秒目は対応させない）。読みに Mac mini／iMac／Mac Studio／Mac を足した。plan は 2026-11-21-stockmacdesk（1位 Mac mini M4 145件・上位3つとも Mac mini）。書き出しはまだ
+- 11/17 これまでの動画の一覧 docs/videos.md（scripts/video-index.ts で shorts/out・longform の youtube.txt と docs/video-metrics.tsv から作る）。ネタ出しの前に読む（CLAUDE.md・youtube-shorts スキル・longform/README）。ユーザーの依頼

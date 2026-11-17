@@ -12,6 +12,8 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 
 ## 1回分の手順
 
+0. **ネタを選ぶ前に `docs/videos.md` を読む**（これまでの全ショート・横動画のタイトル・テーマ・声・0秒目・視聴・継続）。同じテーマで1位が同じ回は避け、型ごとの本数をそろえる。書き出したら `npx tsx scripts/video-index.ts` で一覧を作り直す
+
 1. **準備**
    - VOICEVOX アプリが起動しているか確かめる: `curl -s http://127.0.0.1:50021/version`。起動していなければ、ユーザーに起動を頼む。声なしで作らない。
    - BGM `shorts/assets/bgm.mp3` があるか確かめる。git には入らないので、別の PC では置き直す。

@@ -3,6 +3,8 @@
 台本（`<フォルダ>/script.md`・つむぎとずんだもんの掛け合い）と数字（`<フォルダ>/data.json`）から、横 1920x1080 の動画を作るための土台。
 作り方はショート（`shorts/`）と同じ: React の1コマ → `ImageResponse`（next/og）で PNG → ffmpeg。色は `lib/brandColors.ts` だけ。
 
+**題を決める前に `docs/videos.md`（これまでのショート・横動画の一覧と数字）を読む。**
+
 ## コマンド
 
 ```

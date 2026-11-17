@@ -7,6 +7,7 @@
 - **機能の追加・運用の変更・確認台帳の項目の追加や判定をしたターンで、同じターン内に `STATE.md` を更新する。**
 - **変更や「やらない」の判断をしたターンで、同じターン内に `docs/changes.md` へ1行足す。何かを提案する前に、`docs/changes.md`・`git log --grep`・本番のページで済んでいないか確かめる。**
 - 経緯・分析・根拠データは `ideas/YYYY-MM-DD.md` に書く。STATE.md には結論だけを置く。
+- **動画（ショート・横動画）のネタ出しの前に `docs/videos.md`（これまでのタイトル・テーマ・声・0秒目・数字の一覧）を読む。** 一覧は `npx tsx scripts/video-index.ts` で作り直す（動画を書き出した日と、YouTube の数字を `docs/video-metrics.tsv` に取った日に）
 - 手順（インフラ・秘密情報の置き場所・障害対応）は `docs/operations.md`、計測は `docs/measurement.md`。
 - **STATE.md が 5KB を超えたら、判定済み・完了した項目を ideas/ へ退避する。**
 - 関連リポジトリ: ブログ本体の運用は `../blog-surporter`（同じ gadelog.com ドメイン・GA・サーバーを共有）。
