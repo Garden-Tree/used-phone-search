@@ -8,17 +8,25 @@
  * - 差 = ランクA の相場 − ランクC の相場。率は A の相場に対して。差の大きい順。差が0以下の機種は出さない。3機種に満たなければ止める
  * - ランクの基準は店ごとに違い、ランクごとに店の顔ぶれも違う（例: ランクC は じゃんぱら・にこスマが多い）。説明欄に書く
  * DB は機種ごとの (容量)・(ランク) の集計（groupBy）と中央値の1行だけ。在庫の行を丸ごと取らない
+ *
+ * rankipad・rankpixel（11/17〜。iPhone の rank は毎月1位が同じになるので、機種の群を替えた版）: 選び方は同じで、機種だけ替える
+ * - rankipad: iPad のカタログ（lib/ipadCatalog.ts）のうち iPadOS 27 対応（lib/ipadSpecs.ts の IPADOS27_MODELS。ipadbudget と同じ絞り方）
+ * - rankpixel: Pixel のカタログ（lib/pixelCatalog.ts）のうち Google のアップデート保証が作った月に終わっていない機種（pixelbudget と同じ）
+ * - 店の数は iPad・Pixel を扱う店（IPAD_SHOPS・PIXEL_SHOPS）。ランクC の在庫は にこスマ・じゃんぱら・ソフマップ・イオシスが多く、ゲオはランクC を付けない（11/17 の集計）
  */
 import type { Prisma } from "@prisma/client";
 import { modelPagePath } from "@/lib/catalog";
 import { storageLabel } from "@/lib/format";
 import { groupMinPrice, medianPrice, modelWhere } from "@/lib/modelInventory";
-import { SHOPS } from "@/lib/shops";
+import { IPAD_SHOPS, PIXEL_SHOPS, SHOPS } from "@/lib/shops";
+import { IPAD_MODELS } from "@/lib/ipadCatalog";
+import { IPADOS27_MODELS } from "@/lib/ipadSpecs";
+import { PIXEL_MODELS, jaMonth, updateUntil, updateYearsLeft } from "@/lib/pixelCatalog";
 import { activeShops } from "@/lib/activeShops";
 import type { RankBucket, RankRow, RankScript } from "../types";
 
 /** 比べる機種（古い順） */
-const MODELS = ["iPhone 13", "iPhone 13 Pro", "iPhone 14", "iPhone 14 Pro", "iPhone 15", "iPhone 15 Pro", "iPhone 16", "iPhone 16 Pro"];
+const IPHONE_MODELS = ["iPhone 13", "iPhone 13 Pro", "iPhone 14", "iPhone 14 Pro", "iPhone 15", "iPhone 15 Pro", "iPhone 16", "iPhone 16 Pro"];
 const RANKS = ["A", "B", "C"] as const;
 /** 相場が数件の在庫で決まらないように（そのランク・容量の在庫の件数） */
 const MIN_COUNT = 5;
@@ -29,7 +37,28 @@ const man = (n: number) => n.toLocaleString();
 /** 約何万円（0.1万円単位で四捨五入。ナレーションの「約○.○万円」と同じ値） */
 const manYen = (n: number) => `約${(Math.round(n / 1000) / 10).toFixed(1)}万`;
 const slash = (iso: string) => iso.replace(/-/g, "/");
-const utm = (date: string) => `utm_source=youtube&utm_medium=social&utm_campaign=shorts_${date.replace(/-/g, "")}_rank`;
+const utm = (date: string, theme: RankScript["theme"]) => `utm_source=youtube&utm_medium=social&utm_campaign=shorts_${date.replace(/-/g, "")}_${theme}`;
+
+export type RankFamily = "iphone" | "ipad" | "pixel";
+/** 群ごとの機種・店・言い方 */
+const FAMILY: Record<RankFamily, { theme: RankScript["theme"]; device: string; scope: string; shops: typeof SHOPS; hub: { path: string; label: string }; hashtags: string[] }> = {
+  iphone: { theme: "rank", device: "iPhone", scope: "iPhone 13〜16 の無印と Pro", shops: SHOPS, hub: { path: "/", label: "全機種の中古相場" }, hashtags: ["#中古iPhone", "#iPhone"] },
+  ipad: { theme: "rankipad", device: "iPad", scope: "iPadOS 27 に対応する iPad", shops: IPAD_SHOPS, hub: { path: "/ipad", label: "中古iPadの全機種の相場" }, hashtags: ["#iPad", "#中古iPad"] },
+  pixel: { theme: "rankpixel", device: "Pixel", scope: "Google のアップデート保証が終わっていない Pixel", shops: PIXEL_SHOPS, hub: { path: "/pixel", label: "中古Pixelの全機種の相場" }, hashtags: ["#Pixel", "#GooglePixel", "#中古"] },
+};
+
+/** 群の機種（ipad は iPadOS 27 対応・pixel はアップデート保証が残っている機種） */
+function modelsOf(family: RankFamily, month: string): string[] {
+  if (family === "ipad") return IPAD_MODELS.filter((m) => IPADOS27_MODELS.has(m));
+  if (family === "pixel") {
+    return PIXEL_MODELS.filter((m) => {
+      const left = updateYearsLeft(m, month);
+      if (left !== undefined && left <= 0) console.log(`  対象外: ${m}（アップデート保証が ${jaMonth(updateUntil(m)!)} で終了）`);
+      return left !== undefined && left > 0;
+    });
+  }
+  return IPHONE_MODELS;
+}
 
 async function rowOf(model: string): Promise<RankRow | null> {
   const where = await modelWhere(model);
@@ -58,40 +87,42 @@ async function rowOf(model: string): Promise<RankRow | null> {
   return row;
 }
 
-export async function buildRankScript(date: string): Promise<RankScript> {
+export async function buildRankScript(date: string, family: RankFamily = "iphone"): Promise<RankScript> {
+  const F = FAMILY[family];
   const rows: RankRow[] = [];
-  for (const model of MODELS) {
+  for (const model of modelsOf(family, date.slice(0, 7))) {
     const r = await rowOf(model);
     // ランクC の方が高い（差が0以下）機種は「安くなる」と言えないので出さない
+    if (r && r.diff <= 0) console.log(`  ★注意: ${model}（${r.storage}）はランクC の方が高いか同じ（A−C ${man(r.diff)}円）ので出さない`);
     if (r && r.diff > 0) rows.push(r);
   }
   rows.sort((x, y) => y.diff - x.diff || y.pct - x.pct);
   if (rows.length < SHOWN) throw new Error(`ランクA・B・C に在庫が${MIN_COUNT}件以上あり、C の方が安い機種が ${rows.length} 機種しかありません（${SHOWN}機種以上必要）`);
   const items = rows.slice(0, SHOWN);
   const top = items[0];
-  const shopCount = (await activeShops(SHOPS)).length;
+  const shopCount = (await activeShops(F.shops)).length;
 
   // 検品担当のひと言の下書き（1行16字以内・3行まで）。サイトの説明（lib/modelFaq.ts「状態ランクは外装の傷の話」・/about「基準は店ごとに異なる」）と同じ考え
   const lines = ["ランクの差は主に", "外装の傷なので", "電池は別に見ましょう"];
 
-  const rawTitle = `${top.model}はランクCで${manYen(top.diff)}円安い！状態ランクの差ランキング`;
-  const title = rawTitle.length <= 60 ? rawTitle : `ランクCなら${manYen(top.diff)}円安い！中古iPhoneの状態ランクの差`;
+  const rawTitle = family === "iphone" ? `${top.model}はランクCで${manYen(top.diff)}円安い！状態ランクの差ランキング` : `${top.model}はランクCで${manYen(top.diff)}円安い！中古${F.device}の状態ランクの差`;
+  const title = rawTitle.length <= 60 ? rawTitle : `ランクCなら${manYen(top.diff)}円安い！中古${F.device}の状態ランクの差`;
   const bucketText = (r: RankRow) => r.buckets.map((b) => `${b.rank} ${man(b.median)}円`).join("・");
   const rowText = (r: RankRow, i: number) => `${i + 1}位 ${r.model}（${r.storage}） ${bucketText(r)}（A→C −${man(r.diff)}円・−${r.pct.toFixed(1)}%）`;
   const description = [
-    `同じ機種・同じ容量の中古iPhoneで、状態ランクAとCの相場がいくら違うかのランキングです。1位は${top.model}（${top.storage}）で、ランクCにすると${man(top.diff)}円（−${top.pct.toFixed(1)}%）安くなります。`,
+    `同じ機種・同じ容量の中古${F.device}で、状態ランクAとCの相場がいくら違うかのランキングです。1位は${top.model}（${top.storage}）で、ランクCにすると${man(top.diff)}円（−${top.pct.toFixed(1)}%）安くなります。`,
     "",
     ...items.map(rowText),
     "",
-    `選び方: iPhone 13〜16 の無印と Pro で、在庫がいちばん多い容量のランクA・B・Cの相場（中央値）を比べ、AとCの差の大きい順（各ランクの在庫${MIN_COUNT}件以上）。率はランクAの相場に対して。ランクは各店の表記のままで、基準は店ごとに違います（未使用品のランクSは除く）。データ: 大手中古ショップ${shopCount}店の在庫（${slash(date)}時点）。`,
+    `選び方: ${F.scope}で、在庫がいちばん多い容量のランクA・B・Cの相場（中央値）を比べ、AとCの差の大きい順（各ランクの在庫${MIN_COUNT}件以上）。率はランクAの相場に対して。ランクは各店の表記のままで、基準は店ごとに違います（未使用品のランクSは除く）。データ: 大手中古ショップ${shopCount}店の在庫（${slash(date)}時点）。`,
     "",
     // utm で YouTube から来た人を GA で数える（canonical は印なしなので検索には影響しない）
-    `${top.model}のランク別の最安値と在庫: https://used.gadelog.com${modelPagePath(top.model)}?${utm(date)}`,
-    `全機種の中古相場: https://used.gadelog.com/?${utm(date)}`,
+    `${top.model}のランク別の最安値と在庫: https://used.gadelog.com${modelPagePath(top.model)}?${utm(date, F.theme)}`,
+    `${F.hub.label}: https://used.gadelog.com${F.hub.path}?${utm(date, F.theme)}`,
   ].join("\n");
 
   return {
-    theme: "rank",
+    theme: F.theme,
     date,
     shopCount,
     scenes: {
@@ -104,6 +135,6 @@ export async function buildRankScript(date: string): Promise<RankScript> {
         question: "あなたならランクA？C？",
       },
     },
-    youtube: { title, description, hashtags: ["#中古iPhone", "#iPhone"] },
+    youtube: { title, description, hashtags: F.hashtags },
   };
 }

@@ -17,7 +17,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 1. **準備**
    - VOICEVOX アプリが起動しているか確かめる: `curl -s http://127.0.0.1:50021/version`。起動していなければ、ユーザーに起動を頼む。声なしで作らない。
    - BGM `shorts/assets/bgm.mp3` があるか確かめる。git には入らないので、別の PC では置き直す。
-2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile|mbpvsair|watchbudget|stockmac|stockmacdesk|kaitorishop|stockipad|stockwatch|ultravs> plan`
+2. **台本**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile|mbpvsair|watchbudget|stockmac|stockmacdesk|kaitorishop|stockipad|stockwatch|ultravs|rankipad|rankpixel> plan`
    - `shorts/out/<日付>-<テーマ>/script.json` ができる（すでにあれば止まる。上書きは `--force`）。
    - drops: 1〜3位。budget: 予算（3万・5万・7万・10万円）ごとの機種と相場、注目（5万円の行）の最安・在庫数。newused: 新品と中古の相場の差の1〜3位（候補の全機種も出る）。provs: 無印と Pro の相場の差の1〜3位（候補の全組と、1位の無印の容量を上げたときの差も出る）。fold: 折りたたみの新しい方と1世代前の相場の差の1〜3位（候補の全組も出る）。
    - 検品担当のひと言（`comment.lines`）、ナレーション、説明文を確かめる。
@@ -27,7 +27,7 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 3. **読みを確かめる**: `npx tsx shorts/make-short.tsx --voice-dump script`（最後に書いた台本・その台本の話者で）
    - アクセント句の直す前と後が出る。機種名・数字が細切れになっていないかを見る。
    - 直らない場面は、script.json の `narrationKana` に読みを書く。
-4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile|mbpvsair|watchbudget|stockmac|stockmacdesk|kaitorishop|stockipad|stockwatch|ultravs> render`
+4. **書き出し**: `npx tsx shorts/make-short.tsx <drops|budget|pixelbudget|ipadbudget|macbudget|probudget|foldbudget|galaxybudget|bigbudget|newused|provs|promax|plusvs|plusmax|oldpro|minie|fold|rank|unused|battery|gen|storage|ios27line|batteryswap|overnew|rakutenmobile|mbpvsair|watchbudget|stockmac|stockmacdesk|kaitorishop|stockipad|stockwatch|ultravs|rankipad|rankpixel> render`
    - drops は A・B・C の3本、ほかは A の1本と、`youtube.txt` ができる。
    - **`--no-bgm`**: BGM なし（声と効果音だけ・音量の決め方は同じ）の `short-A-nobgm.mp4` と `youtube-nobgm.txt`（BGM のクレジットなし）。ユーザーが YouTube のスマホアプリで投稿し、「音源を追加」で流行りの曲を付けるとき用。BGM 入りの版とは別のファイル。重い処理なので、render は1本ずつ（同時に走らせない。この PC は負荷で落ちる）。
    - 長さ（60秒以内。今は30〜35秒）、音量（-11 LUFS 前後）、タイムライン（場面・行・声の秒）を確かめる。
@@ -108,6 +108,11 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
   - 対象: iPhone 13〜16 の無印と Pro（`shorts/themes/rank.ts` の MODELS）。容量は在庫がいちばん多い容量。ランクは各店の表記（大文字にそろえる）で A・B・C だけ（S＝未使用品・D・ジャンク・不明は除く）。各ランク在庫5件以上。差（A − C）の大きい順、率は A に対して。差0以下は出さない。
   - ランクの基準は店ごとに違い、ランクごとに店の顔ぶれも違う（10/22 は 13 Pro で B の相場が A より高かった）。画面の注記「ランクは各店の表記・同じ容量の中央値」と説明欄で断る。
   - 見出しの帯は「状態ランクで／いくら違う？中古iPhone」。ひと言の下書き「ランクの差は主に／外装の傷なので／電池は別に見ましょう」（サイトの「状態ランクは外装の傷の話」と同じ）。utm の末尾は `_rank`。
+  - 実写の0秒目（11/17〜）は「ランクAとCで／？？？円違う」＋1位のランクA・C の相場の2本の棒（札「ランクA」「ランクC」・金額は伏せる）。rankipad・rankpixel も同じ。
+- rankipad・rankpixel（11/17〜・rank の iPad・Pixel 版。rank は毎月1位が同じになるため）: `buildRankScript(date, "ipad" | "pixel")`。選び方・場面は rank と同じで機種の群だけ替える。
+  - rankipad: iPadOS 27 対応の iPad（ipadbudget と同じ絞り方）・店は IPAD_SHOPS・声 春日部つむぎ・AI の0秒目なし（スマホの絵と食い違う）。utm `_rankipad`・説明欄は1位の機種ページと /ipad。
+  - rankpixel: アップデート保証が残っている Pixel（pixelbudget と同じ）・店は PIXEL_SHOPS・声 青山龍星・AI の0秒目は ai-rank.mp4。utm `_rankpixel`・説明欄は1位の機種ページと /pixel。
+  - 11/17 の集計で条件（A・B・C 各5件以上）を満たすのは iPad 8機種・Pixel 12機種。新しい機種は C が少なく入らない（ランクC は にこスマ・じゃんぱら・ソフマップ・イオシスが中心で、ゲオは C を付けない）。差額の順なので Pixel は高い折りたたみが上に来やすい。
 - battery: rank と同じ構成（hook → ranking → reveal（1位の電池80%台と90%台の2本の棒と件数・差額と率・Apple 公式の電池交換の料金）→ comment → outro・約39秒。10/23〜）。
   - 対象: iPhone 12〜16 の無印と Pro（`shorts/themes/battery.ts`）。容量は在庫がいちばん多い容量。電池は 90%台＝90〜99・80%台＝81〜89（100 は未使用品が多く、80 は「80%以上」とだけ書く店の値なので除く）。各帯の在庫5件以上。差（90%台 − 80%台）の大きい順、率は 80%台に対して。
   - 1位の差が Apple 公式の電池交換（`lib/appleRepairPrices.ts`）より安ければ、タイトル「…との差は○円！電池交換より安い」・ひと言「差額が電池交換より／安いなら／90%台が得です」。reveal の声は差額を額のまま読み（1万円未満）、交換の料金を続けて読む。

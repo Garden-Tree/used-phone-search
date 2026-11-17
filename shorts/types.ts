@@ -161,9 +161,9 @@ export type FoldScript = Common & {
 export type RankBucket = { rank: "A" | "B" | "C"; median: number; count: number };
 export type RankRow = { model: string; storage: string; storageGb: number; buckets: RankBucket[]; diff: number; pct: number };
 
-/** テーマ rank「状態ランクでいくら違う？中古iPhone」 */
+/** テーマ rank「状態ランクでいくら違う？中古iPhone」・rankipad（iPad 版）・rankpixel（Pixel 版。11/17〜） */
 export type RankScript = Common & {
-  theme: "rank";
+  theme: "rank" | "rankipad" | "rankpixel";
   scenes: {
     /** 場面 ranking（3位・2位・伏せた1位）と reveal（1位）。差額の大きい順（items[0] が1位） */
     ranking: { items: RankRow[] };
@@ -496,5 +496,9 @@ export const isProVs = (s: Script): s is ProVsScript => s.theme === "provs" || s
 export const isStock = (s: Script): s is StockScript => s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "stockgalaxy" || s.theme === "stockmini" || s.theme === "stockxperia" || s.theme === "stockaquos" || s.theme === "stockipadpro" || s.theme === "stockipadair" || s.theme === "stockfold" || s.theme === "stockmacdesk" || s.theme === "stockup" || s.theme === "stockdown";
 /** stockup・stockdown（11/16〜・先週からの在庫の増減。場面は stock と同じで、数字は増減） */
 export const isStockChange = (s: Script): s is StockScript & { theme: "stockup" | "stockdown" } => s.theme === "stockup" || s.theme === "stockdown";
+/** rank・rankipad・rankpixel（状態ランクの差のランキング・場面を共有） */
+export const isRank = (s: Script): s is RankScript => s.theme === "rank" || s.theme === "rankipad" || s.theme === "rankpixel";
+/** rank の群の機器の名前（台本・画面の「中古○○」） */
+export const rankDevice = (s: RankScript) => (s.theme === "rankipad" ? "iPad" : s.theme === "rankpixel" ? "Pixel" : "iPhone");
 /** ipadmini・mbpnew・mbpproled（新型と中古の旧型・場面を共有） */
 export const isNewVsOld = (s: Script): s is IpadMiniScript => s.theme === "ipadmini" || s.theme === "mbpnew" || s.theme === "mbpproled" || s.theme === "launch";

@@ -10,7 +10,7 @@ import { fitFontSize } from "@/lib/ogFont";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { lookOf, type Look } from "./looks";
 import { relatedThumb } from "./relatedLong";
-import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isStock, isStockChange, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type ProVsRow, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type StockRow, type KaitoriShopScript, type KaitoriSwapScript, type KaitoriSwapRow, type Script } from "./types";
+import { isNewVsOld, RELATED_LONG_LINE, hasRelatedLong, isBudget, isProVs, isRank, rankDevice, isStock, isStockChange, periodOf, type BudgetScript, type DropsScript, type FoldScript, type NewUsedScript, type ProVsScript, type ProVsRow, type RankScript, type BatteryScript, type StorageScript, type Ios27Script, type BatterySwapScript, type BatterySwapRow, type OverNewScript, type UnusedScript, type OldProScript, type OldProRow, type RakutenMobileScript, type IpadMiniScript, type DeviceGenScript, type FoldRow, type StockScript, type StockRow, type KaitoriShopScript, type KaitoriSwapScript, type KaitoriSwapRow, type Script } from "./types";
 
 export const W = 1080;
 export const H = 1920;
@@ -52,7 +52,7 @@ const HEAD_SUB = (s: Script) => s.theme === "rakutenmobile" ? `料金は公式�
   : `${s.theme === "drops" && s.period ? "毎日集計" : "毎週更新"}・大手中古ショップ${s.shopCount}店の相場`;
 const HEAD_TITLE = (s: Script) =>
   s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"] : s.theme === "probudget" ? ["予算ぴったりで買える", "中古iPhone Pro"] : s.theme === "foldbudget" ? ["予算ぴったりで買える", "中古折りたたみスマホ"] : s.theme === "galaxybudget" ? ["予算ぴったりで買える", "中古Galaxy"] : s.theme === "bigbudget" ? ["予算ぴったりで買える", "大きい画面の中古iPhone"]
-    : s.theme === "rank" ? ["状態ランクで", "いくら違う？中古iPhone"] : s.theme === "battery" ? (s.order === "small" ? ["電池90%台と80%台", "差が小さい中古iPhone"] : ["電池90%台だと", "いくら高い？中古iPhone"])
+    : isRank(s) ? ["状態ランクで", `いくら違う？中古${rankDevice(s)}`] : s.theme === "battery" ? (s.order === "small" ? ["電池90%台と80%台", "差が小さい中古iPhone"] : ["電池90%台だと", "いくら高い？中古iPhone"])
     : s.theme === "gen" ? ["iPhone", "1世代前でいくら安い？"] : s.theme === "storage" ? ["容量を1つ上げると", "いくら高い？中古iPhone"] : s.theme === "newused" ? ["新品より", "いくら安い？中古iPhone"]
     : s.theme === "ios27line" ? ["iOS 27対応で", "いちばん安い中古iPhone"] : s.theme === "batteryswap" ? ["電池交換を足すと", "1つ上の世代と同じ値段？"] : s.theme === "kaitoriswap" ? ["売って買い替えると", "いくら足す？"] : s.theme === "overnew" ? ["中古なのに", "新品より高い？中古iPhone"]
     : s.theme === "provs" ? ["Proと無印", "同じ容量でいくら違う？"] : s.theme === "promax" ? ["Pro MaxとPro", "同じ容量でいくら違う？"] : s.theme === "plusvs" ? ["Plusと無印", "同じ容量でいくら違う？"] : s.theme === "plusmax" ? ["大画面はPlusとPro Max", "同じ容量でいくら違う？"]
@@ -72,7 +72,7 @@ const HEAD_TITLE = (s: Script) =>
     : s.theme === "minie" ? ["無印より安い“弟分”", "いくら安い？中古iPhone"] : s.theme === "unused" ? ["未使用品（ランクS）は", "中古よりいくら高い？"] : s.theme === "fold" ? ["折りたたみスマホ", "1世代前でいくら安い？"] : [`${periodOf(s as DropsScript).name}の中古iPhone`, "値下がりランキング"];
 /** 下の注記（newused は新品と中古の数字の出どころ。provs・fold は2機種を同じ容量で比べる。rank はランクが各店の表記であること。pixelbudget はアップデート保証の出どころ） */
 const FOOT = (s: Script) =>
-  s.theme === "rank" ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
+  isRank(s) ? `${s.date.replace(/-/g, "/")}・ランクは各店の表記・同じ容量の中央値`
     : isNewVsOld(s) ? (s.scenes.copy?.foot ?? ipadMiniFoot(s))
     : s.theme === "rakutenmobile" ? `${s.date.replace(/-/g, "/")}・料金は楽天モバイル公式（税込・割引なし）
 中古は${s.scenes.device.storage}の中央値`
@@ -207,7 +207,7 @@ const baseTimeline = (s: Script, v: Variant): Scene[] => {
   // provs・fold も newused と同じ（問い → 3位・2位・伏せた1位 → 1位の2本の棒 → ひと言 → 締め）
   // rank も同じ（問い → 3位・2位・伏せた1位 → 1位のランクA・B・Cの3本の棒 → ひと言 → 締め）
   // battery も同じ（問い → 3位・2位・伏せた1位 → 1位の電池90%台と80%台の2本の棒 → ひと言 → 締め）
-  if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || s.theme === "rank" || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
+  if (s.theme === "newused" || s.theme === "provs" || s.theme === "promax" || s.theme === "plusvs" || s.theme === "plusmax" || s.theme === "oldpro" || s.theme === "minie" || s.theme === "unused" || s.theme === "fold" || isRank(s) || s.theme === "battery" || s.theme === "gen" || s.theme === "storage"
     || s.theme === "ios27line" || s.theme === "batteryswap" || s.theme === "kaitoriswap" || s.theme === "overnew" || isNewVsOld(s) || s.theme === "watchgen" || s.theme === "macgen" || s.theme === "ipadgen" || s.theme === "pixelgen"
     || s.theme === "stock" || s.theme === "stockandroid" || s.theme === "stockmac" || s.theme === "stockipad" || s.theme === "stockwatch" || s.theme === "stockpixel" || s.theme === "stockpro" || s.theme === "stockgalaxy" || s.theme === "stockmini" || s.theme === "stockxperia" || s.theme === "stockaquos" || s.theme === "stockipadpro" || s.theme === "stockipadair" || s.theme === "stockfold" || s.theme === "stockmacdesk" || isStockChange(s) || s.theme === "ultravs" || s.theme === "mbpvsair" || s.theme === "kaitorishop") return [
     { id: "hook", dur: 2.5, anim: 2 }, countdown(0.5, 1.6), reveal(5), comment(8, 0, 1.0, n), outro(1.5),
@@ -581,7 +581,7 @@ function AbcHook({ s, t }: { s: RankScript; t: number }) {
   const chips = [{ k: "A", c: C.budget }, { k: "B", c: C.silver }, { k: "C", c: C.red }];
   return (
     <Frame s={s}>
-      <Question lines={["状態ランクで、", "中古iPhoneは", "いくら違う？"]} max={88} />
+      <Question lines={["状態ランクで、", `中古${rankDevice(s)}は`, "いくら違う？"]} max={88} />
       <div style={{ display: "flex", justifyContent: "space-between", width: CW - 60, marginTop: 36, transform: `scale(${pulseOf(t)})` }}>
         {chips.map((x) => (
           <div key={x.k} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: SZ, height: SZ, background: x.c, borderRadius: L.card.radius, boxShadow: L.card.shadow, color: C.white }}>
@@ -2169,6 +2169,13 @@ function liveValues(s: Script): [number, number] | null {
   if (s.theme === "drops" && typeof r.before === "number" && typeof r.after === "number") return [r.before, r.after];
   // storage: 1位の小さい容量と次の容量の相場（11/17〜 金額は伏せ、棒の差だけ見せる）
   if (s.theme === "storage" && typeof r.fromMedian === "number" && typeof r.toMedian === "number") return [r.fromMedian, r.toMedian];
+  // rank・rankipad・rankpixel: 1位のランクA と C の相場（11/17〜 金額は伏せ、棒の差だけ見せる）
+  if (isRank(s)) {
+    const b = s.scenes.ranking.items[0].buckets;
+    const a = b.find((x) => x.rank === "A");
+    const c = b.find((x) => x.rank === "C");
+    if (a && c) return [a.median, c.median];
+  }
   return null;
 }
 /** storage の棒の札（1位の容量。例「128GB」「256GB」） */
@@ -2201,6 +2208,8 @@ export function liveLinesOf(s: Script): string[] {
   if (s.theme === "drops") return ["今週いちばん", "値下がりしたのは？"];
   // storage: 11/17〜 同じく答え（差額）を伏せる（それまでは「差は／5,500円」と下の数字で答えを2回出していた）
   if (s.theme === "storage") return ["容量を上げると", "？？？円高い"];
+  // rank・rankipad・rankpixel: 11/17〜 同じく答え（A−C の差額）を伏せる（それまでは既定の「差は／N円」で答えを出していた。rank の継続は 10.0%）
+  if (isRank(s)) return ["ランクAとCで", "？？？円違う"];
   return ["差は", `${n(liveDiff(s))}円`];
 }
 /** 文字の縁取り（satori は text-stroke が効かないので 8方向の影）＋落ちる影 */
@@ -2255,7 +2264,7 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
       </div>
     );
     // ラベルのない四角2つは何の比較か分からないので、1世代前の型は「最新」「1世代前」を付ける（11/15〜）
-    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : isGenType(s) ? ["最新", "1世代前"] : s.theme === "drops" ? ["先週", "今週"] : s.theme === "storage" ? storageLabels(s) : ["", ""];
+    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : isGenType(s) ? ["最新", "1世代前"] : s.theme === "drops" ? ["先週", "今週"] : s.theme === "storage" ? storageLabels(s) : isRank(s) ? ["ランクA", "ランクC"] : ["", ""];
     figure = (
       <div style={{ position: "absolute", left: MARGIN, top: SAFE_BOTTOM - 444, width: BOX, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 80 }}>
         {bar(values[0], "rgba(255,255,255,0.8)", la, C.white)}
@@ -2534,7 +2543,7 @@ export function sceneFrame(sc: Scene, s: Script, t: number): ReactElement {
       default: throw new Error(`battery に場面 ${sc.id} はありません`);
     }
   }
-  if (s.theme === "rank") {
+  if (isRank(s)) {
     switch (sc.id) {
       case "hook": return <AbcHook s={s} t={t} />;
       case "ranking": return <RankRanking s={s} t={t} o={sc.o} />;

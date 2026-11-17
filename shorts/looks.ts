@@ -130,6 +130,9 @@ export const LOOKS: Record<Script["theme"], Look> = {
   oldpro: { ...PRO, hook: "split" },
   fold: { ...VERSUS, hook: "fold" },
   rank: { ...CONDITION, hook: "abc" },
+  // rankipad・rankpixel（11/17〜・rank の iPad・Pixel 版）: rank と同じ ④ CONDITION＋ランクの札（実写の0秒目で出すのが基本）
+  rankipad: { ...CONDITION, hook: "abc" },
+  rankpixel: { ...CONDITION, hook: "abc" },
   battery: { ...CONDITION, hook: "battery" },
   gen: { ...VERSUS, hook: "split" },
   storage: { ...VERSUS, hook: "split" },

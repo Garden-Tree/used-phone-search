@@ -74,6 +74,8 @@ const AI_CLIP_OF: Record<string, AiClip> = {
   budget: "ai-budget.mp4", pixelbudget: "ai-budget.mp4", probudget: "ai-budget.mp4", foldbudget: "ai-budget.mp4", galaxybudget: "ai-budget.mp4", bigbudget: "ai-budget.mp4",
   // ランク・未使用・容量（11/16〜）
   rank: "ai-rank.mp4", unused: "ai-rank.mp4", storage: "ai-rank.mp4",
+  // rankpixel（11/17〜）も同じ。rankipad はスマホの絵と食い違うので入れない（ipadbudget と同じ）
+  rankpixel: "ai-rank.mp4",
   // 値下がり（11/16〜）
   drops: "ai-drops.mp4",
 };
