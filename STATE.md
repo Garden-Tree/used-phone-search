@@ -43,7 +43,7 @@
 | 11/20 | OPPO・Xiaomi が AI に | — |
 | **随時** | Duo・mini A20・M6・PROLED | catalog へ |
 | 12/4 | 店リンク first_* | 28日・人数 |
-| 随時 | ゲオの楽天要求数（上限1,500） | fetch.log |
+| 随時 | ゲオの楽天要求数≤1,500 | fetch.log |
 | 11/27 | iPad Pro 11 第3世代 | 対照と比較 |
 | **12/1** | 3行・買取の移動・`kaitori_link`・PC 回線 `side_sim` | クリック減→戻す |
 | 11/23 | 0秒目 AI/実写 | 継続 60% |
