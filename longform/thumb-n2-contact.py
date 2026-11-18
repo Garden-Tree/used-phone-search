@@ -8,8 +8,9 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 HERE = Path(__file__).resolve().parent
-ROWS = ["2026-11-02-storage", "2026-11-03-duo-vs-mini", "2026-11-01-mbp-vs-mba", "2026-11-02-macbook"]
-DEVICE = {"2026-11-03-duo-vs-mini": "duo-16pm"}
+ROWS = ["2026-11-02-storage", "2026-11-03-duo-vs-mini", "2026-11-01-mbp-vs-mba", "2026-11-02-macbook",
+        "2026-11-01-monthly", "2026-11-03-m1-air", "2026-11-07-pixel"]  # 下の3本は 11/18 に足した
+DEVICE = {"2026-11-03-duo-vs-mini": "n2-layers/duo-16pm", "2026-11-01-monthly": "v10-layers/a-monthly"}
 
 
 def contact():
@@ -23,6 +24,8 @@ def contact():
     d = ImageDraw.Draw(sheet)
     for r, folder in enumerate(ROWS):
         for c, n in enumerate(["thumb-N.png", "thumb-N2.png"]):
+            if not (HERE / folder / n).exists():
+                continue
             im = Image.open(HERE / folder / n).convert("RGB"); x = GAP + c * (CW + GAP); y = GAP + r * rh
             d.text((x, y), f"{folder}: {n}", fill=(230, 230, 230), font=font)
             sheet.paste(im.resize((CW, CH), Image.LANCZOS), (x, y + LH))
@@ -32,12 +35,14 @@ def contact():
 
 def check(folder):
     for key in ROWS:
+        if not (Path(folder) / f"{key}.png").exists():
+            continue
         ink = Image.open(Path(folder) / f"{key}.png").convert("L").point(lambda v: 255 if v > 24 else 0)
         l, t, r, b = ink.getbbox()
         corner = ink.crop((1030, 600, 1280, 720)).getbbox()
         line = f"{key}: x {l}-{r} y {t}-{b}  余白 左{l} 上{t} 右{1280 - r} 下{720 - b}  右下 {corner}"
         if key in DEVICE:
-            dev = Image.open(HERE / "assets" / "n2-layers" / f"{DEVICE[key]}.png").getchannel("A").point(lambda v: 255 if v > 200 else 0)
+            dev = Image.open(HERE / "assets" / f"{DEVICE[key]}.png").getchannel("A").point(lambda v: 255 if v > 200 else 0)
             both = Image.new("L", ink.size, 0); both.paste(ink, mask=dev)
             dl = dev.getbbox()
             line += f"  端末 x {dl[0]}-{dl[2]}  重なる画素 {sum(1 for v in both.getdata() if v)}"

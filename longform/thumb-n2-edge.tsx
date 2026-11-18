@@ -3,6 +3,8 @@
  *   python longform/thumb-n2-prep.py                 # Duo の回の iPhone 16 Pro Max の切り抜きと層（assets/n2-layers/）
  *   npx tsx longform/thumb-n2-edge.tsx               # 各フォルダの thumb-N2.png（thumb-N.png は書き換えない）
  *   npx tsx longform/thumb-n2-edge.tsx --check <dir> # 文字だけ（黒地・写真なし・黒ふちは灰色）を <dir> に出す（余白の検査用）
+ *   どちらも後ろにフォルダ名を並べると、そのプランだけ書き出す（例: npx tsx longform/thumb-n2-edge.tsx 2026-11-07-pixel）
+ *   11/18: monthly・m1-air・pixel の3本を足した（クレジットは thumb-credit-N.txt をそのまま thumb-credit-N2.txt に写す）
  *   python -I longform/thumb-n2-contact.py [<dir>]   # 一覧 longform/thumb-n2-contact.png（<dir> があれば余白と重なりも測る）
  *
  * 決まり（thumb-v13-imakai.tsx・thumb-v14-finding.tsx と同じ）: 文字 104px 以上・1枚 2〜3 要素・文字と札は端から 60px 以上・
@@ -19,7 +21,9 @@ const W = 1280, H = 720;
 const RED = "#E11D1D", YELLOW = "#FFE100", BLACK = "#0B0B0F", WHITE = "#FFFFFF";
 const FONT = "Noto Sans JP";
 const EDGE = 60; // ふち取り文字はふちが左へはみ出すので、測って x に数 px 足している（--check で確かめる）
-const CHECK = process.argv[2] === "--check";
+const ARGS = process.argv.slice(2);
+const CHECK = ARGS[0] === "--check";
+const ONLY = CHECK ? ARGS.slice(2) : ARGS;
 /** 検査のときは黒いふちを灰色にして、ふちまで測れるようにする */
 const OUTC = (c: string) => (CHECK && c === BLACK ? "#808080" : c);
 
@@ -61,19 +65,27 @@ function jpegSize(b: Buffer): [number, number] {
   throw new Error("JPEG の大きさが読めない");
 }
 /** 写真（assets/ からの相対パス）を scale 倍にして、左上を (left, top) に置く */
-function Photo({ file, scale, left, top }: { file: string; scale: number; left: number; top: number }) {
+function Photo({ file, scale, left, top, clipX }: { file: string; scale: number; left: number; top: number; clipX?: number }) {
   if (CHECK) return null;
   const buf = readFileSync(join(ASSETS, file));
   const [iw, ih] = jpegSize(buf);
+  const w = Math.round(iw * scale), h = Math.round(ih * scale);
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`data:image/jpeg;base64,${buf.toString("base64")}`} width={Math.round(iw * scale)} height={Math.round(ih * scale)} alt="" style={{ position: "absolute", left, top }} />;
+  if (clipX === undefined) return <img src={`data:image/jpeg;base64,${buf.toString("base64")}`} width={w} height={h} alt="" style={{ position: "absolute", left, top }} />;
+  // clipX より左は見せない（thumb-v10-d.tsx と同じ）
+  return (
+    <div style={{ position: "absolute", left: clipX, top: 0, width: W - clipX, height: H, display: "flex", overflow: "hidden" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`data:image/jpeg;base64,${buf.toString("base64")}`} width={w} height={h} alt="" style={{ position: "absolute", left: left - clipX, top }} />
+    </div>
+  );
 }
-/** 端末の層（thumb-n2-prep.py が作る 1280x720 の透過 PNG・影つき） */
-function Layer({ name }: { name: string }) {
+/** 端末の層（thumb-n2-prep.py が作る 1280x720 の透過 PNG・影つき。dir="v10-layers" なら thumb-v10-a-prep.py の層）。dx だけ横へずらす */
+function Layer({ name, dir = "n2-layers", dx = 0 }: { name: string; dir?: string; dx?: number }) {
   if (CHECK) return null;
-  const buf = readFileSync(join(ASSETS, "n2-layers", `${name}.png`));
+  const buf = readFileSync(join(ASSETS, dir, `${name}.png`));
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`data:image/png;base64,${buf.toString("base64")}`} width={W} height={H} alt="" style={{ position: "absolute", left: 0, top: 0 }} />;
+  return <img src={`data:image/png;base64,${buf.toString("base64")}`} width={W} height={H} alt="" style={{ position: "absolute", left: dx, top: 0 }} />;
 }
 const Shade = ({ bg, x = 0, y = 0, w = W, h = H }: { bg: string; x?: number; y?: number; w?: number; h?: number }) =>
   CHECK ? null : <div style={{ position: "absolute", left: x, top: y, width: w, height: h, display: "flex", background: bg }} />;
@@ -81,7 +93,12 @@ const Frame = ({ bg, children }: { bg: string; children: ReactNode }) => (
   <div style={{ width: W, height: H, display: "flex", position: "relative", background: CHECK ? "#000000" : bg, fontFamily: FONT, overflow: "hidden" }}>{children}</div>
 );
 
-const PLANS: Record<string, { credit?: string; node: () => ReactNode }> = {
+/** credit: thumb-credit-N2.txt の1行目（2行目は Duo の切り抜きの出どころ）。copyCredit: thumb-credit-N.txt をそのまま写す */
+// 11/18 の3本の位置（--check で測って決めた）
+const LAYER_DX_MONTHLY = 0;
+const M1_LEFT = 460, M1_SHADE = [51, 57], M1_Y = [250, 430], M1_PRICE = 190;
+const PX_LEFT = 640, PX_SHADE = [56, 64], PX_Y = [58, 236, 516], PX_BIG = 240;
+const PLANS: Record<string, { credit?: string; copyCredit?: boolean; node: () => ReactNode }> = {
   // thumb-v10-a.tsx「2026-11-02-storage」と同じ文字・色・写真（迷ったら 140 ／ 256GB 240 ／ 差 6,200円〜 108）。端から 60px へ寄せ、行の間を詰めた
   "2026-11-02-storage": {
     node: () => (
@@ -138,6 +155,44 @@ const PLANS: Record<string, { credit?: string; node: () => ReactNode }> = {
       </Frame>
     ),
   },
+  // thumb-v10-a.tsx「2026-11-01-monthly」と同じ文字・色・写真（2026年11月 130 ／ BEST5 240 ／ 4万〜15万円 108）。端から 60px へ寄せ、行の間を詰めた
+  "2026-11-01-monthly": {
+    copyCredit: true,
+    node: () => (
+      <Frame bg={`radial-gradient(circle at 78% 52%, #FFFBE0 0%, ${YELLOW} 50%, #FFC400 100%)`}>
+        <Layer name="a-monthly" dir="v10-layers" dx={LAYER_DX_MONTHLY} />
+        <T x={EDGE + 3} y={60}><Outlined text="2026年11月" size={130} color={BLACK} outer={{ w: 7, c: WHITE }} spacing={-5} /></T>
+        <T x={EDGE - 4} y={210}><Outlined text="BEST5" size={240} color={RED} inner={{ w: 9, c: WHITE }} outer={{ w: 7, c: BLACK }} spacing={-9} /></T>
+        <Tag x={EDGE} y={500} text="4万〜15万円" size={108} bg={BLACK} color={YELLOW} pad={24} />
+      </Frame>
+    ),
+  },
+  // thumb-v10-c.tsx「2026-11-03-m1-air」と同じ文字・色・写真（M1 Air 124 ／ まだ使える 132 ／ 8.4万円 190）。端から 60px へ寄せた
+  "2026-11-03-m1-air": {
+    copyCredit: true,
+    node: () => (
+      <Frame bg="#2A0A0A">
+        <Photo file="commons/commons-macbook-air-m1-wilfredor.jpg" scale={0.2815} left={M1_LEFT} top={0} />
+        <Shade bg={`linear-gradient(90deg, #2A0A0A 0%, #5B1010 30%, #5B1010 ${M1_SHADE[0]}%, rgba(91,16,16,0) ${M1_SHADE[1]}%)`} />
+        <Tag x={EDGE} y={EDGE} text="M1 Air" size={124} bg={YELLOW} color={BLACK} />
+        <T x={EDGE + 8} y={M1_Y[0]}><Outlined text="まだ使える" size={132} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-5} /></T>
+        <T x={EDGE + 10} y={M1_Y[1]}><Outlined text="8.4万円" size={M1_PRICE} color={YELLOW} inner={{ w: 10, c: RED }} outer={{ w: 8, c: BLACK }} spacing={-10} /></T>
+      </Frame>
+    ),
+  },
+  // thumb-v10-d.tsx「2026-11-07-pixel」と同じ文字・色・写真（安いほど 150 ／ 4倍損 250 ／ 1年あたりで 110）。端から 60px へ寄せた
+  "2026-11-07-pixel": {
+    copyCredit: true,
+    node: () => (
+      <Frame bg={BLACK}>
+        <Photo file="commons/pixel8a-front-hand.jpg" scale={0.205} left={PX_LEFT} top={0} clipX={PX_LEFT + 60} />
+        <Shade bg={`linear-gradient(90deg, #0B0B0F 0%, #0E2A4A 35%, #0E2A4A ${PX_SHADE[0]}%, rgba(14,42,74,0) ${PX_SHADE[1]}%)`} />
+        <T x={EDGE + 8} y={PX_Y[0]}><Outlined text="安いほど" size={150} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-5} /></T>
+        <T x={EDGE + 13} y={PX_Y[1]}><Outlined text="4倍損" size={PX_BIG} color={YELLOW} inner={{ w: 10, c: RED }} outer={{ w: 8, c: BLACK }} spacing={-12} /></T>
+        <Tag x={EDGE} y={PX_Y[2]} text="1年あたりで" size={110} bg={YELLOW} color={BLACK} />
+      </Frame>
+    ),
+  },
 };
 
 (async () => {
@@ -145,9 +200,11 @@ const PLANS: Record<string, { credit?: string; node: () => ReactNode }> = {
   const checkDir = CHECK ? process.argv[3] : "";
   if (CHECK) mkdirSync(checkDir, { recursive: true });
   for (const [key, plan] of Object.entries(PLANS)) {
+    if (ONLY.length && !ONLY.includes(key)) continue;
     const res = new ImageResponse(<>{plan.node()}</>, { width: W, height: H, fonts });
     const out = CHECK ? join(checkDir, `${key}.png`) : join(__dirname, key, "thumb-N2.png");
     writeFileSync(out, Buffer.from(await res.arrayBuffer()));
+    if (!CHECK && plan.copyCredit) writeFileSync(join(__dirname, key, "thumb-credit-N2.txt"), readFileSync(join(__dirname, key, "thumb-credit-N.txt")));
     if (!CHECK && plan.credit) writeFileSync(join(__dirname, key, "thumb-credit-N2.txt"), `${plan.credit}\n取得: 2026-11-14 ／ 元画像 https://upload.wikimedia.org/wikipedia/commons/e/e2/IPhone_16_Pro_Max_Desert_Titanium_Rear.png ／ 切り抜き longform/assets/commons/iphone16promax-desert-cut2.png（thumb-n2-prep.py）\n`);
     console.log(out);
   }
