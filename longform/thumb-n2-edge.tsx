@@ -113,6 +113,8 @@ const C2_CHARA = { left: 920, top: 140, height: 640 }, C2_Y = [60, 210, 520], C2
 // Pixel の C3a・C3b（端末の層は thumb-c3-prep.py の PLACE、立ち絵の位置は thumb-n2-contact.py の CHARA と合わせる）
 const C3A_CHARA = { left: 1165, top: 395, height: 470 }, C3A_Y = [63, 290, 527, 100], C3A_YASUI = 200, C3A_SON = 350, C3A_SON_X = 502;
 const C3B_CHARA = { left: 1150, top: 300, height: 620 }, C3B_Y = [215, 431, 240], C3B_YASUI = 190, C3B_SON = 330, C3B_SON_X = 485;
+// Pixel の C4（端末の層は thumb-c3-prep.py の PLACE「pixel-c4」）: C2 の文字のまま「中古Pixel」を C4_TITLE へ大きく、ずんだもんを Pixel 8a に
+const C4_Y = [55, 244, 520], C4_TITLE = 160;
 const C3_CREDIT = "thumb-credit-C3.txt"; // thumb-credit-N.txt をそのまま写す（同じ Pixel 8a の写真）
 /** dir: 書き出すフォルダ（省略時はキー）・out: ファイル名（省略時は thumb-N2.png）・copyCreditTo: thumb-credit-N.txt をこの名前に写す */
 const PLANS: Record<string, { dir?: string; out?: string; credit?: string; copyCredit?: boolean; copyCreditTo?: string; node: () => ReactNode }> = {
@@ -259,6 +261,25 @@ const PLANS: Record<string, { dir?: string; out?: string; credit?: string; copyC
         <T x={EDGE + 9} y={C3B_Y[0]}><Outlined text="安い" size={C3B_YASUI} color={YELLOW} inner={{ w: 9, c: BLACK }} outer={{ w: 7, c: WHITE }} spacing={-6} /></T>
         <T x={EDGE + 9} y={C3B_Y[1]}><Outlined text="ほど" size={C3B_YASUI} color={YELLOW} inner={{ w: 9, c: BLACK }} outer={{ w: 7, c: WHITE }} spacing={-6} /></T>
         <T x={C3B_SON_X} y={C3B_Y[2]}><Outlined text="損" size={C3B_SON} color={WHITE} inner={{ w: 11, c: RED }} outer={{ w: 9, c: BLACK }} spacing={-10} /></T>
+      </Frame>
+    ),
+  },
+  // 11/18 C4: C2 をもとに ①「中古Pixel」を 104→C4_TITLE ②ずんだもんを外す ③そこへ Pixel 8a（C3 と同じ切り抜き・層 pixel-c4）。
+  //   安いほど／損 と札は C2 と同じ大きさ・x（安いほど／損 の行だけ、大きくした見出しの下へ C2_Y[1]→C4_Y[1]）
+  "2026-11-07-pixel-C4": {
+    dir: "2026-11-07-pixel",
+    out: "thumb-C4.png",
+    copyCreditTo: "thumb-credit-C4.txt",
+    node: () => (
+      <Frame bg="radial-gradient(circle at 70% 40%, #8B1A1A 0%, #2A0A0A 70%)">
+        <Layer name="pixel-c4" />
+        <T x={EDGE + 10} y={C4_Y[0]}><Outlined text="中古Pixel" size={C4_TITLE} color={WHITE} outer={{ w: 8, c: BLACK }} spacing={-5} /></T>
+        <T x={EDGE + 16} y={C4_Y[1]}>
+          <Outlined text="安いほど" size={C2_YASUI} color={YELLOW} inner={{ w: 9, c: BLACK }} outer={{ w: 7, c: WHITE }} spacing={-6} />
+          <Gap w={20} />
+          <Outlined text="損" size={C2_SON} color={WHITE} inner={{ w: 10, c: RED }} outer={{ w: 9, c: BLACK }} spacing={-10} />
+        </T>
+        <Tag x={EDGE} y={C4_Y[2]} text="6aは来年7月まで" size={104} bg={YELLOW} color={BLACK} pad={22} />
       </Frame>
     ),
   },

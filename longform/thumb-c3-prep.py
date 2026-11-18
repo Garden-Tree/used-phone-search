@@ -3,7 +3,7 @@ cut  : commons/pixel8a-front-hand.jpg → commons/pixel8a-front-cut.png（端末
        手は端末の下半分にかかっている（親指は左の縁 y≈1470〜・指は右の縁 y≈1550〜）ので、手より上（y < CUT_Y）だけを使う。
        暗い画素（端末の黒い縁）のいちばん大きいかたまり → 凸包 → 周方向にならす → 内側へ 2px → 4倍で描いて縮小 → 縁 3px の色を内側の色で置き換え。
        下の切り口はまっすぐなので、サムネでは画像の下の端（y=720）より下に出して見せない
-layer: assets/n2-layers/pixel-c3a.png・pixel-c3b.png（1280x720 の透過 PNG・落ち影つき）。切り口が y=720 より下にあるかを確かめる
+layer: assets/n2-layers/pixel-c3a.png・pixel-c3b.png・pixel-c4.png（python longform/thumb-c3-prep.py layer pixel-c4 でその層だけ）（1280x720 の透過 PNG・落ち影つき）。切り口が y=720 より下にあるかを確かめる
 check: .claude/tmp/c3-cut-check.png（赤・黄・紺の地に置いた確認画像と角の拡大）
 """
 import sys
@@ -19,7 +19,9 @@ SRC = COMMONS / "pixel8a-front-hand.jpg"
 CUT = COMMONS / "pixel8a-front-cut.png"
 CUT_Y = 1430  # これより下は手がかかる（元画像の y）
 # 端末の中心 x, 上の端 y, 幅, 傾き（度・時計回りが正）
-PLACE = {"pixel-c3a": (1166, 285, 560, 4), "pixel-c3b": (1158, 252, 600, 3)}
+PLACE = {"pixel-c3a": (1166, 285, 560, 4), "pixel-c3b": (1158, 252, 600, 3),
+         "pixel-c4": (1275, 165, 720, 4)}  # 11/18 C4: C2 のずんだもんの場所（右）に。「損」の行と重ならないよう左の端は x≈900 より右。11/18 b: 上の端 272→165（切り口が出ないよう幅 590→720・中心 x1200→1275）
+ONLY = sys.argv[2:]  # layer の後ろに名前を並べると、その層だけ作る（既存の層を書き直さない）
 
 
 def smooth_closed(pts, sigma):
@@ -83,6 +85,8 @@ def layer():
     out = HERE / "assets" / "n2-layers"; out.mkdir(exist_ok=True)
     src = Image.open(CUT).convert("RGBA")
     for name, (cx, top, w, rot) in PLACE.items():
+        if ONLY and name not in ONLY:
+            continue
         im = src.resize((w * 2, round(src.height * w * 2 / src.width)), Image.LANCZOS)
         h = im.height // 2
         im = im.rotate(-rot, Image.BICUBIC, expand=True)

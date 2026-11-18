@@ -17,6 +17,9 @@ EXTRA = {"2026-11-07-pixel-C2": ("2026-11-07-pixel", "thumb-C.png", "thumb-C2.pn
          "2026-11-07-pixel-C3a": ("2026-11-07-pixel", "thumb-C2.png", "thumb-C3a.png"),
          "2026-11-07-pixel-C3b": ("2026-11-07-pixel", "thumb-C2.png", "thumb-C3b.png")}
 DEVICE.update({"2026-11-07-pixel-C3a": "n2-layers/pixel-c3a", "2026-11-07-pixel-C3b": "n2-layers/pixel-c3b"})
+# 11/18 C4: C2 のずんだもんを Pixel 8a に替えた案（写真との重なりだけ数える）
+EXTRA["2026-11-07-pixel-C4"] = ("2026-11-07-pixel", "thumb-C2.png", "thumb-C4.png")
+DEVICE["2026-11-07-pixel-C4"] = "n2-layers/pixel-c4"
 ROWS += list(EXTRA)
 CHARA = {"2026-11-07-pixel-C2": ("zundamon-shock", 920, 140, 640),
          "2026-11-07-pixel-C3a": ("zundamon-shock", 1165, 395, 470), "2026-11-07-pixel-C3b": ("zundamon-shock", 1150, 300, 620)}
