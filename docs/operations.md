@@ -240,3 +240,10 @@
   Docker のプロセスを止め `wsl --shutdown` → `%LOCALAPPDATA%\Docker\run` と `%LOCALAPPDATA%\docker-secrets-engine` を `.stale-日時` に名前を変えて起動し直す（削除・Reset to factory defaults はしない）
 - Docker Desktop が起動しきらない（WSL の docker-desktop が Stopped のまま）とき: 前回の終了で残ったソケット（`%LOCALAPPDATA%\Docker\run\dockerInference`・`%LOCALAPPDATA%\docker-secrets-engine\engine.sock`）を消せずに落ちている。
   Docker を終了し、2つのフォルダを `.stale-日時` に名前を変えてから起動し直す（ファイル自体は消せない。「Reset to factory defaults」は押さない）
+
+## YouTube Studio: A/B テストが終わった動画のサムネ差し替え
+
+ファイル入力（`#file-loader`）に直接入れるだけでは欄が切り替わらず、保存すると「動画を保存できませんでした」で固まる（11/13・11/18 に計4回）。必ずこの順:
+1. JS で input[type=file] の click を止める（OS のファイル選択の窓を開かせない）
+2. サムネ欄の ⋮ →「ファイルをアップロード」の**メニュー項目をクリック** →「現在のテストは削除されます」→ 続行
+3. その後に `#file-loader` へ file_upload → 欄が新しい画像になったのを見てから保存
