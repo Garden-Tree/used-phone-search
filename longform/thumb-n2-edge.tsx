@@ -5,6 +5,8 @@
  *   npx tsx longform/thumb-n2-edge.tsx --check <dir> # 文字だけ（黒地・写真なし・黒ふちは灰色）を <dir> に出す（余白の検査用）
  *   どちらも後ろにフォルダ名を並べると、そのプランだけ書き出す（例: npx tsx longform/thumb-n2-edge.tsx 2026-11-07-pixel）
  *   11/18: monthly・m1-air・pixel の3本を足した（クレジットは thumb-credit-N.txt をそのまま thumb-credit-N2.txt に写す）
+ *   11/18: プランに dir・out を持てるようにした（キーとフォルダが違うプラン）。「2026-11-07-pixel-C2」＝ thumb-ab3.tsx の Pixel の C（ずんだもん・損）を
+ *          置き直して 2026-11-07-pixel/thumb-C2.png に書く（写真なし＝写真のクレジットは不要。立ち絵のクレジットは youtube.txt に既にある）
  *   python -I longform/thumb-n2-contact.py [<dir>]   # 一覧 longform/thumb-n2-contact.png（<dir> があれば余白と重なりも測る）
  *
  * 決まり（thumb-v13-imakai.tsx・thumb-v14-finding.tsx と同じ）: 文字 104px 以上・1枚 2〜3 要素・文字と札は端から 60px 以上・
@@ -89,6 +91,14 @@ function Layer({ name, dir = "n2-layers", dx = 0 }: { name: string; dir?: string
 }
 const Shade = ({ bg, x = 0, y = 0, w = W, h = H }: { bg: string; x?: number; y?: number; w?: number; h?: number }) =>
   CHECK ? null : <div style={{ position: "absolute", left: x, top: y, width: w, height: h, display: "flex", background: bg }} />;
+/** 立ち絵（assets/chara/expr/。Git に入れない素材）。検査のときは描かない（重なりは thumb-n2-contact.py が立ち絵の透明度で数える） */
+function Chara({ name, left, top, height }: { name: string; left: number; top: number; height: number }) {
+  if (CHECK) return null;
+  const buf = readFileSync(join(ASSETS, "chara", "expr", `${name}.png`));
+  const width = Math.round((buf.readUInt32BE(16) / buf.readUInt32BE(20)) * height); // PNG の IHDR の幅・高さ
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`data:image/png;base64,${buf.toString("base64")}`} width={width} height={height} alt="" style={{ position: "absolute", left, top }} />;
+}
 const Frame = ({ bg, children }: { bg: string; children: ReactNode }) => (
   <div style={{ width: W, height: H, display: "flex", position: "relative", background: CHECK ? "#000000" : bg, fontFamily: FONT, overflow: "hidden" }}>{children}</div>
 );
@@ -98,7 +108,10 @@ const Frame = ({ bg, children }: { bg: string; children: ReactNode }) => (
 const LAYER_DX_MONTHLY = 0;
 const M1_LEFT = 460, M1_SHADE = [51, 57], M1_Y = [250, 430], M1_PRICE = 190;
 const PX_LEFT = 640, PX_SHADE = [56, 64], PX_Y = [58, 236, 516], PX_BIG = 240;
-const PLANS: Record<string, { credit?: string; copyCredit?: boolean; node: () => ReactNode }> = {
+// Pixel の C2（立ち絵の位置は thumb-n2-contact.py の CHARA と合わせる）
+const C2_CHARA = { left: 920, top: 140, height: 640 }, C2_Y = [60, 210, 520], C2_YASUI = 144, C2_SON = 230;
+/** dir: 書き出すフォルダ（省略時はキー）・out: ファイル名（省略時は thumb-N2.png） */
+const PLANS: Record<string, { dir?: string; out?: string; credit?: string; copyCredit?: boolean; node: () => ReactNode }> = {
   // thumb-v10-a.tsx「2026-11-02-storage」と同じ文字・色・写真（迷ったら 140 ／ 256GB 240 ／ 差 6,200円〜 108）。端から 60px へ寄せ、行の間を詰めた
   "2026-11-02-storage": {
     node: () => (
@@ -193,6 +206,24 @@ const PLANS: Record<string, { credit?: string; copyCredit?: boolean; node: () =>
       </Frame>
     ),
   },
+  // thumb-ab3.tsx「2026-11-07-pixel」の C と同じ文字・色・立ち絵（中古Pixel 100 ／ 安いほど 170 ／ 損 250 ／ 6aは来年7月まで 72）。
+  //   中古Pixel と札は 104px へ上げ、「安いほど」と「損」を1行に並べて縦に収めた（安いほど 170→C2_YASUI・損 250→C2_SON）。立ち絵は少し右へ
+  "2026-11-07-pixel-C2": {
+    dir: "2026-11-07-pixel",
+    out: "thumb-C2.png",
+    node: () => (
+      <Frame bg="radial-gradient(circle at 70% 40%, #8B1A1A 0%, #2A0A0A 70%)">
+        <Chara name="zundamon-shock" {...C2_CHARA} />
+        <T x={EDGE + 7} y={C2_Y[0]}><Outlined text="中古Pixel" size={104} color={WHITE} outer={{ w: 7, c: BLACK }} spacing={-4} /></T>
+        <T x={EDGE + 16} y={C2_Y[1]}>
+          <Outlined text="安いほど" size={C2_YASUI} color={YELLOW} inner={{ w: 9, c: BLACK }} outer={{ w: 7, c: WHITE }} spacing={-6} />
+          <Gap w={20} />
+          <Outlined text="損" size={C2_SON} color={WHITE} inner={{ w: 10, c: RED }} outer={{ w: 9, c: BLACK }} spacing={-10} />
+        </T>
+        <Tag x={EDGE} y={C2_Y[2]} text="6aは来年7月まで" size={104} bg={YELLOW} color={BLACK} pad={22} />
+      </Frame>
+    ),
+  },
 };
 
 (async () => {
@@ -202,10 +233,11 @@ const PLANS: Record<string, { credit?: string; copyCredit?: boolean; node: () =>
   for (const [key, plan] of Object.entries(PLANS)) {
     if (ONLY.length && !ONLY.includes(key)) continue;
     const res = new ImageResponse(<>{plan.node()}</>, { width: W, height: H, fonts });
-    const out = CHECK ? join(checkDir, `${key}.png`) : join(__dirname, key, "thumb-N2.png");
+    const dir = plan.dir ?? key;
+    const out = CHECK ? join(checkDir, `${key}.png`) : join(__dirname, dir, plan.out ?? "thumb-N2.png");
     writeFileSync(out, Buffer.from(await res.arrayBuffer()));
-    if (!CHECK && plan.copyCredit) writeFileSync(join(__dirname, key, "thumb-credit-N2.txt"), readFileSync(join(__dirname, key, "thumb-credit-N.txt")));
-    if (!CHECK && plan.credit) writeFileSync(join(__dirname, key, "thumb-credit-N2.txt"), `${plan.credit}\n取得: 2026-11-14 ／ 元画像 https://upload.wikimedia.org/wikipedia/commons/e/e2/IPhone_16_Pro_Max_Desert_Titanium_Rear.png ／ 切り抜き longform/assets/commons/iphone16promax-desert-cut2.png（thumb-n2-prep.py）\n`);
+    if (!CHECK && plan.copyCredit) writeFileSync(join(__dirname, dir, "thumb-credit-N2.txt"), readFileSync(join(__dirname, dir, "thumb-credit-N.txt")));
+    if (!CHECK && plan.credit) writeFileSync(join(__dirname, dir, "thumb-credit-N2.txt"), `${plan.credit}\n取得: 2026-11-14 ／ 元画像 https://upload.wikimedia.org/wikipedia/commons/e/e2/IPhone_16_Pro_Max_Desert_Titanium_Rear.png ／ 切り抜き longform/assets/commons/iphone16promax-desert-cut2.png（thumb-n2-prep.py）\n`);
     console.log(out);
   }
 })();
