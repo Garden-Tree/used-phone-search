@@ -12,9 +12,14 @@ ROWS = ["2026-11-02-storage", "2026-11-03-duo-vs-mini", "2026-11-01-mbp-vs-mba",
         "2026-11-01-monthly", "2026-11-03-m1-air", "2026-11-07-pixel"]  # 下の3本は 11/18 に足した
 DEVICE = {"2026-11-03-duo-vs-mini": "n2-layers/duo-16pm", "2026-11-01-monthly": "v10-layers/a-monthly"}
 # 11/18: キーとフォルダ・ファイル名が違う行（一覧は 元 → 新）。立ち絵との重なりは CHARA の位置に置いて数える（thumb-n2-edge.tsx の C2_CHARA と合わせる）
-EXTRA = {"2026-11-07-pixel-C2": ("2026-11-07-pixel", "thumb-C.png", "thumb-C2.png")}
+EXTRA = {"2026-11-07-pixel-C2": ("2026-11-07-pixel", "thumb-C.png", "thumb-C2.png"),
+         # 11/18 C3: 写真（Pixel 8a）と立ち絵の両方と重なりを数える（DEVICE と CHARA を合わせる）
+         "2026-11-07-pixel-C3a": ("2026-11-07-pixel", "thumb-C2.png", "thumb-C3a.png"),
+         "2026-11-07-pixel-C3b": ("2026-11-07-pixel", "thumb-C2.png", "thumb-C3b.png")}
+DEVICE.update({"2026-11-07-pixel-C3a": "n2-layers/pixel-c3a", "2026-11-07-pixel-C3b": "n2-layers/pixel-c3b"})
 ROWS += list(EXTRA)
-CHARA = {"2026-11-07-pixel-C2": ("zundamon-shock", 920, 140, 640)}
+CHARA = {"2026-11-07-pixel-C2": ("zundamon-shock", 920, 140, 640),
+         "2026-11-07-pixel-C3a": ("zundamon-shock", 1165, 395, 470), "2026-11-07-pixel-C3b": ("zundamon-shock", 1150, 300, 620)}
 
 
 def files(key):
@@ -22,13 +27,16 @@ def files(key):
 
 
 def layer(key):
-    """端末か立ち絵の 1280x720 の透明度（文字との重なりを数える）"""
-    if key in DEVICE:
-        return Image.open(HERE / "assets" / f"{DEVICE[key]}.png").getchannel("A")
+    """端末と立ち絵の 1280x720 の透明度（文字との重なりを数える。両方あるときは明るいほう）"""
+    from PIL import ImageChops
+    dev = Image.open(HERE / "assets" / f"{DEVICE[key]}.png").getchannel("A") if key in DEVICE else None
+    if key not in CHARA:
+        return dev
     name, left, top, h = CHARA[key]
     im = Image.open(HERE / "assets" / "chara" / "expr" / f"{name}.png").getchannel("A")
     im = im.resize((round(im.width * h / im.height), h), Image.LANCZOS)
-    out = Image.new("L", (1280, 720), 0); out.paste(im, (left, top)); return out
+    out = Image.new("L", (1280, 720), 0); out.paste(im, (left, top))
+    return ImageChops.lighter(out, dev) if dev else out
 
 
 def contact():

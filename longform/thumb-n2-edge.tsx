@@ -110,8 +110,12 @@ const M1_LEFT = 460, M1_SHADE = [51, 57], M1_Y = [250, 430], M1_PRICE = 190;
 const PX_LEFT = 640, PX_SHADE = [56, 64], PX_Y = [58, 236, 516], PX_BIG = 240;
 // Pixel の C2（立ち絵の位置は thumb-n2-contact.py の CHARA と合わせる）
 const C2_CHARA = { left: 920, top: 140, height: 640 }, C2_Y = [60, 210, 520], C2_YASUI = 144, C2_SON = 230;
-/** dir: 書き出すフォルダ（省略時はキー）・out: ファイル名（省略時は thumb-N2.png） */
-const PLANS: Record<string, { dir?: string; out?: string; credit?: string; copyCredit?: boolean; node: () => ReactNode }> = {
+// Pixel の C3a・C3b（端末の層は thumb-c3-prep.py の PLACE、立ち絵の位置は thumb-n2-contact.py の CHARA と合わせる）
+const C3A_CHARA = { left: 1165, top: 395, height: 470 }, C3A_Y = [63, 290, 527, 100], C3A_YASUI = 200, C3A_SON = 350, C3A_SON_X = 502;
+const C3B_CHARA = { left: 1150, top: 300, height: 620 }, C3B_Y = [215, 431, 240], C3B_YASUI = 190, C3B_SON = 330, C3B_SON_X = 485;
+const C3_CREDIT = "thumb-credit-C3.txt"; // thumb-credit-N.txt をそのまま写す（同じ Pixel 8a の写真）
+/** dir: 書き出すフォルダ（省略時はキー）・out: ファイル名（省略時は thumb-N2.png）・copyCreditTo: thumb-credit-N.txt をこの名前に写す */
+const PLANS: Record<string, { dir?: string; out?: string; credit?: string; copyCredit?: boolean; copyCreditTo?: string; node: () => ReactNode }> = {
   // thumb-v10-a.tsx「2026-11-02-storage」と同じ文字・色・写真（迷ったら 140 ／ 256GB 240 ／ 差 6,200円〜 108）。端から 60px へ寄せ、行の間を詰めた
   "2026-11-02-storage": {
     node: () => (
@@ -224,6 +228,40 @@ const PLANS: Record<string, { dir?: string; out?: string; credit?: string; copyC
       </Frame>
     ),
   },
+  // 11/18 C3a: C2 に Pixel 8a の写真（thumb-c3-prep.py の切り抜き・層 pixel-c3a）を足し、文字を大きく。「中古Pixel」を外して 安いほど／損／札 の3つに。
+  //   「安いほど」を1行（170）にすると 損 は 255 までしか縦に入らない（札と合わせて 600px）ので、安い／ほど の2行（190）＋右に 損（330）。ずんだもんは端末の手前（右下）に小さめ
+  "2026-11-07-pixel-C3a": {
+    dir: "2026-11-07-pixel",
+    out: "thumb-C3a.png",
+    copyCreditTo: C3_CREDIT,
+    node: () => (
+      <Frame bg="radial-gradient(circle at 70% 40%, #8B1A1A 0%, #2A0A0A 70%)">
+        <Layer name="pixel-c3a" />
+        <Chara name="zundamon-shock" {...C3A_CHARA} />
+        <T x={EDGE + 9} y={C3A_Y[0]}><Outlined text="安い" size={C3A_YASUI} color={YELLOW} inner={{ w: 9, c: BLACK }} outer={{ w: 7, c: WHITE }} spacing={-6} /></T>
+        <T x={EDGE + 9} y={C3A_Y[1]}><Outlined text="ほど" size={C3A_YASUI} color={YELLOW} inner={{ w: 9, c: BLACK }} outer={{ w: 7, c: WHITE }} spacing={-6} /></T>
+        <T x={C3A_SON_X} y={C3A_Y[3]}><Outlined text="損" size={C3A_SON} color={WHITE} inner={{ w: 11, c: RED }} outer={{ w: 9, c: BLACK }} spacing={-10} /></T>
+        <Tag x={EDGE} y={C3A_Y[2]} text="6aは来年7月まで" size={104} bg={YELLOW} color={BLACK} pad={22} />
+      </Frame>
+    ),
+  },
+  // 11/18 C3b: 「中古Pixel」を黄色の札にして上へ。安い／ほど を2行にして、その右に「損」を2行ぶんの高さで。Pixel 8a を中央〜右に大きく、
+  //   ずんだもんは右の端から顔を出すだけ（札「6aは来年7月まで」は外した）
+  "2026-11-07-pixel-C3b": {
+    dir: "2026-11-07-pixel",
+    out: "thumb-C3b.png",
+    copyCreditTo: C3_CREDIT,
+    node: () => (
+      <Frame bg="radial-gradient(circle at 70% 40%, #8B1A1A 0%, #2A0A0A 70%)">
+        <Layer name="pixel-c3b" />
+        <Chara name="zundamon-shock" {...C3B_CHARA} />
+        <Tag x={EDGE} y={EDGE} text="中古Pixel" size={104} bg={YELLOW} color={BLACK} pad={22} />
+        <T x={EDGE + 9} y={C3B_Y[0]}><Outlined text="安い" size={C3B_YASUI} color={YELLOW} inner={{ w: 9, c: BLACK }} outer={{ w: 7, c: WHITE }} spacing={-6} /></T>
+        <T x={EDGE + 9} y={C3B_Y[1]}><Outlined text="ほど" size={C3B_YASUI} color={YELLOW} inner={{ w: 9, c: BLACK }} outer={{ w: 7, c: WHITE }} spacing={-6} /></T>
+        <T x={C3B_SON_X} y={C3B_Y[2]}><Outlined text="損" size={C3B_SON} color={WHITE} inner={{ w: 11, c: RED }} outer={{ w: 9, c: BLACK }} spacing={-10} /></T>
+      </Frame>
+    ),
+  },
 };
 
 (async () => {
@@ -237,6 +275,7 @@ const PLANS: Record<string, { dir?: string; out?: string; credit?: string; copyC
     const out = CHECK ? join(checkDir, `${key}.png`) : join(__dirname, dir, plan.out ?? "thumb-N2.png");
     writeFileSync(out, Buffer.from(await res.arrayBuffer()));
     if (!CHECK && plan.copyCredit) writeFileSync(join(__dirname, dir, "thumb-credit-N2.txt"), readFileSync(join(__dirname, dir, "thumb-credit-N.txt")));
+    if (!CHECK && plan.copyCreditTo) writeFileSync(join(__dirname, dir, plan.copyCreditTo), readFileSync(join(__dirname, dir, "thumb-credit-N.txt")));
     if (!CHECK && plan.credit) writeFileSync(join(__dirname, dir, "thumb-credit-N2.txt"), `${plan.credit}\n取得: 2026-11-14 ／ 元画像 https://upload.wikimedia.org/wikipedia/commons/e/e2/IPhone_16_Pro_Max_Desert_Titanium_Rear.png ／ 切り抜き longform/assets/commons/iphone16promax-desert-cut2.png（thumb-n2-prep.py）\n`);
     console.log(out);
   }
