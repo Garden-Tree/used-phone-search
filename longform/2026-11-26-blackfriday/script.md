@@ -15,7 +15,7 @@
 2. ブラックフライデーのPixel、中古より新品が安い機種がある｜Pixel 10a・11・11 Proの新品と中古【2026年】
 3. セールの新品か、中古か｜ブラックフライデー2026のPixelと中古の相場を比べた
 
-サムネ: 型R（暗い地・発見が最大）。「Pixel 10a」＋「新品が安い」＋札「セール 78,880円／中古 82,280円」。写真は Pixel 10a の実機（Commons の CC0・BY か Pexels など。Google の公式画像は使わない）
+サムネ: **thumb-R2 に決定（11/19 ユーザー）**「Pixel 10a／新品が安い／−3,400円」。（以下は当初の案）型R（暗い地・発見が最大）。「Pixel 10a」＋「新品が安い」＋札「セール 78,880円／中古 82,280円」。写真は Pixel 10a の実機（Commons の CC0・BY か Pexels など。Google の公式画像は使わない）
 
 ## チャプター
 ```
@@ -234,7 +234,7 @@ Pixel 10a の店ごとの在庫と最安値: https://used.gadelog.com/pixel/pixe
 Pixel 11 Pro の店ごとの在庫と最安値: https://used.gadelog.com/pixel/pixel-11-pro?utm_source=youtube&utm_medium=social&utm_campaign=long_20261126
 中古Pixelの全機種の相場: https://used.gadelog.com/pixel?utm_source=youtube&utm_medium=social&utm_campaign=long_20261126
 
-（サムネに実機写真を使ったら、ここにクレジット）
+サムネイル画像: Pixel 10a — Gavin Phillips / Unsplash License https://unsplash.com/photos/QihL97z4oZ8 （切り出し・文字を追加）
 
 VOICEVOX:春日部つむぎ
 VOICEVOX:ずんだもん
