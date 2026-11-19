@@ -123,9 +123,28 @@ const e3 = (
   </Frame>
 );
 
+// E4（R4・11/19 ユーザー「iPhone 16e を入れて」）: R2 の上に iPhone 16e（白 116）／ 1年半で（白 104）／ 電池93%（黄 172・主役）／ 札 売値6.8万円（赤 104）
+const e4 = (
+  <Frame>
+    <Layer name="16e-r4" />
+    <T x={EDGE + 6} y={60}><Outlined text="iPhone 16e" size={116} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 6} y={196}><Outlined text="1年半で" size={104} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 8} y={316}><Outlined text="電池93%" size={172} color={YELLOW} w={9} spacing={-7} /></T>
+    <Tag x={EDGE} y={516} text="売値6.8万円" size={104} color={RED} pad={16} spacing={-5} />
+  </Frame>
+);
+// E5（R5）: R1 の上の行を「iPhone 16e 1年半で」（白 104）に ／ 電池93%（黄 220・主役）。札なし・写真を大きく
+const e5 = (
+  <Frame>
+    <Layer name="16e-r5" />
+    <T x={EDGE + 6} y={60}><Outlined text="iPhone 16e 1年半で" size={104} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 10} y={196}><Outlined text="電池93%" size={220} color={YELLOW} w={10} spacing={-8} /></T>
+  </Frame>
+);
+
 (async () => {
   const fonts = await notoSansJp(readFileSync(__filename, "utf8"));
-  const plans: [string, ReactNode][] = SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3]] : [["R1", r1], ["R2", r2], ["R3", r3]];
+  const plans: [string, ReactNode][] = SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
   const checkDir = CHECK ? ARGV[1] : "";
   if (CHECK) mkdirSync(checkDir, { recursive: true });
   for (const [name, node] of plans) {

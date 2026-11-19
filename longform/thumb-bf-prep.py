@@ -28,7 +28,8 @@ SETS = {
                place={"bf-bottom": (1000, 0, 300, 440), "bf-bottom2": (1000, 0, 360, 400), "bf-small": (700, 0, 680, 470)}),
     "16e": dict(dir=HERE / "assets" / "blog-16e", src="2025_12_image.jpg", cut="iphone16e-cut.png",
                 cutline="iphone16e-cutline.png", edges=("bottom", "right"), layers="16e-layers", shrink=3, fill="blur",
-                place={"16e-big": (900, -14, 600, 300), "16e-mid": (820, 0, 640, 330), "16e-small": (760, 0, 700, 360)}),
+                place={"16e-big": (900, -14, 600, 300), "16e-mid": (820, 0, 640, 330), "16e-small": (760, 0, 700, 360),
+                       "16e-r4": (760, 0, 720, 360), "16e-r5": (1000, -24, 620, 220)}),
 }
 SET = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--set=")), "bf")
 ARGS = [a for a in sys.argv[1:] if not a.startswith("--set=")]

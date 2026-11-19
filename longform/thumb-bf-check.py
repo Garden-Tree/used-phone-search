@@ -11,14 +11,16 @@ from PIL import Image, ImageDraw, ImageFont
 HERE = Path(__file__).resolve().parent
 SETS = {
     "bf": ("2026-11-26-blackfriday", "bf-layers", {"R1": "bf-bottom", "R2": "bf-bottom2", "R3": "bf-small"}),
-    "16e": ("2026-12-03-iphone16e-review", "16e-layers", {"R1": "16e-big", "R2": "16e-mid", "R3": "16e-small"}),
+    "16e": ("2026-12-03-iphone16e-review", "16e-layers", {"R1": "16e-big", "R2": "16e-mid", "R3": "16e-small", "R4": "16e-r4", "R5": "16e-r5"}),
 }
 SET = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--set=")), "bf")
 ARGS = [a for a in sys.argv[1:] if not a.startswith("--set=")]
 DIR = HERE / SETS[SET][0]
 LAYERS = SETS[SET][1]
-NAMES = ["R1", "R2", "R3"]
+NAMES = list(SETS[SET][2])
 LAYER = SETS[SET][2]
+# 一覧に並べる案（16e は 11/19 にユーザーが「iPhone 16e」を入れる案を求めたので R2 と比べる）
+CONTACT = {"bf": ["R1", "R2", "R3"], "16e": ["R2", "R4", "R5"]}[SET]
 
 
 def contact():
@@ -27,7 +29,7 @@ def contact():
         font = ImageFont.truetype("C:/Windows/Fonts/meiryob.ttc", 22)
     except OSError:
         font = ImageFont.load_default()
-    names = [n for n in NAMES if (DIR / f"thumb-{n}.png").exists()]
+    names = [n for n in CONTACT if (DIR / f"thumb-{n}.png").exists()]
     sheet = Image.new("RGB", (GAP + (CW + GAP) * len(names), GAP + LH + CH + GAP + SH * 2 + GAP), (40, 40, 44))
     d = ImageDraw.Draw(sheet)
     for c, n in enumerate(names):
