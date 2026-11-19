@@ -2,15 +2,23 @@
 一覧: longform/2026-11-26-blackfriday/thumb-contact.png（R1〜R3 を 640x360 で横に並べ、その下に 168x94 とその 2倍拡大）
 検査: `npx tsx longform/thumb-bf-finding.tsx --check <dir>` の文字だけの画像（黒ふちは灰色）から、端からの余白・右下（x1030〜・y600〜）・
       行の範囲（高さ）・端末の層（assets/bf-layers/）との重なり（端末の透明度 > 200 の画素と文字の画素）を数える
+--set=16e（11/19）: 2026-12-03-iphone16e-review・層は assets/16e-layers/
 """
 import sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 HERE = Path(__file__).resolve().parent
-DIR = HERE / "2026-11-26-blackfriday"
+SETS = {
+    "bf": ("2026-11-26-blackfriday", "bf-layers", {"R1": "bf-bottom", "R2": "bf-bottom2", "R3": "bf-small"}),
+    "16e": ("2026-12-03-iphone16e-review", "16e-layers", {"R1": "16e-big", "R2": "16e-mid", "R3": "16e-small"}),
+}
+SET = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--set=")), "bf")
+ARGS = [a for a in sys.argv[1:] if not a.startswith("--set=")]
+DIR = HERE / SETS[SET][0]
+LAYERS = SETS[SET][1]
 NAMES = ["R1", "R2", "R3"]
-LAYER = {"R1": "bf-bottom", "R2": "bf-bottom2", "R3": "bf-small"}
+LAYER = SETS[SET][2]
 
 
 def contact():
@@ -40,7 +48,7 @@ def check(folder):
         ink = Image.open(p).convert("L").point(lambda v: 255 if v > 24 else 0)
         l, t, r, b = ink.getbbox()
         corner = ink.crop((1030, 600, 1280, 720)).getbbox()
-        dev = Image.open(HERE / "assets" / "bf-layers" / f"{LAYER[n]}.png").getchannel("A").point(lambda v: 255 if v > 200 else 0)
+        dev = Image.open(HERE / "assets" / LAYERS / f"{LAYER[n]}.png").getchannel("A").point(lambda v: 255 if v > 200 else 0)
         both = Image.new("L", ink.size, 0); both.paste(ink, mask=dev)
         over = sum(1 for v in both.getdata() if v)
         ok = min(l, t, 1280 - r, 720 - b) >= 60 and corner is None and over == 0
@@ -55,6 +63,6 @@ def check(folder):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        check(sys.argv[1])
+    if ARGS:
+        check(ARGS[0])
     contact()

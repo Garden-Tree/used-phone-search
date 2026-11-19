@@ -1,5 +1,5 @@
 """横動画 2026-11-26-blackfriday のサムネ（thumb-bf-finding.tsx）の下ごしらえ。
-  python longform/thumb-bf-prep.py [cut|layer|check] [層の名前...]（rembg・cv2 がユーザーの site-packages にあるので -I は付けない。読むのは assets/ の画像だけ）
+  python longform/thumb-bf-prep.py [cut|layer|check] [層の名前...] [--set=bf|16e]（rembg・cv2 がユーザーの site-packages にあるので -I は付けない。読むのは assets/ の画像だけ）
 写真: assets/stock-photo/pixel10a-berry-box-unsplash.jpg（3000x2000）
       Unsplash「Google pixel 10a box with a smartphone」Gavin Phillips・Unsplash License https://unsplash.com/photos/QihL97z4oZ8
       机に置いた Pixel 10a（Berry）の上半分を斜め上から。奥に「Google Pixel 10a」の箱
@@ -8,6 +8,10 @@ cut  : → assets/stock-photo/pixel10a-berry-cut.png（端末だけ・透過）�
        端末は写真の下の端で切れている（左・右・上は端末の本当の縁）ので、サムネでは切り口を画像の外（下か右）に出して見せない
 layer: assets/bf-layers/<名前>.png（1280x720 の透過・落ち影つき）。切り口がキャンバスの中に残っていないかを数える
 check: .claude/tmp/bf-cut-check.png（暗い地・黄の地に置いた切り抜きと角の拡大）
+--set=16e（11/19 追加）: 横動画 2026-12-03-iphone16e-review。写真は運営者が撮った iPhone 16e（ブラック）の背面
+      assets/blog-16e/2025_12_image.jpg（1260x945）= https://gadelog.com/wp-content/uploads/2025/12/image.jpg
+      記事「【長期レビュー】iPhone 16eを半年使って分かったこと」（gadelog.com）。端末は写真の右と下の端で切れている
+      → assets/blog-16e/iphone16e-cut.png・iphone16e-cutline.png・層は assets/16e-layers/・check は .claude/tmp/16e-cut-check.png
 """
 import sys
 from pathlib import Path
@@ -17,13 +21,23 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 HERE = Path(__file__).resolve().parent
-STOCK = HERE / "assets" / "stock-photo"
-SRC = STOCK / "pixel10a-berry-box-unsplash.jpg"
-CUT = STOCK / "pixel10a-berry-cut.png"
-CUTLINE = STOCK / "pixel10a-berry-cutline.png"
 # 名前: (切り抜きの幅 px, 回す角度（度・反時計回りが正）, 回したあとの左上 x, y)
-PLACE = {"bf-bottom": (1000, 0, 300, 440), "bf-bottom2": (1000, 0, 360, 400), "bf-small": (700, 0, 680, 470)}
-ONLY = sys.argv[2:]
+SETS = {
+    "bf": dict(dir=HERE / "assets" / "stock-photo", src="pixel10a-berry-box-unsplash.jpg", cut="pixel10a-berry-cut.png",
+               cutline="pixel10a-berry-cutline.png", edges=("bottom",), layers="bf-layers",
+               place={"bf-bottom": (1000, 0, 300, 440), "bf-bottom2": (1000, 0, 360, 400), "bf-small": (700, 0, 680, 470)}),
+    "16e": dict(dir=HERE / "assets" / "blog-16e", src="2025_12_image.jpg", cut="iphone16e-cut.png",
+                cutline="iphone16e-cutline.png", edges=("bottom", "right"), layers="16e-layers", shrink=3, fill="blur",
+                place={"16e-big": (900, -14, 600, 300), "16e-mid": (820, 0, 640, 330), "16e-small": (760, 0, 700, 360)}),
+}
+SET = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--set=")), "bf")
+ARGS = [a for a in sys.argv[1:] if not a.startswith("--set=")]
+CFG = SETS[SET]
+SRC = CFG["dir"] / CFG["src"]
+CUT = CFG["dir"] / CFG["cut"]
+CUTLINE = CFG["dir"] / CFG["cutline"]
+PLACE = CFG["place"]
+ONLY = ARGS[1:]
 
 
 def smooth_closed(pts, sigma):
@@ -57,11 +71,16 @@ def cut():
     S = 4
     big = np.zeros((H * S, W * S), np.uint8)
     cv2.fillPoly(big, [np.round(pts * S).astype(np.int32)], 255, lineType=cv2.LINE_AA)
-    big = cv2.erode(big, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * 2 * S + 1, 2 * 2 * S + 1)))
+    e = CFG.get("shrink", 2)
+    big = cv2.erode(big, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * e * S + 1, 2 * e * S + 1)))
     alpha = cv2.resize(big, (W, H), interpolation=cv2.INTER_AREA)
-    # 写真の下の端（切り口）までは不透明に戻す（erode で下の端が 2px 透けるのを防ぐ）
-    col = alpha[H - 8] > 0
-    alpha[H - 8:, col] = np.maximum(alpha[H - 8:, col], alpha[H - 8, col])
+    # 写真の下の端（切り口）までは不透明に戻す（erode で下の端が 2px 透けるのを防ぐ）。右で切れている写真は右も
+    if "bottom" in CFG["edges"]:
+        col = alpha[H - 8] > 0
+        alpha[H - 8:, col] = np.maximum(alpha[H - 8:, col], alpha[H - 8, col])
+    if "right" in CFG["edges"]:
+        row = alpha[:, W - 8] > 0
+        alpha[row, W - 8:] = np.maximum(alpha[row, W - 8:], alpha[row, W - 8][:, None])
     core = (alpha > 250).astype(np.uint8)
     inner = cv2.erode(core, np.ones((7, 7), np.uint8))
     _, lab = cv2.distanceTransformWithLabels(1 - inner, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
@@ -71,8 +90,19 @@ def cut():
     fixed = rgb.copy()
     ring = (alpha > 0) & (inner == 0)
     fixed[ring] = lut[lab[ring]]
+    if CFG.get("fill") == "blur":
+        # 縁が斜めの直線だと、いちばん近い画素の色ではギザギザ（階段）が出る → 内側の色だけをぼかして割った色で埋める
+        k = inner.astype(np.float32)
+        num = cv2.GaussianBlur(rgb.astype(np.float32) * k[..., None], (0, 0), 4)
+        den = cv2.GaussianBlur(k, (0, 0), 4)[..., None]
+        fill = np.clip(num / np.maximum(den, 1e-3), 0, 255).astype(np.uint8)
+        fixed[ring] = fill[ring]
     # 切り口の印: 写真の下の端から 6px 以内で端末にかかる画素
-    line = np.zeros_like(alpha); line[H - 6:] = (alpha[H - 6:] > 0) * 255
+    line = np.zeros_like(alpha)
+    if "bottom" in CFG["edges"]:
+        line[H - 6:] = (alpha[H - 6:] > 0) * 255
+    if "right" in CFG["edges"]:
+        line[:, W - 6:] = (alpha[:, W - 6:] > 0) * 255
     box = Image.fromarray(alpha).point(lambda v: 255 if v > 8 else 0).getbbox()
     Image.fromarray(np.dstack([fixed, alpha]), "RGBA").crop(box).save(CUT)
     Image.fromarray(line).crop(box).save(CUTLINE)
@@ -95,7 +125,7 @@ def place(img, w, rot, resample):
 
 
 def layer():
-    out = HERE / "assets" / "bf-layers"; out.mkdir(exist_ok=True)
+    out = HERE / "assets" / CFG["layers"]; out.mkdir(exist_ok=True)
     src = Image.open(CUT).convert("RGBA"); ln = Image.open(CUTLINE).convert("L")
     for name, (w, rot, x, y) in PLACE.items():
         if ONLY and name not in ONLY:
@@ -123,11 +153,11 @@ def check():
     bb = big.getchannel("A").getbbox()
     z = bg.crop((bb[2] - 300, 0, bb[2], 300)).resize((600, 600), Image.NEAREST)
     sheet.paste(z.convert("RGB"), (im.width * 2 + 50, 30))
-    p = HERE.parent / ".claude" / "tmp" / "bf-cut-check.png"; p.parent.mkdir(exist_ok=True); sheet.save(p); print(p)
+    p = HERE.parent / ".claude" / "tmp" / f"{SET}-cut-check.png"; p.parent.mkdir(exist_ok=True); sheet.save(p); print(p)
 
 
 if __name__ == "__main__":
-    what = sys.argv[1] if len(sys.argv) > 1 else "all"
+    what = ARGS[0] if ARGS else "all"
     if what in ("cut", "all"): cut()
     if what in ("layer", "all"): layer()
     if what in ("check", "all"): check()

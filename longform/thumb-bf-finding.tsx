@@ -8,6 +8,11 @@
  * 決まり: 文字 104px 以上・1枚 2〜3 要素・文字と札は端から 60px 以上・文字どうし／文字と端末は重ねない・右下（x1030〜・y600〜）に文字なし
  * 数字は script.md のものだけ: Pixel 10a 128GB セールの新品 78,880円・中古の相場 82,280円・新品が 3,400円安い
  * 写真: Unsplash の Pixel 10a（Gavin Phillips・Unsplash License。thumb-credit.txt）
+ *
+ * --set=16e（11/19 追加）: 横動画 2026-12-03-iphone16e-review。`python longform/thumb-bf-prep.py --set=16e` で層（assets/16e-layers/）を作ってから
+ *   npx tsx longform/thumb-bf-finding.tsx --set=16e [--check <dir>]  ／  python -I longform/thumb-bf-check.py --set=16e [<dir>]
+ *   数字は script.md のものだけ: 1年半で電池の最大容量 93%・売った額 68,400円（6.8万円）・Apple の下取り 53,000円（5.3万円）
+ *   写真: 運営者が撮った iPhone 16e（gadelog.com の記事。thumb-credit.txt）
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -19,13 +24,16 @@ const W = 1280, H = 720;
 const RED = "#E11D1D", YELLOW = "#FFE100", BLACK = "#0B0B0F", WHITE = "#FFFFFF";
 const FONT = "Noto Sans JP";
 const EDGE = 60;
-const CHECK = process.argv[2] === "--check";
-const DIR = "2026-11-26-blackfriday";
+const SET = process.argv.find((a) => a.startsWith("--set="))?.slice(6) ?? "bf";
+const ARGV = process.argv.slice(2).filter((a) => !a.startsWith("--set="));
+const CHECK = ARGV[0] === "--check";
+const DIR = SET === "16e" ? "2026-12-03-iphone16e-review" : "2026-11-26-blackfriday";
+const LAYERS = SET === "16e" ? "16e-layers" : "bf-layers";
 const OUTC = (c: string) => (CHECK && c === BLACK ? "#808080" : c);
 
 function Layer({ name }: { name: string }) {
   if (CHECK) return null;
-  const buf = readFileSync(join(__dirname, "assets", "bf-layers", `${name}.png`));
+  const buf = readFileSync(join(__dirname, "assets", LAYERS, `${name}.png`));
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={`data:image/png;base64,${buf.toString("base64")}`} width={W} height={H} alt="" style={{ position: "absolute", left: 0, top: 0 }} />;
 }
@@ -85,10 +93,40 @@ const r3 = (
   </Frame>
 );
 
+// ---- 16e（2026-12-03-iphone16e-review）: 運営者の iPhone 16e（黒）の背面。暗い地＋「電池93%」が最大 ----
+// E1: 1年半で（白 124）／ 電池93%（黄 204・主役）。2行＋端末＝3要素
+const e1 = (
+  <Frame>
+    <Layer name="16e-big" />
+    <T x={EDGE + 6} y={60}><Outlined text="1年半で" size={124} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 10} y={208}><Outlined text="電池93%" size={204} color={YELLOW} w={10} spacing={-8} /></T>
+  </Frame>
+);
+// E2: 1年半で（白 116）／ 電池93%（黄 196・主役）／ 札 売値6.8万円（赤 104）
+const e2 = (
+  <Frame>
+    <Layer name="16e-mid" />
+    <T x={EDGE + 6} y={60}><Outlined text="1年半で" size={116} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 9} y={200}><Outlined text="電池93%" size={196} color={YELLOW} w={9} spacing={-8} /></T>
+    <Tag x={EDGE} y={452} text="売値6.8万円" size={104} color={RED} pad={16} spacing={-5} />
+  </Frame>
+);
+// E3: 電池93%（黄 196・主役）／ 札2行 下取り 5.3万円（黒）・売値 6.8万円（赤）。「1年半」は題に任せる
+const e3 = (
+  <Frame>
+    <Layer name="16e-small" />
+    <T x={EDGE + 9} y={60}><Outlined text="電池93%" size={196} color={YELLOW} w={9} spacing={-8} /></T>
+    <div style={{ position: "absolute", left: EDGE, top: 296, display: "flex", flexDirection: "column", padding: "14px 20px", gap: 12, background: WHITE, ...(CHECK ? {} : { boxShadow: "5px 5px 0 rgba(0,0,0,0.6)" }) }}>
+      <Plain text="下取り5.3万円" size={104} color={BLACK} spacing={-6} />
+      <Plain text="売値　6.8万円" size={104} color={RED} spacing={-6} />
+    </div>
+  </Frame>
+);
+
 (async () => {
   const fonts = await notoSansJp(readFileSync(__filename, "utf8"));
-  const plans: [string, ReactNode][] = [["R1", r1], ["R2", r2], ["R3", r3]];
-  const checkDir = CHECK ? process.argv[3] : "";
+  const plans: [string, ReactNode][] = SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3]] : [["R1", r1], ["R2", r2], ["R3", r3]];
+  const checkDir = CHECK ? ARGV[1] : "";
   if (CHECK) mkdirSync(checkDir, { recursive: true });
   for (const [name, node] of plans) {
     const res = new ImageResponse(<>{node}</>, { width: W, height: H, fonts });
