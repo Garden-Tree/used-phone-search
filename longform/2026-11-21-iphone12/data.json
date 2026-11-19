@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-13",
+  "date": "2026-11-19",
   "shops": 16,
   "source": "script.md の数字そのまま（longform/2026-11-21-iphone12/data-query.ts → data-query.log。集計 2026/11/19 10:47 JST・在庫の最終更新 2026/11/19 09:48 JST・16店・iPhone 36,858件）。相場は在庫がいちばん多い容量（64GB）の中央値、比べるときは同じ容量（128GB）の中央値。修理は lib/appleRepairPrices.ts、スペックは lib/iphoneSpecs.ts、店の保証は lib/shops.ts。公開の前日に取り直す",
   "thumbnail": {
