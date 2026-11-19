@@ -52,6 +52,8 @@ function modelsOf(family: RankFamily, month: string): string[] {
   if (family === "ipad") return IPAD_MODELS.filter((m) => IPADOS27_MODELS.has(m));
   if (family === "pixel") {
     return PIXEL_MODELS.filter((m) => {
+      // 折りたたみは値段が高く差額が大きいので1位を取り続ける（11/19 外すと決定。折りたたみは fold・foldbudget の回で扱う）
+      if (/Fold/.test(m)) return false;
       const left = updateYearsLeft(m, month);
       if (left !== undefined && left <= 0) console.log(`  対象外: ${m}（アップデート保証が ${jaMonth(updateUntil(m)!)} で終了）`);
       return left !== undefined && left > 0;
