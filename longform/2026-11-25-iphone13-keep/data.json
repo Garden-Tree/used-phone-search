@@ -12,7 +12,7 @@
       "title": "結論：電池だけなら交換。14にしても中身は同じ",
       "scene": {
         "type": "bigNumber",
-        "heading": "iPhone 13（128GB）：電池だけなら交換",
+        "heading": "iPhone 13：電池だけなら交換",
         "items": [
           { "label": "電池交換", "value": "15,600", "unit": "円", "cue": "結論から" },
           { "label": "売って中古の15", "value": "+60,200", "unit": "円", "cue": "13を売って中古の15にすると" },
