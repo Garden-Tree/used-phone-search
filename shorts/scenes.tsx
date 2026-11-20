@@ -50,6 +50,11 @@ const HEAD_SUB = (s: Script) => s.theme === "rakutenmobile" ? `料金は公式�
   : isStockChange(s) ? `在庫数の変化・大手中古ショップ${s.shopCount}店`
   : isStock(s) ? `在庫数ランキング・大手中古ショップ${s.shopCount}店`
   : `${s.theme === "drops" && s.period ? "毎日集計" : "毎週更新"}・大手中古ショップ${s.shopCount}店の相場`;
+/** 実写モードの見出しの短い題（11/20〜）。ない型は HEAD_TITLE のまま */
+const LIVE_HEAD_TITLE: Record<string, string[]> = {
+  overnew: ["中古なのに", "新品より高い？"],
+  promax: ["Pro MaxとPro", "いくら違う？"],
+};
 const HEAD_TITLE = (s: Script) =>
   s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"] : s.theme === "probudget" ? ["予算ぴったりで買える", "中古iPhone Pro"] : s.theme === "foldbudget" ? ["予算ぴったりで買える", "中古折りたたみスマホ"] : s.theme === "galaxybudget" ? ["予算ぴったりで買える", "中古Galaxy"] : s.theme === "bigbudget" ? ["予算ぴったりで買える", "大きい画面の中古iPhone"]
     : isRank(s) ? ["状態ランクで", `いくら違う？中古${rankDevice(s)}`] : s.theme === "battery" ? (s.order === "small" ? ["電池90%台と80%台", "差が小さい中古iPhone"] : ["電池90%台だと", "いくら高い？中古iPhone"])
@@ -248,7 +253,10 @@ function Band({ s, L }: { s: Script; L: Look }) {
   const tw = full ? BOX : b.shape === "pill" ? BOX - 160 : tab ? BOX - 110 : frame ? BOX - 90 : BOX - 60;
   const hd = headerOf(s);
   const radius = full ? 0 : b.shape === "pill" ? hd.height / 2 : b.shape === "tab" ? "0 28px 28px 0" : b.shape === "leaf" ? "110px 0 110px 0" : frame ? 44 : 28;
-  const title = HEAD_TITLE(s);
+  // 実写モード（11/20〜・ユーザー「上の文字はもっと大きく」）: 長い2行目を短くした題を使う。2行は同じ大きさ（決まり・SKILL.md）
+  const live = !!s.liveClip;
+  const title = (live && LIVE_HEAD_TITLE[s.theme]) || HEAD_TITLE(s);
+  const ltw = live ? tw + 50 : tw;
   return (
     <div style={{
       position: "absolute", left: full ? 0 : MARGIN, top: hd.top, width: full ? W : BOX, height: hd.height, display: "flex", flexDirection: "column",
@@ -259,7 +267,7 @@ function Band({ s, L }: { s: Script; L: Look }) {
       {/* 実写モード（11/9）: 小さい上の行（毎週更新・店の数）は出さず、題名だけを大きく（小さい文字は実写の上で読めない） */}
       {!s.liveClip && <div style={{ ...row, fontSize: FIT(HEAD_SUB(s), tw, 48), fontWeight: 700, lineHeight: 1.15, color: b.sub }}>{HEAD_SUB(s)}</div>}
       {title.map((l, i) => (
-        <div key={i} style={{ ...row, fontSize: Math.min(...title.map((x) => FIT(x, tw, s.liveClip ? 124 : 104))), fontWeight: 900, lineHeight: 1.12, marginTop: i ? 0 : 4 }}>{l}</div>
+        <div key={i} style={{ ...row, fontSize: Math.min(...title.map((x) => FIT(x, ltw, live ? 124 : 104))), fontWeight: 900, lineHeight: 1.12, marginTop: i ? 0 : 4 }}>{l}</div>
       ))}
       {b.shape === "underline" && b.stripe && (
         <div style={{ position: "absolute", left: 0, bottom: 0, width: BOX, height: 16, borderRadius: 8, background: b.stripe }} />
