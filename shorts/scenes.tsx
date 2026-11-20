@@ -2210,6 +2210,9 @@ export function liveLinesOf(s: Script): string[] {
   if (s.theme === "storage") return ["容量を上げると", "？？？円高い"];
   // rank・rankipad・rankpixel: 11/17〜 同じく答え（A−C の差額）を伏せる（それまでは既定の「差は／N円」で答えを出していた。rank の継続は 10.0%）
   if (isRank(s)) return ["ランクAとCで", "？？？円違う"];
+  // overnew・promax: 11/20〜 既定の「差は／N円」だと下の数字と答えを2回出す（storage と同じ直し）。overnew は下の数字を残し、機種は伏せる
+  if (s.theme === "overnew") return ["中古なのに", "新品より高い？"];
+  if (s.theme === "promax") return ["Pro Maxは", "？？？円高い"];
   return ["差は", `${n(liveDiff(s))}円`];
 }
 /** 文字の縁取り（satori は text-stroke が効かないので 8方向の影）＋落ちる影 */
@@ -2264,7 +2267,7 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
       </div>
     );
     // ラベルのない四角2つは何の比較か分からないので、1世代前の型は「最新」「1世代前」を付ける（11/15〜）
-    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : isGenType(s) ? ["最新", "1世代前"] : s.theme === "drops" ? ["先週", "今週"] : s.theme === "storage" ? storageLabels(s) : isRank(s) ? ["ランクA", "ランクC"] : ["", ""];
+    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : isGenType(s) ? ["最新", "1世代前"] : s.theme === "drops" ? ["先週", "今週"] : s.theme === "storage" ? storageLabels(s) : isRank(s) ? ["ランクA", "ランクC"] : s.theme === "promax" ? ["Pro", "Pro Max"] : ["", ""];
     figure = (
       <div style={{ position: "absolute", left: MARGIN, top: SAFE_BOTTOM - 444, width: BOX, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 80 }}>
         {bar(values[0], "rgba(255,255,255,0.8)", la, C.white)}
