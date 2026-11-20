@@ -209,3 +209,6 @@
 | 11/19 | 試し準備 | iPhone 15 Pro の title・description に容量ごとの相場と件数（ブランチ meta-capacity-test・未反映・11/25 以降に確認して反映） | |
 | 11/20 | 判定 OPPO・Xiaomi | ChatGPT からの入口は 11/13〜20 で3回（Xiaomi 15T Pro 2・Redmi Note 13 Pro 1・OPPO 0）。やらない: motorola・arrows など Android の新ブランドを足すこと（ChatGPT が拾うのは Apple・Galaxy だけ。ideas/2026-11-20.md） | |
 | 11/20 | 横動画 13-keep サムネ | 型R の案3枚 K1（電池交換／1.6万円で十分）・K2（14にしても／中身は同じ／A15のまま）・K3（まだ使う？／電池1.6万円）。写真は Commons の iPhone 13（CC BY 2.0）。thumb-bf-* に --set=13keep | |
+| 11/20 | 横動画 13-keep サムネ | thumb-K3 に決定（ユーザー） | |
+| 11/20 | 横動画 iPhone 12 | 11/21 12:00 の予約をやめて 11/20 に公開（ユーザー） | |
+| 11/20 | 横動画 地雷 | A/B 終了（判定できず）→ thumb-N に差し替え | |
