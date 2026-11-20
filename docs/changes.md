@@ -207,3 +207,4 @@
 | 11/19 | 横動画 13-keep・15・16e | 第2稿（8分超え・機種の違いの解説を足す）。16e はユーザー決定（体験の行そのまま・店名は伏せる・記事の写真でサムネ・乗り換えの理由は入れない）。16e サムネ案 R1〜R3（記事の実機写真） | |
 | 11/19 | 伸ばし方の見直し | ideas/2026-11-19-growth.md。やらない: BF 用のページ（横動画で拾う・11/24 と 11/30 の判定に混ざる）。Android の新ブランドは 11/20 の判定しだいで足さない | |
 | 11/19 | 試し準備 | iPhone 15 Pro の title・description に容量ごとの相場と件数（ブランチ meta-capacity-test・未反映・11/25 以降に確認して反映） | |
+| 11/20 | 判定 OPPO・Xiaomi | ChatGPT からの入口は 11/13〜20 で3回（Xiaomi 15T Pro 2・Redmi Note 13 Pro 1・OPPO 0）。やらない: motorola・arrows など Android の新ブランドを足すこと（ChatGPT が拾うのは Apple・Galaxy だけ。ideas/2026-11-20.md） | |
