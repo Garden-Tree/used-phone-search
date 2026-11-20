@@ -27,8 +27,8 @@ const EDGE = 60;
 const SET = process.argv.find((a) => a.startsWith("--set="))?.slice(6) ?? "bf";
 const ARGV = process.argv.slice(2).filter((a) => !a.startsWith("--set="));
 const CHECK = ARGV[0] === "--check";
-const DIR = SET === "16e" ? "2026-12-03-iphone16e-review" : "2026-11-26-blackfriday";
-const LAYERS = SET === "16e" ? "16e-layers" : "bf-layers";
+const DIR = SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-25-iphone13-keep" : "2026-11-26-blackfriday";
+const LAYERS = SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : "bf-layers";
 const OUTC = (c: string) => (CHECK && c === BLACK ? "#808080" : c);
 
 function Layer({ name }: { name: string }) {
@@ -142,9 +142,39 @@ const e5 = (
   </Frame>
 );
 
+// ---- 13keep（2026-11-25-iphone13-keep・11/20）: iPhone 13（スターライト）の背面。数字は script.md のものだけ
+//   電池交換 15,600円（Apple 公式・保証対象外）・中古の 14 は 13 と同じ A15・Lightning・売って中古の 15 は +60,200円（11/24 に取り直す）
+// K1: iPhone 13（白 116）／ 電池交換（黄 172・主役）／ 札 1.6万円（赤 104）
+const k1 = (
+  <Frame>
+    <Layer name="13k-big" />
+    <T x={EDGE + 6} y={60}><Outlined text="iPhone 13" size={116} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 9} y={204}><Outlined text="電池交換" size={172} color={YELLOW} w={9} spacing={-8} /></T>
+    <Tag x={EDGE} y={448} text="1.6万円で十分" size={104} color={RED} pad={16} spacing={-5} />
+  </Frame>
+);
+// K2: 14にしても（白 116）／ 中身は同じ（黄 172・主役）／ 札 A15のまま（赤 104）
+const k2 = (
+  <Frame>
+    <Layer name="13k-mid" />
+    <T x={EDGE + 6} y={60}><Outlined text="14にしても" size={116} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 9} y={204}><Outlined text="中身は同じ" size={172} color={YELLOW} w={9} spacing={-8} /></T>
+    <Tag x={EDGE} y={448} text="A15のまま" size={104} color={RED} pad={16} spacing={-5} />
+  </Frame>
+);
+// K3: iPhone 13（白 116）／ まだ使う？（黄 172・主役）／ 札 電池 1.6万円（赤 104）
+const k3 = (
+  <Frame>
+    <Layer name="13k-big" />
+    <T x={EDGE + 6} y={60}><Outlined text="iPhone 13" size={116} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 9} y={204}><Outlined text="まだ使う？" size={172} color={YELLOW} w={9} spacing={-8} /></T>
+    <Tag x={EDGE} y={448} text="電池1.6万円" size={104} color={RED} pad={16} spacing={-5} />
+  </Frame>
+);
+
 (async () => {
   const fonts = await notoSansJp(readFileSync(__filename, "utf8"));
-  const plans: [string, ReactNode][] = SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
+  const plans: [string, ReactNode][] = SET === "13keep" ? [["K1", k1], ["K2", k2], ["K3", k3]] : SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
   const checkDir = CHECK ? ARGV[1] : "";
   if (CHECK) mkdirSync(checkDir, { recursive: true });
   for (const [name, node] of plans) {
