@@ -26,7 +26,7 @@
 - **収益の枠**: 回線（`SimTile`・`/sim`）・買取（機種ごと `/kaitori`・resale/battery から 11/5〜）・「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`
 - **相場レポート** `/iphone/report/<月>`（毎月1日）・`/how-long`・`/resale-value`・電池の判定 `/iphone/battery`
-- **YouTube 予約は2日後まで**・声はずんだもん（比べる型は青山）
+- **YouTube 予約は2日後まで**・声はずんだもん（比べる型は青山）・数字は `scripts/yt-metrics.ts`（API・CTR は Studio）
 - **X**: 11/17 スパムのラベル→**Claude は触らない**。手で1日1本・URLなし
 - **ショート**: 11/17 から1日2本（7:00・12:30）。横動画は「◯◯は今買い？」型・**サムネは暗い地＋発見が最大**。型は同じくらいの本数で出して比べる（弱い型も減らさない）・声は散らす。0秒目は実写＋2行＋図1つ。11/16〜 AI と1日おき
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac（デスクトップ 11/15〜）・Xperia・AQUOS・OPPO・Xiaomi・Apple／Galaxy／Pixel Watch（storage＝mm・ケーブルなしは札）
