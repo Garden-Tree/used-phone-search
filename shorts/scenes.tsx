@@ -54,6 +54,8 @@ const HEAD_SUB = (s: Script) => s.theme === "rakutenmobile" ? `料金は公式�
 const LIVE_HEAD_TITLE: Record<string, string[]> = {
   overnew: ["中古なのに", "新品より高い？"],
   promax: ["Pro MaxとPro", "いくら違う？"],
+  batteryswap: ["電池交換で", "1つ上と同じ？"],
+  unused: ["未使用品は", "いくら高い？"],
 };
 const HEAD_TITLE = (s: Script) =>
   s.theme === "budget" ? ["予算ぴったりで買える", "中古iPhone"] : s.theme === "pixelbudget" ? ["予算ぴったりで買える", "中古Pixel"] : s.theme === "ipadbudget" ? ["予算ぴったりで買える", "中古iPad"] : s.theme === "macbudget" ? ["予算ぴったりで買える", "中古MacBook"] : s.theme === "probudget" ? ["予算ぴったりで買える", "中古iPhone Pro"] : s.theme === "foldbudget" ? ["予算ぴったりで買える", "中古折りたたみスマホ"] : s.theme === "galaxybudget" ? ["予算ぴったりで買える", "中古Galaxy"] : s.theme === "bigbudget" ? ["予算ぴったりで買える", "大きい画面の中古iPhone"]
@@ -2171,6 +2173,10 @@ function liveValues(s: Script): [number, number] | null {
   const r = (s.scenes as { ranking?: { items?: Record<string, unknown>[] } }).ranking?.items?.[0] as Record<string, number> | undefined;
   if (!r) return null;
   if (typeof r.baseMedian === "number" && typeof r.proMedian === "number") return [r.baseMedian, r.proMedian];
+  // batteryswap（11/21〜）: 古い方＋電池交換の合計と1つ上の相場。gen の型と同じ鍵（newerMedian・olderMedian）を持つので先に
+  if (s.theme === "batteryswap" && typeof r.total === "number" && typeof r.newerMedian === "number") return [r.total, r.newerMedian];
+  // unused（11/21〜）: 1位のランクA と未使用品（S）の相場
+  if (s.theme === "unused" && typeof r.aMedian === "number" && typeof r.sMedian === "number") return [r.aMedian, r.sMedian];
   if (typeof r.newerMedian === "number" && typeof r.olderMedian === "number") return [r.newerMedian, r.olderMedian];
   if (isNewVsOld(s)) return [s.scenes.newModel.price, r.median];
   // drops: 1位の先週と今週の相場（11/16〜 金額は文字に出さず、棒の下がり方だけ見せる）
@@ -2211,6 +2217,9 @@ export function liveLinesOf(s: Script): string[] {
   if (isNewVsOld(s)) return ["中古の旧型なら", `${(liveDiff(s) / 10000).toFixed(1)}万円安い`];
   // 1世代前の型（gen・ipadgen・macgen・pixelgen・watchgen）: 11/15〜 何の話かを文字で出し、答えの金額は伏せる
   // （「差は 34,400円」だけの回は視聴を継続 21〜24%、「いちばん多い〜は ？？？」の在庫の型は 45〜55%。ideas/2026-11-14-youtube-research.md）
+  // batteryswap・unused（11/21〜）: gen の型より先に（batteryswap は newerMedian を持つので「1世代前」と出ていた）
+  if (s.theme === "batteryswap") return ["電池交換を足すと", "1つ上と同じ？"];
+  if (s.theme === "unused") return ["未使用品は", "？？？円高い"];
   if (isGenType(s)) return ["1世代前にすると", "？？？円安い"];
   // drops: 11/16〜 同じく何の話かを出して答え（機種・下げ幅）は伏せる（それまでは既定の「差は／0円」になっていた。行に diff がない）
   if (s.theme === "drops") return ["今週いちばん", "値下がりしたのは？"];
@@ -2275,7 +2284,7 @@ function LiveHook({ s, t }: { s: Script; t: number }) {
       </div>
     );
     // ラベルのない四角2つは何の比較か分からないので、1世代前の型は「最新」「1世代前」を付ける（11/15〜）
-    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : isGenType(s) ? ["最新", "1世代前"] : s.theme === "drops" ? ["先週", "今週"] : s.theme === "storage" ? storageLabels(s) : isRank(s) ? ["ランクA", "ランクC"] : s.theme === "promax" ? ["Pro", "Pro Max"] : ["", ""];
+    const [la, lb] = isNewVsOld(s) ? ["新型", "旧型"] : s.theme === "batteryswap" ? ["＋電池交換", "1つ上"] : s.theme === "unused" ? ["ランクA", "未使用品"] : isGenType(s) ? ["最新", "1世代前"] : s.theme === "drops" ? ["先週", "今週"] : s.theme === "storage" ? storageLabels(s) : isRank(s) ? ["ランクA", "ランクC"] : s.theme === "promax" ? ["Pro", "Pro Max"] : ["", ""];
     figure = (
       <div style={{ position: "absolute", left: MARGIN, top: SAFE_BOTTOM - 444, width: BOX, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 80 }}>
         {bar(values[0], "rgba(255,255,255,0.8)", la, C.white)}
@@ -2312,6 +2321,8 @@ function liveRows(s: Script): LiveRow[] {
     if (isStockChange(s)) return { label: str(r.model), value: stockDiff(r as unknown as StockRow) };
     if (isStock(s)) return { label: str(r.model), value: `${n(num(r.count))}件` };
     if (s.theme === "battery") return { label: str(r.model), value: `+${n(num(r.diff))}円` };
+    // batteryswap（11/21〜）: 行は「古い方と1つ上」・差は gap の大きさ（diff がないので「−0円」になっていた）
+    if (s.theme === "batteryswap") return { label: `${str(r.older)}と${str(r.newer).replace(/^iPhone /, "")}`, value: `${n(Math.abs(num(r.gap)))}円` };
     if (typeof r.proMedian === "number") return { label: str(r.pro), value: `${num(r.diff) >= 0 ? "+" : "−"}${n(Math.abs(num(r.diff)))}円` };
     if (typeof r.olderMedian === "number") return { label: str(r.older), value: `−${n(Math.abs(num(r.diff)))}円` };
     if (isNewVsOld(s)) return { label: str(r.short) || str(r.model), value: `${n(num(r.median))}円` };
