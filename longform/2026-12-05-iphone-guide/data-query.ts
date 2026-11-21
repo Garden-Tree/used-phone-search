@@ -88,6 +88,15 @@ async function main() {
     const a = await at(m, 128, { conditionRank: { in: ["A", "a"] } }), c = await at(m, 128, { conditionRank: { in: ["C", "c"] } });
     console.log(`${m} 128GB: A ${a.n}件 中${a.median} / C ${c.n}件 中${c.median}（差 ${a.median && c.median ? a.median - c.median : "-"}）`);
   }
+  console.log(`\n== 9 買取（「美品」のいちばん高い表示価格・機種と容量ごと。行数は数十）`);
+  for (const m of ["iPhone 12", "iPhone 13", "iPhone 14", "iPhone 15"]) {
+    const g = await prisma.buybackPrice.groupBy({ by: ["storage"], where: { model: m, gradeLabel: "美品" }, _max: { price: true, updatedAt: true } });
+    console.log(`${m}: ` + g.sort((a, b) => (a.storage ?? 0) - (b.storage ?? 0)).map((r) => `${r.storage}GB ${r._max.price}`).join(" / ") + ` / 更新 ${jst(g[0]?._max.updatedAt)}`);
+  }
+  for (const m of ["iPhone 13 mini", "iPhone 13 Pro", "iPhone Air", "iPhone 16"]) {
+    const r = market.get(m); console.log(`相場 ${m}: ${r?.medianPrice}（${r?.medianStorage}GB）${r?.count}件`);
+  }
+
   console.log(`\n== 8 Apple Intelligence（16 以降・15 Pro）でいちばん安い: 16e 128GB`);
   const e = await at("iPhone 16e", 128);
   console.log(`16e 128GB ${e.n}件 中${e.median}`);
