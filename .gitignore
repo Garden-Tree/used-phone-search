@@ -105,3 +105,6 @@ longform/**/*.mp4
 
 # YouTube Analytics API の OAuth（scripts/yt-auth.ts）。秘密情報
 /.secrets/
+
+# yomiyasu の検査記録
+/.yomiyasu/
