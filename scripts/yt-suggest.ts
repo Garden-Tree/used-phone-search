@@ -1,3 +1,4 @@
+export {};
 // YouTube の検索候補（サジェスト）を集める。横動画のネタ選び用（読むだけ）。
 //   npx tsx scripts/yt-suggest.ts                 … 既定の種の語
 //   npx tsx scripts/yt-suggest.ts 中古ipad 中古pixel … 種を指定

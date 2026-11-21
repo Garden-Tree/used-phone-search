@@ -8,6 +8,7 @@ import { BUILD_TIME } from '@/lib/buildTime';
  * それまでは別々の枠で、下に置いた保証1年の枠は機種ページで1週0クリック・/search で103中2クリックだった。
  * 同じ商品なら1行にして見出しを2つ並べる（placement は good の方）。
  * placement はそれぞれ今までと同じ値（機種ページ good_pick／warranty_pick、/search good_pick_search／warranty_pick_search）。
+ * 別の1台で上の行より高いときは、見出しを「+N円で保証1年にできる」にする（11/22〜。判定 12/6）。
  * 置き場所の白い入れ物（DeviceList）は呼ぶ側で用意する。
  */
 type Pick = { device: Device; label: string; placement: string };
@@ -23,6 +24,8 @@ export default function PickPair({ good, year, showModel = false, baseline = nul
   if (good) rows.push({ device: good.device, labels: [good.label], placement: good.placement });
   if (year) {
     if (good && good.device.id === year.device.id) rows[0].labels.push(year.label);
+    // 別の1台なら、上の行（電池85%以上）との差で見せる（11/22〜 案B。保証の行は2週で1クリックだった）
+    else if (good && year.device.price > good.device.price) rows.push({ device: year.device, labels: [`+${(year.device.price - good.device.price).toLocaleString()}円で保証1年にできる`], placement: year.placement });
     else rows.push({ device: year.device, labels: [year.label], placement: year.placement });
   }
   return (
