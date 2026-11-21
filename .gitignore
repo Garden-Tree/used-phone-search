@@ -102,3 +102,6 @@ longform/**/*.mp4
 /shorts/assets/stock/
 # 効果音ラボの mp3（商用可・再配布不可。11/9〜）
 /shorts/assets/se/
+
+# YouTube Analytics API の OAuth（scripts/yt-auth.ts）。秘密情報
+/.secrets/
