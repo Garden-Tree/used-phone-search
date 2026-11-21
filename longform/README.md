@@ -26,6 +26,17 @@ npx tsx longform/video.tsx      longform/2026-10-21-iphone-dore check      # 長
 - 説明文（youtube.txt）: タイトルは script.md の「タイトル案」の 1.、チャプターは実測、リンクは utm_campaign=long_20261021、クレジットは VOICEVOX の2人と BGM、立ち絵があれば「立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)」「ずんだもん立ち絵：坂本アヒル様」
 - `timeline.json`・`frames/`・`video.mp4`・`stills/check-*.png`・`longform/assets/` は Git に入れない（.gitignore）。`stills/`・chapters.txt・youtube.txt・thumbnail.png は残す
 
+## 冒頭の1分（11/22〜。視聴維持の API で決めた）
+
+`scripts/yt-metrics.ts` と同じ認証で `audienceWatchRatio`（動画の位置ごとに残っている割合）を見ると、横動画は**最初の1分前後（10%）で半分が離れ**、そのあとは緩やか（ideas/2026-11-22-youtube-growth.md）。
+
+- 5秒以内に、タイトルの問いへの答え（「買っていい」など）を言う。サムネ・タイトルの約束をすぐ果たす
+- **答えを全部は言わない**。16 の回は冒頭で「ランクBの256GB」まで言って1分で36%。13 の回は「85%以上は1割ちょっと。ここが今日のいちばん大事な話」と残して62%
+- 本編で見せる「意外な数字」を1つ、引っかかりとして先に出す（中身は本編で）。最後に「この先で分かること」を1行
+- 冒頭でチャンネル登録を頼まない（登録のお願いは、いちばん強い発見の章の終わり）
+- 冒頭の画面は、台詞に合わせて数字が1つずつ出る形（10秒前後ごとに画面が変わる）
+- 公開後に、冒頭を変えた回と前の回の 10% 地点の割合を比べる
+
 ## 立ち絵（任意）
 
 `longform/assets/chara/` に置くと話し手の枠に描く（置かなければ名前の札だけ）。**第三者の絵なので Git に入れない（.gitignore）。二次配布は禁止。クレジットは youtube.txt に自動で入る。**
