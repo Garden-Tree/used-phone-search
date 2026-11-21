@@ -28,7 +28,7 @@ const el = (
                 <div style={{ display: "flex", width: Math.round((590 * p) / max), height: 34, background: rankColor[rk], borderRadius: 8 }} />
               </div>
               <div style={{ display: "flex", width: 170, justifyContent: "flex-end", fontSize: 32, fontWeight: 900, color: NAVY }}>{man(p)}</div>
-              <div style={{ display: "flex", width: 150, justifyContent: "flex-end", fontSize: 24, fontWeight: 500, color: i && p > g.r[0][1] ? RED : "#94A3B8", fontWeight: i && p > g.r[0][1] ? 900 : 500 }}>{i ? `${p > g.r[0][1] ? "+" : "−"}${Math.abs(p - g.r[0][1]).toLocaleString()}円` : "基準"}</div>
+              <div style={{ display: "flex", width: 150, justifyContent: "flex-end", fontSize: 24, color: i && p > g.r[0][1] ? RED : "#94A3B8", fontWeight: i && p > g.r[0][1] ? 900 : 500 }}>{i ? `${p > g.r[0][1] ? "+" : "−"}${Math.abs(p - g.r[0][1]).toLocaleString()}円` : "基準"}</div>
             </div>
           ))}
         </div>

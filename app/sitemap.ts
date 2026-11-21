@@ -70,6 +70,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/ipad/ipad-mini-new-vs-used`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/mac/macbook-pro-m6-new-vs-used`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/iphone/how-long`, lastModified, changeFrequency: "daily", priority: 0.7 },
+    { url: `${SITE_URL}/iphone/guide`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/iphone/resale-value`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/iphone/kaitori`, lastModified, changeFrequency: "weekly", priority: 0.7 },
     // 機種ごとの買取価格（11/3〜）。3店そろう容量がない機種は noindex なので入れない
