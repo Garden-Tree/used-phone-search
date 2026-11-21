@@ -36,6 +36,10 @@ SETS = {
     "13keep": dict(dir=HERE / "assets" / "commons", src="iphone13-tora.jpg", cut="iphone13-tora-flat.png",
                    cutline="iphone13-tora-flat-cutline.png", edges=(), layers="13keep-layers",
                    place={"13k-big": (360, -8, 870, 40), "13k-mid": (320, -8, 910, 70)}),
+    # 15（11/21 追加）: 横動画 2026-11-28-iphone15。写真は iPhone 15 の前面（画面に「iPhone 15」）・Ka Kit Pang / Public domain（Commons）
+    "15": dict(dir=HERE / "assets" / "commons", src="iphone15-pd-single.jpg", cut="iphone15-pd-single-cut.png",
+               cutline="iphone15-pd-single-cutline.png", edges=(), layers="15-layers",
+               place={"15-big": (340, -8, 880, 50)}),
 }
 SET = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--set=")), "bf")
 ARGS = [a for a in sys.argv[1:] if not a.startswith("--set=")]

@@ -27,8 +27,8 @@ const EDGE = 60;
 const SET = process.argv.find((a) => a.startsWith("--set="))?.slice(6) ?? "bf";
 const ARGV = process.argv.slice(2).filter((a) => !a.startsWith("--set="));
 const CHECK = ARGV[0] === "--check";
-const DIR = SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-25-iphone13-keep" : "2026-11-26-blackfriday";
-const LAYERS = SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : "bf-layers";
+const DIR = SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-25-iphone13-keep" : SET === "15" ? "2026-11-28-iphone15" : "2026-11-26-blackfriday";
+const LAYERS = SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
 const OUTC = (c: string) => (CHECK && c === BLACK ? "#808080" : c);
 
 function Layer({ name }: { name: string }) {
@@ -172,9 +172,39 @@ const k3 = (
   </Frame>
 );
 
+// ---- 15（2026-11-28-iphone15・11/21）: iPhone 15 の前面。数字は script.md のもの（11/17。公開前日 11/27 に取り直す）
+//   相場 128GB 91,700円（9.2万円）・14 との差 27,400円（2.7万円。違いは USB-C と A16）
+// F1: iPhone 15（白 116）／ 今買い？（黄 172・主役）／ 札 相場9.2万円（赤 104）＝13 の K3 と同じ形
+const f1 = (
+  <Frame>
+    <Layer name="15-big" />
+    <T x={EDGE + 6} y={60}><Outlined text="iPhone 15" size={116} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 9} y={204}><Outlined text="今買い？" size={172} color={YELLOW} w={9} spacing={-8} /></T>
+    <Tag x={EDGE} y={448} text="相場9.2万円" size={104} color={RED} pad={16} spacing={-5} />
+  </Frame>
+);
+// F2: 14との差は（白 116）／ USB-C（黄 172・主役）／ 札 +2.7万円（赤 104）
+const f2 = (
+  <Frame>
+    <Layer name="15-big" />
+    <T x={EDGE + 6} y={60}><Outlined text="14との差は" size={116} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 9} y={204}><Outlined text="USB-C" size={190} color={YELLOW} w={9} spacing={-6} /></T>
+    <Tag x={EDGE} y={448} text="+2.7万円" size={104} color={RED} pad={16} spacing={-5} />
+  </Frame>
+);
+// F3: iPhone 15（白 116）／ 9.2万円（黄 172・主役）／ 札 14との差USB-C（赤 104）＝台本のサムネ案
+const f3 = (
+  <Frame>
+    <Layer name="15-big" />
+    <T x={EDGE + 6} y={60}><Outlined text="iPhone 15" size={116} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 9} y={204}><Outlined text="9.2万円" size={190} color={YELLOW} w={9} spacing={-8} /></T>
+    <Tag x={EDGE} y={448} text="差はUSB-C" size={104} color={RED} pad={16} spacing={-5} />
+  </Frame>
+);
+
 (async () => {
   const fonts = await notoSansJp(readFileSync(__filename, "utf8"));
-  const plans: [string, ReactNode][] = SET === "13keep" ? [["K1", k1], ["K2", k2], ["K3", k3]] : SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
+  const plans: [string, ReactNode][] = SET === "15" ? [["F1", f1], ["F2", f2], ["F3", f3]] : SET === "13keep" ? [["K1", k1], ["K2", k2], ["K3", k3]] : SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
   const checkDir = CHECK ? ARGV[1] : "";
   if (CHECK) mkdirSync(checkDir, { recursive: true });
   for (const [name, node] of plans) {
