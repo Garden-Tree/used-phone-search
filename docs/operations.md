@@ -251,6 +251,6 @@
 ## YouTube Analytics API（読むだけ・11/22〜）
 
 - 置き場所: `.secrets/yt-oauth-client.json`（Google Cloud「blog-surporter」の OAuth クライアント「yt-metrics」・デスクトップ アプリ）と `.secrets/yt-token.json`（refresh token）。どちらも git に入れない
-- 同意画面は「外部・テスト」。**テストのままだと refresh token は7日で切れる**ので、切れたら `npx tsx scripts/yt-auth.ts` で取り直す（ブラウザで @used_gadelog のアカウントを選んで許可・ユーザーが押す）
+- 同意画面は「外部・本番環境（未確認のまま）」（11/22 にテストから切り替え・ブランディングに used.gadelog.com と /about）。token は切れない想定。切れたら `npx tsx scripts/yt-auth.ts` で取り直す（ブラウザで @used_gadelog のアカウントを選んで許可・ユーザーが押す）
 - 数字: `npx tsx scripts/yt-metrics.ts [--days 30] [--out .claude/tmp/yt.tsv]`。再生・エンゲージ・平均視聴・登録・流入元1位。Analytics は2〜3日遅れ。**表示回数・CTR・「視聴を選んだ割合」は API に無い**（CTR の判定は今までどおり Studio）
 - アップロードは API を使わない（監査前のプロジェクトから上げた動画は非公開に固定される）。投稿は今までどおりブラウザ
