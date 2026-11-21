@@ -2,7 +2,7 @@
 //   npx tsx scripts/yt-metrics.ts            … 直近30日に公開した動画（既定）
 //   npx tsx scripts/yt-metrics.ts --days 90  … 期間を変える
 //   npx tsx scripts/yt-metrics.ts --out .claude/tmp/yt.tsv … TSV にも書く
-// 数字は公開日〜昨日の累計。Studio の「視聴を選んだ割合」「表示回数・CTR」は API に無いことがあり、取れなければ空欄。
+// 数字は公開日〜昨日の累計。Studio の「視聴を選んだ割合」「表示回数・CTR」は API に無い（11/22 に確かめた）→ CTR は今までどおり Studio で見る。
 import { readFileSync, writeFileSync } from "node:fs";
 
 const arg = (k: string, d: string) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
@@ -65,7 +65,7 @@ take(await get(`${A}?${base}&metrics=views,engagedViews,estimatedMinutesWatched,
   console.error("engagedViews なしで取り直す:", e.message);
   return get(`${A}?${base}&metrics=views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,likes,comments,subscribersGained`);
 }));
-try { take(await get(`${A}?${base}&metrics=videoThumbnailImpressions,videoThumbnailImpressionsClickRate`)); }
+try { take(await get(`${A}?${base.replace("&sort=-views", "")}&metrics=videoThumbnailImpressions,videoThumbnailImpressionsClickRate`)); }
 catch (e: any) { console.error("表示回数・CTR は取れない:", e.message); }
 
 // 流入元（動画ごとのいちばん多い流入元）
@@ -78,6 +78,8 @@ try {
   }
 } catch (e: any) { console.error("流入元は取れない:", e.message); }
 
+// 流入元の名前（API の値 → Studio の表記）
+const SRC: Record<string, string> = { SHORTS: "ショートフィード", SUBSCRIBER: "ブラウジング", RELATED_VIDEO: "関連動画", YT_SEARCH: "YouTube検索", EXT_URL: "外部", PLAYLIST: "再生リスト", YT_CHANNEL: "チャンネル", NO_LINK_OTHER: "直接・不明", NOTIFICATION: "通知", END_SCREEN: "終了画面", YT_OTHER_PAGE: "その他のYouTube", HASHTAGS: "ハッシュタグ" };
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
 const head = ["video_id", "公開(JST)", "長さ", "種類", "状態", "再生", "エンゲージ", "平均視聴", "平均%", "表示", "CTR%", "いいね", "コメント", "登録", "流入元1位", "割合", "タイトル"];
 const lines = [head.join("\t")];
@@ -87,7 +89,7 @@ for (const v of vids.sort((a, b) => b.published.localeCompare(a.published))) {
   const jst = new Date(new Date(v.published).getTime() + 9 * 3600e3).toISOString().slice(0, 16).replace("T", " ");
   lines.push([v.id, jst, mmss(v.sec), v.sec <= 180 ? "short" : "long", v.status, r.views ?? 0, r.engagedViews ?? "", r.averageViewDuration != null ? mmss(r.averageViewDuration) : "", r.averageViewPercentage != null ? r.averageViewPercentage.toFixed(1) : "",
     r.videoThumbnailImpressions ?? "", r.videoThumbnailImpressionsClickRate != null ? (r.videoThumbnailImpressionsClickRate * 100).toFixed(1) : "", r.likes ?? "", r.comments ?? "", r.subscribersGained ?? "",
-    t?.[0] ?? "", t && t[2] ? `${Math.round((t[1] / t[2]) * 100)}%` : "", v.title].join("\t"));
+    t ? (SRC[t[0]] ?? t[0]) : "", t && t[2] ? `${Math.round((t[1] / t[2]) * 100)}%` : "", v.title].join("\t"));
 }
 console.log(`# ${ymd(since)}〜${yesterday} に公開・${vids.length}本（Analytics は最大2〜3日遅れ）`);
 console.log(lines.join("\n"));
