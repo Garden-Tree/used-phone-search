@@ -224,4 +224,4 @@
 | 11/22 | YouTube Analytics API | 読むだけの API をつないだ（scripts/yt-metrics.ts）。CTR・表示回数は API に無いので Studio のまま | |
 | 11/22 | YouTube API の同意画面 | テスト→本番環境（未確認のまま・審査は申請しない）。ブランディングに used.gadelog.com・/about・gadelog.com | |
 | 11/22 | ショート | 11/24〜12/7 は1日1本（7:00）の試し。12/8 に横動画の再生・登録で判定 | |
-| 11/22 | 横動画のネタ | YouTube の検索候補を集める scripts/yt-suggest.ts。案: 届いたら見る5つ・どこで買う・何年で買い替え（BEST5 は次の列から外した） | |
+| 11/22 | 横動画のネタ | YouTube の検索候補を集める scripts/yt-suggest.ts。案: 届いたら見る5つ・どこで買う・何年で買い替え | |
