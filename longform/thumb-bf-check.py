@@ -12,7 +12,7 @@ HERE = Path(__file__).resolve().parent
 SETS = {
     "bf": ("2026-11-26-blackfriday", "bf-layers", {"R1": "bf-bottom", "R2": "bf-bottom2", "R3": "bf-small"}),
     "15": ("2026-11-28-iphone15", "15-layers", {"F1": "15-big", "F2": "15-big", "F3": "15-big"}),
-    "13keep": ("2026-11-25-iphone13-keep", "13keep-layers", {"K1": "13k-big", "K2": "13k-mid", "K3": "13k-big"}),
+    "13keep": ("2026-11-22-iphone13-keep", "13keep-layers", {"K1": "13k-big", "K2": "13k-mid", "K3": "13k-big"}),
     "16e": ("2026-12-03-iphone16e-review", "16e-layers", {"R1": "16e-big", "R2": "16e-mid", "R3": "16e-small", "R4": "16e-r4", "R5": "16e-r5"}),
 }
 SET = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--set=")), "bf")

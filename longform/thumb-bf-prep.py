@@ -30,7 +30,7 @@ SETS = {
                 cutline="iphone16e-cutline.png", edges=("bottom", "right"), layers="16e-layers", shrink=3, fill="blur",
                 place={"16e-big": (900, -14, 600, 300), "16e-mid": (820, 0, 640, 330), "16e-small": (760, 0, 700, 360),
                        "16e-r4": (760, 0, 720, 360), "16e-r5": (1000, -24, 620, 220)}),
-    # 13keep（11/20 追加）: 横動画 2026-11-25-iphone13-keep。写真は iPhone 13（スターライト）の背面を正面に引き伸ばした切り抜き
+    # 13keep（11/20 追加）: 横動画 2026-11-22-iphone13-keep。写真は iPhone 13（スターライト）の背面を正面に引き伸ばした切り抜き
     #   assets/commons/iphone13-tora-flat.png（thumb-v7-prep.py で作成・端末全体で切り口なし）。Tatsuo Yamashita / CC BY 2.0
     #   cut はしない（layer だけ）。切り口の印は空の画像
     "13keep": dict(dir=HERE / "assets" / "commons", src="iphone13-tora.jpg", cut="iphone13-tora-flat.png",

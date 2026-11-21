@@ -27,7 +27,7 @@ const EDGE = 60;
 const SET = process.argv.find((a) => a.startsWith("--set="))?.slice(6) ?? "bf";
 const ARGV = process.argv.slice(2).filter((a) => !a.startsWith("--set="));
 const CHECK = ARGV[0] === "--check";
-const DIR = SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-25-iphone13-keep" : SET === "15" ? "2026-11-28-iphone15" : "2026-11-26-blackfriday";
+const DIR = SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-28-iphone15" : "2026-11-26-blackfriday";
 const LAYERS = SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
 const OUTC = (c: string) => (CHECK && c === BLACK ? "#808080" : c);
 
@@ -142,7 +142,7 @@ const e5 = (
   </Frame>
 );
 
-// ---- 13keep（2026-11-25-iphone13-keep・11/20）: iPhone 13（スターライト）の背面。数字は script.md のものだけ
+// ---- 13keep（2026-11-22-iphone13-keep・11/20）: iPhone 13（スターライト）の背面。数字は script.md のものだけ
 //   電池交換 15,600円（Apple 公式・保証対象外）・中古の 14 は 13 と同じ A15・Lightning・売って中古の 15 は +60,200円（11/24 に取り直す）
 // K1: iPhone 13（白 116）／ 電池交換（黄 172・主役）／ 札 1.6万円（赤 104）
 const k1 = (

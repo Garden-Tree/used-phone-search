@@ -1,6 +1,6 @@
 /**
  * 横動画「iPhone 13、まだ使う？」の数字。読むだけ（DB に書かない）。
- *   npx tsx longform/2026-11-25-iphone13-keep/data-query.ts > longform/2026-11-25-iphone13-keep/data-query.log
+ *   npx tsx longform/2026-11-22-iphone13-keep/data-query.ts > longform/2026-11-22-iphone13-keep/data-query.log
  *
  * 在庫（DeviceInventory）は groupBy・count・aggregate と中央値の1行だけ。買取（BuybackPrice）は 13 の行だけ（数十行）。
  * 公式の値: iOS 27 対応（lib/catalog.ts）・スペック（lib/iphoneSpecs.ts）・修理（lib/appleRepairPrices.ts）・新品（lib/applePrices.ts）
