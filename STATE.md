@@ -25,7 +25,7 @@
 - **Yahoo! 7店**: VC（2025875）。もしもは否認・Amazon 11/22 復活
 - **収益の枠**: 回線（`SimTile`・`/sim`）・買取（機種ごと `/kaitori`・resale/battery から 11/5〜）・「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`
-- **相場レポート** `/iphone/report/<月>`（毎月1日）・`/how-long`・選び方 `/<種類>/guide`（5種）・`/resale-value`・電池 `/iphone/battery`
+- **相場レポート** `/iphone/report/<月>`（毎月1日）・`/how-long`・選び方 `/<種類>/guide`（6種）・`/resale-value`・電池 `/iphone/battery`
 - **YouTube 予約は2日後まで**・声はずんだもん（比べる型は青山）
 - **X**: 12/1 まで Claude は触らない（手で1日1本・URLなし）
 - **ショート**: 11/24〜12/7 1本/日 7:00 で試す。横動画は「◯◯は今買い？」型・サムネは暗い地＋発見。型は同じくらいの本数で出して比べる・声は散らす。0秒目は実写か AI（交互・新規 AI は作らない）＋2行＋図1つ。カードだけは不可
