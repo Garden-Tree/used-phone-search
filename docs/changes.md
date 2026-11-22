@@ -241,3 +241,5 @@
 | 11/22 | /iphone/guide | 中古iPhoneの選び方 完全ガイドのページを作成（下書き・ユーザー確認待ち）。届いたら5つの SIM ロックは Apple で確かめられず「部品と修理の履歴」に | |
 | 11/22 | 全体の分析 | PV・収益の伸ばし方（ideas/2026-11-22-growth-analysis.md）: にこスマ0件・Bing が 184／512 URL しか知らない・YouTube は訪問2%。案のみ（何も変えていない） | |
 | 11/22 | Bing 手送り | 優先49件（Galaxy・iPad・Mac・Pixel・Watch・比較）を Bing の URL 送信で送った（枠100→2）。IndexNow は HTTP 200 で届いているが Bing は 512 中 184 しか読んでいない。判定 11/29 | |
+| 11/23 | A8 にこスマの問い合わせ | やらない（ユーザー判断）。下書きは .claude/a8-inquiry-nicosuma.md | |
+| 11/23 | /iphone/guide 公開 | ユーザー OK で push（次の定期の書き出しで本番に） | |
