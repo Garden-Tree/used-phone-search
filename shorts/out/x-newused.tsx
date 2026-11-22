@@ -1,4 +1,4 @@
-// X 用: Apple の新品と中古の相場の差（同じ容量）1200x675（11/23 手で投稿）
+// X 用: Apple の新品と中古の相場の差（同じ容量）1200x675（11/22 手で投稿）
 import { writeFileSync } from "node:fs";
 import { ImageResponse } from "next/og";
 import { notoSansJp } from "@/lib/ogFont";
@@ -12,7 +12,7 @@ const rows = [
 const NAVY = "#1E1B4B", RED = "#E11D48";
 const yen = (v: number) => `${v.toLocaleString()}円`;
 const title = "中古にする意味がある機種・ない機種";
-const foot = "新品＝Apple公式・中古＝同じ容量の在庫の中央値（ジャンク除く）・11/23  used.gadelog.com";
+const foot = "新品＝Apple公式・中古＝同じ容量の在庫の中央値（ジャンク除く）・11/22  used.gadelog.com";
 
 const el = (
   <div style={{ width: 1200, height: 675, display: "flex", flexDirection: "column", background: NAVY, fontFamily: "Noto Sans JP", padding: "32px 56px" }}>
