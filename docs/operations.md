@@ -182,6 +182,12 @@
    店名が楽天の shopName とずれていないかは `npm run test:normalize` が確かめる
 4. 規約上、リンクは楽天アフィリエイトのみ（`DeviceCard.tsx` は `RAKUTEN_SHOP_NAMES` で自動判定）
 
+### ショップ・インバース・WORLDMOBILE（2026-11-22〜・楽天）
+- 1台ずつのページだけ取り込む（`lib/rakutenInverse.ts`・`lib/rakutenWorldmobile.ts`）。ランク・電池・容量を買う人が選ぶページは価格が1台に決まらないので落とす。WORLDMOBILE の減額品（△）・未開封も落とす
+- 電池は `fetch.php` の `LOOSE_BATTERY_SHOPS`（この2店だけ「バッテリー 100%」の書き方を読む。ほかの店に広げると案内文の「80%以上」まで拾う）
+- 入れる順: ①サーバーの `~/rakuten-sync/fetch.php` を上書き → ②次の取得で `shop-inverse.json.gz`・`worldmobile.json.gz` ができたのを確かめる → ③`scripts/ci-deploy.sh` の `SHOP_CODES` に2店を足して push（先に足すとファイルがなくて楽天の取り込みが失敗する）
+- 1台ずつのページの iPad・Pixel・Galaxy がまとまって出たら `lib/shops.ts` の pixel・galaxy・ipad を true に
+
 ### Yahoo!ショッピングの店を追加する（2026-10-09〜。Quality Shop・モバステ・エムコム・リユスマ・Joshin 中古アウトレット・MyWiT・Be-Stock。`lib/shops.ts` に 10/10〜載せている）
 - 流れ: Actions の「Yahoo!ショッピングの在庫を取り込む」が `scripts/fetch-yahoo.ts`（商品検索API v3 を直接呼ぶ。2秒に1回（30回ほどで 429 になったため。429 は30秒待って3回まで再試行）・先頭1,000件を超える検索は価格帯を割って取得）→
   `yahoo-data/<ストアID>.json.gz` → `scripts/ingest-rakuten.ts yahoo-data --family yahoo`（楽天と同じ洗い替え・半分未満なら中止の安全装置）。`YAHOO_APP_ID` が空なら飛ばす

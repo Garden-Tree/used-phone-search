@@ -37,7 +37,10 @@ foreach ($args as $a) {
 const ENDPOINT = 'https://openapi.rakuten.co.jp/ichibams/api/IchibaItem/Search/20260701';
 // 取り込むショップ（楽天の shopCode）。受け口 lib/rakutenShops.ts の RAKUTEN_SHOPS と揃える
 // kamaya-awards・garakei はニューズドテック1号店・2号店、emedama はカメラのキタムラ、ekosuta はエムティーエム、pc-good はイオシス（2026-10-08〜）
-const SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'kamaya-awards', 'garakei', 'emedama', 'ekosuta', 'pc-good'];
+const SHOP_CODES = ['geo-mobile', 'janpara', 'akiba-u-shop', 'kamaya-awards', 'garakei', 'emedama', 'ekosuta', 'pc-good', 'shop-inverse', 'worldmobile'];
+// 電池を「バッテリー 100%」「バッテリー100％」「バッテリー 70%～79%」（範囲は下限）とだけ書く店（2026-11-22〜。ショップ・インバース・WORLDMOBILE）。
+// ほかの店に広げると「バッテリー80%以上を保証」のような案内文まで拾うので、この2店だけ
+const LOOSE_BATTERY_SHOPS = ['shop-inverse', 'worldmobile'];
 // 1ショップ分として、この検索語の結果をまとめて送る（受け口はショップ単位で洗い替えるため）
 // Pixel・Galaxy は 2026-09-30〜（アクセサリも当たるが、受け口の lib/rakutenPixel.ts・rakutenGalaxy.ts が本体以外を落とす）
 const KEYWORDS = ['iPhone', 'iPad', 'Pixel', 'Galaxy'];
@@ -147,7 +150,7 @@ function fetchPage(array $config, string $shopCode, string $keyword, int $page, 
 }
 
 /** API から受け取った1商品を、送信用の小さな形にする */
-function compactItem(array $item): array
+function compactItem(array $item, string $shopCode = ''): array
 {
     $caption = (string)($item['itemCaption'] ?? '');
     $catchcopy = (string)($item['catchcopy'] ?? '');
@@ -168,6 +171,9 @@ function compactItem(array $item): array
     // じゃんぱらは備考の「バッテリー容量：81%（03月時点）」（「最大容量」の語がない）
     if (!preg_match('/最大容量\s*[：:]?\s*(\d{2,3})\s*[%％]/u', $caption, $batt)) {
         preg_match('/バッテリー容量\s*[：:]?\s*(\d{2,3})\s*[%％]/u', $caption, $batt);
+    }
+    if (!isset($batt[1]) && in_array($shopCode, LOOSE_BATTERY_SHOPS, true)) {
+        preg_match('/バッテリー[\s　]*[：:]?[\s　]*(\d{2,3})[\s　]*[%％]/u', strip_tags($caption), $batt);
     }
     // パソコンのスペック: ソフマップは商品説明に「〔CPU〕Core i5 10310U (1.7GHz)〔メモリ容量〕16GB〔ストレージ種類_1〕SSD〔ストレージ容量_1〕256GB〔モニターサイズ〕12.1インチワイド」
     // （商品名にスペックがない）。〔CPU〕があるときだけ、この5項目を「CPU:…|メモリ:…」の形で送る（中古パソコン。2026-10-27〜）
@@ -212,7 +218,7 @@ function collectRange(array $config, string $shopCode, string $keyword, int $min
         $res = $page === 1 ? $first : fetchPage($config, $shopCode, $keyword, $page, $min, $max, $ngKeyword);
         foreach ($res['Items'] ?? $res['items'] ?? [] as $item) {
             $item = $item['Item'] ?? $item;
-            $compact = compactItem($item);
+            $compact = compactItem($item, $shopCode);
             if ($compact['code'] !== '') $items[$compact['code']] = $compact;
         }
     }
@@ -254,7 +260,7 @@ function syncShop(array $config, string $shopCode, bool $dryRun): bool
         for ($page = 1; $page <= 3; $page++) {
             $res = fetchPage($config, $shopCode, $kw ?? KEYWORDS[0], $page, 1, 999999, $ng);
             foreach ($res['Items'] ?? $res['items'] ?? [] as $item) {
-                $items[] = compactItem($item['Item'] ?? $item);
+                $items[] = compactItem($item['Item'] ?? $item, $shopCode);
                 // 新しい店の読み取りを作るとき用に、API の生の応答（説明文など）も残す
                 $raw[] = $item['Item'] ?? $item;
             }

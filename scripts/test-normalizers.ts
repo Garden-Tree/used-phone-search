@@ -218,6 +218,20 @@ const CORPUS: [string, string, string | null, string | null, number | null][] = 
  ["amazon","【整備済み品】Apple iPad Pro 12.9インチ (第３世代) Wi-Fi 64GB シルバー",null,null,null],
  ["akiba-u-shop","【中古】Apple(アップル) 〔展示品〕 iPhone17 Pro Max 256GB シルバー 3P125J／A SIMフリー 【377-ud】","A","SIMフリー",null],
  ["akiba-u-shop","【中古】NTTドコモ iPhone12 Pro 512GB グラファイト MGMF3J／A SIMフリー 【262-ud】","B","docomoロック解除SIMフリー",null],
+ ["shop-inverse","【20%OFFクーポン】中古 Apple iPhone 15 256GB ブルー SIMフリー 付属品無 MTMR3J/A 6ヶ月保証 赤ロム保証 レビュー特典:延長保証 Bランク スマホ 中古iphone 中古アイフォン 中古スマホ used 中古アイホン スマートフォン アイフォン アップル 本体",null,null,70],
+ ["shop-inverse","【30%OFFクーポン】中古 Apple iPhone 14 Pro Max 256GB ディープパープル SIMフリー 付属品無 NQ9E3J/A 6ヶ月保証 赤ロム保証 レビュー特典:延長保証 Bランク スマホ 中古iphone 中古アイフォン 中古スマホ used 中古アイホン スマートフォン アイフォン アップル 本体",null,null,null],
+ ["shop-inverse","【30%OFFクーポン】中古 Apple iPhone 12 128GB ブルー SIMフリー 付属品無 NGHX3J/A 6ヶ月保証 赤ロム保証 レビュー特典:延長保証 Cランク スマホ 中古iphone 中古アイフォン 中古スマホ used 中古アイホン スマートフォン アイフォン アップル 本体",null,null,null],
+ ["shop-inverse","【10%OFFクーポン】中古 Apple iPhone 16e 128GB ホワイト mineo SIMフリー 付属品無 ネットワーク利用制限▲ MD1R4J/A 6ヶ月保証 赤ロム保証 レビュー特典:延長保証 Aランク スマホ 中古iphone 中古アイフォン 中古スマホ used 中古アイホン スマートフォン アイフォン",null,null,100],
+ ["shop-inverse","【10%OFFクーポン】中古 SAMSUNG Galaxy A53 5G 128GB オーサムホワイト Android SIMフリー 付属品無 SC-53C 6ヶ月保証 赤ロム保証 レビュー特典:延長保証 Bランク スマホ アンドロイド 中古スマホ スマホ スマートフォン 本体 アンドロイド 中古携帯 simフリー",null,null,null],
+ ["shop-inverse","【20%OFFクーポン】中古 Apple iPhone14 128GB 256GB 512GB ミッドナイト パープル スターライト レッド ブルー イエロー SIMフリー 6ヶ月保証 赤ロム保証 スマホ【CA】 スマホ アップル 中古スマホ スマホ スマートフォン 本体 アイフォン 中古iPhone",null,null,70],
+ ["shop-inverse","【20%OFFクーポン】中古 Google Pixel 8a 128GB オブシディアン ポーセリン ベイ アロエ Android SIMフリー 6ヶ月保証 赤ロム保証 レビュー特典:延長保証 スマホ アンドロイド 中古スマホ スマホ スマートフォン 本体 アンドロイド 中古携帯 simフリー シムフリー used",null,null,null],
+ ["worldmobile","中古｜良い｜256GB｜SIMフリー｜iPhone17e｜MHRP4J/A｜本体",null,null,null],
+ ["worldmobile","中古｜非常に良い｜256GB｜SIMフリー｜iPhone17e｜MHRP4J/A｜本体",null,null,95],
+ ["worldmobile","中古｜ほぼ新品｜256GB｜SIMフリー｜iPhone 18 Pro｜MJR64J/A｜本体",null,"-",100],
+ ["worldmobile","中古｜減額品｜128GB｜SIMフリー｜iPhone 13｜MLNC3J/A｜本体",null,null,null],
+ ["worldmobile","《減額品》未使用｜ 128GB ｜SIMフリー｜iPhone 16｜MYDQ3J/A｜本体",null,null,null],
+ ["worldmobile","【中古】iPhone 13 128GB 256GB 512GB ミッドナイト スターライト (PRODUCT)RED ピンク グリーン ブルー iPhone13 本体",null,null,null],
+ ["worldmobile","【中古】Google Pixel 8 128GB 256GB 256GB ローズ ミント ヘーゼル docomo au SoftBank SIMフリー GZPF0",null,null,null],
 ];
 const FIXTURE = "scripts/fixtures/rakuten-normalize.expected.json";
 let failures = 0;

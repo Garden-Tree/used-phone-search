@@ -81,6 +81,15 @@ export const SHOPS: Shop[] = [
   { name: "エムティーエム（楽天市場店）", label: "エムティーエム", note: "楽天市場店", marketplace: "rakuten", pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "記載なし（楽天の店舗情報に保証期間の記載がない。商品ページを確認）", redRom: "記載なし", warrantyShort: "保証 記載なし", redRomShort: "赤ロム 記載なし",
     guaranteeUrl: "https://www.rakuten.co.jp/ekosuta/info.html" },
+  // ショップ・インバース・WORLDMOBILE（2026-11-22〜。保証・赤ロムは 11/22 に店舗情報と商品ページの文面で確かめた。1台ずつのページだけ取り込む。iPad・Pixel・Galaxy は1台ずつのページがまとまって出てから true に）
+  { name: "ショップ・インバース（楽天市場店）", label: "ショップ・インバース", note: "楽天市場店", marketplace: "rakuten", pixel: false, galaxy: false, ipad: false, battery: "exact",
+    warranty: "当店6ヶ月保証（商品ページに記載。レビュー投稿で+3ヶ月）", redRom: "保証期間を問わず同等品と交換または返金（販売時の付属品がそろう場合）",
+    warrantyShort: "保証6ヶ月", redRomShort: "赤ロム保証",
+    guaranteeUrl: "https://www.rakuten.co.jp/shop-inverse/info.html" },
+  { name: "WORLDMOBILE（楽天市場店）", label: "WORLDMOBILE", note: "楽天市場店", marketplace: "rakuten", pixel: false, galaxy: false, ipad: false, battery: "exact",
+    warranty: "到着後30日以内（購入後30日以内のレビュー投稿で1年に延長）", redRom: "赤ロム永久保証",
+    warrantyShort: "保証30日", redRomShort: "赤ロム永久",
+    guaranteeUrl: "https://www.rakuten.co.jp/worldmobile/info.html" },
   // Yahoo!ショッピングの店（2026-10-10〜。リンクはバリューコマース経由。保証・赤ロムは 2026-10-09 に各店のお買い物ガイド（guide.html。info.html は会社概要だけ）の文面から（要・再確認））
   { name: "Quality Shop（Yahoo!ショッピング店）", label: "Quality Shop", note: "Yahoo!ショッピング店", pixel: true, galaxy: true, ipad: true, battery: "none",
     warranty: "記載なし（確認中）", redRom: "記載なし（確認中）", warrantyShort: "保証 記載なし", redRomShort: "赤ロム 記載なし",

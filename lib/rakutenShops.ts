@@ -10,6 +10,8 @@ import { RAKUTEN_NEWSEDTECH_SHOP, normalizeNewsedtechItem } from "@/lib/rakutenN
 import { RAKUTEN_KITAMURA_SHOP, normalizeKitamuraItem } from "@/lib/rakutenKitamura";
 import { RAKUTEN_MTM_SHOP, normalizeMtmItem } from "@/lib/rakutenMtm";
 import { RAKUTEN_IOSYS_SHOP, normalizeIosysItem } from "@/lib/rakutenIosys";
+import { RAKUTEN_INVERSE_SHOP, normalizeInverseItem } from "@/lib/rakutenInverse";
+import { RAKUTEN_WORLDMOBILE_SHOP, normalizeWorldmobileItem } from "@/lib/rakutenWorldmobile";
 import { normalizeIosysMac, normalizeJanparaMac, normalizeSofmapMac } from "@/lib/rakutenMac";
 import { MAC_DESKTOP_TITLE_RE } from "@/lib/macCatalog";
 import { normalizeGeoAndroid, normalizeIosysAndroid, normalizeJanparaAndroid, normalizeSofmapAndroid } from "@/lib/rakutenAndroid";
@@ -95,6 +97,9 @@ export const RAKUTEN_SHOPS: Record<string, RakutenShop> = {
   // イオシス（2026-10-08〜）。公式サイトと同じ商品は、取り込みのあと scripts/link-duplicate-shops.ts が公式の行に添えて消す
   // Galaxy Watch・Pixel Watch（2026-11-13〜）は Watch 用の読み取りを試し、行にならなければ今までの振り分けへ
   "pc-good": { shopName: RAKUTEN_IOSYS_SHOP, alsoReplace: [], normalize: (item) => (/MacBook/i.test(item.name) || MAC_DESKTOP_TITLE_RE.test(item.name) ? normalizeIosysMac(item) : /Apple[ ]?Watch/i.test(item.name) ? normalizeIosysWatch(item) : (WEAR_NAME.test(item.name) ? normalizeIosysWear(item) : null) ?? (ANDROID_NAME.test(item.name) ? normalizeIosysAndroid(item) : normalizeIosysItem(item))) },
+  // ショップ・インバース・WORLDMOBILE（2026-11-22〜）。1台ずつのページだけ（ランク・電池を選ぶページは価格が1台に決まらないので取り込まない）
+  "shop-inverse": { shopName: RAKUTEN_INVERSE_SHOP, alsoReplace: [], normalize: normalizeInverseItem },
+  worldmobile: { shopName: RAKUTEN_WORLDMOBILE_SHOP, alsoReplace: [], normalize: normalizeWorldmobileItem },
 };
 
 /** 楽天経由の在庫のショップ名（リンクは楽天アフィリエイトだけにする） */
