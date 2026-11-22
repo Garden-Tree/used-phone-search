@@ -120,6 +120,9 @@ export default async function PixelIndexPage() {
         <p className="my-4">
           <Link href="/pixel/how-long" className="font-bold text-brand-600 hover:underline underline-offset-4">中古Pixelはいつまで使える？アップデート保証の期限を機種別に &rarr;</Link>
         </p>
+        <p className="my-4">
+          <Link href="/pixel/guide" className="font-bold text-brand-600 hover:underline underline-offset-4">中古Pixelの選び方 完全ガイド（アップデート保証・a・Pro・Fold・キャリア版とSIMフリー） &rarr;</Link>
+        </p>
 
         {/* Pixel の比較ページ */}
         <section className="my-6">

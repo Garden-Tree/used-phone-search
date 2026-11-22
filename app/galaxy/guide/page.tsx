@@ -268,7 +268,7 @@ export default async function GalaxyGuidePage() {
             {`S は上位のシリーズで、Ultra はその中で画面がいちばん大きいモデル。A は価格を抑えたシリーズです。Z Fold は開くとタブレットに近い大画面、Z Flip は縦に折りたたんで小さく持ち歩けます。${fold && flip ? `折りたたみは同じ年の機種でも Z Fold（${yen(fold.medianPrice)}）と Z Flip（${yen(flip.medianPrice)}）で相場が大きく違います。` : ""}`}
           </p>
           <Rows caption="シリーズごとの代表の機種" rows={d.series.map((s) => ({
-            k: <>{mlink(s.m)} <span className="text-[11px] text-ink-mute">{s.label}</span></>,
+            k: mlink(s.m),
             v: mkt(s.r),
             sub: `${s.spec ? `${s.spec.chip}・${displayText(s.m)}` : ""}${s.r ? `・${s.r.medianStorage}GB・${s.r.count.toLocaleString()}件` : ""}`,
           }))} />
