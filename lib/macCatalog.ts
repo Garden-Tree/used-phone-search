@@ -205,8 +205,11 @@ function inchOf(title: string): number | null {
 
 /** チップ（M1〜M5＋Pro/Max）。"M1 Pro" の Pro/Max は直後にあるときだけ */
 function chipOf(title: string): string | null {
-  const m = title.match(/(?<![A-Za-z0-9])M([1-5])(?:\s*(Pro|Max))?(?![A-Za-z0-9])/);
-  return m ? `M${m[1]}${m[2] ? ` ${m[2]}` : ""}` : null;
+  const all = [...title.matchAll(/(?<![A-Za-z0-9])M([1-5])(?:\s*(Pro|Max))?(?![A-Za-z0-9])/g)];
+  if (all.length === 0) return null;
+  // 「14inch M1 中古 M1 Pro/…」（Qualit）のように同じ番号の素の M1 が先に出るときは、後ろの Pro/Max を採る（11/22。2日0件で止まっていた）
+  const m = all.find((x) => x[2] && x[1] === all[0][1]) ?? all[0];
+  return `M${m[1]}${m[2] ? ` ${m[2]}` : ""}`;
 }
 
 /**

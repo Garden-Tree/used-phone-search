@@ -24,6 +24,9 @@ const ROWS: Row[] = [
   ["【中古】Apple(アップル) MacBook Air 13.6-inch Early-2026 MDHE4J／A Apple M5 10コアCPU_8コアGPU 16GB SSD512GB ミッドナイト 〔26.3 Tahoe〕 【352-ud】", "MacBook Air 13インチ M5", 16, 512],
   ["【中古】Apple(アップル) MacBook Neo 13-inch Early-2026 MHFG4J／A Apple A18 Pro 6コアCPU_5コアGPU 8GB SSD512GB インディゴ 〔26.3 Tahoe〕 【262-ud】", "MacBook Neo", 8, 512],
   ["【中古】Apple(アップル) MacBook Pro 14.2-inch Late-2021 MKGQ3J／A Apple M1 Pro 10コアCPU_16コアGPU 16GB SSD1TB スペースグレイ 〔26.3 Tahoe〕 【258-ud】", "MacBook Pro 14インチ M1 Pro", 16, 1024],
+  // Qualit: 素の「M1」が先に出て、後ろに「M1 Pro」（11/22 に0件で止まった形）
+  ["Apple MacBook Pro 14inch M1 中古 M1 Pro/メモリ32GB/SSD512GB/14インチ/WiFi6/英語キー [A:美品] 2021年 GS", "MacBook Pro 14インチ M1 Pro", 32, 512],
+  ["Apple MacBook Pro 14inch M2 中古 M2 Pro/メモリ32GB/SSD512GB/14インチ/WiFi6/英語キー [C:並品] 2023年 GS", "MacBook Pro 14インチ M2 Pro", 32, 512],
   ["【中古】Apple(アップル) MacBook Pro 14.2-inch Late-2025 MDE64J／A Apple M5 10コアCPU_10コアGPU 24GB SSD1TB シルバー 〔26.3 Tahoe〕 【262-ud】", "MacBook Pro 14インチ M5", 24, 1024],
   // 公式表にない M2 Air 2024 構成 → 商品名の文字で決まる
   ["【中古】Apple(アップル) MacBook Air 13.6-inch Late-2024 MC7W4J／A Apple M2 8コアCPU_8コアGPU 16GB SSD256GB スターライト 〔26.3 Tahoe〕 【377-ud】", "MacBook Air 13インチ M2", 16, 256],
