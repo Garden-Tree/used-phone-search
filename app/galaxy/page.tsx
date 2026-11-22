@@ -154,6 +154,10 @@ export default async function GalaxyIndexPage() {
             </div>
           </section>
         ))}
+        <p className="my-4">
+          <Link href="/galaxy/guide" className="font-bold text-brand-600 hover:underline underline-offset-4">中古Galaxyの選び方 完全ガイド（S・A・Z Fold・Z Flip・キャリア版とSIMフリー） &rarr;</Link>
+        </p>
+
       </main>
 
       <SiteFooter />

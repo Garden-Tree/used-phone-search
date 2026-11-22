@@ -92,6 +92,10 @@ export default async function MacIndexPage() {
         </p>
         <AdDisclosure compact />
 
+        <p className="my-4">
+          <Link href="/mac/guide" className="font-bold text-brand-600 hover:underline underline-offset-4">中古MacBookの選び方 完全ガイド（チップ・AirとPro・メモリ・SSD） &rarr;</Link>
+        </p>
+
         {/* 新型 MacBook Pro 14インチ（M6・10/27 発表）と中古の旧型の比較（10/28〜） */}
         <p className="my-4">
           <Link href="/mac/macbook-pro-m6-new-vs-used" className="font-bold text-brand-600 hover:underline underline-offset-4">新型MacBook Pro M6と中古のM5・M4、いくら違う？ &rarr;</Link>

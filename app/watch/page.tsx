@@ -82,6 +82,10 @@ export default async function WatchIndexPage() {
           バンドの有無は載せていません。
         </p>
         <AdDisclosure compact />
+        <p className="my-4">
+          <Link href="/watch/guide" className="font-bold text-brand-600 hover:underline underline-offset-4">中古Apple Watchの選び方 完全ガイド（世代・サイズ・GPSとセルラー） &rarr;</Link>
+        </p>
+
         <VideoEmbed video={VIDEOS.watchDore} heading={VIDEOS.watchDore.heading} className="my-6" />
 
         {WATCH_CATALOG.map((series) => (

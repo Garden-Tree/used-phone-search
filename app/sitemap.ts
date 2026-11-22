@@ -81,12 +81,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/pixel/how-long`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/pixel`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/galaxy`, lastModified, changeFrequency: "daily", priority: 0.8 },
+    { url: `${SITE_URL}/galaxy/guide`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/mac`, lastModified, changeFrequency: "daily", priority: 0.8 },
+    { url: `${SITE_URL}/mac/guide`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/xperia`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/aquos`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/oppo`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/xiaomi`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/watch`, lastModified, changeFrequency: "daily", priority: 0.8 },
+    { url: `${SITE_URL}/watch/guide`, lastModified, changeFrequency: "daily", priority: 0.7 },
     // Galaxy Watch・Pixel Watch の一覧（2026-11-13〜）。在庫が1件もないあいだ（取り込み前）は noindex なので入れない
     ...(["galaxy-watch", "pixel-watch"] as const)
       .filter((kind) => WEAR_HUB[kind].models.some((m) => (stockCounts.get(m) ?? 0) > 0))
