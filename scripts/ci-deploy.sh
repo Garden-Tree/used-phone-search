@@ -27,6 +27,12 @@ fetch_rakuten() {
       failed=1
     fi
   done
+  # 2026-11-22 に足した店（fetch.php は 11/22 23:08 に更新）。サーバーのファイルが確かめられるまでは、取れなくても
+  # ここでは止めない（無ければ ingest-rakuten.ts が「がない」と出してその店だけ失敗にする）
+  for shop in shop-inverse worldmobile; do
+    curl -fsSR --connect-timeout 20 --max-time 120 --retry 3 --retry-delay 30 --retry-all-errors \
+      -o "rakuten-data/$shop.json.gz" "${RAKUTEN_DATA_URL%/}/$shop.json.gz" || echo "$shop: 取得できない（11/22 に足した店）"
+  done
   # 中古ノートパソコン（<shopCode>-pc.json.gz・2026-10-27〜。ソフマップ・じゃんぱら・イオシス）。
   # なくてもスマホの取り込みは止めない（取れなければ scripts/ingest-rakuten-pc.ts が警告だけ出す）
   for shop in akiba-u-shop janpara pc-good; do

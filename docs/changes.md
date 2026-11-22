@@ -257,3 +257,4 @@
 - 11/22 /mac/guide・/watch/guide・/galaxy/guide を作成・ユーザー OK で push。Galaxy のアップデート期限の話・Watch の GPS と Cellular の差が0の行は外した
 - 11/23 /pixel/guide を作成・ユーザー OK で push。Galaxy・Pixel のモデルの表の札の重なり（「S25 S」）を外した
 - 11/23 public/_redirects に /iphone-*・/ipad-* → 機種ページの 301（AI のブラウザの当て推量 URL が 404 に23訪問・ユーザー OK）
+- 11/23 ci-deploy.sh: インバース・WORLDMOBILE のファイルを取りにいく（取れなくても止めない）。取りにいっていなかったので 11/22 22:40・11/23 3:40 の回が「楽天の取り込み」で失敗になっていた（配置は済み）
