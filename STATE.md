@@ -25,11 +25,11 @@
 - **Yahoo! 7店**: VC（2025875）。もしもは否認
 - **収益の枠**: 回線（`SimTile`・`/sim`）・買取（機種ごと `/kaitori`・resale/battery から 11/5〜）・「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`
-- **相場レポート** `/iphone/report/<月>`（毎月1日）・`/how-long`・`/resale-value`・電池の判定 `/iphone/battery`
+- **相場レポート** `/iphone/report/<月>`（毎月1日）・`/how-long`・選び方 `/iphone/guide`・`/ipad/guide`・`/resale-value`・電池 `/iphone/battery`
 - **YouTube 予約は2日後まで**・声はずんだもん（比べる型は青山）
 - **X**: 12/1 まで Claude は触らない（手で1日1本・URLなし）
 - **ショート**: 11/24〜12/7 1本/日 7:00 で試す。横動画は「◯◯は今買い？」型・サムネは暗い地＋発見。型は同じくらいの本数で出して比べる・声は散らす。0秒目は実写か AI（交互・新規 AI は作らない）＋2行＋図1つ。カードだけは不可
-- **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac（デスクトップ 11/15〜）・Xperia・AQUOS・OPPO・Xiaomi・Apple／Galaxy／Pixel Watch（storage＝mm・ケーブルなしは札）
+- **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac（据え置き 11/15〜）・Xperia・AQUOS・OPPO・Xiaomi・Apple／Galaxy／Pixel Watch（storage＝mm・ケーブルなしは札）
 - **中古パソコン** `/pc`。PC WRAP・Qualit・PC next・Be-Stock は A8、他は楽天
 
 ## 確認台帳（計測・判定）
@@ -39,12 +39,12 @@
 | **11/24** | 18 Pro の h1 案B | スマホ表示・クリック |
 | 11/24 12時〜 | 横動画15 公開 | 固定コメ・videos.ts |
 | 11/25 | 価格帯・安い目安 | |
-| 11/24 | 投稿のアンケート | 1位を横動画に |
+| 11/24 | アンケート | 1位を横動画に |
 | 12/1 | X のラベル | 外れたら相談 |
 | **随時** | Duo・mini A20・M6・PROLED | catalog へ |
 | 12/4 | 店リンク first_* | 28日・人数 |
 | 随時 | ゲオの楽天要求数≤1,500 | fetch.log |
-| 11/29 | Bing 手送り147件 | 知る URL 184→・ChatGPT |
+| 11/29 | Bing 手送り147件 | 知るURL 184→・ChatGPT |
 | 11/27 | iPad Pro 11 第3世代 | 対照と比較 |
 | **12/1** | 3行・買取の移動・`kaitori_link`・`side_sim` | クリック減→戻す |
 | **12/6** | `PickPair` 案B（+N円で保証1年） | 増えなければ一覧から外す |
