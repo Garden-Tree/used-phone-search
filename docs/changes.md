@@ -256,3 +256,4 @@
 - 11/22 23:08 サーバーの ~/rakuten-sync/fetch.php を上書き（作業役・wpX のファイルマネージャ。中身は改行の違いを除いて一致）。次の取得（11/23 2:40）で2店のファイルができたら ci-deploy.sh に足す
 - 11/22 /mac/guide・/watch/guide・/galaxy/guide を作成・ユーザー OK で push。Galaxy のアップデート期限の話・Watch の GPS と Cellular の差が0の行は外した
 - 11/23 /pixel/guide を作成・ユーザー OK で push。Galaxy・Pixel のモデルの表の札の重なり（「S25 S」）を外した
+- 11/23 public/_redirects に /iphone-*・/ipad-* → 機種ページの 301（AI のブラウザの当て推量 URL が 404 に23訪問・ユーザー OK）

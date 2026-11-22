@@ -1,2 +1,5 @@
 # 10/28: 直近30日の値下がりのページは /iphone/resale-value の1節にまとめた
 /iphone/price-drop /iphone/resale-value#last-30-days 301
+# 11/23: AI のブラウザが /iphone-15-pro-max/ のように種類のフォルダを抜いた URL を当て推量して 404 に来ていた（11/21〜 23訪問）
+/iphone-* /iphone/iphone-:splat 301
+/ipad-* /ipad/ipad-:splat 301
