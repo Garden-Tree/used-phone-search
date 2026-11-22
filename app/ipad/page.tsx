@@ -117,6 +117,10 @@ export default async function IpadIndexPage() {
         </p>
 
         <p className="my-4">
+          <Link href="/ipad/guide" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPadの選び方 完全ガイド（世代・Pencil・Wi-Fiとセルラー・届いたら見る5つ） &rarr;</Link>
+        </p>
+
+        <p className="my-4">
           <Link href="/ipad/how-long" className="font-bold text-brand-600 hover:underline underline-offset-4">中古iPadはいつまで使える？iPadOS 27 対応を機種別に &rarr;</Link>
         </p>
 

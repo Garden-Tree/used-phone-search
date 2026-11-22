@@ -115,9 +115,9 @@ function Rows({ rows, caption }: { rows: { k: React.ReactNode; v: React.ReactNod
       <tbody>
         {rows.map((r, i) => (
           <tr key={i} className={i ? "border-t border-line-soft" : ""}>
-            <th scope="row" className="text-left font-normal px-3.5 py-2.5">{r.k}</th>
-            <td className="text-right px-3.5 py-2.5 whitespace-nowrap">
-              <span className="font-bold">{r.v}</span>
+            <th scope="row" className="text-left font-normal px-3.5 py-2.5 min-w-[6em]">{r.k}</th>
+            <td className="text-right px-3.5 py-2.5">
+              <span className="font-bold whitespace-nowrap">{r.v}</span>
               {r.sub && <span className="block text-[10px] text-ink-mute">{r.sub}</span>}
             </td>
           </tr>

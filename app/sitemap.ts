@@ -77,6 +77,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...(await kaitoriModels()).filter((k) => k.shops >= KAITORI_MIN_SHOPS).map((k) => ({ url: `${SITE_URL}${kaitoriPath(k.model)}`, lastModified, changeFrequency: "weekly" as const, priority: 0.6 })),
     { url: `${SITE_URL}/iphone/battery`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/ipad/how-long`, lastModified, changeFrequency: "daily", priority: 0.7 },
+    { url: `${SITE_URL}/ipad/guide`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/pixel/how-long`, lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: `${SITE_URL}/pixel`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/galaxy`, lastModified, changeFrequency: "daily", priority: 0.8 },
