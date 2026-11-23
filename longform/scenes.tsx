@@ -90,8 +90,20 @@ const LAYOUTS: Record<string, Layout> = {
     sub: { x: 40, y: 880, w: W - 80, h: 162, tag: "never", tagW: 200, padX: 36, gap: 20, font: 60, lineHeight: 1.18, edge: 6, edgeSide: "speaker" },
     footY: null,
   },
+  /**
+   * 11/23〜（d2・ユーザーの指示）: 立ち絵を字幕の左右（画面の下の角）に下げ、字幕の帯をその分短く、カードを立ち絵のあった左右まで広げる 1840x740。
+   * 立ち絵（高さ 236px）はカードの下の角に 重なる（カードの余白 48px の中・立ち絵はカードの上に描く）。字幕は 58px
+   */
+  d2: {
+    card: { x: 40, y: 112, w: W - 80, h: 740, pad: 48, scale: 1.15 },
+    art: { w: 190, y: 1042 - 236, h: 236, imgH: 236, left: 0, right: W - 190 },
+    slot: { y: 1042 - 200, w: 170, h: 200, left: 10, right: W - 180 },
+    plate: { w: 172, font: 26, show: "first10" },
+    sub: { x: 200, y: 868, w: W - 400, h: 174, tag: "never", tagW: 200, padX: 32, gap: 20, font: 58, lineHeight: 1.18, edge: 6, edgeSide: "speaker" },
+    footY: null,
+  },
 };
-export const LAYOUT_NAME = process.env.LONGFORM_LAYOUT && LAYOUTS[process.env.LONGFORM_LAYOUT] ? process.env.LONGFORM_LAYOUT : "d1";
+export const LAYOUT_NAME = process.env.LONGFORM_LAYOUT && LAYOUTS[process.env.LONGFORM_LAYOUT] ? process.env.LONGFORM_LAYOUT : "d2";
 const L = LAYOUTS[LAYOUT_NAME];
 const CARD = L.card;
 const SLOT = L.slot;
@@ -524,7 +536,12 @@ function loadImage(path: string) {
 
 /** 写真・公式のスクショ。points があれば左に画像・右に1つずつ出す行、なければ画像だけを大きく。画像の下に出典 */
 function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<string, number> }) {
-  const img = loadImage(s.src);
+  // images があれば、cue を過ぎたもののうち最後の1枚に差し替える（パラパラ。11/23〜）
+  const slides = [{ src: s.src, credit: s.credit }, ...(s.images ?? [])];
+  let cur = 0;
+  slides.forEach((_, i) => { if (i > 0 && t >= (reveal[`img:${i - 1}`] ?? Infinity)) cur = i; });
+  const img = loadImage(slides[cur].src);
+  const credit = slides[cur].credit;
   const points = s.points ?? [];
   const GAP = cap(40);
   const boxW = points.length ? Math.round(INNER_W * 0.56) : INNER_W;
@@ -543,7 +560,7 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
             {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
             <img src={img.src} width={w} height={h} style={{ width: w, height: h, borderRadius: 12 }} />
           </div>
-          <div style={{ display: "flex", marginTop: 12, width: boxW, justifyContent: "center", fontSize: creditFont, fontWeight: 500, color: C.sub }}>{s.credit}</div>
+          <div style={{ display: "flex", marginTop: 12, width: boxW, justifyContent: "center", fontSize: creditFont, fontWeight: 500, color: C.sub }}>{credit}</div>
         </div>
         {points.length ? (
           <div style={{ ...col, width: textW, marginLeft: GAP }}>
@@ -785,12 +802,13 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
       <ChapterBar ch={ch} count={tl.chapters.length} />
       <div style={{ display: "flex", position: "absolute", right: 48, top: HEADER.y + 16, fontSize: MIN_FONT, fontWeight: 900, color: C.url }}>used.gadelog.com</div>
-      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} />
-      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} />
       <div style={{ ...col, position: "absolute", left: CARD.x, top: CARD.y, width: CARD.w, height: CARD.h, padding: CARD.pad, background: C.white, borderRadius: 24 }}>
         <SceneBody ch={scene} t={local} />
       </div>
       {ch.scene.type === "endScreen" ? <EndScreenSlots s={ch.scene} /> : null}
+      {/* 立ち絵はカードの上に描く（d2 では立ち絵がカードの下の角に少し重なる） */}
+      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} />
+      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} />
       <Subtitle who={who} text={page?.text ?? ""} />
       {FOOT_Y === null ? null : <div style={{ display: "flex", position: "absolute", left: SUB.x + 8, top: FOOT_Y, fontSize: 26, fontWeight: 500, color: C.onDarkSub }}>{`${date} 時点・大手中古ショップ${tl.shops}店の在庫から`}</div>}
     </div>

@@ -163,6 +163,7 @@ function resolveReveal(scene: SceneData, lines: TimelineLine[], chStart: number,
       break;
     case "photo":
       (scene.points ?? []).forEach((it, i) => find(`item:${i}`, it.cue));
+      (scene.images ?? []).forEach((it, i) => find(`img:${i}`, it.cue));
       break;
     case "endScreen":
       // 項目は出し分けない（YouTube の要素を重ねる枠。章の絵と一緒に全部出す）

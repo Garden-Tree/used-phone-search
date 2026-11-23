@@ -14,7 +14,7 @@
 ## 決定事項
 
 - **GA4**: 556047315・DB Neon（Launch）・IndexNow 毎日
-- **デザイン**: `docs/design.md`・横動画は D1
+- **デザイン**: `docs/design.md`・横動画は d2（11/23〜）
 - **相場**: 在庫がいちばん多い容量の中央値（容量を添える）。予算別の冒頭も相場で。機種ページは冒頭が容量ごと・title に年月
 - **ページ方針**: 全ページ静的（1日4回）。比較は冒頭に違いの表。budget/under-N は3機種未満・検索は noindex。横動画は同テーマのページに（`lib/videos.ts`）
 - **保証1年の1台**: 価格カードの3行・在庫先頭の `PickPair`（電池85%と2行）・/search
@@ -29,7 +29,7 @@
 - **YouTube 予約は2日後まで**・声はずんだもん（比べる型は青山）
 - **X**: 12/1 まで Claude は触らない（手で1日1本・URLなし）
 - **ショート**: 11/23〜 週2・7:00・在庫数／電池／1世代前だけ（skill）
-- **横動画**: 週2。「◯◯、まだ使う？」を広げる（SE3→12・11→mini）。読み上げる数字は減らし、機能の紹介と画像（README）
+- **横動画**: 週2。個別の「◯◯、まだ使う？」（SE3→12・11→mini）→まとめ版。年の目安は断って言う。数字は減らし機能と画像（README）
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac（据え置き 11/15〜）・Xperia・AQUOS・OPPO・Xiaomi・Apple／Galaxy／Pixel Watch（storage＝mm・ケーブルなしは札）
 - **中古パソコン** `/pc`。PC WRAP・Qualit・PC next・Be-Stock は A8、他は楽天
 

@@ -79,6 +79,8 @@ export type PhotoScene = {
   src: string;
   credit: string;
   points?: { text: string; sub?: string; cue?: string }[];
+  /** 差し替える画像（cue の台詞が始まったら次の画像に替わる。最初は src）。credit はそれぞれ */
+  images?: { src: string; credit: string; cue: string }[];
   note?: string;
 };
 
