@@ -19,11 +19,11 @@ iPhone SE（第3世代）を使っている人向けに、電池交換で使い�
 1:57 SE 3を売るといくら？
 2:17 ホームボタンを残すなら、もう1つの手
 3:09 どれに替えても変わること
-3:48 14 Pro：なめらかな画面と3倍の望遠
-4:39 15：USB-Cと48MPのカメラ
-5:33 17e：Apple IntelligenceとSIMの移し方
+3:47 14 Pro：なめらかな画面と3倍の望遠
+4:38 15：USB-Cと48MPのカメラ
+5:32 17e：Apple IntelligenceとSIMの移し方
 6:30 もう少し出せるなら17
-6:52 決め方
+6:51 決め方
 7:19 まとめ
 7:55 次におすすめの動画
 
@@ -33,6 +33,7 @@ iPhone 15 の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iph
 全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
 
 （画像のクレジットは video.tsx が data.json の credit から足す）
+イラスト：いらすとや
 
 VOICEVOX:春日部つむぎ
 VOICEVOX:ずんだもん
@@ -40,13 +41,13 @@ BGM: Cyber Society by のる（OpenTracks）
 効果音：効果音ラボ
 立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)
 ずんだもん立ち絵：坂本アヒル様
-画像：AI で生成した画像（RealVisXL）
 画像：iPhone SE 3rd Gen — Toad40 / CC BY-SA 4.0 / Wikimedia Commons
 画像：iPhone SE 3 Starlight back — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons
 画像：iPhone 5S Home Button — randychiu / CC BY 2.0 / Wikimedia Commons（写真は iPhone 5s）
 画像：Back of iPhone 8 and iPhone 14 Pro — Alan Levine / CC0 / Wikimedia Commons
 画像：iPhone 14 Pro — iGeeksBlog / CC BY-SA 4.0 / Wikimedia Commons
 画像：Apple iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons
+画像：Lightning USB type C cable — Kyu3a / CC BY-SA 4.0 / Wikimedia Commons
 画像：USB-C port of iPhone 15 — Kyu3 / CC BY-SA 4.0 / Wikimedia Commons
 画像：Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons
 画像：iPhone 17e backside — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons
