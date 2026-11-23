@@ -21,9 +21,9 @@
 - **Database**: PostgreSQL（Neon）+ Prisma ORM
 - **Scraper**: Python 3 (BeautifulSoup4, curl_cffi, psycopg2)。GitHub Actions で6時間ごと
 - **楽天API 取り込み**: PHP（シンレンタルサーバーの cron）が JSON を保存 → Actions が取り込み（ゲオ・じゃんぱら・ソフマップ）
-- **Hosting**: 静的書き出しを Cloudflare Pages で配信（`https://used.gadelog.com`。切り替え前は Vercel。`docs/cloudflare-pages.md`）
+- **Hosting**: 静的書き出しを Cloudflare Pages で配信（`https://used.gadelog.com`。10/6 までは Vercel・`docs/retired.md`）
 
-> 💡 技術的な詳細については [docs/tech_stack.md](./docs/tech_stack.md) を参照してください。
+> 💡 構成の詳細は [docs/operations.md](./docs/operations.md) の「全体像」「構成の概要」を参照してください。
 
 ---
 
@@ -41,12 +41,12 @@
 | [docs/operations.md](./docs/operations.md) | 構成図・秘密情報の置き場所・定期処理・障害対応 |
 | [docs/measurement.md](./docs/measurement.md) | GA4 / Search Console の設定と、いつ何を確認するか |
 | [docs/setup.md](./docs/setup.md) | 開発環境のセットアップ |
-| [docs/tech_stack.md](./docs/tech_stack.md) | 技術スタックの詳細 |
+| [docs/retired.md](./docs/retired.md) | やって撤退したこと・使わなくなったもの |
 | [ideas/](./ideas/) | 日付ごとの作業の経緯・分析（例: [2026-09-26](./ideas/2026-09-26.md)） |
 
 ## プロジェクト構造 (Project Structure)
 - `app/`: Next.js アプリケーション（`iphone/`・`ipad/`・`compare/`・`pick/`・`budget/`・`search/`・`api/`）
-- `lib/`: 検索・集計・カタログ・比較の組・楽天の正規化など（ファイルごとの役割は [docs/tech_stack.md](./docs/tech_stack.md) の「コードの地図」）
+- `lib/`: 検索・集計・カタログ・比較の組・楽天の正規化など（おもなファイルは [docs/operations.md](./docs/operations.md) の「構成の概要」）
 - `scraper/`: 各ショップ向け Python スクレイパー（GitHub Actions で実行）。DB への書き込みは `common.py` に共通化
 - `rakuten-sync/`: 楽天API の取得スクリプト（シンレンタルサーバーに設置）
 - `scripts/`: 価格推移の記録・iPad の機種名の正規化・読み取りの回帰テスト（`npm run test:normalize`）

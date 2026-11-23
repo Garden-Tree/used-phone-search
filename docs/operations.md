@@ -1,6 +1,6 @@
 # 運用手順（インフラ・データ更新・障害対応）
 
-## 全体像（2026-10-06〜 Cloudflare Pages。切り替えの経緯・戻し方は [cloudflare-pages.md](./cloudflare-pages.md)）
+## 全体像（2026-10-06〜 Cloudflare Pages。それまでの Vercel は [retired.md](./retired.md)）
 
 ```
 [シンレンタルサーバー cron 2:40/8:40/14:40/20:40] ~/rakuten-sync/fetch.php（約30分）
@@ -22,7 +22,20 @@
 ```
 
 - **サイトの中身が変わるのは Actions が書き出したときだけ**。実行時に DB は使わない（Neon が起きるのは Actions の間だけ）
-- Vercel のプロジェクトは止めていない（10/5 の旧版が残る・10/30 時点。DNS を戻せば旧版に戻る）。止めたら、この行と cloudflare-pages.md の「戻し方」を消す
+- Vercel のプロジェクトは削除する（11/23 ユーザーが決定・削除はユーザーの作業）。vercel.json・scripts/vercel-ignore.sh は 11/23 に消した
+- Cloudflare Pages の動き（`npx wrangler pages dev out --port 8790` で手元で再現できる。`_headers` も効く）
+  - /iphone は iphone.html を返す。/iphone/・/iphone.html は 308 で /iphone へ。404 は out/404.html。http は https へ
+  - ヘッダーは `public/_headers`: HSTS（2年）・`/_next/static/*` は1年 immutable・OGP 画像（拡張子なし）は image/png・`*.pages.dev` は `X-Robots-Tag: noindex`（正式な URL は used.gadelog.com）。HTML・JSON は Pages の既定 `public, max-age=0, must-revalidate`
+  - 無料プランの上限: デプロイ 月500回（1日4回で月120回）・1サイト2万ファイル・1ファイル25MiB。`scripts/ci-deploy.sh` が配置前にファイル数と大きさを確かめる
+- DB と楽天の方針（10/4）: DB は Neon のまま。問題が出たら在庫と価格推移を Cloudflare R2 にファイルで置く案に移る。D1 にしないのは「全部消して入れ直す」で書き込みが1日 約40万行になり無料枠（10万行/日）を超えるため。楽天の取得がシンのサーバーなのは、楽天のアプリが許可 IP 制で Actions・Cloudflare の送信元 IP が固定されないため
+
+## 構成の概要
+
+- Next.js 16（App Router・`output: "export"`）・React 19・Tailwind CSS 4・TypeScript。DB は PostgreSQL（Neon）＋ Prisma（`DeviceInventory` 在庫・`PriceSnapshot` 価格推移ほか）
+- スクレイパーは Python 3（BeautifulSoup4・curl_cffi・psycopg2）。共通処理は `scraper/common.py` の `run_scraper(ショップ名, 関数, 既定の取得数)`（安全チェック → DELETE → 一括 INSERT）。新しい店は「商品の dict のリストを返す関数」を書いて呼ぶだけ
+- 検索 `/search` は静的な1ページ。ビルド時に書き出す機種ごとの在庫 JSON（`lib/searchData.ts`）をブラウザで絞り込む（`SearchClient`・機種の照合は `lib/modelMatch.ts`）
+- おもな lib: `shops.ts`（店の一覧・バッテリー表記）・`catalog.ts` ほか `*Catalog.ts`（機種と slug）・`modelInventory.ts`／`modelStats.ts`（機種ページの集計。DB 側で集計）・`priceHistory.ts`・`affiliate.ts`（リンク先と rel="sponsored"）・`rakutenShops.ts`／`yahooShops.ts`（モールの店の登録と商品名の読み取り）・`ogFont.ts`（OGP 用の日本語フォントのサブセット）
+- 読み取りや照合を変えたら `npm run test:normalize`。iPad の機種名は `canonicalIpadModel`（`lib/ipadCatalog.ts`）の1か所でそろえる
 
 ## アカウント・秘密情報の置き場所
 
@@ -237,7 +250,7 @@
 
 - **push ではデプロイされない**。サイトに出るのは次の Actions の実行（楽天の取得の後・定期実行・手動の Run workflow）
 - コードを変えたら: ローカルで `npx next build`（Docker の DB）→ main に push → 次の定期実行で反映 → `https://used.gadelog.com` で確認。手動の Run workflow は急ぐときだけ・1日1回まで（1回で Neon を約35MB 読む）
-- 開発の流れ：ブランチ → PR → マージ（自動マージはリポジトリ設定で無効）。Vercel は `scripts/vercel-ignore.sh` で一切ビルドしない
+- 開発の流れ：ブランチ → PR → マージ（自動マージはリポジトリ設定で無効）
 
 ## ローカルの確認用 DB（Docker）
 

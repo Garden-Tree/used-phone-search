@@ -1,4 +1,4 @@
-# Cloudflare Pages のレスポンスヘッダー（used.gadelog.com の静的書き出し。docs/cloudflare-pages.md）
+# Cloudflare Pages のレスポンスヘッダー（used.gadelog.com の静的書き出し。docs/operations.md）
 # HTML・在庫データ（/data/inventory）・/health.json は Pages の既定（public, max-age=0, must-revalidate）のまま。1日4回書き出すので毎回確認させる
 
 # 今の本番（Vercel）と同じ HSTS（2年）

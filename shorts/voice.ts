@@ -3,7 +3,7 @@
  * エンジンに届かなければ、声なしで今まで通りに書き出す（例外にしない）。
  * 読み・アクセント句の直しとユーザー辞書は shorts/voiceTuning.ts。
  * 合成した WAV は (文・読みの手直し・話者・調声の設定・規則の版・辞書) のハッシュで shorts/out/voice-cache/ に置き、同じ文はエンジンなしでも使い回す。
- * 手順は shorts/README.md・docs/youtube-shorts.md
+ * 手順は shorts/README.md（キャラクターの規約は docs/voicevox-terms.md）
  */
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";

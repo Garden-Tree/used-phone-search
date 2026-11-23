@@ -1,5 +1,5 @@
 #!/bin/bash
-# GitHub Actions（scraper.yaml）から呼ぶ。Cloudflare Pages 版（docs/cloudflare-pages.md）
+# GitHub Actions（scraper.yaml）から呼ぶ。Cloudflare Pages 版（docs/operations.md）
 #   bash scripts/ci-deploy.sh fetch-rakuten   … シンレンタルサーバーに置かれた楽天の在庫（<shopCode>.json.gz）を rakuten-data/ に取ってくる
 #   bash scripts/ci-deploy.sh deploy          … out/ を Cloudflare Pages に配置する
 # 使う環境変数:
@@ -9,7 +9,7 @@ set -euo pipefail
 
 SHOP_CODES=(geo-mobile janpara akiba-u-shop kamaya-awards garakei emedama ekosuta pc-good)
 PROJECT="${CF_PAGES_PROJECT:-used-phone-search}"
-# Cloudflare Pages の無料プランの上限（docs/cloudflare-pages.md）
+# Cloudflare Pages の無料プランの上限（docs/operations.md）
 MAX_FILES=20000
 MAX_FILE_BYTES=$((25 * 1024 * 1024))
 

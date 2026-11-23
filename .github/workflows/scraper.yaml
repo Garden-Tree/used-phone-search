@@ -1,5 +1,5 @@
 name: Phone Inventory Scraper
-# Cloudflare Pages 版（cloudflare-pages ブランチ・docs/cloudflare-pages.md）: 在庫の取得 → Yahoo!ショッピング・楽天分の取り込み → 価格推移 →
+# Cloudflare Pages 版（docs/operations.md）: 在庫の取得 → Yahoo!ショッピング・楽天分の取り込み → 価格推移 →
 # サイトの書き出し（next build）→ Cloudflare Pages へ配置、までを1本で行う。
 # Cloudflare の Secrets（CLOUDFLARE_*）が無いあいだは、書き出しまでで止まる
 
@@ -62,7 +62,7 @@ jobs:
     # 取得・スクレイパーが固まったときに6時間（既定）居座って、次の定期実行を待たせないように
     timeout-minutes: 60
     env:
-      # 楽天の在庫を置く URL（シンレンタルサーバー）と Cloudflare Pages。値は Secrets・Variables（docs/cloudflare-pages.md）
+      # 楽天の在庫を置く URL（シンレンタルサーバー）と Cloudflare Pages。値は Secrets・Variables（docs/operations.md）
       RAKUTEN_DATA_URL: ${{ secrets.RAKUTEN_DATA_URL }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       # Yahoo!ショッピング 商品検索API の Client ID。未登録のあいだは Yahoo の取り込みを飛ばす

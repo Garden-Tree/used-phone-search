@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-// 静的書き出し版（docs/cloudflare-pages.md）はビルドのたびに書き出す /health.json を読む。
+// 静的書き出し版（docs/operations.md）はビルドのたびに書き出す /health.json を読む。
 // ビルド自体が止まっても気づけるよう、checkedAt が古すぎるときも問題とする
 const HEALTH_URL = 'https://used.gadelog.com/health.json';
 const MAX_BUILD_AGE_HOURS = 14; // ビルドは6時間ごと（GitHub の遅れで数時間ずれる）

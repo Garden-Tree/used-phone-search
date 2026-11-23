@@ -4,7 +4,7 @@
  * used.gadelog.com の受け口（/api/ingest/rakuten?shop=<shopCode>）へショップごとに送信する。
  * Cloudflare Pages 版（cloudflare-pages ブランチ）では、config.php に output_dir を書くと、送信せずに
  * <output_dir>/<shopCode>.json.gz に保存する。output_dir は公開フォルダの中の推測されにくいフォルダにし、
- * GitHub Actions が HTTPS で取りに来て scripts/ingest-rakuten.ts で取り込む（docs/cloudflare-pages.md）。
+ * GitHub Actions が HTTPS で取りに来て scripts/ingest-rakuten.ts で取り込む（docs/operations.md）。
  *
  * シンレンタルサーバー（固定IP: 楽天アプリの許可IPに登録済み）の cron から実行する。
  *   php fetch.php                 … 全ショップを全件取得して送信

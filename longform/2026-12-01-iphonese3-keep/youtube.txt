@@ -1,17 +1,11 @@
 iPhone SE（第3世代）、まだ使う？電池交換は1万2,000円｜替えるなら14 Pro・15・17eで何が増える？【2026年11月】
 
+iPhone SE（第3世代）の買取価格: https://used.gadelog.com/iphone/iphone-se-3rd-gen/kaitori?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
+中古iPhoneはいつまで使える？: https://used.gadelog.com/iphone/how-long?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
+iPhone 15 の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-15?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
+全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
+
 iPhone SE（第3世代）を使っている人向けに、電池交換で使い続けるか、売って 14 Pro・15・17e に替えるかを、Apple 公式の仕様と修理料金・買取の価格（11/21）・大手中古ショップ18店の相場（2026/11/23時点）で比べました。
-
-結論: 電池だけなら交換（12,000円）。替えるなら、画面とカメラは14 Pro、USB-C と軽さは15、AI と電池の長さは17e。
-
-・Apple の電池交換（保証対象外・税込）: 12,000円
-・SE 3（64GB）の買取: 良品 18,000円（にこスマ）／本体割れ 5,400円
-・売って替える（良品で売った場合）: 中古の14 Pro 128GB +64,280円（相場 82,280円・ランクC 74,980円）／中古の15 128GB +73,700円（91,700円・ランクC 78,800円）／新品の17e 256GB +106,800円（124,800円・Apple）／中古の17 256GB +131,980円（149,980円）
-・新しい iOS の記録（Apple の iPhone ユーザガイド）: 6s（2015年）は iOS 15 まで／8・X（2017年）は iOS 16 まで／XS・XR（2018年）は iOS 18 まで／11（2019年）は iOS 27 に対応。SE 3（2022年）の 2027〜2028年ごろは、この記録から数えた見込みです（Apple は何年出すかを約束していません）
-・機種の違い（Apple の技術仕様）: 14 Pro は120Hz・常時表示・3倍望遠・Lightning・206g／15 は USB-C・48MP＋超広角・171g・SIMカード可／17e は A19・Apple Intelligence・ビデオ再生 最大26時間・eSIM のみ／17 は120Hz・カメラコントロール・最大30時間・eSIM のみ
-・eSIM の移し方: 新しい iPhone の設定中に転送できます（Apple「iPhoneでeSIMを設定する」。両方 iOS 18.4以降・通信事業者が eSIM クイック転送に対応していること）
-
-※ 相場＝在庫がいちばん多い容量の中央値。買取は各店の表示。値段は毎日動くので、最新はサイトで確かめてください。
 
 0:00 結論：電池だけなら交換。替えるなら14 Pro・15・17e
 0:34 SE 3は今年のiOS 27に対応。新しいiOSはいつまで来る？
@@ -27,14 +21,8 @@ iPhone SE（第3世代）を使っている人向けに、電池交換で使い�
 7:20 まとめ
 7:56 次におすすめの動画
 
-iPhone SE（第3世代）の買取価格: https://used.gadelog.com/iphone/iphone-se-3rd-gen/kaitori?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
-中古iPhoneはいつまで使える？: https://used.gadelog.com/iphone/how-long?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
-iPhone 15 の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-15?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
-全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
-
 イラスト：いらすとや
 動画素材：みりんの動画素材 https://miirriin.com/
-
 VOICEVOX:春日部つむぎ
 VOICEVOX:ずんだもん
 BGM: Cyber Society by のる（OpenTracks）
