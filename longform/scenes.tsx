@@ -268,7 +268,7 @@ const shown = (reveal: Record<string, number>, key: string, t: number) => ease((
 const BURST = 8;
 // 11/23 ユーザー「イージングを入れて・控えめに」: 左右に揺らすのをやめ、少し下から浮き上がって止まる（ease-out cubic）。
 // 0・1・2・4・6・8 コマ後を PNG にする（8 で止まる）
-export const ANIM_STEPS = [1, 2, 4, 6, 8];
+export const ANIM_STEPS = [1, 2, 3, 4, 5, 6, 7, 8]; // 毎コマ（ガクガクしないように。11/23）
 const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
 /** 出来事から k コマ目の位置（px）。a から 0 へ ease-out で戻る */
 const settle = (k: number, a: number) => Math.round(a * (1 - easeOut(Math.min(1, k / BURST))) * 10) / 10;
@@ -284,7 +284,7 @@ export function growPoints(tl: Timeline): number[] {
     if (ch.scene.type !== "bars") continue;
     for (const [k, r] of Object.entries(ch.scene.reveal)) {
       if (!k.startsWith("item:")) continue;
-      for (let j = 2; j <= GROW; j += 2) out.push(ch.start + Math.max(0, r) + j / FPS);
+      for (let j = 1; j <= GROW; j++) out.push(ch.start + Math.max(0, r) + j / FPS);
     }
   }
   return out;
@@ -816,7 +816,7 @@ function SubLine({ text, who }: { text: string; who: Who | null }) {
  * 左上から時計回り（上→右→下→左）。prog は 0〜1（40段に丸める。video.tsx が 0.1 秒ごとに PNG にする）
  */
 const RING = 10;
-export const SUB_STEPS = 40;
+export const SUB_STEPS = 240;
 function SubRing({ who, prog, dy }: { who: Who | null; prog: number; dy: number }) {
   if (!who || prog <= 0) return null;
   const w = SUB.w, h = SUB.h, color = SPEAKER_COLOR[who];

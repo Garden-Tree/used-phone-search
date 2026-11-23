@@ -146,8 +146,12 @@ function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: S
   // 横棒が伸びる間
   for (const t of growPoints(tl)) points.add(Math.round(t * 1000) / 1000);
   // 声の大きさ（話している間は 0.1 秒ごと）
-  if (levels.length) for (const ch of tl.chapters) for (const l of ch.lines) for (let t = l.start; t < l.end; t += LEVEL_STEP) points.add(Math.round(t * 1000) / 1000);
-  const levelAt = (t: number) => levels[Math.floor(t / LEVEL_STEP)] ?? 0;
+  // 話している間は毎コマ（字幕の縁・立ち絵を 30fps で動かす。11/23）
+  if (levels.length) for (const ch of tl.chapters) for (const l of ch.lines) for (let f = Math.ceil(l.start * FPS); f / FPS < l.end; f++) points.add(f / FPS);
+  const levelAt = (t: number) => {
+    const x = t / LEVEL_STEP, i = Math.floor(x), a = levels[i] ?? 0, b = levels[i + 1] ?? a;
+    return Math.round((a + (b - a) * (x - i)) * 10) / 10;
+  };
   const segs: Segment[] = [];
   for (const t of [...points].filter((x) => x >= 0 && x < total).sort((a, b) => a - b)) {
     const st = stateAt(tl, t);
@@ -199,7 +203,7 @@ async function renderFrames(tl: Timeline, segs: Segment[], art: CharaArt, work: 
   const jobs = part ? all.filter((_, x) => x % part.n === part.k) : all;
   const t0 = now();
   for (const [n, j] of jobs.entries()) {
-    const res = new ImageResponse(frameAt(tl, j.s.t, { instant: true, art, mouthOpen: j.open || j.s.level > 0, level: j.s.level }), { width: W, height: H, fonts });
+    const res = new ImageResponse(frameAt(tl, j.s.t, { instant: true, art, mouthOpen: j.open || j.s.level >= 0.5, level: j.s.level }), { width: W, height: H, fonts });
     writeFileSync(join(work, segFile(j.i, j.open)), Buffer.from(await res.arrayBuffer()));
     if (!part && ((n + 1) % 25 === 0 || n + 1 === jobs.length)) {
       const el = now() - t0;
