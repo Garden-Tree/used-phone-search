@@ -1,0 +1,518 @@
+{
+  "date": "2026-11-23",
+  "shops": 18,
+  "source": "script.md の数字（data-query.log・11/23・18店・同じ256GB・ジャンク除く中央値）。公開の前日に取り直す",
+  "thumbnail": {
+    "lines": [
+      "新品の17e",
+      "中古の15 Pro"
+    ],
+    "badge": [
+      {
+        "text": "差"
+      },
+      {
+        "text": "4,180円",
+        "red": true
+      }
+    ],
+    "footer": "同じ256GBで、何が違う？【2026年11月】"
+  },
+  "chapters": [
+    {
+      "title": "結論：安心なら新品の17e、カメラと画面なら中古の15 Pro",
+      "scene": {
+        "type": "photo",
+        "heading": "今日の3つの道",
+        "src": "longform/assets/irasutoya/crossroads-undecided.png",
+        "credit": "",
+        "points": [
+          {
+            "text": "新品の17e",
+            "sub": "電池100%・保証1年",
+            "cue": "3つの道を比べるね"
+          },
+          {
+            "text": "中古の15 Pro",
+            "sub": "望遠・なめらかな画面",
+            "cue": "3つの道を比べるね"
+          },
+          {
+            "text": "中古の16",
+            "sub": "超広角・カメラボタン",
+            "cue": "3つの道を比べるね"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone17e-back-chinofutaba.jpg",
+            "credit": "iPhone 17e backside — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "結論から言うと",
+            "crop": {
+              "x": 0.18,
+              "y": 0.08,
+              "w": 0.66,
+              "h": 0.6
+            }
+          }
+        ]
+      }
+    },
+    {
+      "title": "同じ256GB、値段はほぼ同じ",
+      "scene": {
+        "type": "bars",
+        "heading": "同じ 256GB の値段",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "新品の17e",
+            "sub": "Apple",
+            "median": 124800,
+            "cue": "新品の17eは"
+          },
+          {
+            "label": "中古の16",
+            "sub": "真ん中の値段",
+            "median": 127980,
+            "cue": "中古の16と15 Proは"
+          },
+          {
+            "label": "中古の15 Pro",
+            "sub": "真ん中の値段",
+            "median": 128980,
+            "cue": "中古の16と15 Proは"
+          }
+        ]
+      }
+    },
+    {
+      "title": "3台とも同じところ",
+      "scene": {
+        "type": "checklist",
+        "heading": "3台とも同じ（Apple の技術仕様）",
+        "items": [
+          {
+            "text": "6.1インチの有機EL",
+            "cue": "画面は3台とも"
+          },
+          {
+            "text": "USB-C・MagSafe",
+            "cue": "端子はどれもUSB-C"
+          },
+          {
+            "text": "アクションボタン",
+            "sub": "好きな機能を割り当て",
+            "cue": "横にはアクションボタン"
+          },
+          {
+            "text": "Apple Intelligence",
+            "sub": "要約・クリーンアップ",
+            "cue": "3台ともApple Intelligence"
+          },
+          {
+            "text": "水深6メートルで最大30分",
+            "sub": "IP68",
+            "cue": "水にも強くて"
+          }
+        ]
+      }
+    },
+    {
+      "title": "中古の17eは、新品より高い",
+      "scene": {
+        "type": "bars",
+        "heading": "17e（256GB）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "新品",
+            "sub": "Apple",
+            "median": 124800,
+            "cue": "17eなら、中古のほうが安いのだ",
+            "say": "17e"
+          },
+          {
+            "label": "中古",
+            "sub": "真ん中の値段",
+            "median": 125980,
+            "pick": true,
+            "pickLabel": "新品より高い",
+            "cue": "中古の17eの真ん中の値段は"
+          }
+        ]
+      }
+    },
+    {
+      "title": "新品の17eで手に入るもの",
+      "scene": {
+        "type": "photo",
+        "heading": "新品の17eで手に入るもの",
+        "src": "longform/assets/commons/iphone17e-back-chinofutaba.jpg",
+        "credit": "iPhone 17e backside — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+        "crop": {
+          "x": 0.1,
+          "y": 0.02,
+          "w": 0.8,
+          "h": 0.96
+        },
+        "points": [
+          {
+            "text": "電池100%・保証1年",
+            "sub": "Apple の保証",
+            "cue": "1つ目は、電池が100%"
+          },
+          {
+            "text": "A19・Apple Intelligence",
+            "sub": "いちばん新しいチップ",
+            "cue": "チップがいちばん新しいA19"
+          },
+          {
+            "text": "ビデオ再生 最大26時間",
+            "sub": "3台でいちばん長い",
+            "cue": "3つ目は電池の長さ"
+          },
+          {
+            "text": "衛星経由のメッセージ",
+            "sub": "15 Pro は緊急SOSだけ",
+            "cue": "4つ目、電波の届かない"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone17e-pink-kyu3a.jpg",
+            "credit": "iPhone 17e Soft Pink Model — Kyu3a / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "3つ目は電池の長さ",
+            "crop": {
+              "x": 0.2,
+              "y": 0.12,
+              "w": 0.6,
+              "h": 0.6
+            }
+          }
+        ]
+      }
+    },
+    {
+      "title": "17eに載っていないもの",
+      "scene": {
+        "type": "photo",
+        "heading": "17eに載っていないもの",
+        "src": "longform/assets/commons/iphone17e-back-chinofutaba.jpg",
+        "credit": "iPhone 17e backside — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+        "crop": {
+          "x": 0.1,
+          "y": 0.02,
+          "w": 0.8,
+          "h": 0.96
+        },
+        "points": [
+          {
+            "text": "超広角は載っていない",
+            "sub": "カメラは48MPのメイン1つ",
+            "cue": "まずカメラ"
+          },
+          {
+            "text": "SIMカードは使えない",
+            "sub": "eSIMだけ",
+            "cue": "次にSIM"
+          },
+          {
+            "text": "120Hz・常時表示",
+            "sub": "仕様に載っていない",
+            "cue": "それから画面"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone17e-back-chinofutaba.jpg",
+            "credit": "iPhone 17e backside — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "後ろのカメラは48MPのメインが1つだけ",
+            "crop": {
+              "x": 0.2,
+              "y": 0.1,
+              "w": 0.36,
+              "h": 0.27
+            }
+          },
+          {
+            "src": "longform/assets/irasutoya/photo-taking.png",
+            "credit": "",
+            "cue": "超広角って"
+          },
+          {
+            "src": "longform/assets/commons/sim-card-multisize-izzzyy.jpg",
+            "credit": "Multi-size T-Mobile SIM card — Izzzyy / CC0 / Wikimedia Commons",
+            "cue": "次にSIM"
+          }
+        ]
+      }
+    },
+    {
+      "title": "中古の15 Pro：望遠となめらかな画面",
+      "scene": {
+        "type": "photo",
+        "heading": "中古の15 Pro：カメラと画面",
+        "src": "longform/assets/commons/iphone15pro-back-naturaltitanium-meidoriyo.jpg",
+        "credit": "Back view of iPhone 15 Pro Natural titanium — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
+        "points": [
+          {
+            "text": "3倍の望遠",
+            "sub": "カメラは3つ",
+            "cue": "いちばん大きいのは、カメラが3つ"
+          },
+          {
+            "text": "最大120Hz・常時表示",
+            "sub": "ProMotion",
+            "cue": "画面は、最大120Hz"
+          },
+          {
+            "text": "Dynamic Island",
+            "sub": "17e の仕様には載っていない",
+            "cue": "画面の上には、Dynamic Island"
+          },
+          {
+            "text": "USB 3",
+            "sub": "Mac への転送が速い",
+            "cue": "もう1つ、端子はUSB-C"
+          },
+          {
+            "text": "187g・画面の修理が高め",
+            "sub": "電池は中古",
+            "cue": "3つあるよ"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone15pro-back-naturaltitanium-meidoriyo.jpg",
+            "credit": "Back view of iPhone 15 Pro Natural titanium — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "望遠だと",
+            "crop": {
+              "x": 0.3,
+              "y": 0.16,
+              "w": 0.24,
+              "h": 0.19
+            }
+          },
+          {
+            "src": "longform/assets/commons/iphone15pro-front-dynamicisland-sploopydoppy.jpg",
+            "credit": "iPhone Dynamic Island — SploopyDoppy / CC0 / Wikimedia Commons（iPhone 15 Pro）",
+            "cue": "画面は、最大120Hz"
+          },
+          {
+            "src": "longform/assets/commons/iphone15pro-front-dynamicisland-sploopydoppy.jpg",
+            "credit": "iPhone Dynamic Island — SploopyDoppy / CC0 / Wikimedia Commons（iPhone 15 Pro）",
+            "cue": "画面の上には、Dynamic Island",
+            "crop": {
+              "x": 0.3,
+              "y": 0.2,
+              "w": 0.42,
+              "h": 0.2
+            }
+          }
+        ],
+        "crop": {
+          "x": 0.27,
+          "y": 0.15,
+          "w": 0.4,
+          "h": 0.47
+        }
+      }
+    },
+    {
+      "title": "中古の16：超広角とカメラコントロール",
+      "scene": {
+        "type": "photo",
+        "heading": "中古の16：広く撮る・ボタンで撮る",
+        "src": "longform/assets/commons/iphone16-ultramarine.png",
+        "credit": "iPhone 16 Ultramarine Rear — Padgriffin / CC BY 4.0 / Wikimedia Commons",
+        "points": [
+          {
+            "text": "超広角",
+            "sub": "カメラは2つ",
+            "cue": "カメラはメインと超広角の2つ"
+          },
+          {
+            "text": "カメラコントロール",
+            "sub": "横のボタンですぐ撮る",
+            "cue": "それから、カメラコントロール"
+          },
+          {
+            "text": "MagSafe 最大25W",
+            "sub": "17e・15 Pro は15W",
+            "cue": "充電は、MagSafeで"
+          },
+          {
+            "text": "SIMカードもそのまま",
+            "sub": "nano-SIM＋eSIM",
+            "cue": "SIMカードもそのまま使える"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/irasutoya/two-phones.png",
+            "credit": "",
+            "cue": "16は、17eと15 Proの"
+          }
+        ]
+      }
+    },
+    {
+      "title": "落として割ったら：画面の修理代",
+      "scene": {
+        "type": "bars",
+        "heading": "Apple の画面の修理（保証対象外）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "17e",
+            "median": 41800,
+            "cue": "Appleの画面の修理代"
+          },
+          {
+            "label": "16",
+            "median": 45800,
+            "cue": "Appleの画面の修理代"
+          },
+          {
+            "label": "15 Pro",
+            "median": 57800,
+            "pick": true,
+            "pickLabel": "いちばん高い",
+            "cue": "15 Proは、5万円"
+          }
+        ]
+      }
+    },
+    {
+      "title": "中古の電池と保証の選び方",
+      "scene": {
+        "type": "bars",
+        "heading": "「電池85%以上」の在庫（256GB）",
+        "unit": "件",
+        "rows": [
+          {
+            "label": "中古の15 Pro",
+            "median": 197,
+            "cue": "まず電池"
+          },
+          {
+            "label": "中古の16",
+            "median": 276,
+            "cue": "まず電池"
+          }
+        ]
+      }
+    },
+    {
+      "title": "もう少し出せるなら17",
+      "scene": {
+        "type": "bars",
+        "heading": "256GB の値段",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "新品の17e",
+            "median": 124800,
+            "cue": "もう少し出したら"
+          },
+          {
+            "label": "中古の16",
+            "median": 127980,
+            "cue": "もう少し出したら"
+          },
+          {
+            "label": "中古の15 Pro",
+            "median": 128980,
+            "cue": "もう少し出したら"
+          },
+          {
+            "label": "中古の15 Pro Max",
+            "sub": "大きい画面",
+            "median": 139980,
+            "cue": "もう少し出したら"
+          },
+          {
+            "label": "中古の17",
+            "sub": "120Hz・最大30時間",
+            "median": 149980,
+            "pick": true,
+            "pickLabel": "全部入り",
+            "cue": "中古の17が"
+          }
+        ]
+      }
+    },
+    {
+      "title": "決め方",
+      "scene": {
+        "type": "checklist",
+        "heading": "何を取るかで選ぶ",
+        "items": [
+          {
+            "text": "電池と安心 → 新品の17e",
+            "sub": "電池100%・保証1年",
+            "cue": "電池と、新品の安心"
+          },
+          {
+            "text": "遠くまで撮る・なめらかな画面 → 中古の15 Pro",
+            "sub": "3倍の望遠・120Hz",
+            "cue": "遠くまで撮りたい"
+          },
+          {
+            "text": "広く撮る・SIMカード → 中古の16",
+            "sub": "超広角・nano-SIM",
+            "cue": "広く撮りたい"
+          }
+        ]
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "bars",
+        "heading": "同じ 256GB の値段",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "新品の17e",
+            "sub": "電池と安心",
+            "median": 124800,
+            "cue": "まとめるね"
+          },
+          {
+            "label": "中古の16",
+            "sub": "超広角・SIMカード",
+            "median": 127980,
+            "cue": "まとめるね"
+          },
+          {
+            "label": "中古の15 Pro",
+            "sub": "望遠・120Hz",
+            "median": 128980,
+            "pick": true,
+            "pickLabel": "決めた",
+            "cue": "中古の15 Proにするのだ"
+          }
+        ]
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          {
+            "id": "4P5c1LG_57s",
+            "title": "中古iPhone 15は今買い？相場9万980円｜14との差2.6万円はUSB-Cの差"
+          },
+          {
+            "id": "4jeD0o26_U4",
+            "title": "今は買うな｜中古iPhone 地雷6台・正解3台"
+          }
+        ]
+      }
+    }
+  ]
+}
