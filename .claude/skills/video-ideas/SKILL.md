@@ -10,14 +10,14 @@ description: used.gadelog.com の YouTube（@used_gadelog「中古スマホ一�
 ## 守ること
 
 - **他人の題・構成・サムネを写さない**。取るのは「型」（誰に向けた問いか・どんな比べ方か・何を約束する題か）だけ。数字と中身はうちのデータ（相場・在庫・買取・電池・Apple などの公式の値）で作る
-- 公式で確かめていない機能・値段は使わない。「あと◯年使える」は「Apple は約束していない・これまでの記録から数えた見込み」と断るときだけ（11/23 案B）。値動きの予想・店の良し悪しは言わない。「最安」「必ず」「絶対」「お得」は使わない
+- 公式で確かめていない機能・値段は使わない。年の目安・言わないことは `longform/README.md`「年の目安と言わないこと」
 - YouTube では読むだけ（いいね・登録・コメントしない）
 - 同じテーマで1位や結論が同じ回は作らない（`docs/videos.md` で確かめる）
 
 ## 手順
 
 1. **競合のまとめを読む**: `docs/video-competitors.md`（ネタ・構成・画面・動き・サムネ・採ったもの／やめたもの）。新しく調べたらここを直す
-2. **うちの一覧を読む**: `docs/videos.md`（古ければ `npx tsx scripts/video-index.ts`）。ショートは `.claude/skills/youtube-shorts/SKILL.md` の「11/23〜 の決まり」（続けるネタ・やめたネタ）、横動画は `longform/README.md`「台本と画面の決まり」
+2. **うちの一覧を読む**: `docs/videos.md`（古ければ `npx tsx scripts/video-index.ts`）。ショートは `.claude/skills/youtube-shorts/SKILL.md` の「11/23〜 の決まり」（続けるネタ・やめたネタ）、横動画は `longform/README.md`「1. 今の決まり」
 3. **うちの数字**: `npx tsx scripts/yt-metrics.ts --days 40`（1本ごとの再生・平均視聴・登録・流入元）。いま伸びている回は Data API の viewCount（Analytics は2〜3日遅れ）。インプレッション・CTR・視聴を継続は API にない → サブエージェントで Studio の アナリティクス → コンテンツ（動画／ショート・過去28日）と詳細モード（内訳＝コンテンツタイプ）
 4. **伸びている人の動画**: サブエージェントに下の「見るチャンネル」の 人気順30・新しい順30（題・再生数・公開からの日数・登録者数）と、検索（「中古iPhone」「iPhone まだ使える」「iPhone 買い替え」「中古スマホ おすすめ」「iPhone レビュー」「スマホ おすすめ 2026」）の上位20を集めさせ、`.claude/tmp/yt-competitors-<MMDD>.md` に表で書かせる
 5. **型に分ける**（自分）: 題を「誰に向けた問いか」で分類する
