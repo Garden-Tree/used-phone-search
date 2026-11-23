@@ -323,7 +323,7 @@ async function mux(dir: string, work: string, tl?: Timeline) {
   const at = tl ? subscribeAt(tl) : null;
   if (at !== null && existsSync(SUBSCRIBE_GB)) {
     const T = at.toFixed(3);
-    const fc = `[2:v]trim=0:${SUBSCRIBE_SEC},setpts=PTS-STARTPTS+${T}/TB,chromakey=0x00FF01:0.18:0.08,scale=620:-1[ov];[0:v][ov]overlay=(W-w)/2:(H-h)/2-60:enable='between(t,${T},${(at + SUBSCRIBE_SEC).toFixed(3)})':eof_action=pass,format=yuv420p[v]`;
+    const fc = `[2:v]trim=0:${SUBSCRIBE_SEC},setpts=PTS-STARTPTS+${T}/TB,chromakey=0x00FF01:0.18:0.08,scale=960:-1[ov];[0:v][ov]overlay=(W-w)/2:(H-h)/2-60:enable='between(t,${T},${(at + SUBSCRIBE_SEC).toFixed(3)})':eof_action=pass,format=yuv420p[v]`;
     await ffmpeg(["-y", "-i", join(work, "video-only.mp4"), "-i", join(work, "audio.m4a"), "-i", SUBSCRIBE_GB, "-filter_complex", fc, "-map", "[v]", "-map", "1:a",
       "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-threads", FF_THREADS, "-c:a", "copy", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], `映像と音をまとめる（チャンネル登録 ${T} 秒）`);
     return;
