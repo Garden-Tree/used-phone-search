@@ -605,6 +605,8 @@ function PhotoSpot({ s, t, reveal, img, credit, cur }: { s: PhotoScene; t: numbe
   const pt = pi >= 0 ? points[pi] : null;
   const H_ALL = CARD.h - CARD.pad * 2;
   const textW = Math.round(INNER_W * 0.42);
+  // 大きい行は2行まで（幅×2 に収まる大きさ。折り返しの余裕で 1.15 倍みておく）
+  const bigFont = pt ? Math.max(MIN_FONT, Math.min(cap(96), Math.floor((textW * 2) / (textEm(pt.text) * 1.15)))) : cap(96);
   const boxW = INNER_W - textW - cap(32);
   const boxH = H_ALL - Math.ceil(MIN_FOOT * 1.45) - 12;
   const k = Math.min(boxW / img.w, boxH / img.h);
@@ -617,7 +619,7 @@ function PhotoSpot({ s, t, reveal, img, credit, cur }: { s: PhotoScene; t: numbe
           <div style={{ display: "flex", fontSize: fit(s.heading, textW, cap(40), MIN_FONT, "見出し"), fontWeight: 900, color: C.sub }}>{s.heading}</div>
         </div>
         <div style={{ ...col, ...(pi >= 0 ? bump(s, `item:${pi}`) : {}) }}>
-          {pt ? <div style={{ display: "flex", flexWrap: "wrap", width: textW, fontSize: cap(96), lineHeight: 1.15, fontWeight: 900, color: C.ink }}>{pt.text}</div> : null}
+          {pt ? <div style={{ display: "flex", flexWrap: "wrap", width: textW, fontSize: bigFont, lineHeight: 1.15, fontWeight: 900, color: C.ink }}>{pt.text}</div> : null}
           {pt?.sub ? <div style={{ display: "flex", flexWrap: "wrap", width: textW, marginTop: 20, fontSize: cap(44), lineHeight: 1.3, fontWeight: 700, color: C.red }}>{pt.sub}</div> : null}
         </div>
         <div style={{ ...row, gap: 10 }}>

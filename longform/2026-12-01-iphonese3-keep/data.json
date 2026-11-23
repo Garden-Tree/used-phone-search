@@ -112,8 +112,9 @@
             "cue": "SE 3のビデオ再生は最大15時間"
           },
           {
-            "text": "データ・設定・ケースはそのまま",
-            "cue": "データも設定も"
+            "text": "データもケースもそのまま",
+            "cue": "データも設定も",
+            "sub": "ホームボタンも指紋も"
           }
         ],
         "images": [
@@ -127,7 +128,17 @@
             "credit": "iPhone 5S Home Button — randychiu / CC BY 2.0 / Wikimedia Commons（写真は iPhone 5s）",
             "cue": "ホームボタンも指紋も"
           }
-        ]
+        ],
+        "mode": "spot",
+        "tabs": {
+          "labels": [
+            "電池交換",
+            "14 Pro",
+            "15",
+            "17e"
+          ],
+          "current": 0
+        }
       }
     },
     {
@@ -165,7 +176,7 @@
       "title": "ホームボタンを残すなら、もう1つの手",
       "scene": {
         "type": "photo",
-        "heading": "ホームボタンを残すなら、もう1つの手",
+        "heading": "ホームボタンを残すなら",
         "src": "longform/assets/commons/iphone-se3-back-starlight-meidoriyo.jpg",
         "credit": "iPhone SE 3 Starlight back — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
         "points": [
@@ -191,7 +202,17 @@
             "credit": "iPhone 5S Home Button — randychiu / CC BY 2.0 / Wikimedia Commons（写真は iPhone 5s）",
             "cue": "気をつけるところもあるよ"
           }
-        ]
+        ],
+        "mode": "spot",
+        "tabs": {
+          "labels": [
+            "電池交換",
+            "14 Pro",
+            "15",
+            "17e"
+          ],
+          "current": 0
+        }
       }
     },
     {
@@ -234,7 +255,7 @@
       "title": "14 Pro：なめらかな画面と3倍の望遠",
       "scene": {
         "type": "photo",
-        "heading": "iPhone 14 Pro：なめらかな画面と3倍の望遠",
+        "heading": "14 Pro：画面とカメラ",
         "src": "longform/assets/commons/iphone8-and-14pro-back-alanlevine.jpg",
         "credit": "Back of iPhone 8 and iPhone 14 Pro — Alan Levine / CC0 / Wikimedia Commons",
         "points": [
@@ -250,11 +271,13 @@
           },
           {
             "text": "Dynamic Island",
-            "cue": "Dynamic Islandもあるよ"
+            "cue": "Dynamic Islandもあるよ",
+            "sub": "通知に合わせて形が変わる"
           },
           {
-            "text": "端子は Lightning・206g",
-            "cue": "気をつけるのは2つ"
+            "text": "Lightning・206g",
+            "cue": "気をつけるのは2つ",
+            "sub": "SE 3 より 60g 以上重い"
           }
         ],
         "images": [
@@ -268,14 +291,24 @@
             "credit": "iPhone 14 Pro — iGeeksBlog / CC BY-SA 4.0 / Wikimedia Commons",
             "cue": "Dynamic Islandもあるよ"
           }
-        ]
+        ],
+        "mode": "spot",
+        "tabs": {
+          "labels": [
+            "電池交換",
+            "14 Pro",
+            "15",
+            "17e"
+          ],
+          "current": 1
+        }
       }
     },
     {
       "title": "15：USB-Cと48MPのカメラ",
       "scene": {
         "type": "photo",
-        "heading": "iPhone 15：USB-C と 48MP のカメラ",
+        "heading": "15：USB-Cと軽さ",
         "src": "longform/assets/commons/iphone15-pd.jpg",
         "credit": "Apple iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons",
         "points": [
@@ -316,14 +349,24 @@
             "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
             "cue": "カメラは48MPのメイン"
           }
-        ]
+        ],
+        "mode": "spot",
+        "tabs": {
+          "labels": [
+            "電池交換",
+            "14 Pro",
+            "15",
+            "17e"
+          ],
+          "current": 2
+        }
       }
     },
     {
       "title": "17e：Apple IntelligenceとSIMの移し方",
       "scene": {
         "type": "photo",
-        "heading": "iPhone 17e：Apple Intelligence と SIM の移し方",
+        "heading": "17e：AIと電池",
         "src": "longform/assets/commons/iphone17e-back-chinofutaba.jpg",
         "credit": "iPhone 17e backside — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
         "points": [
@@ -338,11 +381,21 @@
             "cue": "電池も長くて"
           },
           {
-            "text": "SIMカードは使えない（eSIM だけ）",
-            "sub": "設定中に移せる（通信会社が対応していれば）",
+            "text": "eSIM だけ",
+            "sub": "SIMカードは使えない（設定中に移せる）",
             "cue": "SIMカードは使えなくて"
           }
-        ]
+        ],
+        "mode": "spot",
+        "tabs": {
+          "labels": [
+            "電池交換",
+            "14 Pro",
+            "15",
+            "17e"
+          ],
+          "current": 3
+        }
       }
     },
     {
