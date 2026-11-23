@@ -214,6 +214,7 @@ iPhone 15 の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iph
 全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
 
 （画像のクレジットは video.tsx が data.json の credit から足す）
+イラスト：いらすとや
 
 VOICEVOX:春日部つむぎ
 VOICEVOX:ずんだもん

@@ -92,13 +92,40 @@ async function measure(file: string, extra = ""): Promise<Record<string, string>
 
 // ───────── 区切り ─────────
 
-type Segment = { frame: number; t: number; key: string; flap: boolean };
+type Segment = { frame: number; t: number; key: string; flap: boolean; level: number };
 
 /**
  * 絵が変わる秒（章・台詞の始まりと終わり・字幕のページ・項目が出る秒）を集め、そこでの「映すもの」が前と同じなら1つにまとめる。
  * 秒はコマ（1/30 秒）に丸め、同じコマに2つ来たら後のほうを使う
  */
-function segments(tl: Timeline, art: CharaArt): { segs: Segment[]; totalFrames: number } {
+/**
+ * 声の大きさ（0〜3）を 0.1 秒ごとに（voice-draft/joined.wav・16bit。11/23〜: 口の開閉と立ち絵の揺れを声の波形に合わせる）。
+ * 段: -42 dBFS 未満 0・-32 未満 1・-24 未満 2・それ以上 3
+ */
+const LEVEL_STEP = 0.1;
+function voiceLevels(dir: string): number[] {
+  const f = join(dir, "voice-draft", "joined.wav");
+  if (!existsSync(f)) return [];
+  const b = readFileSync(f);
+  let off = 12, rate = 24000, ch = 1, dataAt = -1, dataLen = 0;
+  while (off + 8 <= b.length) {
+    const id = b.toString("ascii", off, off + 4), len = b.readUInt32LE(off + 4);
+    if (id === "fmt ") { ch = b.readUInt16LE(off + 10); rate = b.readUInt32LE(off + 12); }
+    if (id === "data") { dataAt = off + 8; dataLen = Math.min(len, b.length - off - 8); break; }
+    off += 8 + len + (len % 2);
+  }
+  if (dataAt < 0) return [];
+  const n = Math.floor(dataLen / 2 / ch), win = Math.round(rate * LEVEL_STEP), out: number[] = [];
+  for (let i = 0; i < n; i += win) {
+    let sum = 0, cnt = 0;
+    for (let k = i; k < Math.min(n, i + win); k++) { const v = b.readInt16LE(dataAt + k * 2 * ch) / 32768; sum += v * v; cnt++; }
+    const db = 10 * Math.log10(sum / Math.max(1, cnt) + 1e-12);
+    out.push(db < -42 ? 0 : db < -32 ? 1 : db < -24 ? 2 : 3);
+  }
+  return out;
+}
+
+function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: Segment[]; totalFrames: number } {
   const total = tl.total + tailOf(tl);
   const points = new Set<number>([0]);
   for (const ch of tl.chapters) {
@@ -113,6 +140,9 @@ function segments(tl: Timeline, art: CharaArt): { segs: Segment[]; totalFrames: 
   }
   // 揺れ（出来事の 2・4・6・8 コマ後）
   for (const e of animEvents(tl)) for (const j of ANIM_STEPS) points.add(e + j / FPS);
+  // 声の大きさ（話している間は 0.1 秒ごと）
+  if (levels.length) for (const ch of tl.chapters) for (const l of ch.lines) for (let t = l.start; t < l.end; t += LEVEL_STEP) points.add(Math.round(t * 1000) / 1000);
+  const levelAt = (t: number) => levels[Math.floor(t / LEVEL_STEP)] ?? 0;
   const segs: Segment[] = [];
   for (const t of [...points].filter((x) => x >= 0 && x < total).sort((a, b) => a - b)) {
     const st = stateAt(tl, t);
@@ -122,14 +152,16 @@ function segments(tl: Timeline, art: CharaArt): { segs: Segment[]; totalFrames: 
     const talkKey = who && art[who] ? st.talking : false;
     const anim = animAt(tl, t);
     const moving = anim.sub !== undefined || anim.spk !== undefined || Object.keys(anim.items).length > 0;
-    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), talkKey, anim]);
+    const level = levels.length && st.talking && who && art[who] ? levelAt(t) : 0;
+    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), talkKey, anim, level]);
     const frame = Math.round(t * FPS);
     const last = segs[segs.length - 1];
     if (last && last.frame === frame) segs.pop();
     const prev = segs[segs.length - 1];
     if (prev && prev.key === key) continue;
     // 揺れている短いコマは口を閉じた絵だけ（PNG を増やしすぎない）
-    segs.push({ frame, t, key, flap: flapBase && !moving });
+    // 声の波形があれば口は声の大きさで開ける（交互の開閉はしない）。揺れている短いコマは口を閉じた絵だけ
+    segs.push({ frame, t, key, flap: levels.length ? false : flapBase && !moving, level });
   }
   return { segs, totalFrames: Math.round(total * FPS) };
 }
@@ -143,7 +175,7 @@ async function renderFrames(tl: Timeline, segs: Segment[], art: CharaArt, work: 
   const jobs = segs.flatMap((s, i) => [{ s, i, open: false }, ...(s.flap ? [{ s, i, open: true }] : [])]);
   const t0 = now();
   for (const [n, j] of jobs.entries()) {
-    const res = new ImageResponse(frameAt(tl, j.s.t, { instant: true, art, mouthOpen: j.open }), { width: W, height: H, fonts });
+    const res = new ImageResponse(frameAt(tl, j.s.t, { instant: true, art, mouthOpen: j.open || j.s.level > 0, level: j.s.level }), { width: W, height: H, fonts });
     writeFileSync(join(work, segFile(j.i, j.open)), Buffer.from(await res.arrayBuffer()));
     if ((n + 1) % 25 === 0 || n + 1 === jobs.length) {
       const el = now() - t0;
@@ -276,7 +308,7 @@ function youtubeText(dir: string, tl: Timeline, artFiles: string[]): string {
   if (artFiles.some((f) => /tsumugi/.test(f))) credits.push("立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)");
   if (artFiles.some((f) => /zundamon/.test(f))) credits.push("ずんだもん立ち絵：坂本アヒル様");
   // 写真・公式のスクショの出典（data.json の photo の credit。同じものは1回）
-  for (const c of new Set(data.chapters.flatMap((ch) => (ch.scene.type === "photo" ? [ch.scene.credit, ...(ch.scene.images ?? []).map((i) => i.credit)] : [])))) credits.push(`画像：${c}`);
+  for (const c of new Set(data.chapters.flatMap((ch) => (ch.scene.type === "photo" ? [ch.scene.credit, ...(ch.scene.images ?? []).map((i) => i.credit)].filter(Boolean) : [])))) credits.push(`画像：${c}`);
   // script.md に概要欄の下書き（チャプターの置き場所つき）があれば、それを本文にする。クレジットはここで作る
   const draft = md.match(/^## 概要欄（下書き）\s*\n```\s*\n([\s\S]*?)\n```/m)?.[1];
   if (draft?.includes(CHAPTERS_PLACEHOLDER)) {
@@ -458,7 +490,7 @@ async function check(dir: string, tl: Timeline) {
   const bad = tl.chapters.flatMap((c) => c.lines).filter((l) => l.stale || l.estimated);
   if (bad.length) throw new Error(`古い声・見積もりの行が ${bad.length} 行あります。voice-draft.ts → timeline.ts をやり直してください`);
 
-  const { segs, totalFrames } = segments(tl, art);
+  const { segs, totalFrames } = segments(tl, art, voiceLevels(dir));
   const pngs = segs.length + segs.filter((s) => s.flap).length;
   const who = (Object.keys(art) as Who[]).map((w) => `${w}${art[w]?.talk ? "（口あり）" : ""}`).join("・") || "なし（名前の札）";
   const es = endScreenWindow(tl);

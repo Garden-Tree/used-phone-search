@@ -24,8 +24,8 @@
       "scene": {
         "type": "photo",
         "heading": "今日の4つの道",
-        "src": "longform/assets/ai/charging-night.png",
-        "credit": "AI で生成した画像（RealVisXL）",
+        "src": "longform/assets/irasutoya/battery-low.png",
+        "credit": "",
         "points": [
           {
             "text": "電池交換",
@@ -98,8 +98,8 @@
       "scene": {
         "type": "photo",
         "heading": "電池交換で戻るもの",
-        "src": "longform/assets/ai/charging-night.png",
-        "credit": "AI で生成した画像（RealVisXL）",
+        "src": "longform/assets/irasutoya/charging.png",
+        "credit": "",
         "points": [
           {
             "text": "最大容量が新品の値に",
@@ -128,17 +128,7 @@
             "credit": "iPhone 5S Home Button — randychiu / CC BY 2.0 / Wikimedia Commons（写真は iPhone 5s）",
             "cue": "ホームボタンも指紋も"
           }
-        ],
-        "mode": "spot",
-        "tabs": {
-          "labels": [
-            "電池交換",
-            "14 Pro",
-            "15",
-            "17e"
-          ],
-          "current": 0
-        }
+        ]
       }
     },
     {
@@ -198,21 +188,16 @@
         ],
         "images": [
           {
+            "src": "longform/assets/irasutoya/touch-id-fingerprint.png",
+            "credit": "",
+            "cue": "違いは、本体ごと"
+          },
+          {
             "src": "longform/assets/commons/touchid-homebutton-iphone5s-randychiu.jpg",
             "credit": "iPhone 5S Home Button — randychiu / CC BY 2.0 / Wikimedia Commons（写真は iPhone 5s）",
             "cue": "気をつけるところもあるよ"
           }
-        ],
-        "mode": "spot",
-        "tabs": {
-          "labels": [
-            "電池交換",
-            "14 Pro",
-            "15",
-            "17e"
-          ],
-          "current": 0
-        }
+        ]
       }
     },
     {
@@ -282,8 +267,8 @@
         ],
         "images": [
           {
-            "src": "longform/assets/ai/city-photo.png",
-            "credit": "AI で生成した画像（RealVisXL）",
+            "src": "longform/assets/irasutoya/photo-taking.png",
+            "credit": "",
             "cue": "カメラは3つ"
           },
           {
@@ -291,17 +276,7 @@
             "credit": "iPhone 14 Pro — iGeeksBlog / CC BY-SA 4.0 / Wikimedia Commons",
             "cue": "Dynamic Islandもあるよ"
           }
-        ],
-        "mode": "spot",
-        "tabs": {
-          "labels": [
-            "電池交換",
-            "14 Pro",
-            "15",
-            "17e"
-          ],
-          "current": 1
-        }
+        ]
       }
     },
     {
@@ -335,8 +310,8 @@
         ],
         "images": [
           {
-            "src": "longform/assets/ai/cables.png",
-            "credit": "AI で生成した画像（RealVisXL）",
+            "src": "longform/assets/commons/lightning-usbc-cable-kyu3a.jpg",
+            "credit": "Lightning USB type C cable — Kyu3a / CC BY-SA 4.0 / Wikimedia Commons",
             "cue": "MacやiPad"
           },
           {
@@ -349,17 +324,7 @@
             "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
             "cue": "カメラは48MPのメイン"
           }
-        ],
-        "mode": "spot",
-        "tabs": {
-          "labels": [
-            "電池交換",
-            "14 Pro",
-            "15",
-            "17e"
-          ],
-          "current": 2
-        }
+        ]
       }
     },
     {
@@ -385,17 +350,7 @@
             "sub": "SIMカードは使えない（設定中に移せる）",
             "cue": "SIMカードは使えなくて"
           }
-        ],
-        "mode": "spot",
-        "tabs": {
-          "labels": [
-            "電池交換",
-            "14 Pro",
-            "15",
-            "17e"
-          ],
-          "current": 3
-        }
+        ]
       }
     },
     {

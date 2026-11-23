@@ -270,6 +270,8 @@ export const ANIM_STEPS = [2, 4, 6, 8];
 const SHAKE_X = [12, 12, -8, -8, 4, 4, -2, -2];
 const SUB_X = [8, 8, -6, -6, 3, 3, -1, -1];
 const SPK_Y = [-16, -16, -8, -8, -3, -3, 0, 0];
+/** 声の大きさ1段あたりに立ち絵を上げる px（11/23・声の波形で揺らす） */
+const LEVEL_Y = 5;
 const bump = (scene: object, key: string): CSSProperties => {
   const s = scene as { pulse?: Record<string, number> };
   const k = s.pulse?.[key];
@@ -582,61 +584,6 @@ function loadImage(path: string) {
   return img;
 }
 
-/** 道しるべのタブ（今日の4つの道など）。いまの道だけ塗る */
-function Tabs({ tabs }: { tabs: { labels: string[]; current: number } }) {
-  return (
-    <div style={{ ...row, gap: 12 }}>
-      {tabs.labels.map((l, i) => (
-        <div key={i} style={{ display: "flex", padding: "6px 20px", borderRadius: 999, fontSize: MIN_FONT, fontWeight: 900,
-          background: i === tabs.current ? C.red : C.white, color: i === tabs.current ? C.white : C.sub, border: `3px solid ${i === tabs.current ? C.red : C.line}` }}>{l}</div>
-      ))}
-    </div>
-  );
-}
-
-/**
- * 1画面に1つ（spot・11/23 試作）: いま話している行（最後に出た行）だけを左に大きく、画像は右に広く。
- * 見出しは小さな札にして、言葉と画像の2つだけが目に入るようにする
- */
-function PhotoSpot({ s, t, reveal, img, credit, cur }: { s: PhotoScene; t: number; reveal: Record<string, number>; img: { src: string; w: number; h: number }; credit: string; cur: number }) {
-  const points = s.points ?? [];
-  let pi = -1;
-  points.forEach((_, i) => { if (shown(reveal, `item:${i}`, t) > 0) pi = i; });
-  const pt = pi >= 0 ? points[pi] : null;
-  const H_ALL = CARD.h - CARD.pad * 2;
-  const textW = Math.round(INNER_W * 0.42);
-  // 大きい行は2行まで（幅×2 に収まる大きさ。折り返しの余裕で 1.15 倍みておく）
-  const bigFont = pt ? Math.max(MIN_FONT, Math.min(cap(96), Math.floor((textW * 2) / (textEm(pt.text) * 1.15)))) : cap(96);
-  const boxW = INNER_W - textW - cap(32);
-  const boxH = H_ALL - Math.ceil(MIN_FOOT * 1.45) - 12;
-  const k = Math.min(boxW / img.w, boxH / img.h);
-  const w = Math.round(img.w * k), h = Math.round(img.h * k);
-  return (
-    <div style={{ ...row, width: INNER_W, height: H_ALL, alignItems: "stretch" }}>
-      <div style={{ ...col, width: textW, justifyContent: "space-between" }}>
-        <div style={{ ...col, gap: 18 }}>
-          {s.tabs ? <Tabs tabs={s.tabs} /> : null}
-          <div style={{ display: "flex", fontSize: fit(s.heading, textW, cap(40), MIN_FONT, "見出し"), fontWeight: 900, color: C.sub }}>{s.heading}</div>
-        </div>
-        <div style={{ ...col, ...(pi >= 0 ? bump(s, `item:${pi}`) : {}) }}>
-          {pt ? <div style={{ display: "flex", flexWrap: "wrap", width: textW, fontSize: bigFont, lineHeight: 1.15, fontWeight: 900, color: C.ink }}>{pt.text}</div> : null}
-          {pt?.sub ? <div style={{ display: "flex", flexWrap: "wrap", width: textW, marginTop: 20, fontSize: cap(44), lineHeight: 1.3, fontWeight: 700, color: C.red }}>{pt.sub}</div> : null}
-        </div>
-        <div style={{ ...row, gap: 10 }}>
-          {points.map((_, i) => <div key={i} style={{ display: "flex", width: 44, height: 10, borderRadius: 5, background: i <= pi ? C.red : C.line }} />)}
-        </div>
-      </div>
-      <div style={{ ...col, width: boxW, marginLeft: cap(32), alignItems: "center", justifyContent: "center" }}>
-        <div style={{ display: "flex", width: boxW, height: boxH, alignItems: "center", justifyContent: "center", ...(cur > 0 ? bump(s, `img:${cur - 1}`) : {}) }}>
-          {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-          <img src={img.src} width={w} height={h} style={{ width: w, height: h, borderRadius: 16 }} />
-        </div>
-        <div style={{ display: "flex", marginTop: 12, fontSize: MIN_FOOT, fontWeight: 500, color: C.sub }}>{credit}</div>
-      </div>
-    </div>
-  );
-}
-
 /** 写真・公式のスクショ。points があれば左に画像・右に1つずつ出す行、なければ画像だけを大きく。画像の下に出典 */
 function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<string, number> }) {
   // images があれば、cue を過ぎたもののうち最後の1枚に差し替える（パラパラ。11/23〜）
@@ -646,7 +593,6 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
   const img = loadImage(slides[cur].src);
   const credit = slides[cur].credit;
   const points = s.points ?? [];
-  if (s.mode === "spot") return <PhotoSpot s={s} t={t} reveal={reveal} img={img} credit={credit} cur={cur} />;
   const GAP = cap(40);
   const boxW = points.length ? Math.round(INNER_W * 0.5) : INNER_W;
   const creditFont = MIN_FOOT;
@@ -664,7 +610,7 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
             {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
             <img src={img.src} width={w} height={h} style={{ width: w, height: h, borderRadius: 12 }} />
           </div>
-          <div style={{ display: "flex", marginTop: 12, width: boxW, justifyContent: "center", fontSize: creditFont, fontWeight: 500, color: C.sub }}>{credit}</div>
+          {credit ? <div style={{ display: "flex", marginTop: 12, width: boxW, justifyContent: "center", fontSize: creditFont, fontWeight: 500, color: C.sub }}>{credit}</div> : null}
         </div>
         {points.length ? (
           <div style={{ ...col, width: textW, marginLeft: GAP }}>
@@ -789,12 +735,16 @@ function SpeakerSlot({ who, x, active, art, mouthOpen, plate, dy = 0 }: { who: W
     const w = Math.round((img.w * h) / img.h);
     const left = x === SLOT.left ? A.left : A.right;
     const top = A.bust ? Math.round(A.h * (active ? 0 : 0.06)) : A.h - h;
+    // 名前の札は立ち絵の上に出す（絵に重ねない。11/23 ユーザー）
+    const plateTop = A.y - Math.ceil(L.plate.font * 1.45) - 28 - 8;
     return (
-      <div style={{ ...col, position: "absolute", left, top: A.y + dy, width: A.w, height: A.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden", borderRadius: A.bust ? 20 : 0 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-        <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((A.w - w) / 2), top, width: w, height: h, opacity: active ? 1 : 0.5 }} />
-        {plate ? <NamePlate who={who} active={active} /> : null}
-      </div>
+      <>
+        <div style={{ ...col, position: "absolute", left, top: A.y + dy, width: A.w, height: A.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden", borderRadius: A.bust ? 20 : 0 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+          <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((A.w - w) / 2), top, width: w, height: h, opacity: active ? 1 : 0.5 }} />
+        </div>
+        {plate ? <NamePlate who={who} active={active} style={{ position: "absolute", left: left + Math.round((A.w - L.plate.w) / 2), top: plateTop, marginBottom: 0 }} /> : null}
+      </>
     );
   }
   return (
@@ -863,6 +813,8 @@ export type FrameOpts = {
   art?: CharaArt;
   /** 話している人の口を開いた絵にする（立ち絵に *-talk.png があるとき） */
   mouthOpen?: boolean;
+  /** 声の大きさ（0〜3。video.tsx が声の波形から入れる）。話している人を上に弾ませる */
+  level?: number;
 };
 
 /** 項目が出たか（instant のとき）。reveal は四捨五入してあるので 2ms の余裕を見る */
@@ -906,7 +858,7 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
   const anim = animAt(tl, t);
   const base = shownSet ? { ...ch, scene: { ...ch.scene, reveal: Object.fromEntries(Object.keys(ch.scene.reveal).map((k) => [k, shownSet.has(k) ? -1000 : 1000])) } } : ch;
   const scene = { ...base, scene: { ...base.scene, pulse: anim.items } };
-  const spkDy = anim.spk === undefined ? 0 : SPK_Y[anim.spk];
+  const spkDy = (anim.spk === undefined ? 0 : SPK_Y[anim.spk]) - (opts.level ?? 0) * LEVEL_Y;
   return (
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
       <ChapterBar ch={ch} count={tl.chapters.length} />

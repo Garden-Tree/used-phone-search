@@ -1,0 +1,477 @@
+{
+  "date": "2026-11-23",
+  "shops": 18,
+  "source": "script.md の数字（data-query.log・集計 2026/11/23 11:18 JST・18店）。公開の前日に取り直す",
+  "thumbnail": {
+    "lines": [
+      "iPhone SE 3",
+      "まだ使う？"
+    ],
+    "badge": [
+      {
+        "text": "電池交換"
+      },
+      {
+        "text": "1.2万円",
+        "red": true
+      }
+    ],
+    "footer": "電池交換か、14 Pro・15・17eに替えるか【2026年11月】"
+  },
+  "chapters": [
+    {
+      "title": "結論：電池だけなら交換。替えるなら14 Pro・15・17e",
+      "scene": {
+        "type": "photo",
+        "heading": "今日の4つの道",
+        "src": "longform/assets/ai/charging-night.png",
+        "credit": "",
+        "points": [
+          {
+            "text": "電池交換",
+            "sub": "ホームボタンを残す",
+            "cue": "4つの道を比べるね"
+          },
+          {
+            "text": "14 Pro",
+            "sub": "なめらかな画面・望遠",
+            "cue": "4つの道を比べるね"
+          },
+          {
+            "text": "15",
+            "sub": "USB-C・軽さ",
+            "cue": "4つの道を比べるね"
+          },
+          {
+            "text": "17e",
+            "sub": "AI・電池の長さ",
+            "cue": "4つの道を比べるね"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone-se3-front-red-toad40.jpg",
+            "credit": "iPhone SE 3rd Gen — Toad40 / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "結論から"
+          }
+        ]
+      }
+    },
+    {
+      "title": "SE 3は今年のiOS 27に対応。新しいiOSはいつまで来る？",
+      "scene": {
+        "type": "bars",
+        "heading": "新しい iOS が来た年数（これまでの記録）",
+        "unit": "年",
+        "rows": [
+          {
+            "label": "6s",
+            "sub": "2015年→iOS 15",
+            "median": 6,
+            "cue": "6sは6年"
+          },
+          {
+            "label": "8・X",
+            "sub": "2017年→iOS 16",
+            "median": 5,
+            "cue": "6sは6年"
+          },
+          {
+            "label": "XS・XR",
+            "sub": "2018年→iOS 18",
+            "median": 6,
+            "cue": "6sは6年"
+          },
+          {
+            "label": "11",
+            "sub": "2019年→iOS 27も",
+            "median": 7,
+            "pick": true,
+            "cue": "2019年の11は",
+            "pickLabel": "7年目"
+          }
+        ]
+      }
+    },
+    {
+      "title": "電池交換1万2,000円で戻るもの",
+      "scene": {
+        "type": "photo",
+        "heading": "電池交換で戻るもの",
+        "src": "longform/assets/ai/charging-night.png",
+        "credit": "",
+        "points": [
+          {
+            "text": "最大容量が新品の値に",
+            "sub": "設定 → バッテリー",
+            "cue": "設定のバッテリーの状態で"
+          },
+          {
+            "text": "ビデオ再生 最大15時間",
+            "sub": "SE 3（Apple の技術仕様）",
+            "cue": "SE 3のビデオ再生は最大15時間"
+          },
+          {
+            "text": "データもケースもそのまま",
+            "cue": "データも設定も",
+            "sub": "ホームボタンも指紋も"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone-se3-back-starlight-meidoriyo.jpg",
+            "credit": "iPhone SE 3 Starlight back — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "本体はそのまま"
+          },
+          {
+            "src": "longform/assets/commons/touchid-homebutton-iphone5s-randychiu.jpg",
+            "credit": "iPhone 5S Home Button — randychiu / CC BY 2.0 / Wikimedia Commons（写真は iPhone 5s）",
+            "cue": "ホームボタンも指紋も"
+          }
+        ]
+      }
+    },
+    {
+      "title": "SE 3を売るといくら？",
+      "scene": {
+        "type": "bars",
+        "heading": "SE 3 を売ると（良品）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "64GB",
+            "median": 18000,
+            "cue": "64GBで傷の少ない良品なら"
+          },
+          {
+            "label": "128GB",
+            "median": 20000,
+            "cue": "容量が大きいほど"
+          },
+          {
+            "label": "256GB",
+            "median": 28000,
+            "cue": "容量が大きいほど"
+          },
+          {
+            "label": "画面割れ",
+            "sub": "64GB",
+            "median": 5400,
+            "cue": "グラフのとおり"
+          }
+        ]
+      }
+    },
+    {
+      "title": "ホームボタンを残すなら、もう1つの手",
+      "scene": {
+        "type": "photo",
+        "heading": "ホームボタンを残すなら",
+        "src": "longform/assets/commons/iphone-se3-back-starlight-meidoriyo.jpg",
+        "credit": "iPhone SE 3 Starlight back — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
+        "points": [
+          {
+            "text": "電池90%以上の SE 3",
+            "sub": "真ん中の値段 30,473円（64GB）",
+            "cue": "中古のSE 3で、電池が90%以上"
+          },
+          {
+            "text": "売って買い替え +12,473円",
+            "sub": "Apple の電池交換は 12,000円",
+            "cue": "良品のSE 3を売って足すと"
+          },
+          {
+            "text": "本体ごと新しい個体に",
+            "sub": "電池は100%ではない・傷は1台ずつ",
+            "cue": "違いは、本体ごと"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/touchid-homebutton-iphone5s-randychiu.jpg",
+            "credit": "iPhone 5S Home Button — randychiu / CC BY 2.0 / Wikimedia Commons（写真は iPhone 5s）",
+            "cue": "気をつけるところもあるよ"
+          }
+        ]
+      }
+    },
+    {
+      "title": "どれに替えても変わること",
+      "scene": {
+        "type": "bars",
+        "heading": "重さ（Apple の技術仕様）",
+        "unit": "g",
+        "rows": [
+          {
+            "label": "SE 3",
+            "sub": "4.7インチ・Touch ID",
+            "median": 144,
+            "cue": "まず、14 Pro、15、17e"
+          },
+          {
+            "label": "17e",
+            "sub": "6.1インチ・Face ID",
+            "median": 169,
+            "cue": "3つ目、重くなる"
+          },
+          {
+            "label": "15",
+            "sub": "6.1インチ・Face ID",
+            "median": 171,
+            "cue": "3つ目、重くなる"
+          },
+          {
+            "label": "14 Pro",
+            "sub": "6.1インチ・Face ID",
+            "median": 206,
+            "pick": true,
+            "cue": "14 Proだけ、棒が長い",
+            "pickLabel": "重い"
+          }
+        ]
+      }
+    },
+    {
+      "title": "14 Pro：なめらかな画面と3倍の望遠",
+      "scene": {
+        "type": "photo",
+        "heading": "14 Pro：画面とカメラ",
+        "src": "longform/assets/commons/iphone8-and-14pro-back-alanlevine.jpg",
+        "credit": "Back of iPhone 8 and iPhone 14 Pro — Alan Levine / CC0 / Wikimedia Commons",
+        "points": [
+          {
+            "text": "最大120Hz・常時表示",
+            "sub": "ProMotion",
+            "cue": "最大120Hzのなめらかな画面"
+          },
+          {
+            "text": "3倍の望遠・マクロ撮影",
+            "sub": "カメラは3つ",
+            "cue": "カメラは3つ"
+          },
+          {
+            "text": "Dynamic Island",
+            "cue": "Dynamic Islandもあるよ",
+            "sub": "通知に合わせて形が変わる"
+          },
+          {
+            "text": "Lightning・206g",
+            "cue": "気をつけるのは2つ",
+            "sub": "SE 3 より 60g 以上重い"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/ai/city-photo.png",
+            "credit": "",
+            "cue": "カメラは3つ"
+          },
+          {
+            "src": "longform/assets/commons/iphone14pro-screen-purple-igeeksblog.jpg",
+            "credit": "iPhone 14 Pro — iGeeksBlog / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "Dynamic Islandもあるよ"
+          }
+        ]
+      }
+    },
+    {
+      "title": "15：USB-Cと48MPのカメラ",
+      "scene": {
+        "type": "photo",
+        "heading": "15：USB-Cと軽さ",
+        "src": "longform/assets/commons/iphone15-pd.jpg",
+        "credit": "Apple iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons",
+        "points": [
+          {
+            "text": "USB-C",
+            "sub": "充電ケーブルを1本に",
+            "cue": "端子がUSB-Cになる"
+          },
+          {
+            "text": "48MP のメイン＋超広角",
+            "sub": "2倍の光学ズームイン",
+            "cue": "カメラは48MPのメインと超広角"
+          },
+          {
+            "text": "Dynamic Island",
+            "sub": "タイマーや音楽が画面の上に",
+            "cue": "14 Proと同じDynamic Island"
+          },
+          {
+            "text": "171g・SIMもそのまま",
+            "sub": "nano-SIM＋eSIM",
+            "cue": "171グラム"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/ai/cables.png",
+            "credit": "",
+            "cue": "MacやiPad"
+          },
+          {
+            "src": "longform/assets/commons/iphone15-usbc-port-kyu3.jpg",
+            "credit": "USB-C port of iPhone 15 — Kyu3 / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "旅行の荷物"
+          },
+          {
+            "src": "longform/assets/commons/iphone15-back-blue-meidoriyo.jpg",
+            "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "カメラは48MPのメイン"
+          }
+        ]
+      }
+    },
+    {
+      "title": "17e：Apple IntelligenceとSIMの移し方",
+      "scene": {
+        "type": "photo",
+        "heading": "17e：AIと電池",
+        "src": "longform/assets/commons/iphone17e-back-chinofutaba.jpg",
+        "credit": "iPhone 17e backside — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+        "points": [
+          {
+            "text": "A19・Apple Intelligence",
+            "sub": "アクションボタンに好きな機能",
+            "cue": "チップはA19"
+          },
+          {
+            "text": "ビデオ再生 最大26時間",
+            "sub": "SE 3 は15時間",
+            "cue": "電池も長くて"
+          },
+          {
+            "text": "eSIM だけ",
+            "sub": "SIMカードは使えない（設定中に移せる）",
+            "cue": "SIMカードは使えなくて"
+          }
+        ]
+      }
+    },
+    {
+      "title": "もう少し出せるなら17",
+      "scene": {
+        "type": "bars",
+        "heading": "ビデオ再生の最大時間（Apple の技術仕様）",
+        "unit": "時間",
+        "rows": [
+          {
+            "label": "SE 3",
+            "median": 15,
+            "cue": "もう少し出せるなら"
+          },
+          {
+            "label": "15",
+            "median": 20,
+            "cue": "グラフは"
+          },
+          {
+            "label": "14 Pro",
+            "median": 23,
+            "cue": "グラフは"
+          },
+          {
+            "label": "17e",
+            "median": 26,
+            "cue": "グラフは"
+          },
+          {
+            "label": "17",
+            "median": 30,
+            "pick": true,
+            "cue": "17の棒が",
+            "pickLabel": "最長"
+          }
+        ]
+      }
+    },
+    {
+      "title": "決め方",
+      "scene": {
+        "type": "checklist",
+        "heading": "不満で選ぶ",
+        "items": [
+          {
+            "text": "電池だけ → 電池交換",
+            "sub": "ホームボタンも残せる",
+            "cue": "電池だけなら、交換"
+          },
+          {
+            "text": "画面のなめらかさ・カメラ → 14 Pro",
+            "sub": "120Hz・3倍の望遠",
+            "cue": "画面のなめらかさとカメラなら"
+          },
+          {
+            "text": "USB-C・軽さ → 15",
+            "sub": "171g・SIMカードもそのまま",
+            "cue": "画面のなめらかさとカメラなら"
+          },
+          {
+            "text": "AI・電池の長さ → 17e",
+            "sub": "ビデオ再生 最大26時間",
+            "cue": "AIを使ってみたい"
+          }
+        ]
+      }
+    },
+    {
+      "title": "まとめ",
+      "scene": {
+        "type": "bars",
+        "heading": "足すお金（SE 3 を良品で売った場合）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "電池交換",
+            "sub": "ホームボタンのまま",
+            "median": 12000,
+            "cue": "まとめるね"
+          },
+          {
+            "label": "中古の14 Pro",
+            "sub": "120Hz・望遠",
+            "median": 64280,
+            "cue": "替えるなら、画面とカメラは"
+          },
+          {
+            "label": "中古の15",
+            "sub": "USB-C・軽さ",
+            "median": 73700,
+            "pick": true,
+            "cue": "15にするのだ",
+            "pickLabel": "決めた"
+          },
+          {
+            "label": "新品の17e",
+            "sub": "AI・電池",
+            "median": 106800,
+            "cue": "替えるなら、画面とカメラは"
+          },
+          {
+            "label": "中古の17",
+            "sub": "全部入り",
+            "median": 131980,
+            "cue": "電池を重視するなら"
+          }
+        ]
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          {
+            "id": "vzlNKTznOTY",
+            "title": "iPhone 13、まだ使う？電池交換は1万5,600円｜売って中古の15なら+5万9,100円"
+          },
+          {
+            "id": "T7ltgSB-4XM",
+            "title": "中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決める"
+          }
+        ]
+      }
+    }
+  ]
+}
