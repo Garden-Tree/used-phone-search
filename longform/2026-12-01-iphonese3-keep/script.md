@@ -213,10 +213,8 @@ iPhone SE（第3世代）の買取価格: https://used.gadelog.com/iphone/iphone
 iPhone 15 の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-15?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
 全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261201
 
-（画像のクレジットは video.tsx が data.json の credit から足す）
 イラスト：いらすとや
 動画素材：みりんの動画素材 https://miirriin.com/
-効果音：効果音ラボ
 
 VOICEVOX:春日部つむぎ
 VOICEVOX:ずんだもん
