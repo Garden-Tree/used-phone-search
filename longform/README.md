@@ -124,7 +124,8 @@ npx tsx longform/video.tsx      <dir> check         # 長さ・音量・同期3�
 ## 書き出しの速さ
 
 - video.tsx は絵が変わるところ（章・台詞・字幕のページ・項目が出る秒）だけ PNG にし、ffmpeg の concat で 30fps の H.264 にする
-- PNG は22本並べて作り（`LONGFORM_JOBS`）、絵の指紋が同じ PNG は前の書き出しのものを使い回す（直しが1か所なら数十秒）。ffmpeg は16スレッド（`LONGFORM_FF_THREADS`）。GPU（`LONGFORM_GPU=1`）は CPU より遅かった
+- PNG は22本並べて作り（`LONGFORM_JOBS`）、絵の指紋が同じ PNG は前の書き出しのものを使い回す（直しが1か所なら数十秒）。ffmpeg は論理コア数−2 スレッド（`LONGFORM_FF_THREADS`）・preset superfast（11/24〜）。GPU（`LONGFORM_GPU=1`）は CPU より遅かった
+- 動く所はすべて毎コマ（30fps）で描く。**15Hz にしない**（11/24 ユーザー。`LONGFORM_MOTION_HZ` は試し用）
 - 見せるときは 720p の確認用（30MB 超はスマホに届かない）
 
 ## 音

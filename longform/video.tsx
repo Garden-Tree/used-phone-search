@@ -162,8 +162,9 @@ function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: S
   // 横棒が伸びる間
   for (const t of growPoints(tl)) points.add(Math.round(t * 1000) / 1000);
   // 声の大きさ（話している間は 0.1 秒ごと）
-  // 話している間は毎コマ（字幕の縁・立ち絵を 30fps で動かす。11/23）
-  if (levels.length) for (const ch of tl.chapters) for (const l of ch.lines) for (let f = Math.ceil(l.start * FPS); f / FPS < l.end; f++) points.add(f / FPS);
+  // 話している間の字幕の縁・立ち絵の揺れは MOTION_HZ（既定 30＝毎コマ。11/24 に 15 を試したがユーザーが 30 に戻した）で描く。
+  // 項目が出る・揺れる・棒が伸びる動き（上の点）は今までどおり毎コマ
+  if (levels.length) for (const ch of tl.chapters) for (const l of ch.lines) for (let f = Math.ceil(l.start * FPS / MOTION_STEP) * MOTION_STEP; f / FPS < l.end; f += MOTION_STEP) points.add(f / FPS);
   const levelAt = (t: number) => {
     const x = t / LEVEL_STEP, i = Math.floor(x), a = levels[i] ?? 0, b = levels[i + 1] ?? a;
     return Math.round((a + (b - a) * (x - i)) * 10) / 10;
@@ -202,7 +203,9 @@ const segFile = (i: number, open = false) => `${SEGS[i].file}${open ? "-open" : 
  * PNG を並べて作る数（11/23 ユーザー「CPU をガンガン使っていい・24スレッド」）。既定は論理コア数 − 2。LONGFORM_JOBS で変える（1 で今までどおり1本）
  */
 /** ffmpeg のスレッド数（11/23〜 ユーザー「CPU をガンガン使っていい」。既定 16・LONGFORM_FF_THREADS で変える） */
-const FF_THREADS = String(Number(process.env.LONGFORM_FF_THREADS ?? 16));
+const FF_THREADS = String(Number(process.env.LONGFORM_FF_THREADS ?? Math.max(1, os.cpus().length - 2)));
+/** 話している間の動き（字幕の縁・立ち絵）を何 Hz で描くか（既定 30＝毎コマ。11/24 ユーザー「15Hz にしないで」。LONGFORM_MOTION_HZ で変える） */
+const MOTION_STEP = Math.max(1, Math.round(FPS / Number(process.env.LONGFORM_MOTION_HZ ?? 30)));
 const JOBS = Math.max(1, Number(process.env.LONGFORM_JOBS ?? Math.max(1, os.cpus().length - 2)));
 
 /** 子のプロセスを JOBS 本立てて、PNG を k 番目ずつ分けて作る（子は frames-part k n で呼ばれる） */
@@ -557,7 +560,7 @@ async function check(dir: string, tl: Timeline) {
 
 (async () => {
   const [dir, mode = "all"] = process.argv.slice(2);
-  const preset = process.argv.includes("--preset") ? process.argv[process.argv.indexOf("--preset") + 1] : "veryfast";
+  const preset = process.argv.includes("--preset") ? process.argv[process.argv.indexOf("--preset") + 1] : "superfast";
   if (!dir) throw new Error("使い方: npx tsx longform/video.tsx <台本のフォルダ> [all | plan | frames | encode | audio | mux | meta | check] [--preset veryfast]");
   const tlFile = join(dir, "timeline.json");
   if (!existsSync(tlFile)) throw new Error(`${tlFile} がありません（先に timeline.ts）`);
