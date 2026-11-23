@@ -281,3 +281,4 @@
 - 11/23 古い docs を削除（cloudflare-pages.md・tech_stack.md・youtube-shorts.md）。撤退の記録は docs/retired.md、Cloudflare の動きと構成の概要は docs/operations.md、VOICEVOX の規約は docs/voicevox-terms.md に移した。Vercel のプロジェクトは削除（ユーザー）
 - 11/23 チャンネルの説明文: 「値下がりランキングや予算別のおすすめをショートに」→「まだ使う？・今買い？・どれを買う？を公式の仕様と毎日の相場で比べる」。店数 17→18
 - 11/23 整理: ショートのスキル 79→19KB・shorts/README を続ける（40KB）とやめた（README-retired.md）に分割。古い docs（cloudflare-pages・tech_stack・youtube-shorts）を消し、撤退の経緯を docs/retired.md、VOICEVOX の規約を docs/voicevox-terms.md に。vercel.json・vercel-ignore.sh を削除
+- 11/23 検索欄に候補（機種ページのある機種・ひらがな/カタカナ可・選ぶと機種ページへ）。機種ページの「最安値の推移（30日）」にもマウスオーバー・タップで日付・最安・中央値・在庫を出す。旧 Vercel プロジェクトはユーザーが削除

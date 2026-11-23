@@ -8,7 +8,7 @@
 ### Vercel でのホスティング
 - 期間: 開設〜2026/10/6（DNS を Cloudflare Pages に切り替え）。旧プロジェクトは 11/23 にユーザーが削除
 - やめた理由: Hobby は商用不可・ISR のたびに Neon の計算時間がかかる
-- 今: 静的書き出し＋Cloudflare Pages（`docs/operations.md`）。`vercel.json`・`scripts/vercel-ignore.sh` は 11/23 に消した。プロジェクトはユーザーが削除する
+- 今: 静的書き出し＋Cloudflare Pages（`docs/operations.md`）。`vercel.json`・`scripts/vercel-ignore.sh` は 11/23 に消した。プロジェクトも 11/23 にユーザーが削除した
 - 記録: ideas/2026-10-03.md・10-04.md・10-06.md、消した手順書 `docs/cloudflare-pages.md`（切り替え手順・Vercel への戻し方。11/23 削除）
 
 ### シンレンタルサーバーへの静的配置（static-export ブランチ）

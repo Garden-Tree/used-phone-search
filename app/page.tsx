@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Search } from "lucide-react";
 import { ALL_DEVICE_PAGE_MODELS, IPHONE_CATALOG, modelPagePath, slugToModel } from "@/lib/catalog";
 import { IPAD_MODELS } from "@/lib/ipadCatalog";
 import { PIXEL_MODELS } from "@/lib/pixelCatalog";
@@ -26,6 +25,7 @@ import SiteFooter from "@/app/components/SiteFooter";
 import PopularModels from "@/app/components/PopularModels";
 import CompareCards from "@/app/components/CompareCards";
 import BudgetPicker, { type BudgetOption } from "@/app/components/BudgetPicker";
+import SearchSuggest from "@/app/components/SearchSuggest";
 import { getModelMarket, getPriceDrops, shortDate, type ModelMarket } from "@/lib/marketStats";
 import { rethrowDuringBuild } from "@/lib/buildGuard";
 import { BUILD_TIME } from "@/lib/buildTime";
@@ -228,20 +228,7 @@ export default async function Home() {
               <span className="text-[10px] text-ink-sub">毎日更新</span>
             </div>
           </div>
-          <form action="/search" method="GET" className="flex gap-2 w-full">
-            <label htmlFor="q" className="sr-only">機種名</label>
-            <input
-              id="q"
-              type="search"
-              name="model"
-              placeholder="機種名（例: iPhone 15 Pro）"
-              className="flex-1 min-w-0 h-12 border-[1.5px] border-[#C7CBD4] rounded-xl px-3.5 text-base bg-white text-ink outline-none focus:border-brand-600"
-            />
-            <button type="submit" className="h-12 px-[18px] rounded-xl bg-brand-600 hover:bg-brand-800 text-white text-[15px] font-bold inline-flex items-center gap-1.5">
-              <Search className="w-4 h-4" aria-hidden="true" />
-              検索
-            </button>
-          </form>
+          <SearchSuggest items={ALL_DEVICE_PAGE_MODELS.map((m) => [m, modelPagePath(m), prices.get(m)?.count ?? 0])} />
           <p className="md:hidden text-[11px] text-ink-mute">
             更新 {BUILD_TIME} ・ <span className="border border-[#C7CBD4] rounded px-1">PR</span> アフィリエイト広告を利用しています
           </p>

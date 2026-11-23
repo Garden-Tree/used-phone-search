@@ -22,7 +22,7 @@
 ```
 
 - **サイトの中身が変わるのは Actions が書き出したときだけ**。実行時に DB は使わない（Neon が起きるのは Actions の間だけ）
-- Vercel のプロジェクトは削除する（11/23 ユーザーが決定・削除はユーザーの作業）。vercel.json・scripts/vercel-ignore.sh は 11/23 に消した
+- Vercel のプロジェクトは 11/23 にユーザーが削除した。vercel.json・scripts/vercel-ignore.sh は 11/23 に消した
 - Cloudflare Pages の動き（`npx wrangler pages dev out --port 8790` で手元で再現できる。`_headers` も効く）
   - /iphone は iphone.html を返す。/iphone/・/iphone.html は 308 で /iphone へ。404 は out/404.html。http は https へ
   - ヘッダーは `public/_headers`: HSTS（2年）・`/_next/static/*` は1年 immutable・OGP 画像（拡張子なし）は image/png・`*.pages.dev` は `X-Robots-Tag: noindex`（正式な URL は used.gadelog.com）。HTML・JSON は Pages の既定 `public, max-age=0, must-revalidate`

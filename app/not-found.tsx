@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
-import { modelPagePath } from "@/lib/catalog";
+import { ALL_DEVICE_PAGE_MODELS, modelPagePath } from "@/lib/catalog";
+import SearchSuggest from "@/app/components/SearchSuggest";
 import { BUDGETS, budgetLabel, budgetPath } from "@/lib/budgets";
 
 // 存在しない URL・カタログにない機種のページ。DB を使わない（在庫の集計が止まっていても出せるように）
@@ -26,17 +27,10 @@ export default function NotFound() {
           URL が変わったか、掲載をやめた機種のページかもしれません。機種名で検索するか、下のページから探してください。
         </p>
 
-        <form action="/search" method="GET" className="flex gap-2 mb-10">
-          <input
-            type="text"
-            name="model"
-            placeholder="例: iPhone 15 Pro"
-            className="flex-1 min-w-0 px-3.5 h-12 border border-[#C7CBD4] rounded-xl text-base focus:border-brand-600 outline-none bg-white"
-          />
-          <button type="submit" className="px-[18px] h-12 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-800">
-            検索
-          </button>
-        </form>
+        <div className="mb-10">
+          {/* 候補は在庫数なし（DB を使わない） */}
+          <SearchSuggest items={ALL_DEVICE_PAGE_MODELS.map((m) => [m, modelPagePath(m), 0])} placeholder="例: iPhone 15 Pro" />
+        </div>
 
         <section className="mb-8">
           <h2 className="text-lg font-bold mb-3">よく見られている機種</h2>

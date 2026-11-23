@@ -1,4 +1,5 @@
 import type { PricePoint } from "@/lib/priceHistory";
+import SparklineHover from "./SparklineHover";
 
 const shortDate = (iso: string) => {
   const [, m, d] = iso.split("-");
@@ -18,7 +19,8 @@ export function recentPoints(points: PricePoint[]): PricePoint[] {
 }
 
 /**
- * 最安値の推移（直近30日・全容量）の折れ線。軽い inline SVG だけ（JS なし）。終点に赤い点。
+ * 最安値の推移（直近30日・全容量）の折れ線。inline SVG。終点に赤い点。
+ * 指・マウスを乗せると、その日の最安・中央値・在庫を出す（SparklineHover・11/23〜）。
  * 右上に始点との差額、下に始点・終点の日付と金額。直近30日に2日分の記録がなければ何も出さない
  */
 export default function Sparkline({ points: pts, title = "最安値の推移（30日）" }: { points: PricePoint[]; title?: string }) {
@@ -52,6 +54,7 @@ export default function Sparkline({ points: pts, title = "最安値の推移（3
           <polyline fill="none" stroke="#4338CA" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={line} vectorEffect="non-scaling-stroke" />
         </svg>
         <span className="absolute w-2 h-2 rounded-full bg-price -translate-x-1/2 -translate-y-1/2" style={{ left: "100%", top: `${(endY / H) * 100}%` }} aria-hidden="true" />
+        <SparklineHover points={pts} xPct={pts.map((p) => (xOf(p.date) / W) * 100)} yPct={pts.map((p) => (yOf(p.minPrice) / H) * 100)} />
       </div>
       <div className="flex justify-between text-[10px] md:text-[11px] text-ink-mute">
         <span>{shortDate(first.date)} {first.minPrice.toLocaleString()}円</span>
