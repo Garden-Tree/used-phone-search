@@ -272,4 +272,4 @@
 - 11/23 スキル youtube-thumbnail（横動画のサムネの型・素材・手順・検査）を作った。SE3 は 13 まだ使う？と同じ形（thumb-S1）
 - 11/23 SE3 まだ使う？を公開（oKXwnypRDVs）。スキル longform-video・metrics-report・add-shop を作った
 - 11/23 /iphone の題・h1・冒頭を「価格・相場一覧」に（AI の根拠の問い「iphone 中古 価格 一覧」が6割）。機種ページに選び方ガイドへのリンク（6種・data-placement=guide_link）。ユーザー OK で push
-- 11/23 伸びている横動画12本（150回以上＋SE3）に固定コメント（「動画の数字は公開時点です。…毎日更新 → テーマのページ」utm_campaign=pin_<公開日>）。ユーザー OK「伸びている動画全てで」
+- 11/23 固定コメント: 伸びている横動画12本のうち11本はすでに固定済み（古い文のまま）だったので触らず、SE3（oKXwnypRDVs）だけ新しく投稿して固定（utm_campaign=pin_20261123）
