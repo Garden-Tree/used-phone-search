@@ -30,12 +30,13 @@ function jpegSize(b: Buffer) {
 /** 写真の一部（crop は割合）を w×h の角丸の枠に。rot は傾き（度） */
 function Card({ file, crop, x, y, w, h, rot }: { file: string; crop: { x: number; y: number; w: number; h: number }; x: number; y: number; w: number; h: number; rot: number }) {
   const buf = readFileSync(join(C, file));
-  const { w: iw, h: ih } = jpegSize(buf);
+  const png = file.endsWith(".png");
+  const { w: iw, h: ih } = png ? { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) } : jpegSize(buf);
   const k = Math.max(w / (iw * crop.w), h / (ih * crop.h));
   return (
     <div style={{ display: "flex", position: "absolute", left: x, top: y, width: w, height: h, overflow: "hidden", borderRadius: 28, border: "6px solid #FFFFFF", transform: `rotate(${rot}deg)`, boxShadow: "0 18px 40px rgba(0,0,0,0.55)" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`data:image/jpeg;base64,${buf.toString("base64")}`} width={Math.round(iw * k)} height={Math.round(ih * k)} alt=""
+      <img src={`data:image/${png ? "png" : "jpeg"};base64,${buf.toString("base64")}`} width={Math.round(iw * k)} height={Math.round(ih * k)} alt=""
         style={{ position: "absolute", left: -Math.round(crop.x * iw * k), top: -Math.round(crop.y * ih * k) }} />
     </div>
   );
@@ -48,36 +49,74 @@ const Outlined = ({ text, size, color }: { text: string; size: number; color: st
 function Frame({ children }: { children: ReactNode }) {
   return (
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: "linear-gradient(135deg, #0B0B1F 0%, #1A1A3A 60%, #2A2A55 100%)", fontFamily: "Noto Sans JP" }}>
-      <Card file="iphone17e-back-chinofutaba.jpg" crop={{ x: 0.2, y: 0.1, w: 0.56, h: 0.5 }} x={890} y={44} w={320} h={340} rot={-6} />
-      <Card file="iphone15pro-back-naturaltitanium-meidoriyo.jpg" crop={{ x: 0.29, y: 0.155, w: 0.37, h: 0.33 }} x={950} y={330} w={280} h={320} rot={5} />
       {children}
     </div>
   );
 }
 
+const E17 = "iphone17e-back-chinofutaba.jpg", P15 = "iphone15pro-back-naturaltitanium-meidoriyo.jpg", N16 = "iphone16-ultramarine.png";
+const C17 = { x: 0.2, y: 0.1, w: 0.56, h: 0.52 }, C15 = { x: 0.29, y: 0.155, w: 0.37, h: 0.3 }, C16 = { x: 0.19, y: 0.06, w: 0.6, h: 0.5 };
+const TagBox = ({ text, style }: { text: string; style?: React.CSSProperties }) => (
+  <div style={{ display: "flex", alignSelf: "flex-start", padding: "4px 24px 10px", background: WHITE, borderRadius: 16, fontSize: 104, fontWeight: 900, color: RED, letterSpacing: -5, lineHeight: 1.1, boxShadow: "0 10px 24px rgba(0,0,0,0.5)", ...style }}>{text}</div>
+);
+const Col = ({ top, children }: { top: number; children: ReactNode }) => (
+  <div style={{ display: "flex", flexDirection: "column", position: "absolute", left: EDGE + 4, top }}>{children}</div>
+);
+
 const plans: [string, ReactNode][] = [
-  ["E1", (
+  // T1: 文字は左に縦の真ん中・写真は右半分に大きく2枚
+  ["T1", (
     <Frame>
-      <div style={{ display: "flex", flexDirection: "column", position: "absolute", left: EDGE + 6, top: 56 }}>
-        <Outlined text="17e 新品か" size={116} color={WHITE} />
-        <Outlined text="中古か" size={180} color={YELLOW} />
-        <div style={{ display: "flex", marginTop: 34, alignSelf: "flex-start", padding: "4px 24px 10px", background: WHITE, borderRadius: 16, fontSize: 104, fontWeight: 900, color: RED, letterSpacing: -5, lineHeight: 1.1 }}>差4,180円</div>
+      <Card file={E17} crop={C17} x={790} y={36} w={300} h={400} rot={-5} />
+      <Card file={P15} crop={C15} x={930} y={270} w={300} h={390} rot={5} />
+      <Col top={84}>
+        <Outlined text="新品の17e？" size={116} color={WHITE} />
+        <Outlined text="中古15Pro？" size={124} color={YELLOW} />
+        <TagBox text="差4,180円" style={{ marginTop: 44 }} />
+      </Col>
+    </Frame>
+  )],
+  // T2: 左右に分けて比べる（写真が主役）。上に機種名、真ん中の下に差
+  ["T2", (
+    <Frame>
+      <Card file={E17} crop={C17} x={60} y={170} w={540} h={500} rot={-3} />
+      <Card file={P15} crop={C15} x={680} y={170} w={540} h={500} rot={3} />
+      <div style={{ display: "flex", position: "absolute", left: EDGE + 4, top: 34 }}><Outlined text="新品17e" size={116} color={WHITE} /></div>
+      <div style={{ display: "flex", position: "absolute", left: 690, top: 34 }}><Outlined text="中古15Pro" size={116} color={YELLOW} /></div>
+      <div style={{ display: "flex", position: "absolute", left: 0, top: 0, width: W, height: H, alignItems: "center", justifyContent: "center" }}>
+        <div style={{ display: "flex", width: 150, height: 150, borderRadius: 75, background: RED, alignItems: "center", justifyContent: "center", fontSize: 76, fontWeight: 900, color: WHITE, border: "6px solid #FFFFFF", marginTop: 120 }}>VS</div>
       </div>
+      <TagBox text="差4,180円" style={{ position: "absolute", left: 370, top: 560 }} />
+    </Frame>
+  )],
+  // T3: 3台を扇に並べて「どれ買う？」
+  ["T3", (
+    <Frame>
+      <Card file={N16} crop={C16} x={1030} y={110} w={210} h={380} rot={9} />
+      <Card file={P15} crop={C15} x={920} y={170} w={220} h={390} rot={2} />
+      <Card file={E17} crop={C17} x={790} y={140} w={230} h={390} rot={-7} />
+      <Col top={110}>
+        <Outlined text="同じ12.5万円" size={116} color={WHITE} />
+        <Outlined text="どれ買う？" size={160} color={YELLOW} />
+      </Col>
+      <TagBox text="17e・15Pro・16" style={{ position: "absolute", left: EDGE + 4, top: 470, fontSize: 104 }} />
     </Frame>
   )],
   ["E2", (
     <Frame>
-      <div style={{ display: "flex", flexDirection: "column", position: "absolute", left: EDGE + 6, top: 56 }}>
+      <Card file={E17} crop={C17} x={890} y={44} w={320} h={340} rot={-6} />
+      <Card file={P15} crop={C15} x={950} y={330} w={280} h={320} rot={5} />
+      <Col top={56}>
         <Outlined text="新品の17e？" size={116} color={WHITE} />
         <Outlined text="中古15Pro？" size={134} color={YELLOW} />
-        <div style={{ display: "flex", marginTop: 40, alignSelf: "flex-start", padding: "4px 24px 10px", background: WHITE, borderRadius: 16, fontSize: 104, fontWeight: 900, color: RED, letterSpacing: -5, lineHeight: 1.1 }}>差4,180円</div>
-      </div>
+        <TagBox text="差4,180円" style={{ marginTop: 40 }} />
+      </Col>
     </Frame>
   )],
 ];
 
 (async () => {
-  const fonts = await notoSansJp("17e 新品か中古か差4,180円新品の？中古15Pro");
+  const fonts = await notoSansJp("17e 新品か中古か差4,180円新品の？中古15ProVS同じ12.5万円どれ買う・16");
   for (const [name, node] of plans) {
     const res = new ImageResponse(node as React.ReactElement, { width: W, height: H, fonts });
     const out = join(__dirname, "2026-11-27-17e-vs-used", `thumb-${name}.png`);
