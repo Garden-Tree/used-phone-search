@@ -273,3 +273,4 @@
 - 11/23 SE3 まだ使う？を公開（oKXwnypRDVs）。スキル longform-video・metrics-report・add-shop を作った
 - 11/23 /iphone の題・h1・冒頭を「価格・相場一覧」に（AI の根拠の問い「iphone 中古 価格 一覧」が6割）。機種ページに選び方ガイドへのリンク（6種・data-placement=guide_link）。ユーザー OK で push
 - 11/23 固定コメント: 伸びている横動画12本のうち11本はすでに固定済み（古い文のまま）だったので触らず、SE3（oKXwnypRDVs）だけ新しく投稿して固定（utm_campaign=pin_20261123）
+- 11/23 SE3 まだ使う？（oKXwnypRDVs）を lib/videos.ts に足し、SE 第3世代の機種ページに（何世代までの回より先）

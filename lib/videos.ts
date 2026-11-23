@@ -41,6 +41,8 @@ export const VIDEOS = {
   iphone16Now: { id: "YSnBsKwo_2c", title: "中古iPhone 16は今買い？新品との差は1万9,000円｜未使用品は新品より高い【2026年11月】", minutes: 9, asOf: "2026-11-13", heading: "iPhone 16 がいま買いかを動画で見る" },
   // 11/20 公開（予約の 11/21 12:00 を前倒し。12 は今買いか。128GB・電池85%以上・画面修理は本体より高い。/iphone/iphone-12 に）
   iphone12Now: { id: "-xnkA3ao01I", title: "中古iPhone 12は今買い？相場3万6,080円｜画面修理は本体より高い4万5,800円【2026年11月】", minutes: 9, asOf: "2026-11-19", heading: "iPhone 12 がいま買いかを動画で見る" },
+  // 11/23 公開（SE 3 まだ使う？電池交換か、14 Pro・15・17e に替えるか。/iphone/iphone-se-3rd-gen に）
+  se3Keep: { id: "oKXwnypRDVs", title: "iPhone SE（第3世代）、まだ使う？電池交換は1万2,000円｜替えるなら14 Pro・15・17eで何が増える？【2026年11月】", minutes: 8, asOf: "2026-11-23", heading: "SE 3 をまだ使うか・替えるかを動画で見る" },
 } satisfies Record<string, Video>;
 
 /**
@@ -54,6 +56,7 @@ export function videoForModel(model: string): Video | null {
   if (model === "iPhone 13") return VIDEOS.iphone13Now;
   if (model === "iPhone 16") return VIDEOS.iphone16Now;
   if (model === "iPhone 12") return VIDEOS.iphone12Now;
+  if (model === "iPhone SE (第3世代)") return VIDEOS.se3Keep;
   if (/^iPhone 1[3-7]( Pro( Max)?)?$/.test(model)) return VIDEOS.proOrStandard;
   // 4択の回の中心（中古の M5 Pro 24GB・1TB と、16インチ M5 Pro）
   if (/^MacBook Pro 1[46]インチ M5 Pro$/.test(model)) return VIDEOS.mbpProled;
