@@ -275,15 +275,19 @@ const settle = (k: number, a: number) => Math.round(a * (1 - easeOut(Math.min(1,
 const ITEM_Y = 6;
 const SUB_Y = 3;
 const SPK_UP = -6;
+/** 台詞が項目に触れたときの震え（px・コマごと。だんだん小さく） */
+const SHAKE_X = [4, -3, -3, 2, 2, -1, -1, 0];
 /** 声の大きさ1段あたりに立ち絵を上げる px（11/23・声の波形で揺らす。控えめに 2px） */
 const LEVEL_Y = 2;
 const bump = (scene: object, key: string): CSSProperties => {
-  const s = scene as { pulse?: Record<string, number> };
+  const s = scene as { pulse?: Record<string, number>; shake?: Record<string, number> };
   const k = s.pulse?.[key];
-  return k === undefined ? {} : { transform: `translateY(${settle(k, ITEM_Y)}px)` };
+  if (k !== undefined) return { transform: `translateY(${settle(k, ITEM_Y)}px)` };
+  const j = s.shake?.[key];
+  return j === undefined ? {} : { transform: `translateX(${SHAKE_X[j]}px)` };
 };
 /** t 秒の揺れ: 揺らす項目（キー → 何コマ目）・字幕・話し手（何コマ目か。なければ undefined） */
-export function animAt(tl: Timeline, t: number): { items: Record<string, number>; sub?: number; spk?: number } {
+export function animAt(tl: Timeline, t: number): { items: Record<string, number>; shake: Record<string, number>; sub?: number; spk?: number } {
   const { ch, line, page } = stateAt(tl, t);
   const ph = (e: number) => {
     const k = Math.floor((t - e) * FPS + 1e-6);
@@ -295,13 +299,21 @@ export function animAt(tl: Timeline, t: number): { items: Record<string, number>
     const p = ph(ch.start + r);
     if (p !== undefined) items[k] = p;
   }
-  return { items, sub: page ? ph(page.start) : undefined, spk: line ? ph(line.start) : undefined };
+  const shake: Record<string, number> = {};
+  for (const [k, ts] of Object.entries(ch.scene.mention ?? {})) {
+    for (const m of ts) {
+      const p = ph(ch.start + m);
+      if (p !== undefined && items[k] === undefined) shake[k] = p;
+    }
+  }
+  return { items, shake, sub: page ? ph(page.start) : undefined, spk: line ? ph(line.start) : undefined };
 }
 /** 揺れの出来事の秒（項目が出る・字幕のページ・台詞の始まり） */
 export function animEvents(tl: Timeline): number[] {
   const out: number[] = [];
   for (const ch of tl.chapters) {
     for (const r of Object.values(ch.scene.reveal)) if (r > 0) out.push(ch.start + r);
+    for (const ts of Object.values(ch.scene.mention ?? {})) for (const m of ts) out.push(ch.start + m);
     for (const l of ch.lines) for (const p of l.pages) out.push(p.start);
   }
   return out;
@@ -555,8 +567,8 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p, borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
             <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: cap(44), fontWeight: 900, alignItems: "center", justifyContent: "center" }}>{String(i + 1)}</div>
             <div style={{ ...col, width: textW, marginLeft: 32 }}>
-              <div style={{ display: "flex", fontSize: fit(it.text, textW, cap(54), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink }}>{it.text}</div>
-              {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, textW, cap(36), MIN_FONT, "リストの補足"), fontWeight: 500, color: C.sub }}>{it.sub}</div> : null}
+              <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(54), Math.floor(rowH * 0.4)), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
+              {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.min(cap(36), Math.floor(rowH * 0.26)), MIN_FOOT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
             </div>
           </div>
         );
@@ -621,8 +633,8 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
           <div style={{ ...col, width: textW, marginLeft: GAP }}>
             {points.map((it, i) => (
               <div key={i} style={{ ...col, width: textW, height: rowH, justifyContent: "center", opacity: shown(reveal, `item:${i}`, t), borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
-                <div style={{ display: "flex", fontSize: fit(it.text, textW, cap(50), MIN_FONT, "写真の横の行"), fontWeight: 900, color: C.ink }}>{it.text}</div>
-                {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, textW, cap(34), MIN_FONT, "写真の横の補足"), fontWeight: 500, color: C.sub }}>{it.sub}</div> : null}
+                <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(50), Math.floor(rowH * 0.4)), MIN_FONT, "写真の横の行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
+                {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.min(cap(34), Math.floor(rowH * 0.26)), MIN_FOOT, "写真の横の補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
               </div>
             ))}
           </div>
@@ -862,7 +874,7 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
   const shownSet = opts.instant ? new Set(revealedAt(ch.scene.reveal, local)) : null;
   const anim = animAt(tl, t);
   const base = shownSet ? { ...ch, scene: { ...ch.scene, reveal: Object.fromEntries(Object.keys(ch.scene.reveal).map((k) => [k, shownSet.has(k) ? -1000 : 1000])) } } : ch;
-  const scene = { ...base, scene: { ...base.scene, pulse: anim.items } };
+  const scene = { ...base, scene: { ...base.scene, pulse: anim.items, shake: anim.shake } };
   const spkDy = (anim.spk === undefined ? 0 : settle(anim.spk, SPK_UP)) - (opts.level ?? 0) * LEVEL_Y;
   return (
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>

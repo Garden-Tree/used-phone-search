@@ -172,6 +172,35 @@ function resolveReveal(scene: SceneData, lines: TimelineLine[], chStart: number,
   return { reveal, lastLine };
 }
 
+/**
+ * 項目に台詞が触れた秒（11/23 ユーザー「内容に触れ始めたら一瞬震わせる」）。項目の言葉（ラベル・行の先頭の語）を含む台詞の始まりを、
+ * 項目が出た後（出たその台詞は除く）から集める。キーは item:i、値は章の頭からの秒
+ */
+function keywordOf(text: string | undefined): string | null {
+  if (!text) return null;
+  const k = text.replace(/^(中古の|新品の|売って)/, "").split(/[・（(→\s]| → /)[0].trim();
+  return k.length >= 2 ? k : null; // 1字（「8」など）は「2028年」にも当たるので使わない
+}
+function resolveMentions(scene: SceneData, lines: TimelineLine[], chStart: number, reveal: Record<string, number>): Record<string, number[]> {
+  const words: [string, string | null][] = [];
+  switch (scene.type) {
+    case "bigNumber": scene.items.forEach((it, i) => words.push([`item:${i}`, keywordOf(it.label)])); break;
+    case "checklist": scene.items.forEach((it, i) => words.push([`item:${i}`, keywordOf(it.text.split(" → ").pop())])); break;
+    case "bars": case "pairs": scene.rows.forEach((r, i) => words.push([`item:${i}`, keywordOf(r.label)])); break;
+    case "table": scene.rows.forEach((r, i) => words.push([`item:${i}`, keywordOf(r.cells[0])])); break;
+    case "photo": (scene.points ?? []).forEach((it, i) => words.push([`item:${i}`, keywordOf(it.text)])); break;
+    default: break;
+  }
+  const out: Record<string, number[]> = {};
+  for (const [key, w] of words) {
+    if (!w) continue;
+    const at = reveal[key] ?? 0;
+    const ts = lines.map((l) => round(l.start - chStart)).filter((t, i) => t > at + 0.01 && lines[i].text.includes(w));
+    if (ts.length) out[key] = ts;
+  }
+  return out;
+}
+
 export async function buildTimeline(dir: string, speed = DEFAULT_LONG_SPEED): Promise<{ timeline: Timeline; warnings: string[]; missing: number; staleCount: number }> {
   const md = readFileSync(join(dir, "script.md"), "utf8");
   const data = JSON.parse(readFileSync(join(dir, "data.json"), "utf8")) as LongData;
@@ -207,7 +236,8 @@ export async function buildTimeline(dir: string, speed = DEFAULT_LONG_SPEED): Pr
     const sl = lines[lastLine >= 0 ? lastLine : Math.floor(lines.length / 2)];
     const p0 = sl.pages[0];
     const stillAt = round(Math.max(p0.start + 0.6, Math.min(p0.end - 0.1, (p0.start + p0.end) / 2)));
-    out.push({ index: ci + 1, title: ch.title, start: round(chStart), end: round(t), cues: ch.cues, scene: { ...d.scene, reveal }, lines, stillAt });
+    const mention = resolveMentions(d.scene, lines, chStart, reveal);
+    out.push({ index: ci + 1, title: ch.title, start: round(chStart), end: round(t), cues: ch.cues, scene: { ...d.scene, reveal, mention }, lines, stillAt });
   }
   const timeline: Timeline = { date: data.date, shops: data.shops, width: W, height: H, fps: FPS, speed, total: round(t), chapters: out };
   // 終了画面: 最後の章だけ・絵が出てから最後の台詞の終わりまでが END_SCREEN.sec 秒以内（超えると要素が出る前に台詞が始まる）

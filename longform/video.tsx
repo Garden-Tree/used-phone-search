@@ -154,7 +154,7 @@ function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: S
     // 立ち絵がなければ「話している最中か」で絵は変わらない
     const talkKey = who && art[who] ? st.talking : false;
     const anim = animAt(tl, t);
-    const moving = anim.sub !== undefined || anim.spk !== undefined || Object.keys(anim.items).length > 0;
+    const moving = anim.sub !== undefined || anim.spk !== undefined || Object.keys(anim.items).length > 0 || Object.keys(anim.shake).length > 0;
     const level = levels.length && st.talking && who && art[who] ? levelAt(t) : 0;
     const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), talkKey, anim, level]);
     const frame = Math.round(t * FPS);
