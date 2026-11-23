@@ -213,10 +213,10 @@
           }
         ],
         "crop": {
-          "x": 0.2,
-          "y": 0.08,
-          "w": 0.62,
-          "h": 0.86
+          "x": 0.24,
+          "y": 0.12,
+          "w": 0.54,
+          "h": 0.72
         }
       }
     },
@@ -287,22 +287,22 @@
         ],
         "images": [
           {
-            "src": "longform/assets/irasutoya/photo-taking.png",
-            "credit": "",
-            "cue": "カメラは3つ"
+            "src": "longform/assets/commons/iphone8-and-14pro-back-alanlevine.jpg",
+            "credit": "Back of iPhone 8 and iPhone 14 Pro — Alan Levine / CC0 / Wikimedia Commons",
+            "cue": "カメラは3つ",
+            "crop": {
+              "x": 0.17,
+              "y": 0.06,
+              "w": 0.24,
+              "h": 0.34
+            }
           },
           {
             "src": "longform/assets/commons/iphone14pro-screen-purple-igeeksblog.jpg",
             "credit": "iPhone 14 Pro — iGeeksBlog / CC BY-SA 4.0 / Wikimedia Commons",
             "cue": "Dynamic Islandもあるよ"
           }
-        ],
-        "crop": {
-          "x": 0.17,
-          "y": 0.06,
-          "w": 0.24,
-          "h": 0.34
-        }
+        ]
       }
     },
     {
