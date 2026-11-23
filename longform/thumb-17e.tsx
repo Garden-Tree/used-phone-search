@@ -63,60 +63,35 @@ const Col = ({ top, children }: { top: number; children: ReactNode }) => (
   <div style={{ display: "flex", flexDirection: "column", position: "absolute", left: EDGE + 4, top }}>{children}</div>
 );
 
+// 写真3枚（11/24 ユーザー「写真は3枚で確定・もっと大きく・カメラが見えるように」）。カメラは背面の左上なので、右の写真を上に重ねる（左の写真のカメラが隠れない）
+const K17 = { x: 0.2, y: 0.11, w: 0.52, h: 0.52 }, K15 = { x: 0.3, y: 0.16, w: 0.36, h: 0.3 }, K16 = { x: 0.2, y: 0.07, w: 0.52, h: 0.52 };
+const Three = () => (
+  <>
+    <Card file={E17} crop={K17} x={645} y={80} w={290} h={460} rot={-6} />
+    <Card file={P15} crop={K15} x={815} y={140} w={290} h={460} rot={0} />
+    <Card file={N16} crop={K16} x={1010} y={200} w={260} h={460} rot={6} />
+  </>
+);
+const Big = ({ lines, tag }: { lines: [string, number, string][]; tag?: string }) => (
+  <Frame>
+    <Three />
+    <Col top={70}>
+      {lines.map(([t, size, color]) => <Outlined key={t} text={t} size={size} color={color} />)}
+      {tag ? <TagBox text={tag} style={{ marginTop: 36 }} /> : null}
+    </Col>
+  </Frame>
+);
 const plans: [string, ReactNode][] = [
-  // T1: 文字は左に縦の真ん中・写真は右半分に大きく2枚
-  ["T1", (
-    <Frame>
-      <Card file={E17} crop={C17} x={790} y={36} w={300} h={400} rot={-5} />
-      <Card file={P15} crop={C15} x={930} y={270} w={300} h={390} rot={5} />
-      <Col top={84}>
-        <Outlined text="新品の17e？" size={116} color={WHITE} />
-        <Outlined text="中古15Pro？" size={124} color={YELLOW} />
-        <TagBox text="差4,180円" style={{ marginTop: 44 }} />
-      </Col>
-    </Frame>
-  )],
-  // T2: 左右に分けて比べる（写真が主役）。上に機種名、真ん中の下に差
-  ["T2", (
-    <Frame>
-      <Card file={E17} crop={C17} x={60} y={170} w={540} h={500} rot={-3} />
-      <Card file={P15} crop={C15} x={680} y={170} w={540} h={500} rot={3} />
-      <div style={{ display: "flex", position: "absolute", left: EDGE + 4, top: 34 }}><Outlined text="新品17e" size={116} color={WHITE} /></div>
-      <div style={{ display: "flex", position: "absolute", left: 690, top: 34 }}><Outlined text="中古15Pro" size={116} color={YELLOW} /></div>
-      <div style={{ display: "flex", position: "absolute", left: 0, top: 0, width: W, height: H, alignItems: "center", justifyContent: "center" }}>
-        <div style={{ display: "flex", width: 150, height: 150, borderRadius: 75, background: RED, alignItems: "center", justifyContent: "center", fontSize: 76, fontWeight: 900, color: WHITE, border: "6px solid #FFFFFF", marginTop: 120 }}>VS</div>
-      </div>
-      <TagBox text="差4,180円" style={{ position: "absolute", left: 370, top: 560 }} />
-    </Frame>
-  )],
-  // T3: 3台を扇に並べて「どれ買う？」
-  ["T3", (
-    <Frame>
-      <Card file={N16} crop={C16} x={1030} y={110} w={210} h={380} rot={9} />
-      <Card file={P15} crop={C15} x={920} y={170} w={220} h={390} rot={2} />
-      <Card file={E17} crop={C17} x={790} y={140} w={230} h={390} rot={-7} />
-      <Col top={110}>
-        <Outlined text="同じ12.5万円" size={116} color={WHITE} />
-        <Outlined text="どれ買う？" size={160} color={YELLOW} />
-      </Col>
-      <TagBox text="17e・15Pro・16" style={{ position: "absolute", left: EDGE + 4, top: 470, fontSize: 104 }} />
-    </Frame>
-  )],
-  ["E2", (
-    <Frame>
-      <Card file={E17} crop={C17} x={890} y={44} w={320} h={340} rot={-6} />
-      <Card file={P15} crop={C15} x={950} y={330} w={280} h={320} rot={5} />
-      <Col top={56}>
-        <Outlined text="新品の17e？" size={116} color={WHITE} />
-        <Outlined text="中古15Pro？" size={134} color={YELLOW} />
-        <TagBox text="差4,180円" style={{ marginTop: 40 }} />
-      </Col>
-    </Frame>
-  )],
+  ["A1", <Big key="a1" lines={[["新品か", 170, WHITE], ["中古か", 170, YELLOW]]} tag="差4,180円" />],
+  ["A2", <Big key="a2" lines={[["同じ値段で", 106, WHITE], ["望遠つき", 132, YELLOW]]} tag="中古15Pro" />],
+  ["A3", <Big key="a3" lines={[["12.5万円", 124, WHITE], ["どれ買う？", 106, YELLOW]]} tag="新品vs中古" />],
+  ["A4", <Big key="a4" lines={[["17eより", 124, WHITE], ["中古Pro？", 112, YELLOW]]} tag="差4,180円" />],
+  ["A5", <Big key="a5" lines={[["新品17e", 124, WHITE], ["vs 中古", 140, YELLOW]]} tag="15Pro・16" />],
+  ["A6", <Big key="a6" lines={[["17eの", 140, WHITE], ["ライバル", 132, YELLOW]]} tag="中古2台" />],
 ];
 
 (async () => {
-  const fonts = await notoSansJp("17e 新品か中古か差4,180円新品の？中古15ProVS同じ12.5万円どれ買う・16");
+  const fonts = await notoSansJp("17e 新品か中古か差4,180円新品の？中古15ProVS同じ12.5万円どれ買う・16値段で望遠つきvsよりライバル2台");
   for (const [name, node] of plans) {
     const res = new ImageResponse(node as React.ReactElement, { width: W, height: H, fonts });
     const out = join(__dirname, "2026-11-27-17e-vs-used", `thumb-${name}.png`);
