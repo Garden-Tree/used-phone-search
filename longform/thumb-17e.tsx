@@ -81,6 +81,26 @@ const Big = ({ lines, tag }: { lines: [string, number, string][]; tag?: string }
     </Col>
   </Frame>
 );
+// B: 写真をさらに大きく・画面の外にはみ出す（11/24 ユーザー）
+const ThreeBig = () => (
+  <>
+    <Card file={E17} crop={K17} x={590} y={60} w={350} h={620} rot={-6} />
+    <Card file={P15} crop={K15} x={790} y={120} w={350} h={470} rot={0} />
+    <Card file={N16} crop={K16} x={1075} y={150} w={330} h={620} rot={6} />
+  </>
+);
+const plansB: [string, ReactNode][] = [
+  ["B1", (
+    <Frame>
+      <ThreeBig />
+      <Col top={70}>
+        <Outlined text="17eより" size={124} color={WHITE} />
+        <Outlined text="中古Pro？" size={112} color={YELLOW} />
+        <TagBox text="120Hzとカメラ" style={{ marginTop: 40 }} />
+      </Col>
+    </Frame>
+  )],
+];
 const plans: [string, ReactNode][] = [
   ["A1", <Big key="a1" lines={[["新品か", 170, WHITE], ["中古か", 170, YELLOW]]} tag="差4,180円" />],
   ["A2", <Big key="a2" lines={[["同じ値段で", 106, WHITE], ["望遠つき", 132, YELLOW]]} tag="中古15Pro" />],
@@ -91,8 +111,8 @@ const plans: [string, ReactNode][] = [
 ];
 
 (async () => {
-  const fonts = await notoSansJp("17e 新品か中古か差4,180円新品の？中古15ProVS同じ12.5万円どれ買う・16値段で望遠つきvsよりライバル2台");
-  for (const [name, node] of plans) {
+  const fonts = await notoSansJp("17e 新品か中古か差4,180円新品の？中古15ProVS同じ12.5万円どれ買う・16値段で望遠つきvsよりライバル2台120Hzとカメラ");
+  for (const [name, node] of [...plansB, ...plans]) {
     const res = new ImageResponse(node as React.ReactElement, { width: W, height: H, fonts });
     const out = join(__dirname, "2026-11-27-17e-vs-used", `thumb-${name}.png`);
     writeFileSync(out, Buffer.from(await res.arrayBuffer()));
