@@ -812,22 +812,16 @@ function SubLine({ text, who }: { text: string; who: Who | null }) {
 }
 
 /**
- * 字幕の縁（11/23〜）: そのページが替わるまでの残りを、話し手の色の線が帯の縁を等速で一周して表す。
- * 左上から時計回り（上→右→下→左）。prog は 0〜1（40段に丸める。video.tsx が 0.1 秒ごとに PNG にする）
+ * 字幕の残り時間（11/23〜）: そのページが替わるまでを、話し手の色の線が帯の上辺を左から右へ等速で伸びて表す。
+ *prog は 0〜1（40段に丸める。video.tsx が 0.1 秒ごとに PNG にする）
  */
 const RING = 10;
 export const SUB_STEPS = 240;
 function SubRing({ who, prog, dy }: { who: Who | null; prog: number; dy: number }) {
   if (!who || prog <= 0) return null;
   const w = SUB.w, h = SUB.h, color = SPEAKER_COLOR[who];
-  let left = prog * 2 * (w + h);
-  const seg: CSSProperties[] = [];
-  const take = (len: number) => { const v = Math.max(0, Math.min(len, left)); left -= v; return v; };
-  const top = take(w), rgt = take(h), btm = take(w), lft = take(h);
-  if (top) seg.push({ left: 0, top: 0, width: top, height: RING });
-  if (rgt) seg.push({ left: w - RING, top: 0, width: RING, height: rgt });
-  if (btm) seg.push({ left: w - btm, top: h - RING, width: btm, height: RING });
-  if (lft) seg.push({ left: 0, top: h - lft, width: RING, height: lft });
+  // 上辺だけを左から右へ（11/23 ユーザー「上辺だけにして」）
+  const seg: CSSProperties[] = [{ left: 0, top: 0, width: Math.round(prog * w), height: RING }];
   return (
     <div style={{ display: "flex", position: "absolute", left: SUB.x, top: SUB.y + dy, width: w, height: h, borderRadius: 20, overflow: "hidden" }}>
       {seg.map((st, i) => <div key={i} style={{ display: "flex", position: "absolute", background: color, ...st }} />)}
