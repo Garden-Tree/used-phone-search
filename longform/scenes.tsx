@@ -100,7 +100,7 @@ const LAYOUTS: Record<string, Layout> = {
    * 立ち絵（高さ 236px）はカードの下の角に 重なる（カードの余白 48px の中・立ち絵はカードの上に描く）。字幕は 58px
    */
   d2: {
-    card: { x: 16, y: 104, w: W - 32, h: 782, pad: 44, scale: 1.3 },
+    card: { x: 16, y: 104, w: W - 32, h: 782, pad: 44, scale: 1.5 },
     // bust: 絵の上から何割を枠に入れるか（顔〜胸のバストアップ）
     art: { w: 200, y: 1066 - 200, h: 200, imgH: 200, left: 4, right: W - 204, bust: 0.5 },
     slot: { y: 1066 - 200, w: 190, h: 200, left: 9, right: W - 199 },
@@ -591,8 +591,8 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p, borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
             <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: cap(44), fontWeight: 900, alignItems: "center", justifyContent: "center" }}>{String(i + 1)}</div>
             <div style={{ ...col, width: textW, marginLeft: 32 }}>
-              <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(54), Math.floor(rowH * 0.4)), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
-              {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.min(cap(36), Math.floor(rowH * 0.26)), MIN_FOOT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
+              <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(56), Math.floor(rowH * 0.5)), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
+              {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.min(cap(38), Math.floor(rowH * 0.28)), MIN_FOOT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
             </div>
           </div>
         );
@@ -635,7 +635,7 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
   const credit = slides[cur].credit;
   const points = s.points ?? [];
   const GAP = cap(40);
-  const boxW = points.length ? Math.round(INNER_W * 0.5) : INNER_W;
+  const boxW = points.length ? Math.round(INNER_W * 0.45) : INNER_W;
   const creditFont = MIN_FOOT;
   const boxH = bodyH(s.heading, s.note) - Math.ceil(creditFont * 1.45) - 12;
   const k = Math.min(boxW / img.w, boxH / img.h);
@@ -657,8 +657,8 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
           <div style={{ ...col, width: textW, marginLeft: GAP }}>
             {points.map((it, i) => (
               <div key={i} style={{ ...col, width: textW, height: rowH, justifyContent: "center", opacity: shown(reveal, `item:${i}`, t), borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
-                <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(50), Math.floor(rowH * 0.4)), MIN_FONT, "写真の横の行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
-                {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.min(cap(34), Math.floor(rowH * 0.26)), MIN_FOOT, "写真の横の補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
+                <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(56), Math.floor(rowH * 0.5)), MIN_FONT, "写真の横の行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
+                {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.min(cap(36), Math.floor(rowH * 0.28)), MIN_FOOT, "写真の横の補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
               </div>
             ))}
           </div>
