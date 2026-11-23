@@ -266,16 +266,21 @@ const shown = (reveal: Record<string, number>, key: string, t: number) => ease((
  * 出来事から BURST コマ（約 0.27 秒）の間だけ。video.tsx は出来事の 0・2・4・6・8 コマ後を PNG にする
  */
 const BURST = 8;
-export const ANIM_STEPS = [2, 4, 6, 8];
-const SHAKE_X = [12, 12, -8, -8, 4, 4, -2, -2];
-const SUB_X = [8, 8, -6, -6, 3, 3, -1, -1];
-const SPK_Y = [-16, -16, -8, -8, -3, -3, 0, 0];
-/** 声の大きさ1段あたりに立ち絵を上げる px（11/23・声の波形で揺らす） */
-const LEVEL_Y = 5;
+// 11/23 ユーザー「イージングを入れて・控えめに」: 左右に揺らすのをやめ、少し下から浮き上がって止まる（ease-out cubic）。
+// 0・1・2・4・6・8 コマ後を PNG にする（8 で止まる）
+export const ANIM_STEPS = [1, 2, 4, 6, 8];
+const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
+/** 出来事から k コマ目の位置（px）。a から 0 へ ease-out で戻る */
+const settle = (k: number, a: number) => Math.round(a * (1 - easeOut(Math.min(1, k / BURST))) * 10) / 10;
+const ITEM_Y = 6;
+const SUB_Y = 3;
+const SPK_UP = -6;
+/** 声の大きさ1段あたりに立ち絵を上げる px（11/23・声の波形で揺らす。控えめに 2px） */
+const LEVEL_Y = 2;
 const bump = (scene: object, key: string): CSSProperties => {
   const s = scene as { pulse?: Record<string, number> };
   const k = s.pulse?.[key];
-  return k === undefined ? {} : { transform: `translateX(${SHAKE_X[k]}px)` };
+  return k === undefined ? {} : { transform: `translateY(${settle(k, ITEM_Y)}px)` };
 };
 /** t 秒の揺れ: 揺らす項目（キー → 何コマ目）・字幕・話し手（何コマ目か。なければ undefined） */
 export function animAt(tl: Timeline, t: number): { items: Record<string, number>; sub?: number; spk?: number } {
@@ -770,13 +775,13 @@ function SubLine({ text, who }: { text: string; who: Who | null }) {
   );
 }
 
-function Subtitle({ who, text, dx = 0 }: { who: Who | null; text: string; dx?: number }) {
+function Subtitle({ who, text, dy = 0 }: { who: Who | null; text: string; dy?: number }) {
   // 帯の端の色の線: いつも左か、話している人の側（つむぎは右）
   const right = SUB.edgeSide === "speaker" && who === "つむぎ";
   const edgeLine = `14px solid ${who ? SPEAKER_COLOR[who] : C.bar}`;
   const tag = SUB.tag === "always";
   return (
-    <div style={{ ...row, position: "absolute", left: SUB.x + dx, top: SUB.y, width: SUB.w, height: SUB.h, background: C.white, borderRadius: 20, borderLeft: right ? "none" : edgeLine, borderRight: right ? edgeLine : "none" }}>
+    <div style={{ ...row, position: "absolute", left: SUB.x, top: SUB.y + dy, width: SUB.w, height: SUB.h, background: C.white, borderRadius: 20, borderLeft: right ? "none" : edgeLine, borderRight: right ? edgeLine : "none" }}>
       {tag ? (
         <div style={{ ...row, width: SUB.tagW, justifyContent: "center", marginLeft: SUB.padX - 14 }}>
           {who ? (
@@ -858,7 +863,7 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
   const anim = animAt(tl, t);
   const base = shownSet ? { ...ch, scene: { ...ch.scene, reveal: Object.fromEntries(Object.keys(ch.scene.reveal).map((k) => [k, shownSet.has(k) ? -1000 : 1000])) } } : ch;
   const scene = { ...base, scene: { ...base.scene, pulse: anim.items } };
-  const spkDy = (anim.spk === undefined ? 0 : SPK_Y[anim.spk]) - (opts.level ?? 0) * LEVEL_Y;
+  const spkDy = (anim.spk === undefined ? 0 : settle(anim.spk, SPK_UP)) - (opts.level ?? 0) * LEVEL_Y;
   return (
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
       <ChapterBar ch={ch} count={tl.chapters.length} />
@@ -870,7 +875,7 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
       {/* 立ち絵はカードの上に描く（d2 では立ち絵がカードの下の角に少し重なる） */}
       <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} dy={who === "ずんだもん" ? spkDy : 0} />
       <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} dy={who === "つむぎ" ? spkDy : 0} />
-      <Subtitle who={who} text={page?.text ?? ""} dx={anim.sub === undefined ? 0 : SUB_X[anim.sub]} />
+      <Subtitle who={who} text={page?.text ?? ""} dy={anim.sub === undefined ? 0 : settle(anim.sub, SUB_Y)} />
       {FOOT_Y === null ? null : <div style={{ display: "flex", position: "absolute", left: SUB.x + 8, top: FOOT_Y, fontSize: 26, fontWeight: 500, color: C.onDarkSub }}>{`${date} 時点・大手中古ショップ${tl.shops}店の在庫から`}</div>}
     </div>
   );

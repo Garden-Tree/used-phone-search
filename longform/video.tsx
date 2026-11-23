@@ -120,7 +120,10 @@ function voiceLevels(dir: string): number[] {
     let sum = 0, cnt = 0;
     for (let k = i; k < Math.min(n, i + win); k++) { const v = b.readInt16LE(dataAt + k * 2 * ch) / 32768; sum += v * v; cnt++; }
     const db = 10 * Math.log10(sum / Math.max(1, cnt) + 1e-12);
-    out.push(db < -42 ? 0 : db < -32 ? 1 : db < -24 ? 2 : 3);
+    const raw = db < -42 ? 0 : db < -32 ? 1 : db < -24 ? 2 : 3;
+    // 急に跳ねないよう、0.1 秒に1段までしか変えない（イージングの代わり。11/23 ユーザー「控えめに」）
+    const prev = out.length ? out[out.length - 1] : 0;
+    out.push(raw > prev ? prev + 1 : raw < prev ? prev - 1 : prev);
   }
   return out;
 }
