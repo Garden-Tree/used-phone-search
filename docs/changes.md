@@ -278,3 +278,5 @@
 - 11/23 スキル longform-video に SE3 の回でのユーザーの指摘（比べる相手・読み・画面・動き・拡大・名札）と説明欄の形・固定コメントの OK を足した
 - 11/23 スキル・docs・メモリの棚卸し（食い違う所だけ直した。確認待ちと整理の案は ideas/2026-11-23-inventory.md）
 - 11/23 ショートの判定を前倒し: 新しく作らない（26本・1本約1,000回・登録計4・サイト訪問ほぼ0）。STATE の声の行を「ショート／横動画」に分けた。X Premium は解約済み
+- 11/23 古い docs を削除（cloudflare-pages.md・tech_stack.md・youtube-shorts.md）。撤退の記録は docs/retired.md、Cloudflare の動きと構成の概要は docs/operations.md、VOICEVOX の規約は docs/voicevox-terms.md に移した。Vercel のプロジェクトは削除（ユーザー）
+- 11/23 チャンネルの説明文: 「値下がりランキングや予算別のおすすめをショートに」→「まだ使う？・今買い？・どれを買う？を公式の仕様と毎日の相場で比べる」。店数 17→18
