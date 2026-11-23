@@ -249,8 +249,8 @@ function concatList(segs: Segment[], totalFrames: number): string {
   return out.join("\n") + "\n";
 }
 
-/** GPU（AMD AMF）で映像を作る（LONGFORM_GPU=0 で CPU の libx264）。11/23 速くする */
-const USE_GPU = process.env.LONGFORM_GPU !== "0";
+/** GPU（AMD AMF）で映像を作る（LONGFORM_GPU=1 のときだけ）。11/23 に比べたら CPU（libx264・16スレッド）79 秒・GPU 128 秒で CPU が速かった（PNG を読む側が重い） */
+const USE_GPU = process.env.LONGFORM_GPU === "1";
 
 async function encode(work: string, preset: string, tl?: Timeline) {
   // チャンネル登録の重ねも、ここで一緒に（映像を2回作らない）
