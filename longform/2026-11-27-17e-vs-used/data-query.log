@@ -1,0 +1,46 @@
+店 18・新品の確認日 2026-10-19・修理 2026-10-21
+
+== 機種 × 容量（中央値・最安・件数。ジャンク除く）／新品（Apple）
+iPhone 17e 256GB	中央値 125,980	最安 101,800	477件	新品 124,800
+iPhone 17e 512GB	中央値 153,780	最安 138,980	121件	新品 159,800
+iPhone 16e 128GB	中央値 104,280	最安 73,000	413件
+iPhone 16e 256GB	中央値 112,980	最安 91,980	44件
+iPhone 16e 512GB	中央値 140,580	最安 101,500	48件
+iPhone 15 128GB	中央値 91,700	最安 62,500	2068件
+iPhone 15 256GB	中央値 96,200	最安 78,000	605件
+iPhone 15 512GB	中央値 119,966	最安 92,000	86件
+iPhone 15 Plus 128GB	中央値 104,291	最安 71,000	348件
+iPhone 15 Plus 256GB	中央値 112,180	最安 80,000	171件
+iPhone 15 Plus 512GB	中央値 126,280	最安 100,000	21件
+iPhone 15 Pro 128GB	中央値 115,280	最安 74,980	751件
+iPhone 15 Pro 256GB	中央値 128,980	最安 85,980	773件
+iPhone 15 Pro 512GB	中央値 142,780	最安 103,980	226件
+iPhone 15 Pro Max 256GB	中央値 139,980	最安 95,980	605件
+iPhone 15 Pro Max 512GB	中央値 156,730	最安 113,980	299件
+iPhone 16 128GB	中央値 116,700	最安 87,100	1429件	新品 139,800
+iPhone 16 256GB	中央値 127,980	最安 98,980	396件
+iPhone 16 512GB	中央値 156,541	最安 122,980	69件
+iPhone 16 Plus 128GB	中央値 133,980	最安 105,980	291件
+iPhone 16 Plus 256GB	中央値 146,091	最安 112,980	143件
+iPhone 16 Plus 512GB	中央値 164,780	最安 143,000	21件
+iPhone 16 Pro 128GB	中央値 146,680	最安 110,980	657件
+iPhone 16 Pro 256GB	中央値 167,280	最安 124,980	849件
+iPhone 16 Pro 512GB	中央値 180,780	最安 127,980	260件
+iPhone 17 256GB	中央値 149,980	最安 122,680	876件	新品 159,800
+iPhone 17 512GB	中央値 186,780	最安 158,980	145件	新品 194,800
+iPhone Air 256GB	中央値 140,680	最安 118,800	624件	新品 189,800
+iPhone Air 512GB	中央値 166,991	最安 139,980	139件	新品 224,800
+
+== 電池85%以上（256GB）
+iPhone 17e	167件	中央値 125,980
+iPhone 15 Pro	197件	中央値 125,980
+iPhone 16	276件	中央値 123,200
+iPhone 16 Pro	574件	中央値 166,980
+
+== 公式の仕様・修理
+iPhone 17e {"released":"2026年","chip":"A19","display":6.1,"panel":"有機EL","port":"USB-C","auth":"Face ID","specId":"126470"} 修理 {"battery":17200,"screen":41800}
+iPhone 15 Pro {"released":"2023年","chip":"A17 Pro","display":6.1,"panel":"有機EL","port":"USB-C","auth":"Face ID","specId":"111829"} 修理 {"battery":17200,"screen":57800}
+iPhone 16 {"released":"2024年","chip":"A18","display":6.1,"panel":"有機EL","port":"USB-C","auth":"Face ID","specId":"121029"} 修理 {"battery":17200,"screen":45800}
+iPhone 16 Pro {"released":"2024年","chip":"A18 Pro","display":6.3,"panel":"有機EL","port":"USB-C","auth":"Face ID","specId":"121031"} 修理 {"battery":21000,"screen":57800}
+iPhone 15 Pro Max {"released":"2023年","chip":"A17 Pro","display":6.7,"panel":"有機EL","port":"USB-C","auth":"Face ID","specId":"111828"} 修理 {"battery":17200,"screen":64800}
+iPhone 17 {"released":"2025年","chip":"A19","display":6.3,"panel":"有機EL","port":"USB-C","auth":"Face ID","specId":"125089"} 修理 {"battery":17200,"screen":57800}
