@@ -42,9 +42,20 @@ function Card({ file, crop, x, y, w, h, rot }: { file: string; crop: { x: number
   );
 }
 
-const Outlined = ({ text, size, color }: { text: string; size: number; color: string }) => (
-  <div style={{ display: "flex", fontSize: size, fontWeight: 900, color, lineHeight: 1.08, letterSpacing: -4, textShadow: "0 0 10px #000, 0 6px 0 #000, 0 -6px 0 #000, 6px 0 0 #000, -6px 0 0 #000, 4px 4px 0 #000, -4px -4px 0 #000, 4px -4px 0 #000, -4px 4px 0 #000" }}>{text}</div>
-);
+/** 黒い縁取り（16方向に黒い文字を重ねる。thumb-bf-finding.tsx と同じ作り。太さは文字の大きさの約 1/17） */
+const Outlined = ({ text, size, color }: { text: string; size: number; color: string }) => {
+  const w = Math.round(size / 17);
+  const base = { display: "flex", fontSize: size, fontWeight: 900, letterSpacing: -4, lineHeight: 1.08, whiteSpace: "nowrap" } as const;
+  return (
+    <div style={{ display: "flex", position: "relative" }}>
+      {Array.from({ length: 16 }, (_, i) => {
+        const a = (i / 16) * Math.PI * 2;
+        return <div key={i} style={{ ...base, position: "absolute", left: Math.round(Math.cos(a) * w), top: Math.round(Math.sin(a) * w), color: "#000000" }}>{text}</div>;
+      })}
+      <div style={{ ...base, position: "relative", color }}>{text}</div>
+    </div>
+  );
+};
 
 function Frame({ children }: { children: ReactNode }) {
   return (
@@ -57,7 +68,7 @@ function Frame({ children }: { children: ReactNode }) {
 const E17 = "iphone17e-back-chinofutaba.jpg", P15 = "iphone15pro-back-naturaltitanium-meidoriyo.jpg", N16 = "iphone16-ultramarine.png";
 const C17 = { x: 0.2, y: 0.1, w: 0.56, h: 0.52 }, C15 = { x: 0.29, y: 0.155, w: 0.37, h: 0.3 }, C16 = { x: 0.19, y: 0.06, w: 0.6, h: 0.5 };
 const TagBox = ({ text, style }: { text: string; style?: React.CSSProperties }) => (
-  <div style={{ display: "flex", alignSelf: "flex-start", padding: "4px 24px 10px", background: WHITE, borderRadius: 16, fontSize: 104, fontWeight: 900, color: RED, letterSpacing: -5, lineHeight: 1.1, boxShadow: "0 10px 24px rgba(0,0,0,0.5)", ...style }}>{text}</div>
+  <div style={{ display: "flex", alignSelf: "flex-start", padding: "4px 24px 10px", background: WHITE, border: "6px solid #000000", borderRadius: 16, fontSize: 104, fontWeight: 900, color: RED, letterSpacing: -5, lineHeight: 1.1, boxShadow: "0 10px 24px rgba(0,0,0,0.5)", ...style }}>{text}</div>
 );
 const Col = ({ top, children }: { top: number; children: ReactNode }) => (
   <div style={{ display: "flex", flexDirection: "column", position: "absolute", left: EDGE + 4, top }}>{children}</div>
