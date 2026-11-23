@@ -40,7 +40,7 @@ SETS = {
     #   Toad40 / CC BY-SA 4.0（Commons「IPhone SE 3rd Gen.jpg」）。机の上の端末全体なので切り口なし
     "se3keep": dict(dir=HERE / "assets" / "commons", src="iphone-se3-front-red-toad40.jpg", cut="iphone-se3-front-red-cut.png",
                     cutline="iphone-se3-front-red-cutline.png", edges=(), layers="se3keep-layers",
-                    place={"se3k-big": (470, -8, 850, 30)}),
+                    place={"se3k-big": (620, -8, 670, -80)}),
     # 15（11/21 追加）: 横動画 2026-11-24-iphone15。写真は iPhone 15 の前面（画面に「iPhone 15」）・Ka Kit Pang / Public domain（Commons）
     "15": dict(dir=HERE / "assets" / "commons", src="iphone15-pd-single.jpg", cut="iphone15-pd-single-cut.png",
                cutline="iphone15-pd-single-cutline.png", edges=(), layers="15-layers",
