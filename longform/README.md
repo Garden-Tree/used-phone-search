@@ -129,6 +129,8 @@ npx tsx longform/video.tsx      <dir> check         # 長さ・音量・同期3�
 - 動く所はすべて毎コマ（30fps）で描く。**15Hz にしない**（11/24 ユーザー。`LONGFORM_MOTION_HZ` は試し用）
 - 見せるときは 720p の確認用（30MB 超はスマホに届かない）
 
+- 音は声（joined.wav）・BGM・ジングル・長さが前と同じなら前の audio.m4a を使い回す（frames/audio-<指紋>.m4a・11/24）。映像は preset ultrafast（11/24〜・ファイルは約2倍の 70MB だがどうせ手でアップロードする）。17e の回で 1.7分→1.0分、声が同じ直しなら 0.6分
+- 切り抜きショート: `npx tsx longform/clip-short.tsx <フォルダ> <開始-終了,…> "<題1>" "<題2>" <名前>`（会話のラリーを3〜5つつなぐ・53秒まで。関連動画に元の横動画）
 ## 音
 
 声（voice-draft/joined.wav）を -16 LUFS → BGM（shorts/assets/bgm.mp3）をくり返して 0.07 倍・頭2秒で上げ最後4秒で下げる → loudnorm 2パスで -14 LUFS・真のピーク -1。最後の台詞のあと 1.5 秒（終了画面があれば 20 秒まで BGM）。章の頭のジングルは video.tsx の makeJingle がその場で合成（E5→G#5→B5・0.75秒・-18 dBFS）。

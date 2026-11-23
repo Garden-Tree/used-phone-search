@@ -19,7 +19,7 @@
  */
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import { join, resolve } from "node:path";
 import { ImageResponse } from "next/og";
@@ -375,6 +375,16 @@ async function audio(dir: string, tl: Timeline, work: string) {
   if (Math.abs(vd - tl.total) > 0.1) throw new Error(`声の長さ（${vd.toFixed(2)} 秒）と時間割（${tl.total} 秒）が合いません。voice-draft.ts → timeline.ts をやり直す`);
   if (!existsSync(BGM)) throw new Error(`BGM がありません: ${BGM}`);
   const total = tl.total + tailOf(tl);
+  // 声・BGM・ジングルの位置・長さが前と同じなら、前の audio.m4a を使い回す（11/24 ユーザー「声が変わっていない時は使い回す」）
+  const at0 = tl.chapters.slice(1).map((c) => Math.round(chapterShownAt(c) * 1000));
+  const fileKey = (f: string) => (existsSync(f) ? createHash("sha1").update(readFileSync(f)).digest("hex") : "none");
+  const akey = createHash("sha1").update(JSON.stringify([fileKey(voice), fileKey(BGM), fileKey(JINGLE_FILE), total, at0, VOICE_LUFS, BGM_VOLUME, "audio-v1"])).digest("hex").slice(0, 16);
+  const cached = join(work, `audio-${akey}.m4a`);
+  if (existsSync(cached)) {
+    copyFileSync(cached, join(work, "audio.m4a"));
+    console.log(`  音は前と同じ → 使い回す（audio-${akey}.m4a）`);
+    return;
+  }
   const vm = await measure(voice);
   const gain = VOICE_LUFS - Number(vm.input_i);
   console.log(`  声 ${Number(vm.input_i).toFixed(1)} LUFS → ${gain >= 0 ? "+" : ""}${gain.toFixed(1)} dB で ${VOICE_LUFS} LUFS に`);
@@ -400,6 +410,7 @@ async function audio(dir: string, tl: Timeline, work: string) {
   const m = await measure(mix);
   const second = `loudnorm=I=-14:TP=-1:LRA=11:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true,aresample=48000`;
   await ffmpeg(["-y", "-threads", "2", "-i", mix, "-af", second, "-c:a", "aac", "-b:a", "192k", join(work, "audio.m4a")], "-14 LUFS（2パス目）");
+  copyFileSync(join(work, "audio.m4a"), cached);
 }
 
 /**
@@ -619,7 +630,7 @@ async function check(dir: string, tl: Timeline) {
 
 (async () => {
   const [dir, mode = "all"] = process.argv.slice(2);
-  const preset = process.argv.includes("--preset") ? process.argv[process.argv.indexOf("--preset") + 1] : "superfast";
+  const preset = process.argv.includes("--preset") ? process.argv[process.argv.indexOf("--preset") + 1] : "ultrafast";
   if (!dir) throw new Error("使い方: npx tsx longform/video.tsx <台本のフォルダ> [all | plan | frames | encode | audio | mux | meta | check] [--preset veryfast]");
   const tlFile = join(dir, "timeline.json");
   if (!existsSync(tlFile)) throw new Error(`${tlFile} がありません（先に timeline.ts）`);
