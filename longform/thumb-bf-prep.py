@@ -36,6 +36,11 @@ SETS = {
     "13keep": dict(dir=HERE / "assets" / "commons", src="iphone13-tora.jpg", cut="iphone13-tora-flat.png",
                    cutline="iphone13-tora-flat-cutline.png", edges=(), layers="13keep-layers",
                    place={"13k-big": (360, -8, 870, 40), "13k-mid": (320, -8, 910, 70)}),
+    # se3keep（11/23 追加）: 横動画 2026-12-01-iphonese3-keep（13keep と同じ形）。写真は iPhone SE 第3世代（赤）の前面・ホームボタン
+    #   Toad40 / CC BY-SA 4.0（Commons「IPhone SE 3rd Gen.jpg」）。机の上の端末全体なので切り口なし
+    "se3keep": dict(dir=HERE / "assets" / "commons", src="iphone-se3-front-red-toad40.jpg", cut="iphone-se3-front-red-cut.png",
+                    cutline="iphone-se3-front-red-cutline.png", edges=(), layers="se3keep-layers",
+                    place={"se3k-big": (470, -8, 850, 30)}),
     # 15（11/21 追加）: 横動画 2026-11-24-iphone15。写真は iPhone 15 の前面（画面に「iPhone 15」）・Ka Kit Pang / Public domain（Commons）
     "15": dict(dir=HERE / "assets" / "commons", src="iphone15-pd-single.jpg", cut="iphone15-pd-single-cut.png",
                cutline="iphone15-pd-single-cutline.png", edges=(), layers="15-layers",
