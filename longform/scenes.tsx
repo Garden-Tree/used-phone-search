@@ -61,12 +61,16 @@ const HEADER = { x: 40, y: 24, h: 72 };
  */
 type Layout = {
   card: { x: number; y: number; w: number; h: number; pad: number; scale: number };
-  art: { w: number; y: number; h: number; imgH: number; left: number; right: number };
+  art: { w: number; y: number; h: number; imgH: number; left: number; right: number; bust?: number };
   /** 立ち絵がないときの枠（名前の札だけ） */
   slot: { y: number; w: number; h: number; left: number; right: number };
   plate: { w: number; font: number; show: "always" | "first10" };
   sub: { x: number; y: number; w: number; h: number; tag: "always" | "never"; tagW: number; padX: number; gap: number; font: number; lineHeight: number; edge: number; edgeSide: "left" | "speaker" };
   footY: number | null;
+  /** カードの脚注（note）を出すか（d2 は出さない。出典は説明欄） */
+  notes?: boolean;
+  /** 章の帯の x（なければ 40） */
+  headerX?: number;
 };
 const LAYOUTS: Record<string, Layout> = {
   /** 10/29 までの配置。立ち絵の枠: 画面の端からカードの手前まで（左 x0〜280・右 x1640〜1920）・絵の高さ 560px。字幕 50px の黒い文字・帯の中に名前の札・最下行あり */
@@ -91,16 +95,20 @@ const LAYOUTS: Record<string, Layout> = {
     footY: null,
   },
   /**
-   * 11/23〜（d2・ユーザーの指示）: 立ち絵を字幕の左右（画面の下の角）に下げ、字幕の帯をその分短く、カードを立ち絵のあった左右まで広げる 1840x740。
+   * 11/23〜（d2・ユーザーの指示）: 立ち絵を字幕の左右（画面の下の角）に下げてバストアップに、字幕の帯をその分短く、カードを左右いっぱい 1888x782（余白 16px）。
+   * 脚注は出さない・カードの文字の上限 1.3 倍・字幕 62px・帯の下 14px（YouTube の再生バーは一時停止中だけ重なる）。
    * 立ち絵（高さ 236px）はカードの下の角に 重なる（カードの余白 48px の中・立ち絵はカードの上に描く）。字幕は 58px
    */
   d2: {
-    card: { x: 40, y: 112, w: W - 80, h: 740, pad: 48, scale: 1.15 },
-    art: { w: 190, y: 1042 - 236, h: 236, imgH: 236, left: 0, right: W - 190 },
-    slot: { y: 1042 - 200, w: 170, h: 200, left: 10, right: W - 180 },
+    card: { x: 16, y: 104, w: W - 32, h: 782, pad: 44, scale: 1.3 },
+    // bust: 絵の上から何割を枠に入れるか（顔〜胸のバストアップ）
+    art: { w: 200, y: 1066 - 200, h: 200, imgH: 200, left: 4, right: W - 204, bust: 0.5 },
+    slot: { y: 1066 - 200, w: 190, h: 200, left: 9, right: W - 199 },
     plate: { w: 172, font: 26, show: "first10" },
-    sub: { x: 200, y: 868, w: W - 400, h: 174, tag: "never", tagW: 200, padX: 32, gap: 20, font: 58, lineHeight: 1.18, edge: 6, edgeSide: "speaker" },
+    sub: { x: 212, y: 898, w: W - 424, h: 168, tag: "never", tagW: 200, padX: 28, gap: 20, font: 62, lineHeight: 1.15, edge: 6, edgeSide: "speaker" },
     footY: null,
+    notes: false,
+    headerX: 16,
   },
 };
 export const LAYOUT_NAME = process.env.LONGFORM_LAYOUT && LAYOUTS[process.env.LONGFORM_LAYOUT] ? process.env.LONGFORM_LAYOUT : "d2";
@@ -280,7 +288,7 @@ function Heading({ text, rightW = 0, right }: { text: string; rightW?: number; r
 const noteFont = (text: string) => Math.max(MIN_FOOT, Math.min(28, Math.floor(INNER_W / textEm(text))));
 /** 脚注の高さ（px。行数は幅の目安から。行の高さは Noto Sans JP の 1.45 倍） */
 const noteH = (text?: string) => {
-  if (!text) return 0;
+  if (!text || L.notes === false) return 0;
   const w = textEm(text) * noteFont(text);
   return (w <= INNER_W ? 1 : Math.ceil((w * 1.03) / INNER_W)) * Math.ceil(noteFont(text) * 1.45) + 8;
 };
@@ -293,7 +301,7 @@ const bodyH = (heading: string, note?: string, rightW = 0) => CARD.h - CARD.pad 
 
 /** 脚注 */
 function Note({ text }: { text?: string }) {
-  if (!text) return null;
+  if (!text || L.notes === false) return null;
   return <div style={{ display: "flex", marginTop: "auto", fontSize: noteFont(text), fontWeight: 500, color: C.sub }}>{text}</div>;
 }
 
@@ -642,7 +650,7 @@ function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
 function ChapterBar({ ch, count }: { ch: TimelineChapter; count: number }) {
   const num = String(ch.index); // ゼロ埋めしない（「9/9」。10/23 ユーザー指示）
   return (
-    <div style={{ ...row, position: "absolute", left: HEADER.x, top: HEADER.y, height: HEADER.h, background: C.bar, borderRadius: 14, paddingRight: 32 }}>
+    <div style={{ ...row, position: "absolute", left: L.headerX ?? HEADER.x, top: HEADER.y, height: HEADER.h, background: C.bar, borderRadius: 14, paddingRight: 32 }}>
       <div style={{ ...row, height: HEADER.h, padding: "0 22px", background: C.red, borderRadius: "14px 0 0 14px", color: C.white, fontSize: 36, fontWeight: 900 }}>{`${num}/${count}`}</div>
       <div style={{ display: "flex", marginLeft: 24, fontSize: fit(ch.title, 1200, 40, MIN_FONT, "章の帯"), fontWeight: 900, color: C.white }}>{ch.title}</div>
     </div>
@@ -680,13 +688,15 @@ function SpeakerSlot({ who, x, active, art, mouthOpen, plate }: { who: Who; x: n
   const A = L.art;
   if (art) {
     const img = active && mouthOpen && art.talk ? art.talk : art.closed;
-    const h = Math.round(A.imgH * (active ? 1 : 0.92));
+    // バストアップ（bust）: 絵の上から bust 割を枠の高さに合わせて拡大し、上ぞろえで切る
+    const h = A.bust ? Math.round((A.h / A.bust) * (active ? 1 : 0.94)) : Math.round(A.imgH * (active ? 1 : 0.92));
     const w = Math.round((img.w * h) / img.h);
     const left = x === SLOT.left ? A.left : A.right;
+    const top = A.bust ? Math.round(A.h * (active ? 0 : 0.06)) : A.h - h;
     return (
-      <div style={{ ...col, position: "absolute", left, top: A.y, width: A.w, height: A.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden" }}>
+      <div style={{ ...col, position: "absolute", left, top: A.y, width: A.w, height: A.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden", borderRadius: A.bust ? 20 : 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-        <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((A.w - w) / 2), top: A.h - h, width: w, height: h, opacity: active ? 1 : 0.5 }} />
+        <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((A.w - w) / 2), top, width: w, height: h, opacity: active ? 1 : 0.5 }} />
         {plate ? <NamePlate who={who} active={active} /> : null}
       </div>
     );
@@ -801,7 +811,7 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
   return (
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
       <ChapterBar ch={ch} count={tl.chapters.length} />
-      <div style={{ display: "flex", position: "absolute", right: 48, top: HEADER.y + 16, fontSize: MIN_FONT, fontWeight: 900, color: C.url }}>used.gadelog.com</div>
+      <div style={{ display: "flex", position: "absolute", right: (L.headerX ?? 40) + 8, top: HEADER.y + 16, fontSize: MIN_FONT, fontWeight: 900, color: C.url }}>used.gadelog.com</div>
       <div style={{ ...col, position: "absolute", left: CARD.x, top: CARD.y, width: CARD.w, height: CARD.h, padding: CARD.pad, background: C.white, borderRadius: 24 }}>
         <SceneBody ch={scene} t={local} />
       </div>
