@@ -496,7 +496,8 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
 }
 
 function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Record<string, number> }) {
-  const rowH = Math.min(cap(150), Math.floor(cap(480) / s.items.length));
+  // 行の高さはカードの残り（見出し・脚注を除く）で割る（d2 は脚注なし。11/23: 4行で下が切れた）
+  const rowH = Math.min(cap(150), Math.floor(bodyH(s.heading, s.note) / s.items.length));
   const NUM = cap(76);
   const textW = INNER_W - NUM - 32;
   return (
@@ -552,7 +553,7 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
   const credit = slides[cur].credit;
   const points = s.points ?? [];
   const GAP = cap(40);
-  const boxW = points.length ? Math.round(INNER_W * 0.56) : INNER_W;
+  const boxW = points.length ? Math.round(INNER_W * 0.5) : INNER_W;
   const creditFont = MIN_FOOT;
   const boxH = bodyH(s.heading, s.note) - Math.ceil(creditFont * 1.45) - 12;
   const k = Math.min(boxW / img.w, boxH / img.h);
