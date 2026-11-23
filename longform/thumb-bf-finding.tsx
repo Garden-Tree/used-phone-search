@@ -27,8 +27,8 @@ const EDGE = 60;
 const SET = process.argv.find((a) => a.startsWith("--set="))?.slice(6) ?? "bf";
 const ARGV = process.argv.slice(2).filter((a) => !a.startsWith("--set="));
 const CHECK = ARGV[0] === "--check";
-const DIR = SET === "se3keep" ? "2026-12-01-iphonese3-keep" : SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-24-iphone15" : "2026-11-26-blackfriday";
-const LAYERS = SET === "se3keep" ? "se3keep-layers" : SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
+const DIR = SET === "se3keep" || SET === "se3keepB" ? "2026-12-01-iphonese3-keep" : SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-24-iphone15" : "2026-11-26-blackfriday";
+const LAYERS = SET === "se3keepB" ? "se3keepB-layers" : SET === "se3keep" ? "se3keep-layers" : SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
 const OUTC = (c: string) => (CHECK && c === BLACK ? "#808080" : c);
 
 function Layer({ name }: { name: string }) {
@@ -182,6 +182,16 @@ const s1 = (
   </Frame>
 );
 
+// S2（11/24）: S1 と同じ文字・写真だけ明るい背面（スターライト）に。S1 は正面の赤い本体で画面が黒く、関連動画の枠の CTR 0.9%
+const s2 = (
+  <Frame>
+    <Layer name="se3kb-big" />
+    <T x={EDGE + 6} y={60}><Outlined text="iPhone SE 3" size={116} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 9} y={204}><Outlined text="まだ使う？" size={172} color={YELLOW} w={9} spacing={-8} /></T>
+    <Tag x={EDGE} y={448} text="電池1.2万円" size={104} color={RED} pad={16} spacing={-5} />
+  </Frame>
+);
+
 // ---- 15（2026-11-24-iphone15・11/21）: iPhone 15 の前面。数字は script.md のもの（11/17。公開前日 11/27 に取り直す）
 //   相場 128GB 90,980円（9.1万円・11/22）・14 との差 26,000円（2.6万円。違いは USB-C と A16）
 // F1: iPhone 15（白 116）／ 今買い？（黄 172・主役）／ 札 相場9.2万円（赤 104）＝13 の K3 と同じ形
@@ -214,7 +224,7 @@ const f3 = (
 
 (async () => {
   const fonts = await notoSansJp(readFileSync(__filename, "utf8"));
-  const plans: [string, ReactNode][] = SET === "se3keep" ? [["S1", s1]] : SET === "15" ? [["F1", f1], ["F2", f2], ["F3", f3]] : SET === "13keep" ? [["K1", k1], ["K2", k2], ["K3", k3]] : SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
+  const plans: [string, ReactNode][] = SET === "se3keepB" ? [["S2", s2]] : SET === "se3keep" ? [["S1", s1]] : SET === "15" ? [["F1", f1], ["F2", f2], ["F3", f3]] : SET === "13keep" ? [["K1", k1], ["K2", k2], ["K3", k3]] : SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
   const checkDir = CHECK ? ARGV[1] : "";
   if (CHECK) mkdirSync(checkDir, { recursive: true });
   for (const [name, node] of plans) {
