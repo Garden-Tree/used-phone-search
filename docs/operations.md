@@ -4,13 +4,13 @@
 
 ```
 [シンレンタルサーバー cron 2:40/8:40/14:40/20:40] ~/rakuten-sync/fetch.php（約30分）
-   楽天市場 商品検索API（ゲオモバイル・じゃんぱら・ソフマップの楽天市場店）
+   楽天市場 商品検索API（楽天市場店。店の一覧は STATE.md・`scripts/ci-deploy.sh` の SHOP_CODES）
    └→ 公開フォルダの中の推測されにくいフォルダに <shopCode>.json.gz を保存（config.php の output_dir）
-   └→ 3店とも終わったら GitHub の workflow_dispatch で Actions を起動（config.php の github_dispatch_token）
+   └→ 全店終わったら GitHub の workflow_dispatch で Actions を起動（config.php の github_dispatch_token）
                                    ↓
 [GitHub Actions scraper.yaml]  起動: 上の workflow_dispatch／定期実行 0:00/6:00/12:00/18:00 UTC（＝9/15/21/3時。数時間遅れ・取りこぼしあり）
  1. 4店のスクレイプ（イオシス・にこスマ・エムモバ・ダイワン）→ Neon（店ごとに洗い替え）
- 2. 楽天3店の json.gz を HTTPS で取得（Secrets の RAKUTEN_DATA_URL）→ scripts/ingest-rakuten.ts → Neon
+ 2. 楽天の店の json.gz を HTTPS で取得（Secrets の RAKUTEN_DATA_URL）→ scripts/ingest-rakuten.ts → Neon
  3. iPad の機種名をそろえる → 公式とモール店（イオシス楽天・エムコム Yahoo）の突き合わせ（scripts/link-duplicate-shops.ts）→ 価格推移の記録 → scripts/check-health.ts
  4. next build（output: "export"）→ out/ → scripts/ci-deploy.sh deploy（wrangler pages deploy）
                                    ↓
@@ -22,7 +22,7 @@
 ```
 
 - **サイトの中身が変わるのは Actions が書き出したときだけ**。実行時に DB は使わない（Neon が起きるのは Actions の間だけ）
-- Vercel は 10/20 ごろまで旧版を残している（DNS を戻せば旧版に戻る）。Vercel のプロジェクトを止めたら、この行と cloudflare-pages.md の「戻し方」を消す
+- Vercel のプロジェクトは止めていない（10/5 の旧版が残る・10/30 時点。DNS を戻せば旧版に戻る）。止めたら、この行と cloudflare-pages.md の「戻し方」を消す
 
 ## アカウント・秘密情報の置き場所
 
@@ -33,7 +33,7 @@
 | 楽天の JSON の場所 | GitHub Secrets `RAKUTEN_DATA_URL`（`https://gadelog.com/<推測されにくいフォルダ>/`）と `config.php` の `output_dir` | フォルダ名は Git に書かない |
 | Yahoo!ショッピング API | GitHub Secrets `YAHOO_APP_ID`（Yahoo! デベロッパーネットワークのアプリの Client ID） | ユーザーが登録。未登録のあいだは Yahoo の取り込みを飛ばす。Claude は値を扱わない |
 | Amazon Creators API | GitHub Secrets `AMAZON_CREDENTIAL_ID`・`AMAZON_CREDENTIAL_SECRET`・`AMAZON_PARTNER_TAG`（アソシエイトのトラッキングID）、Variables `AMAZON_CREDENTIAL_VERSION`（認証情報のバージョン。未設定は 3.3＝極東。3.1 北米・3.2 欧州） | ユーザーが登録。`AMAZON_CREDENTIAL_ID` が空なら Amazon の取り込みを飛ばす。Claude は値を扱わない |
-| ValueCommerce のリンク | GitHub Secrets `VC_SID`（サイトID）・`VC_PID`（プロモーションID）→ ビルド時に `NEXT_PUBLIC_VC_SID`/`NEXT_PUBLIC_VC_PID` | リンクの URL に出る公開の値。未登録なら Yahoo のリンクはもしもアフィリエイト経由（a_id 5840289・p_id 1225。入れると ValueCommerce に切り替わる） |
+| ValueCommerce のリンク | GitHub Secrets `VC_SID`（サイトID）・`VC_PID`（プロモーションID）→ ビルド時に `NEXT_PUBLIC_VC_SID`/`NEXT_PUBLIC_VC_PID` | リンクの URL に出る公開の値。10/26 に登録済み（Yahoo のリンクは ValueCommerce）。空にするともしもアフィリエイト経由に戻る（もしもは否認済み） |
 | Actions の即時起動 | `config.php` の `github_dispatch_token`（Fine-grained・このリポジトリだけ・Actions: Read and write） | **期限 2027/10/05**。ユーザーが作成・入力 |
 | 楽天API | `config.php`（アプリID・Access Key） | アプリ「中古スマホ一括検索」・Backend・許可IP 210.157.79.113 |
 | サイトURL・GA4 | ワークフローの `NEXT_PUBLIC_SITE_URL`・`NEXT_PUBLIC_GA_ID=G-YV3ZR0N6B1`（公開される値なので直書き） | GA4 の詳細は `measurement.md` |
@@ -46,7 +46,7 @@
 
 | いつ（日本時間） | どこで | 何を | ログ |
 | --- | --- | --- | --- |
-| 2:40/8:40/14:40/20:40 | サーバー cron | 楽天3店の取得と JSON の保存 → Actions を起動 | `~/rakuten-sync/fetch.log`（`<shopCode> saved:`・`dispatch: HTTP 204`） |
+| 2:40/8:40/14:40/20:40 | サーバー cron | 楽天の店の取得と JSON の保存 → Actions を起動 | `~/rakuten-sync/fetch.log`（`<shopCode> saved:`・`dispatch: HTTP 204`） |
 | 上の直後＋定期実行（9/15/21/3時ごろ） | GitHub Actions `Phone Inventory Scraper` | 取得・取り込み・価格推移・書き出し・配置・自己有効化 | Actions の実行ログ（失敗時は GitHub から通知メール） |
 | 毎日9時ごろ（UTC 0時の定期実行） | GitHub Actions（配置の後） | IndexNow にサイトマップ全件を送る（下記） | Actions の実行ログ（`IndexNow: HTTP 200`） |
 | 毎日10:00 | サーバー cron | `healthcheck.php`（問題時のみメール） | cron の通知メール |
@@ -196,7 +196,7 @@
    （`shopping.yahoo.co.jp/search?...&sid=` は店で絞り込まれない）
    （商品検索API v3 を `seller_id=<ストアID>&condition=used&in_stock=true` で呼んでも商品名を集められる。`description` にランク・バッテリー・キャリアが書かれている店が多く、`fetch-yahoo.ts` の `extract` が読む。保証は店の `guide.html`（`info.html` は会社概要だけ）にある）
 2. `lib/shops.ts` の `SHOPS` に1行足す（`note` が "Yahoo!" で始まる店は絞り込みで「（Yahoo!）」と出る。保証・赤ロムは**その店の公式ページで確かめてから**書く）
-3. リンクは**バリューコマース経由**（サイト ID 3784061。もしもは否認）（`lib/affiliate.ts` の `moshimoYahooUrl`。a_id 5840289・p_id 1225・メディア「中古スマホ一括検索」692048。GA4 の `link_type` は `moshimo`）。Secrets の `VC_SID`・`VC_PID` を入れると自動で ValueCommerce（2%。`vc`）に切り替わる。Yahoo の商品ページ以外へは張らない
+3. リンクは**バリューコマース経由**（サイト 3784061・Yahoo!ショッピング本体 2025875・2%。10/26〜 Secrets の `VC_SID`・`VC_PID` で `lib/affiliate.ts` が自動で切り替え。GA4 の `link_type` は `vc`）。もしも（`moshimoYahooUrl`）は否認済みで、Secrets が空のときの予備のコードだけ残る。Yahoo の商品ページ以外へは張らない
 4. API の応答の形・件数の上限を確かめるとき: `YAHOO_APP_ID=... npx tsx scripts/fetch-yahoo.ts --debug --shop <ストアID>`（最初の1商品の生の応答を出す）
 - Yahoo! JAPAN のウェブサービスを使う側の表記（クレジット）は未対応。API 規約を確認して `app/components/AdDisclosure.tsx` に足す
 
@@ -205,7 +205,7 @@
 - a8mat は A8 のサイト別（中古スマホ一括検索＝サイト 002）のもの。URL・文言・1x1 画像（0.gif）は A8 の提供そのまま使う（加工しない）
 - PR 表記を見出しの横に出している（ステマ規制）。GA4 は `shop_click`（`shop_name` 末尾に「（買取）」。docs/measurement.md）
 
-### Amazon 整備済み品（Creators API。2026-10-09 実装・認証情報の登録待ち）
+### Amazon 整備済み品（Creators API。2026-10-09 実装・11/22 に取り込みが戻った。`lib/shops.ts` に掲載中）
 - 流れ: Actions の「Amazon 整備済み品を取り込む」が `scripts/fetch-amazon.ts`（機種 126 件 × 「<機種> 整備済み品」で SearchItems。1機種 最大5ページ＝最大 630 リクエスト・約12分。上限は1秒1回・1日 8,640 回）→
   `amazon-data/amazon.json.gz`（`{items, fetchedAt}`）→ `scripts/ingest-rakuten.ts amazon-data --family amazon`（洗い替え・半分未満なら中止の安全装置は楽天と同じ）。`AMAZON_CREDENTIAL_ID` が空なら飛ばす
 - 規約（Creators API）: ①価格は取得から1時間・その他は1日まで ②リンクは `detailPageURL` をそのまま（アソシエイトのタグ付き。`affiliateUrl` は加工しない）
@@ -236,7 +236,7 @@
 ## デプロイ
 
 - **push ではデプロイされない**。サイトに出るのは次の Actions の実行（楽天の取得の後・定期実行・手動の Run workflow）
-- コードを変えたら: ローカルで `npx next build`（Docker の DB）→ main に push → Run workflow で即反映 → `https://used.gadelog.com` で確認
+- コードを変えたら: ローカルで `npx next build`（Docker の DB）→ main に push → 次の定期実行で反映 → `https://used.gadelog.com` で確認。手動の Run workflow は急ぐときだけ・1日1回まで（1回で Neon を約35MB 読む）
 - 開発の流れ：ブランチ → PR → マージ（自動マージはリポジトリ設定で無効）。Vercel は `scripts/vercel-ignore.sh` で一切ビルドしない
 
 ## ローカルの確認用 DB（Docker）

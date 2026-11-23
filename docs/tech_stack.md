@@ -41,7 +41,7 @@
   - `scraper/daiwan_scraper.py`: ダイワンテレコムの在庫情報を取得。並列処理による詳細取得。
   - `scraper/mmoba_scraper.py`: エムモバの在庫情報を取得。タイトルからの利用制限情報抽出。
 
-## 楽天API 取り込み（ゲオモバイル・じゃんぱら・ソフマップの楽天市場店）
+## 楽天API 取り込み（楽天市場店。店の一覧は STATE.md・`lib/rakutenShops.ts`）
 - `rakuten-sync/fetch.php`（PHP）をシンレンタルサーバー（固定IP）の cron で実行し、楽天市場 商品検索API（2026-07-01版）から取得。
   ショップごとに「iPhone」「iPad」「Pixel」「Galaxy」で検索してまとめ、gzip の JSON を `config.php` の `output_dir`（公開フォルダの中の推測されにくいフォルダ）に保存（Actions が HTTPS で取りに来る）。
   1検索3,000件の上限は価格帯の2分割で回避。一時エラーは2回までリトライ。1ショップの失敗で他は止めない。

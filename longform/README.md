@@ -21,7 +21,7 @@ npx tsx longform/video.tsx      longform/2026-10-21-iphone-dore check      # 長
 書き出す順: **voice-draft.ts（今の辞書で合成し直す）→ timeline.ts → video.tsx**。新しい回は**終了画面前提**（下の「終了画面」）。古い声（stale）や見積もりの行が残っていると video.tsx は止まる。
 
 - video.tsx は絵が変わるところ（章・台詞・字幕のページ・項目が出る秒）だけ PNG にして（約10分で約110枚）、ffmpeg の concat（1枚ごとの長さ）で 30fps の H.264 にする。項目はふわっと出さず切り替え
-- PC が重い処理で落ちるので: 1つずつ順に・ffmpeg は1本ずつ `-threads 2`・優先度「低」。段だけやり直すときは `frames` / `encode` / `audio` / `mux` / `meta`。`--preset medium` で少し小さくなる
+- （10/29〜11/22 の決まり。11/23〜 は下の「書き出しの速さ」で PNG 22本並べて・ffmpeg 16スレッド）PC が重い処理で落ちるので: 1つずつ順に・ffmpeg は1本ずつ `-threads 2`・優先度「低」。段だけやり直すときは `frames` / `encode` / `audio` / `mux` / `meta`。`--preset medium` で少し小さくなる
 - 音: 声（voice-draft/joined.wav）を -16 LUFS に → BGM（shorts/assets/bgm.mp3）をくり返して 0.07 倍・頭2秒で上げ最後4秒で下げる → loudnorm 2パスで -14 LUFS・真のピーク -1。最後の台詞のあと 1.5 秒残す（終了画面があれば、最後の章の絵が出てから 20 秒になるまで BGM だけで残す）。2章目からは章の頭に短いジングル（video.tsx の makeJingle がその場で合成する E5→G#5→B5 の3音・0.75秒・ピーク -18 dBFS。外の音源は使わない）
 - 説明文（youtube.txt）: タイトルは script.md の「タイトル案」の 1.、チャプターは実測、リンクは utm_campaign=long_20261021、クレジットは VOICEVOX の2人と BGM、立ち絵があれば「立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)」「ずんだもん立ち絵：坂本アヒル様」
 - `timeline.json`・`frames/`・`video.mp4`・`stills/check-*.png`・`longform/assets/` は Git に入れない（.gitignore）。`stills/`・chapters.txt・youtube.txt・thumbnail.png は残す
@@ -59,8 +59,8 @@ npx tsx longform/video.tsx      longform/2026-10-21-iphone-dore check      # 長
 - 口の開閉は PNG を2枚だけ作り、ffmpeg の一覧で交互に並べる（コマは増やさない）
 - サムネ（thumbnail.png）は つむぎ の立ち絵があれば右に置く
 - **サムネの文字と切り抜き（11/13 ユーザーの指摘）**: 1280x720 で **104px 未満の文字は置かない**（小さい文字は読まれない。大きくするか消す）。文字どうし・文字と端末を重ねない。1枚 2〜3 要素まで。写真の切り抜きは rembg などでマスクを作って縁をなめらかに（太い白ふち・斜めの写真の無理な正面化はしない）。出す前に 168x94 に縮めて全部読めるか見る
-- **機種ごとの回の型（11/13 ユーザーと決定）**: 題は「中古iPhone ◯◯は今買い？＋数字」、サムネは「iPhone ◯◯／今買い？（主役・220px）／数字の札」（thumb-v13-imakai.tsx の型1。配置は同じで、地の色を機種ごとに変える。13＝緑・16＝オレンジ）
-- **サムネの素材（11/13 ユーザーと決定）**: 使う＝自分で撮った写真・Wikimedia Commons の CC 写真（作者・ライセンス・URL を説明欄に書く。CC0／BY を優先、BY-SA は確認してから）・Pexels などのストック写真。**ロゴが映っていてよい**。使わない＝Apple の公式画像（プレス画像・apple.com の製品画像）・他人のサムネや記事の画像。写真の機種と、文字や札の機種を食い違わせない。YouTube 検索の上位は端末の実物が主役（ideas/2026-11-13-youtube.md）
+- **機種ごとの回の型（11/13 ユーザーと決定・11/14〜 は暗い地の型に替わった。いまの型はスキル youtube-thumbnail）**: 題は「中古iPhone ◯◯は今買い？＋数字」、サムネは「iPhone ◯◯／今買い？（主役・220px）／数字の札」（thumb-v13-imakai.tsx の型1。配置は同じで、地の色を機種ごとに変える。13＝緑・16＝オレンジ）
+- **サムネの素材（11/13 ユーザーと決定）**: 使う＝自分で撮った写真・Wikimedia Commons の CC 写真（作者・ライセンス・URL を説明欄に書く。CC0／BY を優先、BY-SA は確認してから）・Pexels などのストック写真。**ロゴが映っていてよい**。使わない＝Apple の公式画像（プレス画像・apple.com の製品画像。**11/23〜 動画の中では出典つきの引用で使ってよい**＝下の「台本と画面の決まり」）・他人のサムネや記事の画像。写真の機種と、文字や札の機種を食い違わせない。YouTube 検索の上位は端末の実物が主役（ideas/2026-11-13-youtube.md）
 - 立ち絵の入ったコマ（stills/ch*.png）とサムネは動画の一部としての利用（規約の範囲）。素材の PNG そのものは Git に入れない
 
 ## ファイル
@@ -79,6 +79,8 @@ npx tsx longform/video.tsx      longform/2026-10-21-iphone-dore check      # 長
 | `fonts.ts` | コマ用のフォント（render.ts と video.tsx で共有） |
 
 ## 画面の配置（10/29〜。scenes.tsx の `LAYOUTS.d1`）
+
+**11/23〜 の既定は配置 d2**（下の「台本と画面の決まり」の「配置 d2」が優先。この節は d1 の記録で、d2 と違う所は d2 に従う）。
 
 それまでの配置（10/21〜10/29 に出した回）は `LONGFORM_LAYOUT=legacy` を付けて timeline.ts・render.ts・video.tsx を回すと出せる。
 

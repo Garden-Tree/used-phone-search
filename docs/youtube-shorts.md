@@ -2,9 +2,11 @@
 
 構成と調査の経緯は `ideas/youtube-shorts.md`。使い方の詳細は `shorts/README.md`。
 
+> **11/23 注**: 「いまの状態」「3パターンの比較」「次にやること」と「素材」の行は 10/17〜10/21 の記録（投稿は 10/21〜・BGM と VOICEVOX は導入済み・0秒目に実写／AI クリップも使う）。**いまの頻度とネタはスキル youtube-shorts の「11/23〜 の決まり」**（週2本・7:00・在庫数／電池／1世代前だけ）。
+
 ## いまの状態
 
-- **チャンネル**: 「中古スマホ一括比較」@used_gadelog（ID UChEMmzg1RvjZ1LpiTxleGMA・10/17 開設）
+- **チャンネル**: 「中古スマホ一括検索」@used_gadelog（ID UChEMmzg1RvjZ1LpiTxleGMA・10/17 開設）
   - 作成とログインはユーザー。アイコン・バナー・説明文・リンクは Claude が設定済み。
   - 設定の文面は `shorts/channel.md`、画像は `npx tsx shorts/brand.tsx` で作り直せる。
 - **動画**: 試作は 10/17 のデータで3パターン（`shorts/out/2026-10-17-drops/`。out は Git に入らない）。
