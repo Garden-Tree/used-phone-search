@@ -194,10 +194,10 @@
       }
     },
     {
-      "title": "17eに載っていないもの",
+      "title": "17eにないもの",
       "scene": {
         "type": "photo",
-        "heading": "17eに載っていないもの",
+        "heading": "17eにないもの",
         "src": "longform/assets/commons/iphone17e-back-chinofutaba.jpg",
         "credit": "iPhone 17e backside — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
         "crop": {
@@ -208,7 +208,7 @@
         },
         "points": [
           {
-            "text": "超広角は載っていない",
+            "text": "超広角はついていない",
             "sub": "カメラは48MPのメイン1つ",
             "cue": "まずカメラ"
           },
@@ -219,7 +219,7 @@
           },
           {
             "text": "120Hz・常時表示",
-            "sub": "仕様に載っていない",
+            "sub": "ついていない",
             "cue": "それから画面"
           }
         ],
@@ -268,7 +268,7 @@
           },
           {
             "text": "Dynamic Island",
-            "sub": "17e の仕様には載っていない",
+            "sub": "17e にはない",
             "cue": "画面の上には、Dynamic Island"
           },
           {
