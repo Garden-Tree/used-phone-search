@@ -18,6 +18,7 @@
  * - 出力（<フォルダ>/）: video.mp4・chapters.txt・youtube.txt・thumbnail.png（1280x720）。途中のファイルは frames/
  */
 import { spawn, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import { join, resolve } from "node:path";
@@ -92,7 +93,7 @@ async function measure(file: string, extra = ""): Promise<Record<string, string>
 
 // ───────── 区切り ─────────
 
-type Segment = { frame: number; t: number; key: string; flap: boolean; level: number };
+type Segment = { frame: number; t: number; key: string; flap: boolean; level: number; file: string };
 
 /**
  * 絵が変わる秒（章・台詞の始まりと終わり・字幕のページ・項目が出る秒）を集め、そこでの「映すもの」が前と同じなら1つにまとめる。
@@ -128,7 +129,20 @@ function voiceLevels(dir: string): number[] {
   return out;
 }
 
+/**
+ * 絵を決めるもの（画面のコード・立ち絵・章の中身・字幕・状態）の指紋。同じ指紋の PNG は前の書き出しのものを使い回す（11/23・速くする）
+ */
+function codeHash(): string {
+  const h = createHash("sha1");
+  for (const f of ["longform/scenes.tsx", "longform/types.ts", "longform/fonts.ts", "longform/art.ts"]) if (existsSync(f)) h.update(readFileSync(f));
+  const chara = "longform/assets/chara";
+  if (existsSync(chara)) for (const f of readdirSync(chara).sort()) h.update(f + statSync(join(chara, f)).size);
+  return h.digest("hex").slice(0, 12);
+}
+
 function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: Segment[]; totalFrames: number } {
+  const code = codeHash();
+  const chHash = new Map(tl.chapters.map((c) => [c.index, createHash("sha1").update(JSON.stringify([c.title, c.scene, c.lines.map((l) => [l.who, l.pages.map((p) => p.text)]), tl.chapters.length, tl.date])).digest("hex").slice(0, 12)]));
   const total = tl.total + tailOf(tl);
   const points = new Set<number>([0]);
   for (const ch of tl.chapters) {
@@ -170,12 +184,15 @@ function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: S
     if (prev && prev.key === key) continue;
     // 揺れている短いコマは口を閉じた絵だけ（PNG を増やしすぎない）
     // 声の波形があれば口は声の大きさで開ける（交互の開閉はしない）。揺れている短いコマは口を閉じた絵だけ
-    segs.push({ frame, t, key, flap: levels.length ? false : flapBase && !moving, level });
+    const plate = t <= 10;
+    const file = `c-${createHash("sha1").update(JSON.stringify([code, chHash.get(st.ch.index), key, plate, Object.keys(art).sort()])).digest("hex").slice(0, 20)}`;
+    segs.push({ frame, t, key, flap: levels.length ? false : flapBase && !moving, level, file });
   }
   return { segs, totalFrames: Math.round(total * FPS) };
 }
 
-const segFile = (i: number, open = false) => `seg-${String(i + 1).padStart(4, "0")}${open ? "-open" : ""}.png`;
+let SEGS: Segment[] = [];
+const segFile = (i: number, open = false) => `${SEGS[i].file}${open ? "-open" : ""}.png`;
 
 // ───────── 各段 ─────────
 
@@ -199,7 +216,8 @@ async function renderFramesParallel(dir: string, total: number) {
 
 async function renderFrames(tl: Timeline, segs: Segment[], art: CharaArt, work: string, part?: { k: number; n: number }) {
   const fonts = await longFonts(tl);
-  const all = segs.flatMap((s, i) => [{ s, i, open: false }, ...(s.flap ? [{ s, i, open: true }] : [])]);
+  const todo = new Set<string>(JSON.parse(readFileSync(join(work, "todo.json"), "utf8")) as string[]);
+  const all = segs.flatMap((s, i) => [{ s, i, open: false }, ...(s.flap ? [{ s, i, open: true }] : [])]).filter((j) => todo.has(segFile(j.i, j.open)));
   const jobs = part ? all.filter((_, x) => x % part.n === part.k) : all;
   const t0 = now();
   for (const [n, j] of jobs.entries()) {
@@ -231,12 +249,24 @@ function concatList(segs: Segment[], totalFrames: number): string {
   return out.join("\n") + "\n";
 }
 
-async function encode(work: string, preset: string) {
+/** GPU（AMD AMF）で映像を作る（LONGFORM_GPU=0 で CPU の libx264）。11/23 速くする */
+const USE_GPU = process.env.LONGFORM_GPU !== "0";
+
+async function encode(work: string, preset: string, tl?: Timeline) {
+  // チャンネル登録の重ねも、ここで一緒に（映像を2回作らない）
+  const at = tl ? subscribeAt(tl) : null;
+  const sub = at !== null && existsSync(SUBSCRIBE_GB);
+  const T = (at ?? 0).toFixed(3);
+  const vf = `fps=${FPS},format=yuv420p`;
+  const filter = sub
+    ? ["-i", SUBSCRIBE_GB, "-filter_complex", `[0:v]${vf}[base];[1:v]trim=0:${SUBSCRIBE_SEC},setpts=PTS-STARTPTS+${T}/TB,chromakey=0x00FF01:0.15:0.02,despill=type=green,format=yuva444p,split[ck][ka];[ka]alphaextract,erosion[ke];[ck][ke]alphamerge[ov];[base][ov]overlay=0:0:enable='between(t,${T},${((at ?? 0) + SUBSCRIBE_SEC).toFixed(3)})':eof_action=pass,format=yuv420p[v]`, "-map", "[v]"]
+    : ["-vf", vf];
+  const codec = USE_GPU
+    ? ["-c:v", "h264_amf", "-quality", "quality", "-rc", "cqp", "-qp_i", "18", "-qp_p", "20", "-qp_b", "22", "-g", String(FPS * 10)]
+    : ["-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", "20", "-g", String(FPS * 10), "-threads", FF_THREADS, "-x264-params", `threads=${FF_THREADS}`];
   await ffmpeg(
-    ["-y", "-threads", FF_THREADS, "-f", "concat", "-safe", "0", "-i", join(work, "list.txt"), "-vf", `fps=${FPS},format=yuv420p`, "-fps_mode", "cfr",
-      "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", "20", "-g", String(FPS * 10), "-threads", FF_THREADS, "-x264-params", `threads=${FF_THREADS}`,
-      "-an", "-movflags", "+faststart", join(work, "video-only.mp4")],
-    `映像（H.264 ${preset}）`,
+    ["-y", "-threads", FF_THREADS, "-f", "concat", "-safe", "0", "-i", join(work, "list.txt"), ...filter, "-fps_mode", "cfr", ...codec, "-an", "-movflags", "+faststart", join(work, "video-only.mp4")],
+    `映像（${USE_GPU ? "GPU h264_amf" : `H.264 ${preset}`}${sub ? `・チャンネル登録 ${T} 秒` : ""}）`,
   );
 }
 
@@ -327,11 +357,11 @@ function subscribeAt(tl: Timeline): number | null {
 async function mux(dir: string, work: string, tl?: Timeline) {
   const at = tl ? subscribeAt(tl) : null;
   if (at !== null && existsSync(SUBSCRIBE_GB)) {
-    const T = at.toFixed(3), ms = Math.round(at * 1000);
-    const fc = `[2:v]trim=0:${SUBSCRIBE_SEC},setpts=PTS-STARTPTS+${T}/TB,chromakey=0x00FF01:0.15:0.02,despill=type=green,format=yuva444p,split[ck][ka];[ka]alphaextract,erosion[ke];[ck][ke]alphamerge[ov];[0:v][ov]overlay=0:0:enable='between(t,${T},${(at + SUBSCRIBE_SEC).toFixed(3)})':eof_action=pass,format=yuv420p[v];` +
-      `[2:a]atrim=0:${SUBSCRIBE_SEC},aresample=48000,adelay=${ms}|${ms},volume=0.8[ca];[1:a][ca]amix=inputs=2:duration=first:normalize=0[a]`;
-    await ffmpeg(["-y", "-i", join(work, "video-only.mp4"), "-i", join(work, "audio.m4a"), "-i", SUBSCRIBE_GB, "-filter_complex", fc, "-map", "[v]", "-map", "[a]",
-      "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-threads", FF_THREADS, "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], `映像と音をまとめる（チャンネル登録 ${T} 秒）`);
+    // 映像は encode で重ね済み。ここではクリック音だけを本編の音に足す（映像はそのまま写す）
+    const ms = Math.round(at * 1000);
+    const fc = `[2:a]atrim=0:${SUBSCRIBE_SEC},aresample=48000,adelay=${ms}|${ms},volume=0.8[ca];[1:a][ca]amix=inputs=2:duration=first:normalize=0[a]`;
+    await ffmpeg(["-y", "-i", join(work, "video-only.mp4"), "-i", join(work, "audio.m4a"), "-i", SUBSCRIBE_GB, "-filter_complex", fc, "-map", "0:v", "-map", "[a]",
+      "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], `映像と音をまとめる（チャンネル登録の音 ${at.toFixed(3)} 秒）`);
     return;
   }
   await ffmpeg(["-y", "-i", join(work, "video-only.mp4"), "-i", join(work, "audio.m4a"), "-map", "0:v", "-map", "1:a", "-c", "copy", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], "映像と音をまとめる");
@@ -544,6 +574,7 @@ async function check(dir: string, tl: Timeline) {
   if (bad.length) throw new Error(`古い声・見積もりの行が ${bad.length} 行あります。voice-draft.ts → timeline.ts をやり直してください`);
 
   const { segs, totalFrames } = segments(tl, art, voiceLevels(dir));
+  SEGS = segs;
   const pngs = segs.length + segs.filter((s) => s.flap).length;
   const who = (Object.keys(art) as Who[]).map((w) => `${w}${art[w]?.talk ? "（口あり）" : ""}`).join("・") || "なし（名前の札）";
   const es = endScreenWindow(tl);
@@ -559,16 +590,22 @@ async function check(dir: string, tl: Timeline) {
   }
   if (mode === "all" || mode === "frames") {
     console.log("PNG を作る");
-    for (const f of readdirSync(work)) if (/^seg-\d+(-open)?\.png$/.test(f)) rmSync(join(work, f));
-    const total = segs.reduce((a, x) => a + (x.flap ? 2 : 1), 0);
-    if (JOBS > 1) await renderFramesParallel(dir, total);
-    else await renderFrames(tl, segs, art, work);
+    // 同じ指紋の PNG はそのまま使う。足りない分だけ作り、使わなくなった PNG は消す
+    const need = new Set<string>(segs.flatMap((x, i) => [segFile(i), ...(x.flap ? [segFile(i, true)] : [])]));
+    for (const f of readdirSync(work)) if (/^(seg-\d+|c-[0-9a-f]+)(-open)?\.png$/.test(f) && !need.has(f)) rmSync(join(work, f));
+    const todo = [...need].filter((f) => !existsSync(join(work, f)));
+    writeFileSync(join(work, "todo.json"), JSON.stringify(todo));
+    console.log(`  使い回し ${need.size - todo.length} 枚・新しく作る ${todo.length} 枚`);
+    if (todo.length) {
+      if (JOBS > 1 && todo.length > 200) await renderFramesParallel(dir, todo.length);
+      else await renderFrames(tl, segs, art, work);
+    }
     writeFileSync(join(work, "list.txt"), concatList(segs, totalFrames));
   }
   if (mode === "all" || mode === "encode") {
     console.log("映像");
     writeFileSync(join(work, "list.txt"), concatList(segs, totalFrames));
-    await encode(work, preset);
+    await encode(work, preset, tl);
   }
   if (mode === "all" || mode === "audio") {
     console.log("音");
