@@ -20,8 +20,8 @@ export type BarsScene = {
   type: "bars";
   heading: string;
   /** 件・機種は数の棒（店ごとの在庫数・最安の機種の数。10/24〜） */
-  unit: "万円" | "円" | "件" | "機種";
-  rows: { label: string; sub?: string; median: number; min?: number; minLabel?: string; stock?: string; pick?: boolean; cue?: string; minCue?: string }[];
+  unit: "万円" | "円" | "件" | "機種" | "年" | "時間" | "g";
+  rows: { label: string; sub?: string; median: number; min?: number; minLabel?: string; stock?: string; pick?: boolean; /** 札の文字（なければ「おすすめ」） */ pickLabel?: string; cue?: string; minCue?: string }[];
   note?: string;
 };
 

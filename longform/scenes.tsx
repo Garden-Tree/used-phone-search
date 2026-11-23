@@ -412,7 +412,7 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
             <div style={{ ...col, width: LABEL }}>
               <div style={{ ...row }}>
                 <div style={{ display: "flex", fontSize: labelFont, fontWeight: 900, color: C.ink, lineHeight: LH, whiteSpace: "nowrap" }}>{r.label}</div>
-                {r.pick ? <div style={{ display: "flex", flexShrink: 0, marginLeft: 12, padding: "0 12px", borderRadius: 8, background: C.red, color: C.white, fontSize: MIN_FONT, fontWeight: 900 }}>おすすめ</div> : null}
+                {r.pick ? <div style={{ display: "flex", flexShrink: 0, marginLeft: 12, padding: "0 12px", borderRadius: 8, background: C.red, color: C.white, fontSize: MIN_FONT, fontWeight: 900 }}>{r.pickLabel ?? "おすすめ"}</div> : null}
               </div>
               {subs.map((line, k) => (
                 <div key={k} style={{ display: "flex", fontSize: F.sub, fontWeight: 500, color: C.sub, lineHeight: LH, whiteSpace: "nowrap" }}>{line}</div>

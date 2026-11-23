@@ -22,26 +22,37 @@
     {
       "title": "結論：電池だけなら交換。替えるなら14 Pro・15・17e",
       "scene": {
-        "type": "bigNumber",
-        "heading": "iPhone SE（第3世代）：電池だけなら交換",
-        "items": [
+        "type": "photo",
+        "heading": "今日の4つの道",
+        "src": "longform/assets/ai/charging-night.png",
+        "credit": "AI で生成した画像（RealVisXL）",
+        "points": [
           {
-            "label": "電池交換",
-            "value": "12,000",
-            "unit": "円",
+            "text": "電池交換",
+            "sub": "ホームボタンを残す",
+            "cue": "4つの道を比べるね"
+          },
+          {
+            "text": "14 Pro",
+            "sub": "なめらかな画面・望遠",
+            "cue": "4つの道を比べるね"
+          },
+          {
+            "text": "15",
+            "sub": "USB-C・軽さ",
+            "cue": "4つの道を比べるね"
+          },
+          {
+            "text": "17e",
+            "sub": "AI・電池の長さ",
+            "cue": "4つの道を比べるね"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone-se3-front-red-toad40.jpg",
+            "credit": "iPhone SE 3rd Gen — Toad40 / CC BY-SA 4.0 / Wikimedia Commons",
             "cue": "結論から"
-          },
-          {
-            "label": "売って中古の14 Pro",
-            "value": "+6.4",
-            "unit": "万円",
-            "cue": "売って中古の14 Proにするなら"
-          },
-          {
-            "label": "売って中古の15",
-            "value": "+7.4",
-            "unit": "万円",
-            "cue": "売って中古の14 Proにするなら"
           }
         ]
       }
@@ -49,32 +60,35 @@
     {
       "title": "SE 3は今年のiOS 27に対応。新しいiOSはいつまで来る？",
       "scene": {
-        "type": "photo",
-        "heading": "SE 3 に新しい iOS はいつまで来る？",
-        "src": "longform/assets/commons/iphone-se3-front-red-toad40.jpg",
-        "credit": "iPhone SE 3rd Gen — Toad40 / CC BY-SA 4.0 / Wikimedia Commons",
-        "points": [
+        "type": "bars",
+        "heading": "新しい iOS が来た年数（これまでの記録）",
+        "unit": "年",
+        "rows": [
           {
-            "text": "iOS 27 に対応",
-            "sub": "2022年発売・A15 Bionic",
-            "cue": "入るよ"
+            "label": "6s",
+            "sub": "2015年→iOS 15",
+            "median": 6,
+            "cue": "6sは6年"
           },
           {
-            "text": "これまで：発売から5〜6年",
-            "sub": "6s→iOS 15・8/X→iOS 16・XS/XR→iOS 18",
-            "cue": "2015年の6sは"
+            "label": "8・X",
+            "sub": "2017年→iOS 16",
+            "median": 5,
+            "cue": "6sは6年"
           },
           {
-            "text": "SE 3 は 2027〜28年ごろ？",
-            "sub": "Apple は約束していない・記録からの見込み",
-            "cue": "SE 3は2022年発売だから"
-          }
-        ],
-        "images": [
+            "label": "XS・XR",
+            "sub": "2018年→iOS 18",
+            "median": 6,
+            "cue": "6sは6年"
+          },
           {
-            "src": "longform/assets/commons/iphone-se3-back-starlight-meidoriyo.jpg",
-            "credit": "iPhone SE 3 Starlight back — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
-            "cue": "じゃあ、いつまで入るのだ"
+            "label": "11",
+            "sub": "2019年→iOS 27も",
+            "median": 7,
+            "pick": true,
+            "cue": "2019年の11は",
+            "pickLabel": "7年目"
           }
         ]
       }
@@ -84,8 +98,8 @@
       "scene": {
         "type": "photo",
         "heading": "電池交換で戻るもの",
-        "src": "longform/assets/commons/iphone-se3-back-starlight-meidoriyo.jpg",
-        "credit": "iPhone SE 3 Starlight back — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
+        "src": "longform/assets/ai/charging-night.png",
+        "credit": "AI で生成した画像（RealVisXL）",
         "points": [
           {
             "text": "最大容量が新品の値に",
@@ -104,6 +118,11 @@
         ],
         "images": [
           {
+            "src": "longform/assets/commons/iphone-se3-back-starlight-meidoriyo.jpg",
+            "credit": "iPhone SE 3 Starlight back — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "本体はそのまま"
+          },
+          {
             "src": "longform/assets/commons/touchid-homebutton-iphone5s-randychiu.jpg",
             "credit": "iPhone 5S Home Button — randychiu / CC BY 2.0 / Wikimedia Commons（写真は iPhone 5s）",
             "cue": "ホームボタンも指紋も"
@@ -114,43 +133,30 @@
     {
       "title": "SE 3を売るといくら？",
       "scene": {
-        "type": "table",
-        "heading": "iPhone SE（第3世代）の買取",
-        "columns": [
-          "容量・状態",
-          "買取"
-        ],
-        "emphasis": [
-          1
-        ],
+        "type": "bars",
+        "heading": "SE 3 を売ると（良品）",
+        "unit": "円",
         "rows": [
           {
-            "cells": [
-              "64GB 良品",
-              "18,000円"
-            ],
+            "label": "64GB",
+            "median": 18000,
             "cue": "64GBで傷の少ない良品なら"
           },
           {
-            "cells": [
-              "128GB 良品",
-              "20,000円"
-            ],
-            "cue": "64GBで傷の少ない良品なら"
+            "label": "128GB",
+            "median": 20000,
+            "cue": "容量が大きいほど"
           },
           {
-            "cells": [
-              "256GB 良品",
-              "28,000円"
-            ],
-            "cue": "64GBで傷の少ない良品なら"
+            "label": "256GB",
+            "median": 28000,
+            "cue": "容量が大きいほど"
           },
           {
-            "cells": [
-              "64GB 本体割れ",
-              "5,400円"
-            ],
-            "cue": "5,400円まで下がる"
+            "label": "画面割れ",
+            "sub": "64GB",
+            "median": 5400,
+            "cue": "グラフのとおり"
           }
         ]
       }
@@ -191,53 +197,35 @@
     {
       "title": "どれに替えても変わること",
       "scene": {
-        "type": "table",
-        "heading": "どれに替えても変わること（Apple の技術仕様）",
-        "columns": [
-          "機種",
-          "画面",
-          "認証",
-          "重さ"
-        ],
-        "emphasis": [
-          3
-        ],
+        "type": "bars",
+        "heading": "重さ（Apple の技術仕様）",
+        "unit": "g",
         "rows": [
           {
-            "cells": [
-              "SE 3",
-              "4.7インチ 液晶",
-              "Touch ID",
-              "144g"
-            ],
+            "label": "SE 3",
+            "sub": "4.7インチ・Touch ID",
+            "median": 144,
             "cue": "まず、14 Pro、15、17e"
           },
           {
-            "cells": [
-              "14 Pro",
-              "6.1インチ 有機EL",
-              "Face ID",
-              "206g"
-            ],
-            "cue": "顔で開くFace ID"
+            "label": "17e",
+            "sub": "6.1インチ・Face ID",
+            "median": 169,
+            "cue": "3つ目、重くなる"
           },
           {
-            "cells": [
-              "15",
-              "6.1インチ 有機EL",
-              "Face ID",
-              "171g"
-            ],
-            "cue": "顔で開くFace ID"
+            "label": "15",
+            "sub": "6.1インチ・Face ID",
+            "median": 171,
+            "cue": "3つ目、重くなる"
           },
           {
-            "cells": [
-              "17e",
-              "6.1インチ 有機EL",
-              "Face ID",
-              "169g"
-            ],
-            "cue": "顔で開くFace ID"
+            "label": "14 Pro",
+            "sub": "6.1インチ・Face ID",
+            "median": 206,
+            "pick": true,
+            "cue": "14 Proだけ、棒が長い",
+            "pickLabel": "重い"
           }
         ]
       }
@@ -270,6 +258,11 @@
           }
         ],
         "images": [
+          {
+            "src": "longform/assets/ai/city-photo.png",
+            "credit": "AI で生成した画像（RealVisXL）",
+            "cue": "カメラは3つ"
+          },
           {
             "src": "longform/assets/commons/iphone14pro-screen-purple-igeeksblog.jpg",
             "credit": "iPhone 14 Pro — iGeeksBlog / CC BY-SA 4.0 / Wikimedia Commons",
@@ -309,9 +302,14 @@
         ],
         "images": [
           {
+            "src": "longform/assets/ai/cables.png",
+            "credit": "AI で生成した画像（RealVisXL）",
+            "cue": "MacやiPad"
+          },
+          {
             "src": "longform/assets/commons/iphone15-usbc-port-kyu3.jpg",
             "credit": "USB-C port of iPhone 15 — Kyu3 / CC BY-SA 4.0 / Wikimedia Commons",
-            "cue": "Lightningじゃなくなるのだ"
+            "cue": "旅行の荷物"
           },
           {
             "src": "longform/assets/commons/iphone15-back-blue-meidoriyo.jpg",
@@ -350,23 +348,36 @@
     {
       "title": "もう少し出せるなら17",
       "scene": {
-        "type": "photo",
-        "heading": "もう少し出せるなら iPhone 17",
-        "src": "longform/assets/commons/iphone17-back-lavender-azuresaturn.jpg",
-        "credit": "iPhone 17 (Lavender) - Backside — AzureSaturn / CC0 / Wikimedia Commons",
-        "points": [
+        "type": "bars",
+        "heading": "ビデオ再生の最大時間（Apple の技術仕様）",
+        "unit": "時間",
+        "rows": [
           {
-            "text": "最大120Hz・常時表示",
-            "cue": "120Hzのなめらかな画面"
+            "label": "SE 3",
+            "median": 15,
+            "cue": "もう少し出せるなら"
           },
           {
-            "text": "カメラコントロール",
-            "cue": "カメラコントロール"
+            "label": "15",
+            "median": 20,
+            "cue": "グラフは"
           },
           {
-            "text": "ビデオ再生 最大30時間",
-            "sub": "eSIM だけ",
-            "cue": "ビデオ再生は最大30時間"
+            "label": "14 Pro",
+            "median": 23,
+            "cue": "グラフは"
+          },
+          {
+            "label": "17e",
+            "median": 26,
+            "cue": "グラフは"
+          },
+          {
+            "label": "17",
+            "median": 30,
+            "pick": true,
+            "cue": "17の棒が",
+            "pickLabel": "最長"
           }
         ]
       }
@@ -403,49 +414,40 @@
     {
       "title": "まとめ",
       "scene": {
-        "type": "table",
-        "heading": "iPhone SE（第3世代）・まだ使う？",
-        "columns": [
-          "選び方",
-          "足すお金"
-        ],
-        "emphasis": [
-          1
-        ],
+        "type": "bars",
+        "heading": "足すお金（SE 3 を良品で売った場合）",
+        "unit": "円",
         "rows": [
           {
-            "cells": [
-              "電池を替える",
-              "12,000円"
-            ],
+            "label": "電池交換",
+            "sub": "ホームボタンのまま",
+            "median": 12000,
             "cue": "まとめるね"
           },
           {
-            "cells": [
-              "中古の14 Pro（120Hz）",
-              "+64,280円"
-            ],
-            "cue": "替えるなら、画面なら14 Pro"
+            "label": "中古の14 Pro",
+            "sub": "120Hz・望遠",
+            "median": 64280,
+            "cue": "替えるなら、画面とカメラは"
           },
           {
-            "cells": [
-              "中古の15（USB-C）",
-              "+73,700円"
-            ],
-            "cue": "替えるなら、画面なら14 Pro"
+            "label": "中古の15",
+            "sub": "USB-C・軽さ",
+            "median": 73700,
+            "pick": true,
+            "cue": "15にするのだ",
+            "pickLabel": "決めた"
           },
           {
-            "cells": [
-              "新品の17e（AI）",
-              "+106,800円"
-            ],
-            "cue": "替えるなら、画面なら14 Pro"
+            "label": "新品の17e",
+            "sub": "AI・電池",
+            "median": 106800,
+            "cue": "替えるなら、画面とカメラは"
           },
           {
-            "cells": [
-              "中古の17（全部入り）",
-              "+131,980円"
-            ],
+            "label": "中古の17",
+            "sub": "全部入り",
+            "median": 131980,
             "cue": "電池を重視するなら"
           }
         ]
