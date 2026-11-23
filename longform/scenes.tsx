@@ -582,6 +582,59 @@ function loadImage(path: string) {
   return img;
 }
 
+/** 道しるべのタブ（今日の4つの道など）。いまの道だけ塗る */
+function Tabs({ tabs }: { tabs: { labels: string[]; current: number } }) {
+  return (
+    <div style={{ ...row, gap: 12 }}>
+      {tabs.labels.map((l, i) => (
+        <div key={i} style={{ display: "flex", padding: "6px 20px", borderRadius: 999, fontSize: MIN_FONT, fontWeight: 900,
+          background: i === tabs.current ? C.red : C.white, color: i === tabs.current ? C.white : C.sub, border: `3px solid ${i === tabs.current ? C.red : C.line}` }}>{l}</div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * 1画面に1つ（spot・11/23 試作）: いま話している行（最後に出た行）だけを左に大きく、画像は右に広く。
+ * 見出しは小さな札にして、言葉と画像の2つだけが目に入るようにする
+ */
+function PhotoSpot({ s, t, reveal, img, credit, cur }: { s: PhotoScene; t: number; reveal: Record<string, number>; img: { src: string; w: number; h: number }; credit: string; cur: number }) {
+  const points = s.points ?? [];
+  let pi = -1;
+  points.forEach((_, i) => { if (shown(reveal, `item:${i}`, t) > 0) pi = i; });
+  const pt = pi >= 0 ? points[pi] : null;
+  const H_ALL = CARD.h - CARD.pad * 2;
+  const textW = Math.round(INNER_W * 0.42);
+  const boxW = INNER_W - textW - cap(32);
+  const boxH = H_ALL - Math.ceil(MIN_FOOT * 1.45) - 12;
+  const k = Math.min(boxW / img.w, boxH / img.h);
+  const w = Math.round(img.w * k), h = Math.round(img.h * k);
+  return (
+    <div style={{ ...row, width: INNER_W, height: H_ALL, alignItems: "stretch" }}>
+      <div style={{ ...col, width: textW, justifyContent: "space-between" }}>
+        <div style={{ ...col, gap: 18 }}>
+          {s.tabs ? <Tabs tabs={s.tabs} /> : null}
+          <div style={{ display: "flex", fontSize: fit(s.heading, textW, cap(40), MIN_FONT, "見出し"), fontWeight: 900, color: C.sub }}>{s.heading}</div>
+        </div>
+        <div style={{ ...col, ...(pi >= 0 ? bump(s, `item:${pi}`) : {}) }}>
+          {pt ? <div style={{ display: "flex", flexWrap: "wrap", width: textW, fontSize: cap(96), lineHeight: 1.15, fontWeight: 900, color: C.ink }}>{pt.text}</div> : null}
+          {pt?.sub ? <div style={{ display: "flex", flexWrap: "wrap", width: textW, marginTop: 20, fontSize: cap(44), lineHeight: 1.3, fontWeight: 700, color: C.red }}>{pt.sub}</div> : null}
+        </div>
+        <div style={{ ...row, gap: 10 }}>
+          {points.map((_, i) => <div key={i} style={{ display: "flex", width: 44, height: 10, borderRadius: 5, background: i <= pi ? C.red : C.line }} />)}
+        </div>
+      </div>
+      <div style={{ ...col, width: boxW, marginLeft: cap(32), alignItems: "center", justifyContent: "center" }}>
+        <div style={{ display: "flex", width: boxW, height: boxH, alignItems: "center", justifyContent: "center", ...(cur > 0 ? bump(s, `img:${cur - 1}`) : {}) }}>
+          {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+          <img src={img.src} width={w} height={h} style={{ width: w, height: h, borderRadius: 16 }} />
+        </div>
+        <div style={{ display: "flex", marginTop: 12, fontSize: MIN_FOOT, fontWeight: 500, color: C.sub }}>{credit}</div>
+      </div>
+    </div>
+  );
+}
+
 /** 写真・公式のスクショ。points があれば左に画像・右に1つずつ出す行、なければ画像だけを大きく。画像の下に出典 */
 function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<string, number> }) {
   // images があれば、cue を過ぎたもののうち最後の1枚に差し替える（パラパラ。11/23〜）
@@ -591,6 +644,7 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
   const img = loadImage(slides[cur].src);
   const credit = slides[cur].credit;
   const points = s.points ?? [];
+  if (s.mode === "spot") return <PhotoSpot s={s} t={t} reveal={reveal} img={img} credit={credit} cur={cur} />;
   const GAP = cap(40);
   const boxW = points.length ? Math.round(INNER_W * 0.5) : INNER_W;
   const creditFont = MIN_FOOT;

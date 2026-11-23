@@ -81,6 +81,10 @@ export type PhotoScene = {
   points?: { text: string; sub?: string; cue?: string }[];
   /** 差し替える画像（cue の台詞が始まったら次の画像に替わる。最初は src）。credit はそれぞれ */
   images?: { src: string; credit: string; cue: string }[];
+  /** spot＝1画面に1つ（いま話している行だけを大きく・画像を広く。11/23 試作）。なければ list（画像＋行の一覧） */
+  mode?: "list" | "spot";
+  /** 章をまたぐ「道しるべ」のタブ（今日の4つの道など）。current は太く */
+  tabs?: { labels: string[]; current: number };
   note?: string;
 };
 
