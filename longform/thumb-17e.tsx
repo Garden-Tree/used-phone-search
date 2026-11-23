@@ -84,19 +84,20 @@ const Big = ({ lines, tag }: { lines: [string, number, string][]; tag?: string }
 // B: 写真をさらに大きく・画面の外にはみ出す（11/24 ユーザー）
 const ThreeBig = () => (
   <>
-    <Card file={E17} crop={K17} x={590} y={60} w={350} h={620} rot={-6} />
-    <Card file={P15} crop={K15} x={790} y={120} w={350} h={470} rot={0} />
-    <Card file={N16} crop={K16} x={1075} y={150} w={330} h={620} rot={6} />
+    <Card file={E17} crop={K17} x={600} y={60} w={320} h={620} rot={-6} />
+    <Card file={P15} crop={K15} x={790} y={120} w={330} h={470} rot={0} />
+    <Card file={N16} crop={K16} x={1010} y={150} w={320} h={620} rot={6} />
   </>
 );
 const plansB: [string, ReactNode][] = [
   ["B1", (
     <Frame>
       <ThreeBig />
-      <Col top={70}>
-        <Outlined text="17eより" size={124} color={WHITE} />
-        <Outlined text="中古Pro？" size={112} color={YELLOW} />
-        <TagBox text="120Hzとカメラ" style={{ marginTop: 40 }} />
+      <Col top={36}>
+        <Outlined text="同じ値段" size={110} color={WHITE} />
+        <Outlined text="17eより" size={156} color={WHITE} />
+        <Outlined text="中古Pro？" size={150} color={YELLOW} />
+        <TagBox text="120Hzとカメラ" style={{ marginTop: 26, fontSize: 116 }} />
       </Col>
     </Frame>
   )],
