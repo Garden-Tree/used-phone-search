@@ -14,7 +14,9 @@
 import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { ON_DARK, SITE } from "@/lib/brandColors";
 import { CHAPTER_LEAD, type Who } from "./script";
-import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, PairsScene, TableScene, Timeline, TimelineChapter } from "./types";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, PairsScene, PhotoScene, TableScene, Timeline, TimelineChapter } from "./types";
 
 export const W = 1920;
 export const H = 1080;
@@ -497,6 +499,68 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
   );
 }
 
+/** 画像を data URI と大きさにする（PNG・JPEG の頭から幅と高さを読む。同じ画像は1回だけ読む） */
+const IMAGES = new Map<string, { src: string; w: number; h: number }>();
+function loadImage(path: string) {
+  const hit = IMAGES.get(path);
+  if (hit) return hit;
+  const b = readFileSync(resolve(process.cwd(), path));
+  let w = 0, h = 0, mime = "image/png";
+  if (b[0] === 0x89 && b[1] === 0x50) { w = b.readUInt32BE(16); h = b.readUInt32BE(20); }
+  else if (b[0] === 0xff && b[1] === 0xd8) {
+    mime = "image/jpeg";
+    for (let i = 2; i < b.length - 9;) {
+      if (b[i] !== 0xff) { i++; continue; }
+      const m = b[i + 1], len = b.readUInt16BE(i + 2);
+      if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) { h = b.readUInt16BE(i + 5); w = b.readUInt16BE(i + 7); break; }
+      i += 2 + len;
+    }
+  }
+  if (!w || !h) throw new Error(`画像の大きさが読めない（PNG か JPEG だけ）: ${path}`);
+  const img = { src: `data:${mime};base64,${b.toString("base64")}`, w, h };
+  IMAGES.set(path, img);
+  return img;
+}
+
+/** 写真・公式のスクショ。points があれば左に画像・右に1つずつ出す行、なければ画像だけを大きく。画像の下に出典 */
+function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<string, number> }) {
+  const img = loadImage(s.src);
+  const points = s.points ?? [];
+  const GAP = cap(40);
+  const boxW = points.length ? Math.round(INNER_W * 0.56) : INNER_W;
+  const creditFont = MIN_FOOT;
+  const boxH = bodyH(s.heading, s.note) - Math.ceil(creditFont * 1.45) - 12;
+  const k = Math.min(boxW / img.w, boxH / img.h);
+  const w = Math.round(img.w * k), h = Math.round(img.h * k);
+  const textW = INNER_W - boxW - GAP;
+  const rowH = points.length ? Math.min(cap(170), Math.floor(boxH / points.length)) : 0;
+  return (
+    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+      <Heading text={s.heading} />
+      <div style={{ ...row, width: INNER_W, alignItems: "flex-start" }}>
+        <div style={{ ...col, width: boxW, alignItems: "center" }}>
+          <div style={{ display: "flex", width: boxW, height: boxH, alignItems: "center", justifyContent: "center" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+            <img src={img.src} width={w} height={h} style={{ width: w, height: h, borderRadius: 12 }} />
+          </div>
+          <div style={{ display: "flex", marginTop: 12, width: boxW, justifyContent: "center", fontSize: creditFont, fontWeight: 500, color: C.sub }}>{s.credit}</div>
+        </div>
+        {points.length ? (
+          <div style={{ ...col, width: textW, marginLeft: GAP }}>
+            {points.map((it, i) => (
+              <div key={i} style={{ ...col, width: textW, height: rowH, justifyContent: "center", opacity: shown(reveal, `item:${i}`, t), borderTop: i ? `2px solid ${C.line}` : "none" }}>
+                <div style={{ display: "flex", fontSize: fit(it.text, textW, cap(50), MIN_FONT, "写真の横の行"), fontWeight: 900, color: C.ink }}>{it.text}</div>
+                {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, textW, cap(34), MIN_FONT, "写真の横の補足"), fontWeight: 500, color: C.sub }}>{it.sub}</div> : null}
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+      <Note text={s.note} />
+    </div>
+  );
+}
+
 /**
  * 終了画面のカードの中身（見出しと注記だけ）。要素を置く枠は EndScreenSlots が画面の座標で上に重ねる
  */
@@ -549,6 +613,8 @@ function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
       return <Table s={s} t={t} reveal={reveal} />;
     case "checklist":
       return <Checklist s={s} t={t} reveal={reveal} />;
+    case "photo":
+      return <Photo s={s} t={t} reveal={reveal} />;
     case "endScreen":
       return <EndScreen s={s} />;
   }

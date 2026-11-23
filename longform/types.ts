@@ -68,7 +68,21 @@ export type EndScreenScene = {
 };
 export type EndScreenVideo = { id: string; title: string };
 
-export type SceneData = BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | EndScreenScene;
+/**
+ * 写真・公式のスクショ（11/23〜）。src はリポジトリの根からの PNG／JPEG のパス（例 longform/<フォルダ>/img/battery.png）。
+ * credit は画像の下に小さく出し、説明欄のクレジットにも「画像：」で足す（CC は作者・ライセンス・URL、公式のスクショは「出典：Apple（URL）」）。
+ * points があれば右に1つずつ出す（機能の紹介など）。公式の画像は引用として使う: 説明が主・画像は従、出典を必ず書く
+ */
+export type PhotoScene = {
+  type: "photo";
+  heading: string;
+  src: string;
+  credit: string;
+  points?: { text: string; sub?: string; cue?: string }[];
+  note?: string;
+};
+
+export type SceneData = BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene;
 
 export type LongData = {
   date: string;

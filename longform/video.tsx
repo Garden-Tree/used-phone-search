@@ -270,6 +270,8 @@ function youtubeText(dir: string, tl: Timeline, artFiles: string[]): string {
   // 立ち絵（chara.py で作った絵を使ったとき）。つむぎ＝春日部つくし（KASUKABEproject）・ずんだもん＝坂本アヒル
   if (artFiles.some((f) => /tsumugi/.test(f))) credits.push("立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)");
   if (artFiles.some((f) => /zundamon/.test(f))) credits.push("ずんだもん立ち絵：坂本アヒル様");
+  // 写真・公式のスクショの出典（data.json の photo の credit。同じものは1回）
+  for (const c of new Set(data.chapters.flatMap((ch) => (ch.scene.type === "photo" ? [ch.scene.credit] : [])))) credits.push(`画像：${c}`);
   // script.md に概要欄の下書き（チャプターの置き場所つき）があれば、それを本文にする。クレジットはここで作る
   const draft = md.match(/^## 概要欄（下書き）\s*\n```\s*\n([\s\S]*?)\n```/m)?.[1];
   if (draft?.includes(CHAPTERS_PLACEHOLDER)) {
