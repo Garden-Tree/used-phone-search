@@ -10,6 +10,12 @@ description: used.gadelog.com の YouTube ショート（@used_gadelog「中古�
 仕組みの説明は `shorts/README.md` と `docs/youtube-shorts.md`。記録は `ideas/YYYY-MM-DD.md`。報告は日本語。
 このスキルの「決まっていること」は、10/21 にユーザーと何度も作り直して決めたもの。**勝手に元に戻さない**。
 
+## 11/23〜 の決まり（いちばん優先）
+
+- **週2本・7:00**（1日1本の試しは 11/23 で終了）。作るのは **在庫数ランキング（stock 系）・電池（battery・batteryswap）・1世代前（gen 系）だけ**
+- **やめたネタ**: rank・unused（状態ランク）・drops（値下がり）・budget 系（予算ぴったり）・provs・promax・plusvs・plusmax・minie・oldpro・ultravs・mbpvsair（2機種の差）・newused・overnew・新型との比較・kaitori 系（買取・売る）・トーク型。11/19 までの再生の中央値が 150〜540回・見続けた% 11〜23%（ideas/2026-11-23-shorts.md）
+- 在庫数ランキングでも、在庫の少ない機種群（iPad mini・AQUOS・iPad Pro・iPhone Pro）は伸びなかった
+
 ## 1回分の手順
 
 0. **ネタを選ぶ前に `docs/videos.md` を読む**（これまでの全ショート・横動画のタイトル・テーマ・声・0秒目・視聴・継続）。同じテーマで1位が同じ回は避け、型ごとの本数をそろえる。書き出したら `npx tsx scripts/video-index.ts` で一覧を作り直す
