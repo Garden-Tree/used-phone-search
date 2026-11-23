@@ -788,24 +788,33 @@ function NamePlate({ who, active, style }: { who: Who; active: boolean; style?: 
  * 話している人は濃く、もう1人は 0.92 倍・暗く。口の開いた絵（*-talk.png）があり mouthOpen なら、話している人はそちらを使う。
  * 立ち絵がなければ名前の札だけ
  */
-function SpeakerSlot({ who, x, active, art, mouthOpen, plate, dy = 0 }: { who: Who; x: number; active: boolean; art?: CharaArt[Who]; mouthOpen?: boolean; plate: number; dy?: number }) {
+/** 立ち絵の枠（絵だけ）。ox・oy は描く紙の左上（video.tsx が話している人の絵だけを小さな紙に描くときに使う） */
+function SpeakerArt({ x, active, art, mouthOpen, dy = 0, ox = 0, oy = 0 }: { x: number; active: boolean; art: NonNullable<CharaArt[Who]>; mouthOpen?: boolean; dy?: number; ox?: number; oy?: number }) {
+  const A = L.art;
+  const img = active && mouthOpen && art.talk ? art.talk : art.closed;
+  // バストアップ（bust）: 絵の上から bust 割を枠の高さに合わせて拡大し、上ぞろえで切る
+  const h = A.bust ? Math.round((A.h / A.bust) * (active ? 1 : 0.94)) : Math.round(A.imgH * (active ? 1 : 0.92));
+  const w = Math.round((img.w * h) / img.h);
+  const left = x === SLOT.left ? A.left : A.right;
+  const top = A.bust ? Math.round(A.h * (active ? 0 : 0.06)) : A.h - h;
+  return (
+    <div style={{ ...col, position: "absolute", left: left - ox, top: A.y + dy - oy, width: A.w, height: A.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden", borderRadius: A.bust ? 20 : 0 }}>
+      {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+      <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((A.w - w) / 2), top, width: w, height: h, opacity: active ? 1 : 0.5 }} />
+    </div>
+  );
+}
+
+function SpeakerSlot({ who, x, active, art, mouthOpen, plate, dy = 0, hideArt = false }: { who: Who; x: number; active: boolean; art?: CharaArt[Who]; mouthOpen?: boolean; plate: number; dy?: number; hideArt?: boolean }) {
   const color = SPEAKER_COLOR[who];
   const A = L.art;
   if (art) {
-    const img = active && mouthOpen && art.talk ? art.talk : art.closed;
-    // バストアップ（bust）: 絵の上から bust 割を枠の高さに合わせて拡大し、上ぞろえで切る
-    const h = A.bust ? Math.round((A.h / A.bust) * (active ? 1 : 0.94)) : Math.round(A.imgH * (active ? 1 : 0.92));
-    const w = Math.round((img.w * h) / img.h);
     const left = x === SLOT.left ? A.left : A.right;
-    const top = A.bust ? Math.round(A.h * (active ? 0 : 0.06)) : A.h - h;
     // 名前の札は立ち絵の上に出す（絵に重ねない。11/23 ユーザー）
     const plateTop = A.y - Math.ceil(L.plate.font * 1.45) - 28 - 8;
     return (
       <>
-        <div style={{ ...col, position: "absolute", left, top: A.y + dy, width: A.w, height: A.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden", borderRadius: A.bust ? 20 : 0 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-          <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((A.w - w) / 2), top, width: w, height: h, opacity: active ? 1 : 0.5 }} />
-        </div>
+        {hideArt ? null : <SpeakerArt x={x} active={active} art={art} mouthOpen={mouthOpen} dy={dy} />}
         {plate > 0 ? <NamePlate who={who} active={active} style={{ position: "absolute", left: left + Math.round((A.w - L.plate.w) / 2), top: plateTop, marginBottom: 0, opacity: plate }} /> : null}
       </>
     );
@@ -835,17 +844,20 @@ function SubLine({ text, who }: { text: string; who: Who | null }) {
 
 /**
  * 字幕の残り時間（11/23〜）: そのページが替わるまでを、話し手の色の線が帯の上辺を左から右へ等速で伸びて表す。
- *prog は 0〜1（40段に丸める。video.tsx が 0.1 秒ごとに PNG にする）
+ * prog は 0〜1（SUB_STEPS 段）。video.tsx は線だけの小さな絵（ringSprite）を毎コマ重ねる
  */
 const RING = 10;
 export const SUB_STEPS = 240;
-function SubRing({ who, prog, dy }: { who: Who | null; prog: number; dy: number }) {
-  if (!who || prog <= 0) return null;
+/** 字幕の縁の線の長さ（px）。0 なら描かない */
+export const ringPx = (who: Who | null, prog: number) => (!who || prog <= 0 ? 0 : Math.round(prog * SUB.w));
+function SubRing({ who, prog, dy, ox = 0, oy = 0 }: { who: Who | null; prog: number; dy: number; ox?: number; oy?: number }) {
+  const px = ringPx(who, prog);
+  if (!who || !px) return null;
   const w = SUB.w, h = SUB.h, color = SPEAKER_COLOR[who];
   // 上辺だけを左から右へ（11/23 ユーザー「上辺だけにして」）
-  const seg: CSSProperties[] = [{ left: 0, top: 0, width: Math.round(prog * w), height: RING }];
+  const seg: CSSProperties[] = [{ left: 0, top: 0, width: px, height: RING }];
   return (
-    <div style={{ display: "flex", position: "absolute", left: SUB.x, top: SUB.y + dy, width: w, height: h, borderRadius: 20, overflow: "hidden" }}>
+    <div style={{ display: "flex", position: "absolute", left: SUB.x - ox, top: SUB.y + dy - oy, width: w, height: h, borderRadius: 20, overflow: "hidden" }}>
       {seg.map((st, i) => <div key={i} style={{ display: "flex", position: "absolute", background: color, ...st }} />)}
     </div>
   );
@@ -902,7 +914,50 @@ export type FrameOpts = {
   mouthOpen?: boolean;
   /** 声の大きさ（0〜3。video.tsx が声の波形から入れる）。話している人を上に弾ませる */
   level?: number;
+  /**
+   * "base": 毎コマ動くもの（話している人の立ち絵・字幕の縁の線）を描かない土台（11/24〜 video.tsx。動くものは
+   * speakerSprite・ringSprite の小さな絵を ffmpeg で毎コマ重ねる）
+   */
+  layer?: "base";
 };
+
+/** 話している人の立ち絵の y のずれ（話し始めの浮き上がり＋声の大きさ）。frameAt と video.tsx で同じ式 */
+export const speakerDy = (spk: number | undefined, level = 0) => (spk === undefined ? 0 : settle(spk, SPK_UP)) - level * LEVEL_Y;
+/** 字幕（と縁の線）の y のずれ（ページが替わったときの浮き上がり） */
+export const subDy = (sub: number | undefined) => (sub === undefined ? 0 : settle(sub, SUB_Y));
+
+/**
+ * ffmpeg で重ねる小さな絵の場所（1920x1080 の座標・すべて偶数）。立ち絵は浮き上がり（最大 SPK_UP＋声 3段）の分だけ上に広く、
+ * 縁の線は字幕の浮き上がり（SUB_Y）の分だけ下に広く取る
+ */
+const even = (v: number, up = false) => (up ? Math.ceil(v / 2) * 2 : Math.floor(v / 2) * 2);
+export function spriteRegion(kind: Who | "ring"): { x: number; y: number; w: number; h: number } {
+  if (kind === "ring") return { x: even(SUB.x), y: even(SUB.y), w: even(SUB.w + 2, true), h: even(RING + SUB_Y + 4, true) };
+  const A = L.art;
+  const left = kind === "ずんだもん" ? A.left : A.right;
+  const x = Math.max(0, even(left - 2)), y = Math.max(0, even(A.y + SPK_UP - 3 * LEVEL_Y - 4));
+  return { x, y, w: even(Math.min(W, left + A.w + 2) - x, true), h: even(Math.min(H, A.y + A.h + 2) - y, true) };
+}
+/** 話している人の立ち絵だけ（spriteRegion の大きさの透明な紙） */
+export function speakerSprite(who: Who, art: NonNullable<CharaArt[Who]>, mouthOpen: boolean, dy: number): ReactElement {
+  const R = spriteRegion(who);
+  return (
+    <div style={{ display: "flex", position: "relative", width: R.w, height: R.h }}>
+      <SpeakerArt x={who === "ずんだもん" ? SLOT.left : SLOT.right} active art={art} mouthOpen={mouthOpen} dy={dy} ox={R.x} oy={R.y} />
+    </div>
+  );
+}
+/** 字幕の縁の線だけ（px の長さ。spriteRegion("ring") の大きさの透明な紙） */
+export function ringSprite(who: Who, px: number, dy: number): ReactElement {
+  const R = spriteRegion("ring");
+  return (
+    <div style={{ display: "flex", position: "relative", width: R.w, height: R.h }}>
+      <SubRing who={who} prog={px / SUB.w} dy={dy} ox={R.x} oy={R.y} />
+    </div>
+  );
+}
+/** 何も描かない透明な紙 */
+export const emptySprite = (w: number, h: number): ReactElement => <div style={{ display: "flex", width: w, height: h }} />;
 
 /** 項目が出たか（instant のとき）。reveal は四捨五入してあるので 2ms の余裕を見る */
 export const revealedAt = (reveal: Record<string, number>, local: number) => Object.keys(reveal).filter((k) => local >= reveal[k] - 0.002);
@@ -945,7 +1000,9 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
   const anim = animAt(tl, t);
   const base = shownSet ? { ...ch, scene: { ...ch.scene, reveal: Object.fromEntries(Object.keys(ch.scene.reveal).map((k) => [k, shownSet.has(k) ? -1000 : 1000])) } } : ch;
   const scene = { ...base, scene: { ...base.scene, pulse: anim.items, shake: anim.shake, grow: anim.grow } };
-  const spkDy = (anim.spk === undefined ? 0 : settle(anim.spk, SPK_UP)) - (opts.level ?? 0) * LEVEL_Y;
+  const spkDy = speakerDy(anim.spk, opts.level ?? 0);
+  // 土台（layer: "base"）では、話している人の立ち絵（立ち絵があるとき）と縁の線を描かない
+  const base0 = opts.layer === "base";
   return (
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
       <ChapterBar ch={ch} count={tl.chapters.length} />
@@ -955,10 +1012,10 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
       </div>
       {ch.scene.type === "endScreen" ? <EndScreenSlots s={ch.scene} /> : null}
       {/* 立ち絵はカードの上に描く（d2 では立ち絵がカードの下の角に少し重なる） */}
-      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={plateOpacity(t)} dy={who === "ずんだもん" ? spkDy : 0} />
-      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={plateOpacity(t)} dy={who === "つむぎ" ? spkDy : 0} />
-      <Subtitle who={who} text={page?.text ?? ""} dy={anim.sub === undefined ? 0 : settle(anim.sub, SUB_Y)} />
-      <SubRing who={who} prog={subProgress(tl, t)} dy={anim.sub === undefined ? 0 : settle(anim.sub, SUB_Y)} />
+      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={plateOpacity(t)} dy={who === "ずんだもん" ? spkDy : 0} hideArt={base0 && who === "ずんだもん"} />
+      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={plateOpacity(t)} dy={who === "つむぎ" ? spkDy : 0} hideArt={base0 && who === "つむぎ"} />
+      <Subtitle who={who} text={page?.text ?? ""} dy={subDy(anim.sub)} />
+      {base0 ? null : <SubRing who={who} prog={subProgress(tl, t)} dy={subDy(anim.sub)} />}
       {FOOT_Y === null ? null : <div style={{ display: "flex", position: "absolute", left: SUB.x + 8, top: FOOT_Y, fontSize: 26, fontWeight: 500, color: C.onDarkSub }}>{`${date} 時点・大手中古ショップ${tl.shops}店の在庫から`}</div>}
     </div>
   );

@@ -1,6 +1,6 @@
 /**
- * 横動画（1920x1080・30fps）を書き出す。絵が変わるところ（字幕のページ・項目が出る秒・話し手・章）だけ PNG にし、
- * ffmpeg の concat（1枚ごとの長さ）で動画にする。約10分でも PNG は数百枚
+ * 横動画（1920x1080・30fps）を書き出す。土台（章・字幕のページ・項目・揺れが変わるところだけの PNG）に、毎コマ動く
+ * 話している人の立ち絵と字幕の縁の線（小さな透明の PNG）を ffmpeg が毎コマ重ねる（11/24〜。層ごとに concat の一覧）
  *
  *   npx tsx longform/video.tsx longform/2026-10-21-iphone-dore            # 全部（plan → frames → encode → audio → mux → meta）
  *   npx tsx longform/video.tsx longform/2026-10-21-iphone-dore plan       # 区切りの数と見積もりだけ
@@ -8,10 +8,10 @@
  *   ほかに frames / encode / audio / mux / meta（chapters.txt・youtube.txt・thumbnail.png）を1つずつ
  *
  * - 先に voice-draft.ts（今の辞書で声を合成）→ timeline.ts（声の長さから時間割）。古い声（stale）・見積もりの行があれば止める
- * - PC が重い処理で落ちるので: 1枚ずつ順に作る・ffmpeg は1本ずつ・-threads 2・優先度「低」（このプロセスも「通常以下」）
+ * - PNG は LONGFORM_JOBS 本で並べて作る・ffmpeg は LONGFORM_FF_THREADS スレッド・優先度「低」（このプロセスも「通常以下」）
  * - 項目は 0.4 秒かけて出さず、出る秒で一度に出す（切り替え）
  * - 立ち絵: longform/assets/chara/tsumugi.png・zundamon.png（口の開いた絵 tsumugi-talk.png・zundamon-talk.png は任意）。
- *   口の絵があれば、話している間は 0.2 秒ごとに開閉（PNG は2枚だけで、ffmpeg の一覧で交互に並べる）
+ *   口は声の大きさで開ける（声の波形がなければ 0.2 秒ごとに開閉）
  * - 音: 声（voice-draft/joined.wav）を -16 LUFS にそろえ、BGM（shorts/assets/bgm.mp3）をくり返して 0.07 倍・頭2秒で上げ・最後4秒で下げる。
  *   2章目からは章の絵が出る秒（声の 0.9 秒前・章の間）に短いジングル（その場で合成した 3音・約0.75秒。外の音源は使わない）。
  *   全体を loudnorm の2パスで -14 LUFS・真のピーク -1 dB
@@ -27,7 +27,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
-import { ANIM_STEPS, END_SCREEN, FPS, H, MIN_FONT, W, animAt, animEvents, chapterShownAt, growPoints, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
+import { ANIM_STEPS, END_SCREEN, FPS, H, LAYOUT_NAME, MIN_FONT, W, animAt, animEvents, chapterShownAt, emptySprite, growPoints, ringPx, ringSprite, speakerDy, speakerSprite, spriteRegion, subDy, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, ThumbnailData, Timeline } from "./types";
 
@@ -93,12 +93,21 @@ async function measure(file: string, extra = ""): Promise<Record<string, string>
 
 // ───────── 区切り ─────────
 
-type Segment = { frame: number; t: number; key: string; flap: boolean; level: number; file: string };
-
 /**
- * 絵が変わる秒（章・台詞の始まりと終わり・字幕のページ・項目が出る秒）を集め、そこでの「映すもの」が前と同じなら1つにまとめる。
- * 秒はコマ（1/30 秒）に丸め、同じコマに2つ来たら後のほうを使う
+ * 1枚の絵の作り方（frames/todo.json に入れ、子のプロセスが分けて作る）。
+ * base＝土台（話している人の立ち絵と字幕の縁の線を除いた 1920x1080）・spk＝話している人の立ち絵だけ・ring＝縁の線だけ・none＝透明
  */
+type Job =
+  | { f: string; k: "base"; t: number; level: number }
+  | { f: string; k: "spk"; who: Who; open: boolean; dy: number }
+  | { f: string; k: "ring"; who: Who; px: number; dy: number }
+  | { f: string; k: "none"; w: number; h: number };
+/** 重ねる層（土台・左の立ち絵・右の立ち絵・縁の線）。層ごとに「何コマ目からどの絵か」の並び */
+const TRACKS = ["base", "ずんだもん", "つむぎ", "ring"] as const;
+type Track = (typeof TRACKS)[number];
+type Run = { frame: number; job: Job };
+type Plan = { runs: Record<Track, Run[]>; jobs: Map<string, Job>; totalFrames: number; points: number };
+
 /**
  * 声の大きさ（0〜3）を 0.1 秒ごとに（voice-draft/joined.wav・16bit。11/23〜: 口の開閉と立ち絵の揺れを声の波形に合わせる）。
  * 段: -42 dBFS 未満 0・-32 未満 1・-24 未満 2・それ以上 3
@@ -133,17 +142,26 @@ function voiceLevels(dir: string): number[] {
  * 絵を決めるもの（画面のコード・立ち絵・章の中身・字幕・状態）の指紋。同じ指紋の PNG は前の書き出しのものを使い回す（11/23・速くする）
  */
 function codeHash(): string {
-  const h = createHash("sha1");
+  // 配置（LONGFORM_LAYOUT）でも絵が変わる
+  const h = createHash("sha1").update(LAYOUT_NAME);
   for (const f of ["longform/scenes.tsx", "longform/types.ts", "longform/fonts.ts", "longform/art.ts"]) if (existsSync(f)) h.update(readFileSync(f));
   const chara = "longform/assets/chara";
   if (existsSync(chara)) for (const f of readdirSync(chara).sort()) h.update(f + statSync(join(chara, f)).size);
   return h.digest("hex").slice(0, 12);
 }
+const sha = (v: unknown) => createHash("sha1").update(JSON.stringify(v)).digest("hex").slice(0, 20);
 
-function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: Segment[]; totalFrames: number } {
+/**
+ * 絵が変わる秒（章・台詞の始まりと終わり・字幕のページ・項目が出る秒・話している間は毎コマ）を集め、秒はコマ（1/30 秒）に丸める
+ * （同じコマに2つ来たら後のほうを使う）。11/24〜: 各秒の絵を4つの層に分け、層ごとに前と同じ絵ならまとめる。
+ * 土台（1920x1080）は章・字幕・項目・揺れが変わるときだけ作り、毎コマ動く「話している人の立ち絵（声で揺れる・口）」と
+ * 「字幕の縁の線（残り時間）」は小さな絵（数百枚）にして、ffmpeg が毎コマ重ねる（30fps のまま。PNG の枚数と ffmpeg の読み込みが減る）
+ */
+function plan(tl: Timeline, art: CharaArt, levels: number[] = []): Plan {
   const code = codeHash();
   const chHash = new Map(tl.chapters.map((c) => [c.index, createHash("sha1").update(JSON.stringify([c.title, c.scene, c.lines.map((l) => [l.who, l.pages.map((p) => p.text)]), tl.chapters.length, tl.date])).digest("hex").slice(0, 12)]));
   const total = tl.total + tailOf(tl);
+  const totalFrames = Math.round(total * FPS);
   const points = new Set<number>([0]);
   for (const ch of tl.chapters) {
     points.add(chapterShownAt(ch));
@@ -155,123 +173,164 @@ function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: S
       for (const p of l.pages) points.add(p.start);
     }
   }
-  // 揺れ（出来事の 2・4・6・8 コマ後）
+  // 揺れ（出来事の 1〜8 コマ後）
   for (const e of animEvents(tl)) for (const j of ANIM_STEPS) points.add(e + j / FPS);
   // 名前の札が消える間
   for (const t of plateFadePoints()) points.add(Math.round(t * 1000) / 1000);
   // 横棒が伸びる間
   for (const t of growPoints(tl)) points.add(Math.round(t * 1000) / 1000);
-  // 声の大きさ（話している間は 0.1 秒ごと）
-  // 話している間の字幕の縁・立ち絵の揺れは MOTION_HZ（既定 30＝毎コマ。11/24 に 15 を試したがユーザーが 30 に戻した）で描く。
-  // 項目が出る・揺れる・棒が伸びる動き（上の点）は今までどおり毎コマ
-  if (levels.length) for (const ch of tl.chapters) for (const l of ch.lines) for (let f = Math.ceil(l.start * FPS / MOTION_STEP) * MOTION_STEP; f / FPS < l.end; f += MOTION_STEP) points.add(f / FPS);
+  // 話している間の字幕の縁・立ち絵の揺れは MOTION_STEP（既定 1＝毎コマ。11/24 に 15Hz を試したがユーザーが 30 に戻した）。
+  // 声の波形がなければ、口の開閉（MOUTH 秒ごと）の秒
+  const step = levels.length ? MOTION_STEP : Math.round(MOUTH * FPS);
+  for (const ch of tl.chapters) for (const l of ch.lines) {
+    const f0 = levels.length ? Math.ceil(l.start * FPS / step) * step : Math.round(l.start * FPS);
+    for (let f = f0; f / FPS < l.end; f += step) points.add(f / FPS);
+  }
   const levelAt = (t: number) => {
     const x = t / LEVEL_STEP, i = Math.floor(x), a = levels[i] ?? 0, b = levels[i + 1] ?? a;
     return Math.round((a + (b - a) * (x - i)) * 10) / 10;
   };
-  const segs: Segment[] = [];
-  for (const t of [...points].filter((x) => x >= 0 && x < total).sort((a, b) => a - b)) {
+  // 同じコマに2つ来たら後のほう
+  const byFrame = new Map<number, number>();
+  for (const t of [...points].filter((x) => x >= 0 && x < total).sort((a, b) => a - b)) byFrame.set(Math.round(t * FPS), t);
+  const jobs = new Map<string, Job>();
+  const runs = Object.fromEntries(TRACKS.map((k) => [k, [] as Run[]])) as Record<Track, Run[]>;
+  const none = (k: Track): Job => {
+    const R = spriteRegion(k === "base" ? "ring" : k);
+    return { f: `s-none-${R.w}x${R.h}`, k: "none", w: R.w, h: R.h };
+  };
+  const push = (k: Track, frame: number, job: Job) => {
+    const list = runs[k];
+    if (list.length && list[list.length - 1].job.f === job.f) return;
+    if (!jobs.has(job.f)) jobs.set(job.f, job);
+    list.push({ frame, job });
+  };
+  const artKeys = Object.keys(art).sort();
+  for (const [frame, t] of [...byFrame.entries()].sort((a, b) => a[0] - b[0])) {
     const st = stateAt(tl, t);
-    const who = st.line?.who;
-    const flapBase = !!(who && art[who]?.talk && st.talking);
-    // 立ち絵がなければ「話している最中か」で絵は変わらない
-    const talkKey = who && art[who] ? st.talking : false;
+    const who = st.line?.who ?? null;
+    const a = who ? art[who] : undefined;
     const anim = animAt(tl, t);
     const moving = anim.sub !== undefined || anim.spk !== undefined || Object.keys(anim.items).length > 0 || Object.keys(anim.shake).length > 0 || Object.keys(anim.grow).length > 0;
-    const level = levels.length && st.talking && who && art[who] ? levelAt(t) : 0;
-    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), talkKey, anim, level, subProgress(tl, t), plateOpacity(t)]);
-    const frame = Math.round(t * FPS);
-    const last = segs[segs.length - 1];
-    if (last && last.frame === frame) segs.pop();
-    const prev = segs[segs.length - 1];
-    if (prev && prev.key === key) continue;
-    // 揺れている短いコマは口を閉じた絵だけ（PNG を増やしすぎない）
-    // 声の波形があれば口は声の大きさで開ける（交互の開閉はしない）。揺れている短いコマは口を閉じた絵だけ
+    const level = levels.length && st.talking && a ? levelAt(t) : 0;
+    // 口: 声の波形があれば声の大きさで（0.5 以上で開く）。なければ話している間 MOUTH 秒ごとに開閉（揺れている間は閉じる）
+    const lineFrame = st.line ? Math.round(st.line.start * FPS) : 0;
+    const open = !!(a?.talk && st.talking && (levels.length ? level >= 0.5 : !moving && Math.floor((frame - lineFrame) / step) % 2 === 0));
+    // 土台: 話している人の立ち絵・縁の線・声の大きさ・口を含めない
+    const { spk: _spk, ...animBase } = anim;
+    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), animBase, plateOpacity(t)]);
     const plate = t <= 10;
-    const file = `c-${createHash("sha1").update(JSON.stringify([code, chHash.get(st.ch.index), key, plate, Object.keys(art).sort()])).digest("hex").slice(0, 20)}`;
-    segs.push({ frame, t, key, flap: levels.length ? false : flapBase && !moving, level, file });
+    push("base", frame, { f: `c-${sha(["layers1", code, chHash.get(st.ch.index), key, plate, artKeys])}`, k: "base", t, level });
+    for (const side of ["ずんだもん", "つむぎ"] as const) {
+      if (who === side && a) {
+        const dy = Math.round(speakerDy(anim.spk, level) * 1e6) / 1e6;
+        push(side, frame, { f: `s-${sha(["spk", code, side, open, dy])}`, k: "spk", who: side, open, dy });
+      } else push(side, frame, none(side));
+    }
+    const px = ringPx(who, subProgress(tl, t));
+    if (who && px) {
+      const dy = subDy(anim.sub);
+      push("ring", frame, { f: `s-${sha(["ring", code, who, px, dy])}`, k: "ring", who, px, dy });
+    } else push("ring", frame, none("ring"));
   }
-  return { segs, totalFrames: Math.round(total * FPS) };
+  return { runs, jobs, totalFrames, points: byFrame.size };
 }
-
-let SEGS: Segment[] = [];
-const segFile = (i: number, open = false) => `${SEGS[i].file}${open ? "-open" : ""}.png`;
 
 // ───────── 各段 ─────────
 
-/**
- * PNG を並べて作る数（11/23 ユーザー「CPU をガンガン使っていい・24スレッド」）。既定は論理コア数 − 2。LONGFORM_JOBS で変える（1 で今までどおり1本）
- */
-/** ffmpeg のスレッド数（11/23〜 ユーザー「CPU をガンガン使っていい」。既定 16・LONGFORM_FF_THREADS で変える） */
+/** ffmpeg のスレッド数（11/23〜 ユーザー「CPU をガンガン使っていい」。既定 論理コア数 − 2・LONGFORM_FF_THREADS で変える） */
 const FF_THREADS = String(Number(process.env.LONGFORM_FF_THREADS ?? Math.max(1, os.cpus().length - 2)));
 /** 話している間の動き（字幕の縁・立ち絵）を何 Hz で描くか（既定 30＝毎コマ。11/24 ユーザー「15Hz にしないで」。LONGFORM_MOTION_HZ で変える） */
 const MOTION_STEP = Math.max(1, Math.round(FPS / Number(process.env.LONGFORM_MOTION_HZ ?? 30)));
+/** PNG を並べて作る数（11/23 ユーザー「CPU をガンガン使っていい・24スレッド」）。既定は論理コア数 − 2。LONGFORM_JOBS で変える（1 で1本） */
 const JOBS = Math.max(1, Number(process.env.LONGFORM_JOBS ?? Math.max(1, os.cpus().length - 2)));
 
-/** 子のプロセスを JOBS 本立てて、PNG を k 番目ずつ分けて作る（子は frames-part k n で呼ばれる） */
-async function renderFramesParallel(dir: string, total: number) {
+/** 子のプロセスを n 本立てて、PNG を k 番目ずつ分けて作る（子は frames-part k n で呼ばれる） */
+async function renderFramesParallel(dir: string, total: number, n: number) {
   const t0 = now();
-  console.log(`  ${JOBS} 本で並べて作る（PNG ${total} 枚）`);
-  await Promise.all(Array.from({ length: JOBS }, (_, k) => new Promise<void>((ok, ng) => {
-    const child = spawn("npx", ["tsx", "longform/video.tsx", dir, "frames-part", String(k), String(JOBS)], { shell: true, stdio: ["ignore", "ignore", "inherit"] });
+  console.log(`  ${n} 本で並べて作る（PNG ${total} 枚）`);
+  await Promise.all(Array.from({ length: n }, (_, k) => new Promise<void>((ok, ng) => {
+    const child = spawn("npx", ["tsx", "longform/video.tsx", dir, "frames-part", String(k), String(n)], { shell: true, stdio: ["ignore", "ignore", "inherit"] });
     child.on("exit", (code) => (code === 0 ? ok() : ng(new Error(`PNG の子 ${k} が失敗（${code}）`))));
   })));
   console.log(`  PNG ${total} 枚（${(now() - t0).toFixed(0)} 秒）`);
 }
 
-async function renderFrames(tl: Timeline, segs: Segment[], art: CharaArt, work: string, part?: { k: number; n: number }) {
+async function renderFrames(tl: Timeline, art: CharaArt, work: string, part?: { k: number; n: number }) {
   const fonts = await longFonts(tl);
-  const todo = new Set<string>(JSON.parse(readFileSync(join(work, "todo.json"), "utf8")) as string[]);
-  const all = segs.flatMap((s, i) => [{ s, i, open: false }, ...(s.flap ? [{ s, i, open: true }] : [])]).filter((j) => todo.has(segFile(j.i, j.open)));
+  const all = JSON.parse(readFileSync(join(work, "todo.json"), "utf8")) as Job[];
   const jobs = part ? all.filter((_, x) => x % part.n === part.k) : all;
   const t0 = now();
   for (const [n, j] of jobs.entries()) {
-    const res = new ImageResponse(frameAt(tl, j.s.t, { instant: true, art, mouthOpen: j.open || j.s.level >= 0.5, level: j.s.level }), { width: W, height: H, fonts });
-    writeFileSync(join(work, segFile(j.i, j.open)), Buffer.from(await res.arrayBuffer()));
-    if (!part && ((n + 1) % 25 === 0 || n + 1 === jobs.length)) {
-      const el = now() - t0;
-      console.log(`  PNG ${n + 1}/${jobs.length}（${el.toFixed(0)} 秒・残り約 ${(((jobs.length - n - 1) * el) / (n + 1)).toFixed(0)} 秒）`);
+    const el =
+      j.k === "base" ? frameAt(tl, j.t, { instant: true, art, level: j.level, layer: "base" })
+      : j.k === "spk" ? speakerSprite(j.who, art[j.who]!, j.open, j.dy)
+      : j.k === "ring" ? ringSprite(j.who, j.px, j.dy)
+      : emptySprite(j.w, j.h);
+    const size = j.k === "base" ? { width: W, height: H } : j.k === "none" ? { width: j.w, height: j.h } : (({ w, h }) => ({ width: w, height: h }))(spriteRegion(j.k === "spk" ? j.who : "ring"));
+    const res = new ImageResponse(el, { ...size, fonts });
+    writeFileSync(join(work, `${j.f}.png`), Buffer.from(await res.arrayBuffer()));
+    if (!part && ((n + 1) % 100 === 0 || n + 1 === jobs.length)) {
+      const el2 = now() - t0;
+      console.log(`  PNG ${n + 1}/${jobs.length}（${el2.toFixed(0)} 秒・残り約 ${(((jobs.length - n - 1) * el2) / (n + 1)).toFixed(0)} 秒）`);
     }
   }
 }
 
-/** ffmpeg の concat の一覧（1枚ごとの長さ）。口の絵があれば話している区切りを 0.2 秒ごとに開閉 */
-function concatList(segs: Segment[], totalFrames: number): string {
+/**
+ * ffmpeg の concat の一覧（1枚ごとの長さ）。長さはコマの境目の秒（6桁）の差にして、何千枚つないでも丸めの誤差がたまらないようにする
+ */
+function concatList(runs: Run[], totalFrames: number): string {
   const out = ["ffconcat version 1.0"];
-  const step = Math.round(MOUTH * FPS);
-  let lastFile = "";
-  segs.forEach((s, i) => {
-    const end = i + 1 < segs.length ? segs[i + 1].frame : totalFrames;
-    const add = (file: string, frames: number) => {
-      out.push(`file '${file}'`, `duration ${(frames / FPS).toFixed(6)}`);
-      lastFile = file;
-    };
-    if (!s.flap) return add(segFile(i), end - s.frame);
-    for (let f = s.frame, open = true; f < end; f += step, open = !open) add(segFile(i, open), Math.min(step, end - f));
+  const sec = (f: number) => (f / FPS).toFixed(6);
+  runs.forEach((r, i) => {
+    const end = i + 1 < runs.length ? runs[i + 1].frame : totalFrames;
+    // option framerate 30: PNG の読み込みの時間の単位を 1/30 秒に（既定の 1/25 秒だと切り替えが 1/25 秒の刻みに丸められ、
+    // 6コマに1コマ落ちていた。11/24 に見つけた）
+    out.push(`file '${r.job.f}.png'`, `option framerate ${FPS}`, `duration ${(Number(sec(end)) - Number(sec(r.frame))).toFixed(6)}`);
   });
   // concat は最後の1枚の長さを使わないので、もう1度並べる
-  out.push(`file '${lastFile}'`);
+  out.push(`file '${runs[runs.length - 1].job.f}.png'`, `option framerate ${FPS}`);
   return out.join("\n") + "\n";
+}
+const LIST: Record<Track, string> = { base: "list.txt", ずんだもん: "list-left.txt", つむぎ: "list-right.txt", ring: "list-ring.txt" };
+function writeLists(work: string, p: Plan) {
+  for (const k of TRACKS) writeFileSync(join(work, LIST[k]), concatList(p.runs[k], p.totalFrames));
 }
 
 /** GPU（AMD AMF）で映像を作る（LONGFORM_GPU=1 のときだけ）。11/23 に比べたら CPU（libx264・16スレッド）79 秒・GPU 128 秒で CPU が速かった（PNG を読む側が重い） */
 const USE_GPU = process.env.LONGFORM_GPU === "1";
 
-async function encode(work: string, preset: string, tl?: Timeline) {
+/**
+ * 映像: 土台の一覧に、立ち絵（左・右）と縁の線の一覧を毎コマ重ねる（どれも 30fps にそろえてから）。
+ * いつも透明な層（立ち絵がない人など）は読まない
+ */
+async function encode(work: string, preset: string, p: Plan, tl?: Timeline) {
   // チャンネル登録の重ねも、ここで一緒に（映像を2回作らない）
   const at = tl ? subscribeAt(tl) : null;
   const sub = at !== null && existsSync(SUBSCRIBE_GB);
   const T = (at ?? 0).toFixed(3);
-  const vf = `fps=${FPS},format=yuv420p`;
-  const filter = sub
-    ? ["-i", SUBSCRIBE_GB, "-filter_complex", `[0:v]${vf}[base];[1:v]trim=0:${SUBSCRIBE_SEC},setpts=PTS-STARTPTS+${T}/TB,chromakey=0x00FF01:0.15:0.02,despill=type=green,format=yuva444p,split[ck][ka];[ka]alphaextract,erosion[ke];[ck][ke]alphamerge[ov];[base][ov]overlay=0:0:enable='between(t,${T},${((at ?? 0) + SUBSCRIBE_SEC).toFixed(3)})':eof_action=pass,format=yuv420p[v]`, "-map", "[v]"]
-    : ["-vf", vf];
+  const inputs: string[] = ["-f", "concat", "-safe", "0", "-i", join(work, LIST.base)];
+  const chain: string[] = [`[0:v]fps=${FPS},format=yuv420p[l0]`];
+  let last = "l0", n = 1;
+  for (const k of ["ずんだもん", "つむぎ", "ring"] as const) {
+    if (p.runs[k].every((r) => r.job.k === "none")) continue;
+    const R = spriteRegion(k);
+    inputs.push("-f", "concat", "-safe", "0", "-i", join(work, LIST[k]));
+    chain.push(`[${n}:v]fps=${FPS},format=yuva420p[s${n}]`, `[${last}][s${n}]overlay=${R.x}:${R.y}:format=yuv420:eof_action=repeat[l${n}]`);
+    last = `l${n}`;
+    n++;
+  }
+  if (sub) {
+    inputs.push("-i", SUBSCRIBE_GB);
+    chain.push(`[${n}:v]trim=0:${SUBSCRIBE_SEC},setpts=PTS-STARTPTS+${T}/TB,chromakey=0x00FF01:0.15:0.02,despill=type=green,format=yuva444p,split[ck][ka]`, `[ka]alphaextract,erosion[ke]`, `[ck][ke]alphamerge[ov]`, `[${last}][ov]overlay=0:0:enable='between(t,${T},${((at ?? 0) + SUBSCRIBE_SEC).toFixed(3)})':eof_action=pass,format=yuv420p[v]`);
+  } else chain.push(`[${last}]format=yuv420p[v]`);
   const codec = USE_GPU
     ? ["-c:v", "h264_amf", "-quality", "quality", "-rc", "cqp", "-qp_i", "18", "-qp_p", "20", "-qp_b", "22", "-g", String(FPS * 10)]
     : ["-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", "20", "-g", String(FPS * 10), "-threads", FF_THREADS, "-x264-params", `threads=${FF_THREADS}`];
   await ffmpeg(
-    ["-y", "-threads", FF_THREADS, "-f", "concat", "-safe", "0", "-i", join(work, "list.txt"), ...filter, "-fps_mode", "cfr", ...codec, "-an", "-movflags", "+faststart", join(work, "video-only.mp4")],
-    `映像（${USE_GPU ? "GPU h264_amf" : `H.264 ${preset}`}${sub ? `・チャンネル登録 ${T} 秒` : ""}）`,
+    ["-y", "-threads", FF_THREADS, ...inputs, "-filter_complex", chain.join(";"), "-map", "[v]", "-frames:v", String(p.totalFrames + 1), "-fps_mode", "cfr", ...codec, "-an", "-movflags", "+faststart", join(work, "video-only.mp4")],
+    `映像（${USE_GPU ? "GPU h264_amf" : `H.264 ${preset}`}・重ねる層 ${n - 1}${sub ? `・チャンネル登録 ${T} 秒` : ""}）`,
   );
 }
 
@@ -581,39 +640,40 @@ async function check(dir: string, tl: Timeline) {
   const bad = tl.chapters.flatMap((c) => c.lines).filter((l) => l.stale || l.estimated);
   if (bad.length) throw new Error(`古い声・見積もりの行が ${bad.length} 行あります。voice-draft.ts → timeline.ts をやり直してください`);
 
-  const { segs, totalFrames } = segments(tl, art, voiceLevels(dir));
-  SEGS = segs;
-  const pngs = segs.length + segs.filter((s) => s.flap).length;
+  const p = plan(tl, art, voiceLevels(dir));
   const who = (Object.keys(art) as Who[]).map((w) => `${w}${art[w]?.talk ? "（口あり）" : ""}`).join("・") || "なし（名前の札）";
+  const count = (k: Job["k"]) => [...p.jobs.values()].filter((j) => j.k === k).length;
   const es = endScreenWindow(tl);
   if (es) console.log(`終了画面 ${fmtSec(es.start)}〜${fmtSec(es.end)}（最後の ${END_SCREEN.sec} 秒。BGM だけの間 ${tailOf(tl)} 秒）`);
-  console.log(`長さ ${fmtClock(tl.total + tailOf(tl))}（${totalFrames} コマ）・区切り ${segs.length}・PNG ${pngs} 枚・立ち絵 ${who}`);
-  console.log(`見積もり: PNG 1枚 0.5〜1.5 秒 → ${Math.round((pngs * 0.5) / 60)}〜${Math.round((pngs * 1.5) / 60)} 分、映像 3〜8 分、音 1〜2 分`);
+  console.log(`長さ ${fmtClock(tl.total + tailOf(tl))}（${p.totalFrames} コマ）・区切り ${p.points}・PNG 土台 ${count("base")} 枚＋重ねる絵 ${p.jobs.size - count("base")} 枚・立ち絵 ${who}`);
+  console.log(`見積もり: 土台 1枚 0.5〜1.5 秒（${JOBS} 本で並べる）、映像 1〜3 分、音 1 分`);
   if (mode === "plan") return;
 
   if (mode === "frames-part") {
     const k = Number(process.argv[4]), n = Number(process.argv[5]);
-    await renderFrames(tl, segs, art, work, { k, n });
+    await renderFrames(tl, art, work, { k, n });
     return;
   }
   if (mode === "all" || mode === "frames") {
     console.log("PNG を作る");
     // 同じ指紋の PNG はそのまま使う。足りない分だけ作り、使わなくなった PNG は消す
-    const need = new Set<string>(segs.flatMap((x, i) => [segFile(i), ...(x.flap ? [segFile(i, true)] : [])]));
-    for (const f of readdirSync(work)) if (/^(seg-\d+|c-[0-9a-f]+)(-open)?\.png$/.test(f) && !need.has(f)) rmSync(join(work, f));
-    const todo = [...need].filter((f) => !existsSync(join(work, f)));
+    for (const f of readdirSync(work)) if (/^(seg-\d+|c-[0-9a-f]+|s-[0-9a-z-]+)(-open)?\.png$/.test(f) && !p.jobs.has(f.slice(0, -4))) rmSync(join(work, f));
+    // 土台（重い）を先に並べ、子に均等に配る
+    const todo = [...p.jobs.values()].filter((j) => !existsSync(join(work, `${j.f}.png`))).sort((x, y) => Number(y.k === "base") - Number(x.k === "base"));
     writeFileSync(join(work, "todo.json"), JSON.stringify(todo));
-    console.log(`  使い回し ${need.size - todo.length} 枚・新しく作る ${todo.length} 枚`);
+    const nb = todo.filter((j) => j.k === "base").length;
+    console.log(`  使い回し ${p.jobs.size - todo.length} 枚・新しく作る ${todo.length} 枚（土台 ${nb}・重ねる絵 ${todo.length - nb}）`);
     if (todo.length) {
-      if (JOBS > 1 && todo.length > 200) await renderFramesParallel(dir, todo.length);
-      else await renderFrames(tl, segs, art, work);
+      const n = Math.min(JOBS, Math.ceil(todo.length / 40));
+      if (n > 1) await renderFramesParallel(dir, todo.length, n);
+      else await renderFrames(tl, art, work);
     }
-    writeFileSync(join(work, "list.txt"), concatList(segs, totalFrames));
+    writeLists(work, p);
   }
   if (mode === "all" || mode === "encode") {
     console.log("映像");
-    writeFileSync(join(work, "list.txt"), concatList(segs, totalFrames));
-    await encode(work, preset, tl);
+    writeLists(work, p);
+    await encode(work, preset, p, tl);
   }
   if (mode === "all" || mode === "audio") {
     console.log("音");
