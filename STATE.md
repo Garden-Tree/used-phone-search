@@ -44,7 +44,7 @@
 | 随時 | Duo・mini A20・M6・PROLED | catalog |
 | 12/4 | 店リンク first_* | 28日・人数 |
 | 随時 | ゲオ要求数≤1,500 | fetch.log |
-| 11/29 | Bing 手送り147件 | 知るURL 184→・ChatGPT |
+| 11/29 | Bing 手送り246件 | 知るURL 184→・ChatGPT |
 | 11/27 | iPad Pro 11 第3世代 | 対照と比べる |
 | **12/1** | 3行・買取の移動・`kaitori_link`・`side_sim` | クリック減→戻す |
 | **12/6** | `PickPair` 案B（+N円で保証1年） | 増えなければ一覧から外す |
