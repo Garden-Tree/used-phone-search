@@ -595,7 +595,7 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
         const p = shown(reveal, `item:${i}`, t);
         return (
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p, borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
-            <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: Math.round(NUM * 0.58), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{String(i + 1)}</div>
+            <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: Math.round(NUM * 0.58), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0, paddingBottom: Math.round(NUM * 0.1) }}>{String(i + 1)}</div>
             <div style={{ ...col, width: textW, marginLeft: 32 }}>
               <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(56), Math.floor(rowH * 0.5)), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
               {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.min(cap(38), Math.floor(rowH * 0.28)), MIN_FOOT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
