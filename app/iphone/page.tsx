@@ -20,15 +20,15 @@ import { monthJa, reportMonths } from "@/lib/monthlyReport";
 // 機種ページと同じくビルドのたびに作る（在庫の取り込みは6時間ごと）
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
-// 検索は「iphone 中古 相場 一覧」「iphone 中古相場」が多い（10/17 の GSC）ので、その語を先頭に
-const TITLE = "中古iPhone 相場一覧【全機種・毎日更新】中古価格と最安値";
+// 検索は「iphone 中古 相場 一覧」「iphone 中古相場」が多い（10/17 の GSC）。AI の根拠の問いは「iphone 中古 価格 一覧」が6割（11/23 の Bing AI Performance）→「価格・相場一覧」に
+const TITLE = "中古iPhone 価格・相場一覧【全機種・毎日更新】中古価格と最安値";
 // 店の数は、いま在庫がある店だけ（lib/activeShops.ts）
 const describe = (shopNum: number) =>
   `中古iPhoneの相場（中央値）と最安値を全機種まとめて比較。大手中古ショップ${shopNum}社の在庫から毎日更新。相場が安い順のランキングも。`;
 
 export async function generateMetadata(): Promise<Metadata> {
   // タイトルの頭に、いちばん安い値段と機種（10/28〜・lib/hubSummary.ts の hubTitle）
-  const title = hubTitle("iPhone", ALL_PAGE_MODELS, await getModelMarket([...ALL_PAGE_MODELS]), TITLE, ALL_CATALOG_MODELS, "中古iPhone 相場一覧");
+  const title = hubTitle("iPhone", ALL_PAGE_MODELS, await getModelMarket([...ALL_PAGE_MODELS]), TITLE, ALL_CATALOG_MODELS, "中古iPhone 価格・相場一覧");
   const description = describe((await activeShops()).length);
   return {
     title,
@@ -140,9 +140,9 @@ export default async function IphoneIndexPage() {
           <span className="text-ink-sub">中古iPhoneの相場一覧</span>
         </nav>
 
-        <h1 className="text-2xl md:text-3xl font-bold mb-3">中古iPhoneの相場一覧</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-3">中古iPhoneの価格・相場一覧</h1>
         <p className="text-ink-sub mb-4 leading-relaxed">
-          大手中古ショップ{shopNum}社の中古iPhone <strong>{total.toLocaleString()}件</strong>から、機種ごとの相場（中央値）と最安値をまとめています。
+          大手中古ショップ{shopNum}社の中古iPhone <strong>{total.toLocaleString()}件</strong>から、機種ごとの中古価格（相場＝中央値と最安値）を一覧にまとめています。
           在庫は6時間ごとに更新しています。
         </p>
         {summary && <p className="text-[13px] text-ink-mute mb-3 leading-relaxed">{summary}</p>}

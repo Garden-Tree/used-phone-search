@@ -84,6 +84,9 @@ import { searchRel } from "@/lib/searchRel";
 /** Google の表示減の検証で 10/19 の版の構成に近づける機種（11/12〜・2週で判定） */
 const LEGACY_LAYOUT_MODELS = new Set(["iPad Pro 11インチ (第3世代)"]);
 
+/** 選び方ガイド（/<種類>/guide）がある種類と、その呼び名 */
+const GUIDE_KINDS: Partial<Record<string, string>> = { iphone: "iPhone", ipad: "iPad", mac: "Mac", watch: "Apple Watch", galaxy: "Galaxy", pixel: "Pixel" };
+
 export const dynamic = "force-static"; // 静的書き出し: ビルド時に1回だけ作る（作り直しは1日4回のビルド）
 
 // カタログ外のslugは404
@@ -827,6 +830,15 @@ export default async function ModelPage({ params }: Props) {
                   <PriceWeeklyTable model={model} rows={weekly} />
                 )}
               </div>
+
+              {/* 選び方ガイドへ（11/23〜。ガイドの入口が一覧ページにしかなく PV 0 だった）。ガイドのある6種だけ */}
+              {GUIDE_KINDS[device] && (
+                <p className="md:order-6 min-[1360px]:col-span-2 text-sm">
+                  <Link href={`/${device}/guide`} data-placement="guide_link" className="font-bold text-brand-600 hover:underline underline-offset-4">
+                    中古{GUIDE_KINDS[device]}の選び方 完全ガイド（どれを買う・電池とランク・届いたら見ること） &rarr;
+                  </Link>
+                </p>
+              )}
 
               {/* 折りたたみ。スマホは1枚のカード、PC は2列 */}
               <div className="md:order-6 min-[1360px]:col-span-2 bg-white border border-line rounded-xl overflow-hidden md:bg-transparent md:border-0 md:rounded-none md:overflow-visible md:grid min-[1360px]:grid-cols-2 md:gap-4 md:items-start">
