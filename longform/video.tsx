@@ -399,15 +399,18 @@ function youtubeText(dir: string, tl: Timeline, artFiles: string[]): string {
   if (draft?.includes(CHAPTERS_PLACEHOLDER)) {
     const lines = draft.split(/\r?\n/);
     const creditAt = lines.findIndex((l) => l.startsWith("VOICEVOX:"));
-    let body = (creditAt < 0 ? lines : lines.slice(0, creditAt)).join("\n").trim().replace(CHAPTERS_PLACEHOLDER, chaptersText(tl).trim());
-    // データの日付と店の数（画面の最下行から外す配置があるので、説明欄に必ず置く）。下書きに無ければ最初の段落のあとに足す
-    if (!body.includes(date) || !body.includes(`${tl.shops}店`)) {
-      const at = body.indexOf("\n\n");
-      const note = `※ 数字は ${date} 時点・大手中古ショップ${tl.shops}店の在庫から集計しました。`;
-      body = at < 0 ? `${body}\n\n${note}` : `${body.slice(0, at)}\n\n${note}${body.slice(at)}`;
-    }
+    // 説明欄の形（11/23・ユーザーが SE3 で直した形）: リンク → 紹介1文 → チャプター → クレジット → PR → タグ。
+    // 結論・数字の箇条書き・※の注意書きは入れない（下書きにあっても落とす）
+    const bodyLines = (creditAt < 0 ? lines : lines.slice(0, creditAt)).map((l) => l.trimEnd());
+    const links = bodyLines.filter((l) => /^.+: https:\/\/used\.gadelog\.com/.test(l));
+    const pr = lines.filter((l) => l.startsWith("中古スマホにするなら回線も見直す") || l.includes("hb.afl.rakuten.co.jp"));
+    const extraCredits = lines.filter((l) => /^(イラスト|動画素材|サムネイル画像)/.test(l));
+    let intro = bodyLines.find((l) => l && l !== CHAPTERS_PLACEHOLDER && !/^(※|結論|・|#|（)/.test(l) && !links.includes(l) && !pr.includes(l) && !extraCredits.includes(l)) ?? "";
+    // データの日付と店の数は紹介の1文に（画面の最下行に出さないので、説明欄に必ず置く）
+    if (!intro.includes(date)) intro += `（数字は ${date} 時点・大手中古ショップ${tl.shops}店の在庫）`;
     const tags = [...lines].reverse().find((l) => l.startsWith("#")) ?? "#中古iPhone #iPhone";
-    return [title, "", body, "", ...credits, "", tags].join("\n") + "\n";
+    const parts = [links.join("\n"), intro, chaptersText(tl).trim(), [...extraCredits, ...credits].join("\n"), pr.join("\n"), tags];
+    return [title, "", parts.filter(Boolean).join("\n\n")].join("\n") + "\n";
   }
   return [
     title,
