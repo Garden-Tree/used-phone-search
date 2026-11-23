@@ -80,7 +80,9 @@ export type PhotoScene = {
   credit: string;
   points?: { text: string; sub?: string; cue?: string; say?: string }[];
   /** 差し替える画像（cue の台詞が始まったら次の画像に替わる。最初は src）。credit はそれぞれ */
-  images?: { src: string; credit: string; cue: string }[];
+  images?: { src: string; credit: string; cue: string; crop?: { x: number; y: number; w: number; h: number } }[];
+  /** 見せたい所だけ拡大（画像の幅・高さに対する割合 x・y・w・h） */
+  crop?: { x: number; y: number; w: number; h: number };
   note?: string;
 };
 

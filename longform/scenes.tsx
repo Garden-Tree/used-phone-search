@@ -284,7 +284,8 @@ export function growPoints(tl: Timeline): number[] {
     if (ch.scene.type !== "bars") continue;
     for (const [k, r] of Object.entries(ch.scene.reveal)) {
       if (!k.startsWith("item:")) continue;
-      for (let j = 1; j <= GROW; j++) out.push(ch.start + Math.max(0, r) + j / FPS);
+      const base = r > 0 ? ch.start + r : chapterShownAt(ch);
+      for (let j = 1; j <= GROW; j++) out.push(base + j / FPS);
     }
   }
   return out;
@@ -324,8 +325,10 @@ export function animAt(tl: Timeline, t: number): { items: Record<string, number>
   if (ch.scene.type === "bars") {
     for (const [k, r] of Object.entries(ch.scene.reveal)) {
       if (!k.startsWith("item:")) continue;
-      const f = Math.floor((t - ch.start - Math.max(0, r)) * FPS + 1e-6);
-      if (f >= 0 && f < GROW) grow[k] = Math.round(easeOut(f / GROW) * 1000) / 1000;
+      const base = r > 0 ? ch.start + r : chapterShownAt(ch);
+      const f = Math.floor((t - base) * FPS + 1e-6);
+      if (f < 0) grow[k] = 0;
+      else if (f < GROW) grow[k] = Math.round(easeOut(f / GROW) * 1000) / 1000;
     }
   }
   return { items, shake, grow, sub: page ? ph(page.start) : undefined, spk: line ? ph(line.start) : undefined };
@@ -357,7 +360,7 @@ const INNER_W = CARD.w - CARD.pad * 2;
 
 function Heading({ text, rightW = 0, right }: { text: string; rightW?: number; right?: ReactNode }) {
   return (
-    <div style={{ ...row, justifyContent: "space-between", width: INNER_W, marginBottom: 28 }}>
+    <div style={{ ...row, justifyContent: "space-between", width: INNER_W, marginTop: HEAD_UP, marginBottom: HEAD_GAP }}>
       <div style={{ display: "flex", fontSize: fit(text, INNER_W - rightW, cap(48), MIN_FONT, "見出し"), fontWeight: 900, color: C.ink }}>{text}</div>
       {right ?? null}
     </div>
@@ -373,7 +376,10 @@ const noteH = (text?: string) => {
   return (w <= INNER_W ? 1 : Math.ceil((w * 1.03) / INNER_W)) * Math.ceil(noteFont(text) * 1.45) + 8;
 };
 /** 見出し（Heading）の高さ（px。下の余白 28 を含む） */
-const headingH = (text: string, rightW = 0) => Math.ceil(Math.max(MIN_FONT, Math.min(cap(48), Math.floor((INNER_W - rightW) / textEm(text)))) * 1.45) + 28;
+/** 見出しを上に寄せる量と、下の間（d2 は上に 20px 寄せて間を 12px に。そのぶん写真・棒が大きくなる。11/23） */
+const HEAD_UP = L.notes === false ? -20 : 0;
+const HEAD_GAP = L.notes === false ? 12 : 28;
+const headingH = (text: string, rightW = 0) => Math.ceil(Math.max(MIN_FONT, Math.min(cap(48), Math.floor((INNER_W - rightW) / textEm(text)))) * 1.45) + HEAD_GAP + HEAD_UP;
 /**
  * 見出しと脚注を除いた、表・棒に使える高さ（px）。脚注が長いと行が低くなる（10/29: 行の高さを決め打ちにしていて、3行の脚注がカードの外にはみ出た）
  */
@@ -580,7 +586,7 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
 function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Record<string, number> }) {
   // 行の高さはカードの残り（見出し・脚注を除く）で割る（d2 は脚注なし。11/23: 4行で下が切れた）
   const rowH = Math.min(cap(150), Math.floor(bodyH(s.heading, s.note) / s.items.length));
-  const NUM = cap(76);
+  const NUM = Math.min(cap(76), Math.floor(rowH * 0.62));
   const textW = INNER_W - NUM - 32;
   return (
     <div style={{ ...col, width: INNER_W, height: "100%" }}>
@@ -589,7 +595,7 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
         const p = shown(reveal, `item:${i}`, t);
         return (
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p, borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
-            <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: cap(44), fontWeight: 900, alignItems: "center", justifyContent: "center" }}>{String(i + 1)}</div>
+            <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: Math.round(NUM * 0.58), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{String(i + 1)}</div>
             <div style={{ ...col, width: textW, marginLeft: 32 }}>
               <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(56), Math.floor(rowH * 0.5)), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
               {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.min(cap(38), Math.floor(rowH * 0.28)), MIN_FOOT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
@@ -601,6 +607,8 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
     </div>
   );
 }
+
+type Crop = { x: number; y: number; w: number; h: number };
 
 /** 画像を data URI と大きさにする（PNG・JPEG の頭から幅と高さを読む。同じ画像は1回だけ読む） */
 const IMAGES = new Map<string, { src: string; w: number; h: number }>();
@@ -628,7 +636,7 @@ function loadImage(path: string) {
 /** 写真・公式のスクショ。points があれば左に画像・右に1つずつ出す行、なければ画像だけを大きく。画像の下に出典 */
 function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<string, number> }) {
   // images があれば、cue を過ぎたもののうち最後の1枚に差し替える（パラパラ。11/23〜）
-  const slides = [{ src: s.src, credit: s.credit }, ...(s.images ?? [])];
+  const slides: { src: string; credit: string; crop?: Crop }[] = [{ src: s.src, credit: s.credit, crop: s.crop }, ...(s.images ?? [])];
   let cur = 0;
   slides.forEach((_, i) => { if (i > 0 && t >= (reveal[`img:${i - 1}`] ?? Infinity)) cur = i; });
   const img = loadImage(slides[cur].src);
@@ -638,8 +646,10 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
   const boxW = points.length ? Math.round(INNER_W * 0.45) : INNER_W;
   const creditFont = MIN_FOOT;
   const boxH = bodyH(s.heading, s.note) - Math.ceil(creditFont * 1.45) - 12;
-  const k = Math.min(boxW / img.w, boxH / img.h);
-  const w = Math.round(img.w * k), h = Math.round(img.h * k);
+  // crop: 見せたい所だけを拡大（画像の幅・高さに対する割合。11/23）
+  const cr = slides[cur].crop ?? { x: 0, y: 0, w: 1, h: 1 };
+  const k = Math.min(boxW / (img.w * cr.w), boxH / (img.h * cr.h));
+  const w = Math.round(img.w * cr.w * k), h = Math.round(img.h * cr.h * k);
   const textW = INNER_W - boxW - GAP;
   const rowH = points.length ? Math.min(cap(170), Math.floor(boxH / points.length)) : 0;
   return (
@@ -649,7 +659,9 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
         <div style={{ ...col, width: boxW, alignItems: "center" }}>
           <div style={{ display: "flex", width: boxW, height: boxH, alignItems: "center", justifyContent: "center", ...(cur > 0 ? bump(s, `img:${cur - 1}`) : {}) }}>
             {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-            <img src={img.src} width={w} height={h} style={{ width: w, height: h, borderRadius: 12 }} />
+            <div style={{ display: "flex", position: "relative", width: w, height: h, overflow: "hidden", borderRadius: 12 }}>
+              <img src={img.src} width={Math.round(img.w * k)} height={Math.round(img.h * k)} style={{ position: "absolute", left: -Math.round(cr.x * img.w * k), top: -Math.round(cr.y * img.h * k), width: Math.round(img.w * k), height: Math.round(img.h * k) }} />
+            </div>
           </div>
           {credit ? <div style={{ display: "flex", marginTop: 12, width: boxW, justifyContent: "center", fontSize: creditFont, fontWeight: 500, color: C.sub }}>{credit}</div> : null}
         </div>

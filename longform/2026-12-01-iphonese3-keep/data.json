@@ -52,7 +52,13 @@
           {
             "src": "longform/assets/commons/iphone-se3-front-red-toad40.jpg",
             "credit": "iPhone SE 3rd Gen — Toad40 / CC BY-SA 4.0 / Wikimedia Commons",
-            "cue": "結論から"
+            "cue": "結論から",
+            "crop": {
+              "x": 0.12,
+              "y": 0.06,
+              "w": 0.8,
+              "h": 0.9
+            }
           }
         ]
       }
@@ -123,7 +129,13 @@
           {
             "src": "longform/assets/commons/iphone-se3-back-starlight-meidoriyo.jpg",
             "credit": "iPhone SE 3 Starlight back — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
-            "cue": "本体はそのまま"
+            "cue": "本体はそのまま",
+            "crop": {
+              "x": 0.2,
+              "y": 0.08,
+              "w": 0.62,
+              "h": 0.86
+            }
           },
           {
             "src": "longform/assets/commons/touchid-homebutton-iphone5s-randychiu.jpg",
@@ -199,7 +211,13 @@
             "credit": "iPhone 5S Home Button — randychiu / CC BY 2.0 / Wikimedia Commons（写真は iPhone 5s）",
             "cue": "気をつけるところもあるよ"
           }
-        ]
+        ],
+        "crop": {
+          "x": 0.2,
+          "y": 0.08,
+          "w": 0.62,
+          "h": 0.86
+        }
       }
     },
     {
@@ -278,7 +296,13 @@
             "credit": "iPhone 14 Pro — iGeeksBlog / CC BY-SA 4.0 / Wikimedia Commons",
             "cue": "Dynamic Islandもあるよ"
           }
-        ]
+        ],
+        "crop": {
+          "x": 0.17,
+          "y": 0.06,
+          "w": 0.24,
+          "h": 0.34
+        }
       }
     },
     {
@@ -319,12 +343,24 @@
           {
             "src": "longform/assets/commons/iphone15-usbc-port-kyu3.jpg",
             "credit": "USB-C port of iPhone 15 — Kyu3 / CC BY-SA 4.0 / Wikimedia Commons",
-            "cue": "旅行の荷物"
+            "cue": "旅行の荷物",
+            "crop": {
+              "x": 0.25,
+              "y": 0.28,
+              "w": 0.5,
+              "h": 0.36
+            }
           },
           {
             "src": "longform/assets/commons/iphone15-back-blue-meidoriyo.jpg",
             "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
-            "cue": "カメラは48MPのメイン"
+            "cue": "カメラは48MPのメイン",
+            "crop": {
+              "x": 0.18,
+              "y": 0.1,
+              "w": 0.6,
+              "h": 0.42
+            }
           }
         ]
       }
@@ -352,7 +388,13 @@
             "sub": "SIMカードは使えない（設定中に移せる）",
             "cue": "SIMカードは使えなくて"
           }
-        ]
+        ],
+        "crop": {
+          "x": 0.18,
+          "y": 0.08,
+          "w": 0.66,
+          "h": 0.6
+        }
       }
     },
     {
