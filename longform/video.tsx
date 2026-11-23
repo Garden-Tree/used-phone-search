@@ -175,14 +175,31 @@ const segFile = (i: number, open = false) => `seg-${String(i + 1).padStart(4, "0
 
 // ───────── 各段 ─────────
 
-async function renderFrames(tl: Timeline, segs: Segment[], art: CharaArt, work: string) {
+/**
+ * PNG を並べて作る数（11/23 ユーザー「CPU をガンガン使っていい・24スレッド」）。既定は論理コア数 − 2。LONGFORM_JOBS で変える（1 で今までどおり1本）
+ */
+const JOBS = Math.max(1, Number(process.env.LONGFORM_JOBS ?? Math.max(1, os.cpus().length - 2)));
+
+/** 子のプロセスを JOBS 本立てて、PNG を k 番目ずつ分けて作る（子は frames-part k n で呼ばれる） */
+async function renderFramesParallel(dir: string, total: number) {
+  const t0 = now();
+  console.log(`  ${JOBS} 本で並べて作る（PNG ${total} 枚）`);
+  await Promise.all(Array.from({ length: JOBS }, (_, k) => new Promise<void>((ok, ng) => {
+    const child = spawn("npx", ["tsx", "longform/video.tsx", dir, "frames-part", String(k), String(JOBS)], { shell: true, stdio: ["ignore", "ignore", "inherit"] });
+    child.on("exit", (code) => (code === 0 ? ok() : ng(new Error(`PNG の子 ${k} が失敗（${code}）`))));
+  })));
+  console.log(`  PNG ${total} 枚（${(now() - t0).toFixed(0)} 秒）`);
+}
+
+async function renderFrames(tl: Timeline, segs: Segment[], art: CharaArt, work: string, part?: { k: number; n: number }) {
   const fonts = await longFonts(tl);
-  const jobs = segs.flatMap((s, i) => [{ s, i, open: false }, ...(s.flap ? [{ s, i, open: true }] : [])]);
+  const all = segs.flatMap((s, i) => [{ s, i, open: false }, ...(s.flap ? [{ s, i, open: true }] : [])]);
+  const jobs = part ? all.filter((_, x) => x % part.n === part.k) : all;
   const t0 = now();
   for (const [n, j] of jobs.entries()) {
     const res = new ImageResponse(frameAt(tl, j.s.t, { instant: true, art, mouthOpen: j.open || j.s.level > 0, level: j.s.level }), { width: W, height: H, fonts });
     writeFileSync(join(work, segFile(j.i, j.open)), Buffer.from(await res.arrayBuffer()));
-    if ((n + 1) % 25 === 0 || n + 1 === jobs.length) {
+    if (!part && ((n + 1) % 25 === 0 || n + 1 === jobs.length)) {
       const el = now() - t0;
       console.log(`  PNG ${n + 1}/${jobs.length}（${el.toFixed(0)} 秒・残り約 ${(((jobs.length - n - 1) * el) / (n + 1)).toFixed(0)} 秒）`);
     }
@@ -527,10 +544,17 @@ async function check(dir: string, tl: Timeline) {
   console.log(`見積もり: PNG 1枚 0.5〜1.5 秒 → ${Math.round((pngs * 0.5) / 60)}〜${Math.round((pngs * 1.5) / 60)} 分、映像 3〜8 分、音 1〜2 分`);
   if (mode === "plan") return;
 
+  if (mode === "frames-part") {
+    const k = Number(process.argv[4]), n = Number(process.argv[5]);
+    await renderFrames(tl, segs, art, work, { k, n });
+    return;
+  }
   if (mode === "all" || mode === "frames") {
     console.log("PNG を作る");
     for (const f of readdirSync(work)) if (/^seg-\d+(-open)?\.png$/.test(f)) rmSync(join(work, f));
-    await renderFrames(tl, segs, art, work);
+    const total = segs.reduce((a, x) => a + (x.flap ? 2 : 1), 0);
+    if (JOBS > 1) await renderFramesParallel(dir, total);
+    else await renderFrames(tl, segs, art, work);
     writeFileSync(join(work, "list.txt"), concatList(segs, totalFrames));
   }
   if (mode === "all" || mode === "encode") {
