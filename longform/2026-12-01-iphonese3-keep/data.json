@@ -74,13 +74,15 @@
             "label": "8・X",
             "sub": "2017年→iOS 16",
             "median": 5,
-            "cue": "6sは6年"
+            "cue": "6sは6年",
+            "say": "8とX"
           },
           {
             "label": "XS・XR",
             "sub": "2018年→iOS 18",
             "median": 6,
-            "cue": "6sは6年"
+            "cue": "6sは6年",
+            "say": "XSとXR"
           },
           {
             "label": "11",

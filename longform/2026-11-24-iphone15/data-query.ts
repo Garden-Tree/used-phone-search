@@ -1,6 +1,6 @@
 /**
  * 横動画「中古iPhone 15は今買い？」の数字。読むだけ（DB に書かない）。
- *   npx tsx longform/2026-11-28-iphone15/data-query.ts > longform/2026-11-28-iphone15/data-query.log
+ *   npx tsx longform/2026-11-24-iphone15/data-query.ts > longform/2026-11-24-iphone15/data-query.log
  *
  * DB は groupBy・count・aggregate と、中央値の1行（findFirst＋skip）だけ。findMany で在庫（DeviceInventory）の行は取らない。
  * 相場＝在庫がいちばん多い容量の中央値（getModelMarket。サイトの相場と同じ・ジャンクも入る）。

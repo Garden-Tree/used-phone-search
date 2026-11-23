@@ -27,7 +27,7 @@ const EDGE = 60;
 const SET = process.argv.find((a) => a.startsWith("--set="))?.slice(6) ?? "bf";
 const ARGV = process.argv.slice(2).filter((a) => !a.startsWith("--set="));
 const CHECK = ARGV[0] === "--check";
-const DIR = SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-28-iphone15" : "2026-11-26-blackfriday";
+const DIR = SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-24-iphone15" : "2026-11-26-blackfriday";
 const LAYERS = SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
 const OUTC = (c: string) => (CHECK && c === BLACK ? "#808080" : c);
 
@@ -172,15 +172,15 @@ const k3 = (
   </Frame>
 );
 
-// ---- 15（2026-11-28-iphone15・11/21）: iPhone 15 の前面。数字は script.md のもの（11/17。公開前日 11/27 に取り直す）
-//   相場 128GB 91,700円（9.2万円）・14 との差 27,400円（2.7万円。違いは USB-C と A16）
+// ---- 15（2026-11-24-iphone15・11/21）: iPhone 15 の前面。数字は script.md のもの（11/17。公開前日 11/27 に取り直す）
+//   相場 128GB 90,980円（9.1万円・11/22）・14 との差 26,000円（2.6万円。違いは USB-C と A16）
 // F1: iPhone 15（白 116）／ 今買い？（黄 172・主役）／ 札 相場9.2万円（赤 104）＝13 の K3 と同じ形
 const f1 = (
   <Frame>
     <Layer name="15-big" />
     <T x={EDGE + 6} y={60}><Outlined text="iPhone 15" size={116} color={WHITE} w={6} spacing={-3} /></T>
     <T x={EDGE + 9} y={204}><Outlined text="今買い？" size={172} color={YELLOW} w={9} spacing={-8} /></T>
-    <Tag x={EDGE} y={448} text="相場9.2万円" size={104} color={RED} pad={16} spacing={-5} />
+    <Tag x={EDGE} y={448} text="相場9.1万円" size={104} color={RED} pad={16} spacing={-5} />
   </Frame>
 );
 // F2: 14との差は（白 116）／ USB-C（黄 172・主役）／ 札 +2.7万円（赤 104）

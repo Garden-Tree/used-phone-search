@@ -128,9 +128,33 @@ function pagesWithTime(text: string, start: number, end: number, audio?: string)
 
 const round = (x: number) => Math.round(x * 1000) / 1000;
 
+/**
+ * 項目に台詞が触れた秒（11/23 ユーザー「内容に触れ始めたら一瞬震わせる」）。項目の言葉（ラベル・行の先頭の語）を含む台詞の始まりを、
+ * 項目が出た後（出たその台詞は除く）から集める。キーは item:i、値は章の頭からの秒
+ */
+function keywordOf(text: string | undefined): string | null {
+  if (!text) return null;
+  const k = text.replace(/^(中古の|新品の)/, "").split(/[・（(→\s]| → /)[0].trim();
+  return k.length >= 2 ? k : null; // 1字（「8」など）は「2028年」にも当たるので使わない
+}
+/** 項目ごとの言葉（ラベル・行の先頭の語） */
+function itemWords(scene: SceneData): Record<string, string | null> {
+  const out: Record<string, string | null> = {};
+  switch (scene.type) {
+    case "bigNumber": scene.items.forEach((it, i) => (out[`item:${i}`] = keywordOf(it.label))); break;
+    case "checklist": scene.items.forEach((it, i) => (out[`item:${i}`] = keywordOf(it.text.split(" → ").pop()))); break;
+    case "bars": case "pairs": scene.rows.forEach((r, i) => (out[`item:${i}`] = (r as { say?: string }).say ?? keywordOf(r.label))); break;
+    case "table": scene.rows.forEach((r, i) => (out[`item:${i}`] = keywordOf(r.cells[0]))); break;
+    case "photo": (scene.points ?? []).forEach((it, i) => (out[`item:${i}`] = (it as { say?: string }).say ?? keywordOf(it.text))); break;
+    default: break;
+  }
+  return out;
+}
+
 /** scene の cue → 章の頭からの秒。見つからない cue は警告して 0（最初から出す） */
 function resolveReveal(scene: SceneData, lines: TimelineLine[], chStart: number, chTitle: string, warn: string[]): { reveal: Record<string, number>; lastLine: number } {
   const reveal: Record<string, number> = {};
+  const words = itemWords(scene);
   let lastLine = -1;
   const find = (key: string, cue: string | undefined) => {
     if (!cue) {
@@ -143,7 +167,11 @@ function resolveReveal(scene: SceneData, lines: TimelineLine[], chStart: number,
       reveal[key] = 0;
       return;
     }
-    reveal[key] = round(lines[i].start - chStart);
+    // その台詞の中に項目の言葉があれば、言葉の位置まで遅らせる（棒が台詞に合わせて1本ずつ伸びる。11/23）
+    const w = words[key];
+    const l = lines[i];
+    const idx = w ? l.text.indexOf(w) : -1;
+    reveal[key] = round((idx > 0 ? l.start + ((l.end - l.start) * idx) / Math.max(1, l.text.length) : l.start) - chStart);
     lastLine = Math.max(lastLine, i);
   };
   switch (scene.type) {
@@ -169,33 +197,33 @@ function resolveReveal(scene: SceneData, lines: TimelineLine[], chStart: number,
       // 項目は出し分けない（YouTube の要素を重ねる枠。章の絵と一緒に全部出す）
       break;
   }
+  // 同じ秒に出る項目が並んだら、0.2 秒ずつずらして上から順に出す（横棒が1本ずつ伸びる。11/23）
+  if (scene.type === "bars") {
+    const seen: Record<string, number> = {};
+    for (const k of Object.keys(reveal).filter((k) => k.startsWith("item:"))) {
+      const t0 = String(reveal[k]);
+      const n = seen[t0] ?? 0;
+      seen[t0] = n + 1;
+      if (n > 0) reveal[k] = round(reveal[k] + 0.2 * n);
+    }
+  }
   return { reveal, lastLine };
 }
 
-/**
- * 項目に台詞が触れた秒（11/23 ユーザー「内容に触れ始めたら一瞬震わせる」）。項目の言葉（ラベル・行の先頭の語）を含む台詞の始まりを、
- * 項目が出た後（出たその台詞は除く）から集める。キーは item:i、値は章の頭からの秒
- */
-function keywordOf(text: string | undefined): string | null {
-  if (!text) return null;
-  const k = text.replace(/^(中古の|新品の|売って)/, "").split(/[・（(→\s]| → /)[0].trim();
-  return k.length >= 2 ? k : null; // 1字（「8」など）は「2028年」にも当たるので使わない
-}
 function resolveMentions(scene: SceneData, lines: TimelineLine[], chStart: number, reveal: Record<string, number>): Record<string, number[]> {
-  const words: [string, string | null][] = [];
-  switch (scene.type) {
-    case "bigNumber": scene.items.forEach((it, i) => words.push([`item:${i}`, keywordOf(it.label)])); break;
-    case "checklist": scene.items.forEach((it, i) => words.push([`item:${i}`, keywordOf(it.text.split(" → ").pop())])); break;
-    case "bars": case "pairs": scene.rows.forEach((r, i) => words.push([`item:${i}`, keywordOf(r.label)])); break;
-    case "table": scene.rows.forEach((r, i) => words.push([`item:${i}`, keywordOf(r.cells[0])])); break;
-    case "photo": (scene.points ?? []).forEach((it, i) => words.push([`item:${i}`, keywordOf(it.text)])); break;
-    default: break;
-  }
+  const words = Object.entries(itemWords(scene));
   const out: Record<string, number[]> = {};
   for (const [key, w] of words) {
     if (!w) continue;
     const at = reveal[key] ?? 0;
-    const ts = lines.map((l) => round(l.start - chStart)).filter((t, i) => t > at + 0.01 && lines[i].text.includes(w));
+    // 台詞の中の位置で秒を割り振る（「電池交換、14 Pro、15、17e」を言うたびに震わせる。11/23）。出た瞬間から 0.3 秒以内は除く
+    const ts: number[] = [];
+    for (const l of lines) {
+      for (let idx = l.text.indexOf(w); idx >= 0; idx = l.text.indexOf(w, idx + w.length)) {
+        const tm = round(l.start + ((l.end - l.start) * idx) / Math.max(1, l.text.length) - chStart);
+        if (tm > at + 0.3) ts.push(tm);
+      }
+    }
     if (ts.length) out[key] = ts;
   }
   return out;

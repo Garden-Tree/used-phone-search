@@ -26,7 +26,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
-import { ANIM_STEPS, END_SCREEN, FPS, H, MIN_FONT, W, animAt, animEvents, chapterShownAt, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
+import { ANIM_STEPS, END_SCREEN, FPS, H, MIN_FONT, W, animAt, animEvents, chapterShownAt, growPoints, subProgress, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, ThumbnailData, Timeline } from "./types";
 
@@ -143,6 +143,8 @@ function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: S
   }
   // 揺れ（出来事の 2・4・6・8 コマ後）
   for (const e of animEvents(tl)) for (const j of ANIM_STEPS) points.add(e + j / FPS);
+  // 横棒が伸びる間
+  for (const t of growPoints(tl)) points.add(Math.round(t * 1000) / 1000);
   // 声の大きさ（話している間は 0.1 秒ごと）
   if (levels.length) for (const ch of tl.chapters) for (const l of ch.lines) for (let t = l.start; t < l.end; t += LEVEL_STEP) points.add(Math.round(t * 1000) / 1000);
   const levelAt = (t: number) => levels[Math.floor(t / LEVEL_STEP)] ?? 0;
@@ -154,9 +156,9 @@ function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: S
     // 立ち絵がなければ「話している最中か」で絵は変わらない
     const talkKey = who && art[who] ? st.talking : false;
     const anim = animAt(tl, t);
-    const moving = anim.sub !== undefined || anim.spk !== undefined || Object.keys(anim.items).length > 0 || Object.keys(anim.shake).length > 0;
+    const moving = anim.sub !== undefined || anim.spk !== undefined || Object.keys(anim.items).length > 0 || Object.keys(anim.shake).length > 0 || Object.keys(anim.grow).length > 0;
     const level = levels.length && st.talking && who && art[who] ? levelAt(t) : 0;
-    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), talkKey, anim, level]);
+    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), talkKey, anim, level, subProgress(tl, t)]);
     const frame = Math.round(t * FPS);
     const last = segs[segs.length - 1];
     if (last && last.frame === frame) segs.pop();
@@ -283,7 +285,30 @@ async function audio(dir: string, tl: Timeline, work: string) {
   await ffmpeg(["-y", "-threads", "2", "-i", mix, "-af", second, "-c:a", "aac", "-b:a", "192k", join(work, "audio.m4a")], "-14 LUFS（2パス目）");
 }
 
-async function mux(dir: string, work: string) {
+/**
+ * チャンネル登録のお願いの台詞（終了画面の章を除いて、最初に「チャンネル登録」を言う台詞）に、
+ * グリーンバックの「チャンネル登録」の動き（YouTuberのための素材屋さん・商用可・表記不要）を画面の中央に重ねる（11/23）
+ */
+const SUBSCRIBE_GB = "longform/assets/gb/subscribe-jp-square-green-800-ytsozaiyasan.mp4";
+const SUBSCRIBE_SEC = 4.5;
+function subscribeAt(tl: Timeline): number | null {
+  for (const ch of tl.chapters) {
+    if (ch.scene.type === "endScreen") continue;
+    const l = ch.lines.find((x) => x.text.includes("チャンネル登録"));
+    if (l) return l.start;
+  }
+  return null;
+}
+
+async function mux(dir: string, work: string, tl?: Timeline) {
+  const at = tl ? subscribeAt(tl) : null;
+  if (at !== null && existsSync(SUBSCRIBE_GB)) {
+    const T = at.toFixed(3);
+    const fc = `[2:v]trim=0:${SUBSCRIBE_SEC},setpts=PTS-STARTPTS+${T}/TB,chromakey=0x00FF01:0.18:0.08,scale=620:-1[ov];[0:v][ov]overlay=(W-w)/2:(H-h)/2-60:enable='between(t,${T},${(at + SUBSCRIBE_SEC).toFixed(3)})':eof_action=pass,format=yuv420p[v]`;
+    await ffmpeg(["-y", "-i", join(work, "video-only.mp4"), "-i", join(work, "audio.m4a"), "-i", SUBSCRIBE_GB, "-filter_complex", fc, "-map", "[v]", "-map", "1:a",
+      "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-threads", "2", "-c:a", "copy", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], `映像と音をまとめる（チャンネル登録 ${T} 秒）`);
+    return;
+  }
   await ffmpeg(["-y", "-i", join(work, "video-only.mp4"), "-i", join(work, "audio.m4a"), "-map", "0:v", "-map", "1:a", "-c", "copy", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], "映像と音をまとめる");
 }
 
@@ -519,7 +544,7 @@ async function check(dir: string, tl: Timeline) {
   }
   if (mode === "all" || mode === "mux") {
     console.log("まとめ");
-    await mux(dir, work);
+    await mux(dir, work, tl);
   }
   if (mode === "all") {
     console.log("説明文・チャプター・サムネ");

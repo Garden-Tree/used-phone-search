@@ -275,6 +275,20 @@ const settle = (k: number, a: number) => Math.round(a * (1 - easeOut(Math.min(1,
 const ITEM_Y = 6;
 const SUB_Y = 3;
 const SPK_UP = -6;
+/** 横棒が左から伸びる長さ（コマ。約 0.6 秒・ease-out。値の数字も 0 から数え上がる。11/23） */
+const GROW = 18;
+/** 横棒が伸びている間に PNG にするコマ（出てから 2・4…18 コマ後） */
+export function growPoints(tl: Timeline): number[] {
+  const out: number[] = [];
+  for (const ch of tl.chapters) {
+    if (ch.scene.type !== "bars") continue;
+    for (const [k, r] of Object.entries(ch.scene.reveal)) {
+      if (!k.startsWith("item:")) continue;
+      for (let j = 2; j <= GROW; j += 2) out.push(ch.start + Math.max(0, r) + j / FPS);
+    }
+  }
+  return out;
+}
 /** 台詞が項目に触れたときの震え（px・コマごと。だんだん小さく） */
 const SHAKE_X = [4, -3, -3, 2, 2, -1, -1, 0];
 /** 声の大きさ1段あたりに立ち絵を上げる px（11/23・声の波形で揺らす。控えめに 2px） */
@@ -287,7 +301,7 @@ const bump = (scene: object, key: string): CSSProperties => {
   return j === undefined ? {} : { transform: `translateX(${SHAKE_X[j]}px)` };
 };
 /** t 秒の揺れ: 揺らす項目（キー → 何コマ目）・字幕・話し手（何コマ目か。なければ undefined） */
-export function animAt(tl: Timeline, t: number): { items: Record<string, number>; shake: Record<string, number>; sub?: number; spk?: number } {
+export function animAt(tl: Timeline, t: number): { items: Record<string, number>; shake: Record<string, number>; grow: Record<string, number>; sub?: number; spk?: number } {
   const { ch, line, page } = stateAt(tl, t);
   const ph = (e: number) => {
     const k = Math.floor((t - e) * FPS + 1e-6);
@@ -306,7 +320,15 @@ export function animAt(tl: Timeline, t: number): { items: Record<string, number>
       if (p !== undefined && items[k] === undefined) shake[k] = p;
     }
   }
-  return { items, shake, sub: page ? ph(page.start) : undefined, spk: line ? ph(line.start) : undefined };
+  const grow: Record<string, number> = {};
+  if (ch.scene.type === "bars") {
+    for (const [k, r] of Object.entries(ch.scene.reveal)) {
+      if (!k.startsWith("item:")) continue;
+      const f = Math.floor((t - ch.start - Math.max(0, r)) * FPS + 1e-6);
+      if (f >= 0 && f < GROW) grow[k] = Math.round(easeOut(f / GROW) * 1000) / 1000;
+    }
+  }
+  return { items, shake, grow, sub: page ? ph(page.start) : undefined, spk: line ? ph(line.start) : undefined };
 }
 /** 揺れの出来事の秒（項目が出る・字幕のページ・台詞の始まり） */
 export function animEvents(tl: Timeline): number[] {
@@ -419,7 +441,9 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
       {s.rows.map((r, i) => {
         const p = shown(reveal, `item:${i}`, t);
         const pm = r.min !== undefined ? shown(reveal, `min:${i}`, t) : 0;
-        const w = Math.max(4, Math.round((track * r.median * p) / max));
+        const g = (s as { grow?: Record<string, number> }).grow?.[`item:${i}`] ?? 1;
+        const w = Math.max(4, Math.round((track * r.median * p * g) / max));
+        const shownValue = money(r.median * g, s.unit);
         const subs = (r.sub ?? "").split("\n").filter(Boolean);
         const labelFont = fit(r.label, r.pick ? LABEL - PICK : LABEL - 10, F.label, MIN_FONT, "棒のラベル");
         for (const line of subs) fit(line, LABEL - 10, F.sub, MIN_FONT, "棒の補足");
@@ -449,7 +473,7 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
               ) : null}
             </div>
             <div style={{ ...col, width: VALUE, marginLeft: GAP, opacity: p }}>
-              <div style={{ display: "flex", fontSize: fit(money(r.median, s.unit), VALUE, F.value, MIN_FONT, "棒の値"), fontWeight: 900, color: C.ink, lineHeight: 1.1, whiteSpace: "nowrap" }}>{money(r.median, s.unit)}</div>
+              <div style={{ display: "flex", fontSize: fit(money(r.median, s.unit), VALUE, F.value, MIN_FONT, "棒の値"), fontWeight: 900, color: C.ink, lineHeight: 1.1, whiteSpace: "nowrap" }}>{shownValue}</div>
               {r.stock ? <div style={{ display: "flex", fontSize: F.small, fontWeight: 500, color: C.sub, lineHeight: LH }}>{r.stock}</div> : null}
             </div>
           </div>
@@ -787,10 +811,40 @@ function SubLine({ text, who }: { text: string; who: Who | null }) {
   );
 }
 
+/**
+ * 字幕の縁（11/23〜）: そのページが替わるまでの残りを、話し手の色の線が帯の縁を等速で一周して表す。
+ * 左上から時計回り（上→右→下→左）。prog は 0〜1（40段に丸める。video.tsx が 0.1 秒ごとに PNG にする）
+ */
+const RING = 10;
+export const SUB_STEPS = 40;
+function SubRing({ who, prog, dy }: { who: Who | null; prog: number; dy: number }) {
+  if (!who || prog <= 0) return null;
+  const w = SUB.w, h = SUB.h, color = SPEAKER_COLOR[who];
+  let left = prog * 2 * (w + h);
+  const seg: CSSProperties[] = [];
+  const take = (len: number) => { const v = Math.max(0, Math.min(len, left)); left -= v; return v; };
+  const top = take(w), rgt = take(h), btm = take(w), lft = take(h);
+  if (top) seg.push({ left: 0, top: 0, width: top, height: RING });
+  if (rgt) seg.push({ left: w - RING, top: 0, width: RING, height: rgt });
+  if (btm) seg.push({ left: w - btm, top: h - RING, width: btm, height: RING });
+  if (lft) seg.push({ left: 0, top: h - lft, width: RING, height: lft });
+  return (
+    <div style={{ display: "flex", position: "absolute", left: SUB.x, top: SUB.y + dy, width: w, height: h, borderRadius: 20, overflow: "hidden" }}>
+      {seg.map((st, i) => <div key={i} style={{ display: "flex", position: "absolute", background: color, ...st }} />)}
+    </div>
+  );
+}
+/** t 秒の字幕の縁の進み（0〜1・SUB_STEPS 段） */
+export function subProgress(tl: Timeline, t: number): number {
+  const { page } = stateAt(tl, t);
+  if (!page || !(page.end > page.start)) return 0;
+  return Math.min(1, Math.floor(((t - page.start) / (page.end - page.start)) * SUB_STEPS + 1e-6) / SUB_STEPS);
+}
+
 function Subtitle({ who, text, dy = 0 }: { who: Who | null; text: string; dy?: number }) {
-  // 帯の端の色の線: いつも左か、話している人の側（つむぎは右）
+  // 帯の端の線は見えない色にして字の位置だけ残す（色の線は SubRing が縁を一周させる。11/23）
   const right = SUB.edgeSide === "speaker" && who === "つむぎ";
-  const edgeLine = `14px solid ${who ? SPEAKER_COLOR[who] : C.bar}`;
+  const edgeLine = `14px solid ${C.white}`;
   const tag = SUB.tag === "always";
   return (
     <div style={{ ...row, position: "absolute", left: SUB.x, top: SUB.y + dy, width: SUB.w, height: SUB.h, background: C.white, borderRadius: 20, borderLeft: right ? "none" : edgeLine, borderRight: right ? edgeLine : "none" }}>
@@ -874,7 +928,7 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
   const shownSet = opts.instant ? new Set(revealedAt(ch.scene.reveal, local)) : null;
   const anim = animAt(tl, t);
   const base = shownSet ? { ...ch, scene: { ...ch.scene, reveal: Object.fromEntries(Object.keys(ch.scene.reveal).map((k) => [k, shownSet.has(k) ? -1000 : 1000])) } } : ch;
-  const scene = { ...base, scene: { ...base.scene, pulse: anim.items, shake: anim.shake } };
+  const scene = { ...base, scene: { ...base.scene, pulse: anim.items, shake: anim.shake, grow: anim.grow } };
   const spkDy = (anim.spk === undefined ? 0 : settle(anim.spk, SPK_UP)) - (opts.level ?? 0) * LEVEL_Y;
   return (
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
@@ -888,6 +942,7 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
       <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} dy={who === "ずんだもん" ? spkDy : 0} />
       <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} dy={who === "つむぎ" ? spkDy : 0} />
       <Subtitle who={who} text={page?.text ?? ""} dy={anim.sub === undefined ? 0 : settle(anim.sub, SUB_Y)} />
+      <SubRing who={who} prog={subProgress(tl, t)} dy={anim.sub === undefined ? 0 : settle(anim.sub, SUB_Y)} />
       {FOOT_Y === null ? null : <div style={{ display: "flex", position: "absolute", left: SUB.x + 8, top: FOOT_Y, fontSize: 26, fontWeight: 500, color: C.onDarkSub }}>{`${date} 時点・大手中古ショップ${tl.shops}店の在庫から`}</div>}
     </div>
   );

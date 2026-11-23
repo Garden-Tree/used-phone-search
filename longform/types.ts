@@ -21,7 +21,7 @@ export type BarsScene = {
   heading: string;
   /** 件・機種は数の棒（店ごとの在庫数・最安の機種の数。10/24〜） */
   unit: "万円" | "円" | "件" | "機種" | "年" | "時間" | "g";
-  rows: { label: string; sub?: string; median: number; min?: number; minLabel?: string; stock?: string; pick?: boolean; /** 札の文字（なければ「おすすめ」） */ pickLabel?: string; cue?: string; minCue?: string }[];
+  rows: { label: string; sub?: string; median: number; min?: number; minLabel?: string; stock?: string; pick?: boolean; /** 札の文字（なければ「おすすめ」） */ pickLabel?: string; /** 台詞の中でこの行を指す言葉（なければラベルの先頭の語） */ say?: string; cue?: string; minCue?: string }[];
   note?: string;
 };
 
@@ -78,7 +78,7 @@ export type PhotoScene = {
   heading: string;
   src: string;
   credit: string;
-  points?: { text: string; sub?: string; cue?: string }[];
+  points?: { text: string; sub?: string; cue?: string; say?: string }[];
   /** 差し替える画像（cue の台詞が始まったら次の画像に替わる。最初は src）。credit はそれぞれ */
   images?: { src: string; credit: string; cue: string }[];
   note?: string;
@@ -124,7 +124,7 @@ export type TimelineChapter = {
   /** data.json の scene。各項目の cue は revealAt（章の頭からの秒）に直してある */
   /** pulse: 揺らす項目（キー → 出てから何コマ目か。frameAt が animAt から入れる） */
   /** mention: 台詞が項目に触れた秒（震わせる）。shake: 震えている項目（frameAt が入れる） */
-  scene: SceneData & { reveal: Record<string, number>; pulse?: Record<string, number>; mention?: Record<string, number[]>; shake?: Record<string, number> };
+  scene: SceneData & { reveal: Record<string, number>; pulse?: Record<string, number>; mention?: Record<string, number[]>; shake?: Record<string, number>; grow?: Record<string, number> };
   lines: TimelineLine[];
   /** 見本の静止画に使う秒（動画の頭から） */
   stillAt: number;

@@ -1,0 +1,37 @@
+中古iPhoneは何世代まで買っていい？iOS 27・修理の期間・相場で最低ラインを決めた
+
+中古iPhoneは何世代前まで買っていいのかを、Apple 公式の情報（iOS 27 の対応機種・修理と部品の期間・電池交換の料金・Apple Intelligence の対応機種）と、iPhone X〜16 の20機種の中古の相場（大手中古ショップ15店・販売中の在庫 23,685件・2026/10/25時点）で確かめました。
+結論: 最低ラインは iOS 27 に対応する iPhone 11 と iPhone SE（第2世代）から。XR（非対応）と SE 第2世代の相場の差は 1,100円（64GB）。
+
+・iOS 27 非対応: iPhone X（相場 19,580円）・XS（22,980円）・XR（19,580円）／対応: 11（29,800円）・SE 第2世代（20,680円）・12（34,800円）（すべて64GB）
+・修理と部品: Apple は販売店への供給をやめてから最低5年（部品の在庫しだいで最長7年）。5年以上7年未満はビンテージ（11 Pro・11 Pro Max・XS など）、7年以上はオブソリートで修理なし（X など）
+・電池交換（Apple・保証対象外・税込）を足すと: SE 第2世代 32,680円＞SE 第3世代 31,141円／11 64GB 45,400円＞12 128GB 40,980円／12 64GB 50,400円≒13 128GB 50,800円／13 128GB 66,400円＞14 128GB 65,615円
+・これから買うなら128GB: 64GBとの相場の差は SE 第2世代 +1,100円・11 +3,000円・12 mini +3,000円・12 +6,180円・SE 第3世代 +7,839円。128GB の相場は SE 第2世代 21,780円・11 32,800円・12 mini 33,980円・SE 第3世代 38,980円・12 40,980円（XR は 128GB で 22,781円）
+・Apple Intelligence: iPhone 16 以降の全モデルと 15 Pro・15 Pro Max。いちばん安いのは 16e（128GB 107,180円）
+
+相場＝同じ機種・同じ容量の中央値。iOS・修理・AI は Apple 公式（apple.com/jp/ios/・support.apple.com/ja-jp/102772）、電池交換の料金は Apple の修理サービスの料金表で確かめた値です。
+
+0:00 結論：最低ラインはiPhone 11
+1:03 どうやって調べた？
+1:44 iOS 27で分かれるライン
+2:46 対応する中で安いのは
+3:35 64GBと128GB、どっちにする？
+4:25 修理と部品はいつまで？
+5:33 電池交換を足すと
+6:37 AIの機能まで欲しいなら
+7:20 まとめ
+8:16 次におすすめの動画
+
+予算重視、iOS 27 対応で安い中古iPhone: https://used.gadelog.com/pick/budget?utm_source=youtube&utm_medium=social&utm_campaign=long_20261026
+iPhone SE（第2世代）の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-se-2nd-gen?utm_source=youtube&utm_medium=social&utm_campaign=long_20261026
+iPhone 11 の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-11?utm_source=youtube&utm_medium=social&utm_campaign=long_20261026
+全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261026
+
+VOICEVOX:春日部つむぎ
+VOICEVOX:ずんだもん
+BGM: Cyber Society by のる（OpenTracks）
+効果音：効果音ラボ
+立ち絵：春日部つむぎ公式立ち絵(KASUKABEproject)
+ずんだもん立ち絵：坂本アヒル様
+
+#中古iPhone #iPhone #iOS27
