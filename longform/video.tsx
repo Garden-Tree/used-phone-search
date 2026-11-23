@@ -27,7 +27,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
-import { ANIM_STEPS, END_SCREEN, FPS, H, MIN_FONT, W, animAt, animEvents, chapterShownAt, growPoints, subProgress, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
+import { ANIM_STEPS, END_SCREEN, FPS, H, MIN_FONT, W, animAt, animEvents, chapterShownAt, growPoints, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, ThumbnailData, Timeline } from "./types";
 
@@ -157,6 +157,8 @@ function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: S
   }
   // 揺れ（出来事の 2・4・6・8 コマ後）
   for (const e of animEvents(tl)) for (const j of ANIM_STEPS) points.add(e + j / FPS);
+  // 名前の札が消える間
+  for (const t of plateFadePoints()) points.add(Math.round(t * 1000) / 1000);
   // 横棒が伸びる間
   for (const t of growPoints(tl)) points.add(Math.round(t * 1000) / 1000);
   // 声の大きさ（話している間は 0.1 秒ごと）
@@ -176,7 +178,7 @@ function segments(tl: Timeline, art: CharaArt, levels: number[] = []): { segs: S
     const anim = animAt(tl, t);
     const moving = anim.sub !== undefined || anim.spk !== undefined || Object.keys(anim.items).length > 0 || Object.keys(anim.shake).length > 0 || Object.keys(anim.grow).length > 0;
     const level = levels.length && st.talking && who && art[who] ? levelAt(t) : 0;
-    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), talkKey, anim, level, subProgress(tl, t)]);
+    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), talkKey, anim, level, subProgress(tl, t), plateOpacity(t)]);
     const frame = Math.round(t * FPS);
     const last = segs[segs.length - 1];
     if (last && last.frame === frame) segs.pop();

@@ -168,6 +168,16 @@ const SUB_TEXT_W = SUB.tag === "always" ? SUB.w - SUB.tagW - SUB.padX * 2 - SUB.
 export const SUB_LINE_EM = (SUB_TEXT_W / SUB.font) * 0.95;
 /** 名前の札（first10）を出しておく秒 */
 const NAME_FIRST_SEC = 10;
+/** 名前の札は最後の 0.6 秒でフェードして消える（11/23 ユーザー）。0〜1 を 0.05 刻みで */
+const NAME_FADE = 0.6;
+export function plateOpacity(t: number): number {
+  if (L.plate.show === "always" || t <= NAME_FIRST_SEC - NAME_FADE) return 1;
+  if (t >= NAME_FIRST_SEC) return 0;
+  const x = (t - (NAME_FIRST_SEC - NAME_FADE)) / NAME_FADE;
+  return Math.round((1 - easeOut(x)) * 20) / 20;
+}
+/** フェードの間に PNG にする秒（毎コマ） */
+export const plateFadePoints = (): number[] => Array.from({ length: Math.round(NAME_FADE * FPS) + 1 }, (_, j) => NAME_FIRST_SEC - NAME_FADE + j / FPS);
 
 /** 太字の目安幅（lib/ogFont.ts の fitFontSize と同じ数え方）: 漢字・かな 1em、英数字 0.6em、空白 0.3em */
 export const textEm = (s: string) => Array.from(s).reduce((w, c) => w + (c === " " ? 0.3 : c.charCodeAt(0) > 0x2e80 ? 1 : 0.6), 0);
@@ -778,7 +788,7 @@ function NamePlate({ who, active, style }: { who: Who; active: boolean; style?: 
  * 話している人は濃く、もう1人は 0.92 倍・暗く。口の開いた絵（*-talk.png）があり mouthOpen なら、話している人はそちらを使う。
  * 立ち絵がなければ名前の札だけ
  */
-function SpeakerSlot({ who, x, active, art, mouthOpen, plate, dy = 0 }: { who: Who; x: number; active: boolean; art?: CharaArt[Who]; mouthOpen?: boolean; plate: boolean; dy?: number }) {
+function SpeakerSlot({ who, x, active, art, mouthOpen, plate, dy = 0 }: { who: Who; x: number; active: boolean; art?: CharaArt[Who]; mouthOpen?: boolean; plate: number; dy?: number }) {
   const color = SPEAKER_COLOR[who];
   const A = L.art;
   if (art) {
@@ -796,7 +806,7 @@ function SpeakerSlot({ who, x, active, art, mouthOpen, plate, dy = 0 }: { who: W
           {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
           <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((A.w - w) / 2), top, width: w, height: h, opacity: active ? 1 : 0.5 }} />
         </div>
-        {plate ? <NamePlate who={who} active={active} style={{ position: "absolute", left: left + Math.round((A.w - L.plate.w) / 2), top: plateTop, marginBottom: 0 }} /> : null}
+        {plate > 0 ? <NamePlate who={who} active={active} style={{ position: "absolute", left: left + Math.round((A.w - L.plate.w) / 2), top: plateTop, marginBottom: 0, opacity: plate }} /> : null}
       </>
     );
   }
@@ -945,8 +955,8 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
       </div>
       {ch.scene.type === "endScreen" ? <EndScreenSlots s={ch.scene} /> : null}
       {/* 立ち絵はカードの上に描く（d2 では立ち絵がカードの下の角に少し重なる） */}
-      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} dy={who === "ずんだもん" ? spkDy : 0} />
-      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} dy={who === "つむぎ" ? spkDy : 0} />
+      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={plateOpacity(t)} dy={who === "ずんだもん" ? spkDy : 0} />
+      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={plateOpacity(t)} dy={who === "つむぎ" ? spkDy : 0} />
       <Subtitle who={who} text={page?.text ?? ""} dy={anim.sub === undefined ? 0 : settle(anim.sub, SUB_Y)} />
       <SubRing who={who} prog={subProgress(tl, t)} dy={anim.sub === undefined ? 0 : settle(anim.sub, SUB_Y)} />
       {FOOT_Y === null ? null : <div style={{ display: "flex", position: "absolute", left: SUB.x + 8, top: FOOT_Y, fontSize: 26, fontWeight: 500, color: C.onDarkSub }}>{`${date} 時点・大手中古ショップ${tl.shops}店の在庫から`}</div>}
