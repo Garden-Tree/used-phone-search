@@ -26,7 +26,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
-import { END_SCREEN, FPS, H, MIN_FONT, W, chapterShownAt, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
+import { ANIM_STEPS, END_SCREEN, FPS, H, MIN_FONT, W, animAt, animEvents, chapterShownAt, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, ThumbnailData, Timeline } from "./types";
 
@@ -111,20 +111,25 @@ function segments(tl: Timeline, art: CharaArt): { segs: Segment[]; totalFrames: 
       for (const p of l.pages) points.add(p.start);
     }
   }
+  // 揺れ（出来事の 2・4・6・8 コマ後）
+  for (const e of animEvents(tl)) for (const j of ANIM_STEPS) points.add(e + j / FPS);
   const segs: Segment[] = [];
   for (const t of [...points].filter((x) => x >= 0 && x < total).sort((a, b) => a - b)) {
     const st = stateAt(tl, t);
     const who = st.line?.who;
-    const flap = !!(who && art[who]?.talk && st.talking);
+    const flapBase = !!(who && art[who]?.talk && st.talking);
     // 立ち絵がなければ「話している最中か」で絵は変わらない
     const talkKey = who && art[who] ? st.talking : false;
-    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), talkKey]);
+    const anim = animAt(tl, t);
+    const moving = anim.sub !== undefined || anim.spk !== undefined || Object.keys(anim.items).length > 0;
+    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), talkKey, anim]);
     const frame = Math.round(t * FPS);
     const last = segs[segs.length - 1];
     if (last && last.frame === frame) segs.pop();
     const prev = segs[segs.length - 1];
     if (prev && prev.key === key) continue;
-    segs.push({ frame, t, key, flap });
+    // 揺れている短いコマは口を閉じた絵だけ（PNG を増やしすぎない）
+    segs.push({ frame, t, key, flap: flapBase && !moving });
   }
   return { segs, totalFrames: Math.round(total * FPS) };
 }

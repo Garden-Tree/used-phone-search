@@ -261,6 +261,45 @@ const ease = (x: number) => 1 - Math.pow(1 - clamp01(x), 3);
 /** 項目が出る進み具合（0〜1）。0.4 秒で出きる */
 const shown = (reveal: Record<string, number>, key: string, t: number) => ease((t - (reveal[key] ?? 0)) / 0.4);
 
+/**
+ * 揺れ（11/23〜・ユーザーの指示）: 項目が出た・字幕が切り替わった・話し始めた瞬間に、短く揺らす。
+ * 出来事から BURST コマ（約 0.27 秒）の間だけ。video.tsx は出来事の 0・2・4・6・8 コマ後を PNG にする
+ */
+const BURST = 8;
+export const ANIM_STEPS = [2, 4, 6, 8];
+const SHAKE_X = [12, 12, -8, -8, 4, 4, -2, -2];
+const SUB_X = [8, 8, -6, -6, 3, 3, -1, -1];
+const SPK_Y = [-16, -16, -8, -8, -3, -3, 0, 0];
+const bump = (scene: object, key: string): CSSProperties => {
+  const s = scene as { pulse?: Record<string, number> };
+  const k = s.pulse?.[key];
+  return k === undefined ? {} : { transform: `translateX(${SHAKE_X[k]}px)` };
+};
+/** t 秒の揺れ: 揺らす項目（キー → 何コマ目）・字幕・話し手（何コマ目か。なければ undefined） */
+export function animAt(tl: Timeline, t: number): { items: Record<string, number>; sub?: number; spk?: number } {
+  const { ch, line, page } = stateAt(tl, t);
+  const ph = (e: number) => {
+    const k = Math.floor((t - e) * FPS + 1e-6);
+    return k >= 0 && k < BURST ? k : undefined;
+  };
+  const items: Record<string, number> = {};
+  for (const [k, r] of Object.entries(ch.scene.reveal)) {
+    if (r <= 0) continue;
+    const p = ph(ch.start + r);
+    if (p !== undefined) items[k] = p;
+  }
+  return { items, sub: page ? ph(page.start) : undefined, spk: line ? ph(line.start) : undefined };
+}
+/** 揺れの出来事の秒（項目が出る・字幕のページ・台詞の始まり） */
+export function animEvents(tl: Timeline): number[] {
+  const out: number[] = [];
+  for (const ch of tl.chapters) {
+    for (const r of Object.values(ch.scene.reveal)) if (r > 0) out.push(ch.start + r);
+    for (const l of ch.lines) for (const p of l.pages) out.push(p.start);
+  }
+  return out;
+}
+
 const money = (v: number, unit: BarsScene["unit"]) => (unit === "万円" ? `${v.toFixed(1)}万円` : `${Math.round(v).toLocaleString("ja-JP")}${unit}`);
 const signed = (v: number, unit: BarsScene["unit"]) => `${v >= 0 ? "+" : "−"}${money(Math.abs(v), unit)}`;
 
@@ -325,7 +364,7 @@ function BigNumber({ s, t, reveal }: { s: BigNumberScene; t: number; reveal: Rec
         {s.items.map((it, i) => {
           const p = shown(reveal, `item:${i}`, t);
           return (
-            <div key={i} style={{ ...col, width: colW, flexShrink: 0, alignItems: "center", opacity: p, borderLeft: i ? `3px solid ${C.line}` : "none" }}>
+            <div key={i} style={{ ...col, width: colW, flexShrink: 0, alignItems: "center", opacity: p, borderLeft: i ? `3px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
               {it.label ? <div style={{ display: "flex", fontSize: labelFont, fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>{it.label}</div> : null}
               <div style={{ ...row, alignItems: "flex-end", marginTop: 8 }}>
                 <div style={{ display: "flex", fontSize: valueFont, fontWeight: 900, color: C.red, lineHeight: 1.1, whiteSpace: "nowrap" }}>{it.value}</div>
@@ -369,7 +408,7 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
         const needH = Math.max(labelFont * LH + subs.length * F.sub * LH, F.value * 1.1 + (r.stock ? F.small * LH : 0), DOT + 8 + (r.min !== undefined ? MIN_H : 0));
         if (needH > rowH + 2) report(`棒の行「${r.label}」は高さ ${Math.round(needH)}px 要るが ${rowH}px しかない（行を減らすか補足を短く）`);
         return (
-          <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0, borderTop: i ? `2px solid ${C.line}` : "none" }}>
+          <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0, borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
             <div style={{ ...col, width: LABEL }}>
               <div style={{ ...row }}>
                 <div style={{ display: "flex", fontSize: labelFont, fontWeight: 900, color: C.ink, lineHeight: LH, whiteSpace: "nowrap" }}>{r.label}</div>
@@ -430,7 +469,7 @@ function Pairs({ s, t, reveal }: { s: PairsScene; t: number; reveal: Record<stri
         const p = shown(reveal, `item:${i}`, t);
         const diff = r.diffLabel ?? signed(r.b - r.a, s.unit);
         return (
-          <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0, borderTop: i ? `2px solid ${C.line}` : "none" }}>
+          <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0, borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
             <div style={{ display: "flex", width: LABEL, fontSize: fit(r.label, LABEL - 10, cap(52), MIN_FONT, "2本の棒のラベル"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{r.label}</div>
             <div style={{ ...col, width: track + VALUE, marginLeft: GAP }}>
               {[r.a, r.b].map((v, k) => (
@@ -479,7 +518,7 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
       {s.rows.map((r, i) => {
         const p = shown(reveal, `item:${i}`, t);
         return (
-          <div key={i} style={{ ...row, width: INNER_W, height: rowH, background: i % 2 ? C.rowAlt : C.white, borderBottom: `2px solid ${C.line}`, opacity: p }}>
+          <div key={i} style={{ ...row, width: INNER_W, height: rowH, background: i % 2 ? C.rowAlt : C.white, borderBottom: `2px solid ${C.line}`, opacity: p, ...bump(s, `item:${i}`) }}>
             {s.columns.map((_, j) => {
               const v = r.cells[j] ?? "";
               const em = (r.emphasis ?? s.emphasis)?.includes(j);
@@ -506,7 +545,7 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
       {s.items.map((it, i) => {
         const p = shown(reveal, `item:${i}`, t);
         return (
-          <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p, borderTop: i ? `2px solid ${C.line}` : "none" }}>
+          <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p, borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
             <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: cap(44), fontWeight: 900, alignItems: "center", justifyContent: "center" }}>{String(i + 1)}</div>
             <div style={{ ...col, width: textW, marginLeft: 32 }}>
               <div style={{ display: "flex", fontSize: fit(it.text, textW, cap(54), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink }}>{it.text}</div>
@@ -565,7 +604,7 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
       <Heading text={s.heading} />
       <div style={{ ...row, width: INNER_W, alignItems: "flex-start" }}>
         <div style={{ ...col, width: boxW, alignItems: "center" }}>
-          <div style={{ display: "flex", width: boxW, height: boxH, alignItems: "center", justifyContent: "center" }}>
+          <div style={{ display: "flex", width: boxW, height: boxH, alignItems: "center", justifyContent: "center", ...(cur > 0 ? bump(s, `img:${cur - 1}`) : {}) }}>
             {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
             <img src={img.src} width={w} height={h} style={{ width: w, height: h, borderRadius: 12 }} />
           </div>
@@ -574,7 +613,7 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
         {points.length ? (
           <div style={{ ...col, width: textW, marginLeft: GAP }}>
             {points.map((it, i) => (
-              <div key={i} style={{ ...col, width: textW, height: rowH, justifyContent: "center", opacity: shown(reveal, `item:${i}`, t), borderTop: i ? `2px solid ${C.line}` : "none" }}>
+              <div key={i} style={{ ...col, width: textW, height: rowH, justifyContent: "center", opacity: shown(reveal, `item:${i}`, t), borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
                 <div style={{ display: "flex", fontSize: fit(it.text, textW, cap(50), MIN_FONT, "写真の横の行"), fontWeight: 900, color: C.ink }}>{it.text}</div>
                 {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, textW, cap(34), MIN_FONT, "写真の横の補足"), fontWeight: 500, color: C.sub }}>{it.sub}</div> : null}
               </div>
@@ -684,7 +723,7 @@ function NamePlate({ who, active, style }: { who: Who; active: boolean; style?: 
  * 話している人は濃く、もう1人は 0.92 倍・暗く。口の開いた絵（*-talk.png）があり mouthOpen なら、話している人はそちらを使う。
  * 立ち絵がなければ名前の札だけ
  */
-function SpeakerSlot({ who, x, active, art, mouthOpen, plate }: { who: Who; x: number; active: boolean; art?: CharaArt[Who]; mouthOpen?: boolean; plate: boolean }) {
+function SpeakerSlot({ who, x, active, art, mouthOpen, plate, dy = 0 }: { who: Who; x: number; active: boolean; art?: CharaArt[Who]; mouthOpen?: boolean; plate: boolean; dy?: number }) {
   const color = SPEAKER_COLOR[who];
   const A = L.art;
   if (art) {
@@ -695,7 +734,7 @@ function SpeakerSlot({ who, x, active, art, mouthOpen, plate }: { who: Who; x: n
     const left = x === SLOT.left ? A.left : A.right;
     const top = A.bust ? Math.round(A.h * (active ? 0 : 0.06)) : A.h - h;
     return (
-      <div style={{ ...col, position: "absolute", left, top: A.y, width: A.w, height: A.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden", borderRadius: A.bust ? 20 : 0 }}>
+      <div style={{ ...col, position: "absolute", left, top: A.y + dy, width: A.w, height: A.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden", borderRadius: A.bust ? 20 : 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
         <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((A.w - w) / 2), top, width: w, height: h, opacity: active ? 1 : 0.5 }} />
         {plate ? <NamePlate who={who} active={active} /> : null}
@@ -725,13 +764,13 @@ function SubLine({ text, who }: { text: string; who: Who | null }) {
   );
 }
 
-function Subtitle({ who, text }: { who: Who | null; text: string }) {
+function Subtitle({ who, text, dx = 0 }: { who: Who | null; text: string; dx?: number }) {
   // 帯の端の色の線: いつも左か、話している人の側（つむぎは右）
   const right = SUB.edgeSide === "speaker" && who === "つむぎ";
   const edgeLine = `14px solid ${who ? SPEAKER_COLOR[who] : C.bar}`;
   const tag = SUB.tag === "always";
   return (
-    <div style={{ ...row, position: "absolute", left: SUB.x, top: SUB.y, width: SUB.w, height: SUB.h, background: C.white, borderRadius: 20, borderLeft: right ? "none" : edgeLine, borderRight: right ? edgeLine : "none" }}>
+    <div style={{ ...row, position: "absolute", left: SUB.x + dx, top: SUB.y, width: SUB.w, height: SUB.h, background: C.white, borderRadius: 20, borderLeft: right ? "none" : edgeLine, borderRight: right ? edgeLine : "none" }}>
       {tag ? (
         <div style={{ ...row, width: SUB.tagW, justifyContent: "center", marginLeft: SUB.padX - 14 }}>
           {who ? (
@@ -808,7 +847,10 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
   const date = tl.date.replace(/-/g, "/");
   // instant: 出た項目はずっと前に、まだの項目はずっと後に出ることにする（shown が 1 か 0 になる）
   const shownSet = opts.instant ? new Set(revealedAt(ch.scene.reveal, local)) : null;
-  const scene = shownSet ? { ...ch, scene: { ...ch.scene, reveal: Object.fromEntries(Object.keys(ch.scene.reveal).map((k) => [k, shownSet.has(k) ? -1000 : 1000])) } } : ch;
+  const anim = animAt(tl, t);
+  const base = shownSet ? { ...ch, scene: { ...ch.scene, reveal: Object.fromEntries(Object.keys(ch.scene.reveal).map((k) => [k, shownSet.has(k) ? -1000 : 1000])) } } : ch;
+  const scene = { ...base, scene: { ...base.scene, pulse: anim.items } };
+  const spkDy = anim.spk === undefined ? 0 : SPK_Y[anim.spk];
   return (
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
       <ChapterBar ch={ch} count={tl.chapters.length} />
@@ -818,9 +860,9 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
       </div>
       {ch.scene.type === "endScreen" ? <EndScreenSlots s={ch.scene} /> : null}
       {/* 立ち絵はカードの上に描く（d2 では立ち絵がカードの下の角に少し重なる） */}
-      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} />
-      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} />
-      <Subtitle who={who} text={page?.text ?? ""} />
+      <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} dy={who === "ずんだもん" ? spkDy : 0} />
+      <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={L.plate.show === "always" || t <= NAME_FIRST_SEC} dy={who === "つむぎ" ? spkDy : 0} />
+      <Subtitle who={who} text={page?.text ?? ""} dx={anim.sub === undefined ? 0 : SUB_X[anim.sub]} />
       {FOOT_Y === null ? null : <div style={{ display: "flex", position: "absolute", left: SUB.x + 8, top: FOOT_Y, fontSize: 26, fontWeight: 500, color: C.onDarkSub }}>{`${date} 時点・大手中古ショップ${tl.shops}店の在庫から`}</div>}
     </div>
   );

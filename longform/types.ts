@@ -122,7 +122,8 @@ export type TimelineChapter = {
   /** 台本の【画面】（参考。実際に映すのは scene） */
   cues: string[];
   /** data.json の scene。各項目の cue は revealAt（章の頭からの秒）に直してある */
-  scene: SceneData & { reveal: Record<string, number> };
+  /** pulse: 揺らす項目（キー → 出てから何コマ目か。frameAt が animAt から入れる） */
+  scene: SceneData & { reveal: Record<string, number>; pulse?: Record<string, number> };
   lines: TimelineLine[];
   /** 見本の静止画に使う秒（動画の頭から） */
   stillAt: number;
