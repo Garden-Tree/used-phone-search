@@ -283,3 +283,4 @@
 - 11/23 整理: ショートのスキル 79→19KB・shorts/README を続ける（40KB）とやめた（README-retired.md）に分割。古い docs（cloudflare-pages・tech_stack・youtube-shorts）を消し、撤退の経緯を docs/retired.md、VOICEVOX の規約を docs/voicevox-terms.md に。vercel.json・vercel-ignore.sh を削除
 - 11/23 検索欄に候補（機種ページのある機種・ひらがな/カタカナ可・選ぶと機種ページへ）。機種ページの「最安値の推移（30日）」にもマウスオーバー・タップで日付・最安・中央値・在庫を出す。旧 Vercel プロジェクトはユーザーが削除
 - 11/23 横動画15（11/24 公開予約）の説明欄を新しい形に（サムネは F1 のまま）。次の横動画は「17e を新品か、同じ値段の中古 15 Pro・16 か」（11/27 予定・構成案）
+- 11/23 横動画「17e 新品か、同じ値段の中古 15 Pro・16 か」を書き出し（8:13・-14 LUFS）。サムネ・アップロードはこれから
