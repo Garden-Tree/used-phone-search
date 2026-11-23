@@ -309,11 +309,12 @@ async function audio(dir: string, tl: Timeline, work: string) {
 }
 
 /**
- * チャンネル登録のお願いの台詞（終了画面の章を除いて、最初に「チャンネル登録」を言う台詞）に、
- * グリーンバックの「チャンネル登録」の動き（YouTuberのための素材屋さん・商用可・表記不要）を画面の中央に重ねる（11/23）
+ * チャンネル登録のお願いの台詞（終了画面の章を除いて、最初に「チャンネル登録」を言う台詞）に、グリーンバックの動きを全画面で重ねる（11/23）。
+ * 素材: みりんの動画素材「チャンネル登録01」（商用・YouTube の収益化可・表記は任意）に、効果音ラボ「クリック」（商用可・表記不要）を
+ * クリックの3か所（2.05・3.05・4.25 秒）に重ねたもの。音も本編の音に足す
  */
-const SUBSCRIBE_GB = "longform/assets/gb/subscribe-jp-square-green-800-ytsozaiyasan.mp4";
-const SUBSCRIBE_SEC = 4.5;
+const SUBSCRIBE_GB = "longform/assets/gb/subscribe-jp-like-bell-green-1080-miirriin01-click.mp4";
+const SUBSCRIBE_SEC = 8;
 function subscribeAt(tl: Timeline): number | null {
   for (const ch of tl.chapters) {
     if (ch.scene.type === "endScreen") continue;
@@ -326,10 +327,11 @@ function subscribeAt(tl: Timeline): number | null {
 async function mux(dir: string, work: string, tl?: Timeline) {
   const at = tl ? subscribeAt(tl) : null;
   if (at !== null && existsSync(SUBSCRIBE_GB)) {
-    const T = at.toFixed(3);
-    const fc = `[2:v]trim=0:${SUBSCRIBE_SEC},setpts=PTS-STARTPTS+${T}/TB,chromakey=0x00FF01:0.18:0.08,scale=960:-1[ov];[0:v][ov]overlay=(W-w)/2:(H-h)/2-60:enable='between(t,${T},${(at + SUBSCRIBE_SEC).toFixed(3)})':eof_action=pass,format=yuv420p[v]`;
-    await ffmpeg(["-y", "-i", join(work, "video-only.mp4"), "-i", join(work, "audio.m4a"), "-i", SUBSCRIBE_GB, "-filter_complex", fc, "-map", "[v]", "-map", "1:a",
-      "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-threads", FF_THREADS, "-c:a", "copy", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], `映像と音をまとめる（チャンネル登録 ${T} 秒）`);
+    const T = at.toFixed(3), ms = Math.round(at * 1000);
+    const fc = `[2:v]trim=0:${SUBSCRIBE_SEC},setpts=PTS-STARTPTS+${T}/TB,chromakey=0x00FF01:0.18:0.08[ov];[0:v][ov]overlay=0:0:enable='between(t,${T},${(at + SUBSCRIBE_SEC).toFixed(3)})':eof_action=pass,format=yuv420p[v];` +
+      `[2:a]atrim=0:${SUBSCRIBE_SEC},aresample=48000,adelay=${ms}|${ms},volume=0.8[ca];[1:a][ca]amix=inputs=2:duration=first:normalize=0[a]`;
+    await ffmpeg(["-y", "-i", join(work, "video-only.mp4"), "-i", join(work, "audio.m4a"), "-i", SUBSCRIBE_GB, "-filter_complex", fc, "-map", "[v]", "-map", "[a]",
+      "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-threads", FF_THREADS, "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], `映像と音をまとめる（チャンネル登録 ${T} 秒）`);
     return;
   }
   await ffmpeg(["-y", "-i", join(work, "video-only.mp4"), "-i", join(work, "audio.m4a"), "-map", "0:v", "-map", "1:a", "-c", "copy", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], "映像と音をまとめる");

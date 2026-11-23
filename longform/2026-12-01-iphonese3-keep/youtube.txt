@@ -23,7 +23,7 @@ iPhone SE（第3世代）を使っている人向けに、電池交換で使い�
 4:38 15：USB-Cと48MPのカメラ
 5:32 17e：Apple IntelligenceとSIMの移し方
 6:30 もう少し出せるなら17
-6:51 決め方
+6:52 決め方
 7:19 まとめ
 7:55 次におすすめの動画
 
@@ -34,6 +34,8 @@ iPhone 15 の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iph
 
 （画像のクレジットは video.tsx が data.json の credit から足す）
 イラスト：いらすとや
+動画素材：みりんの動画素材 https://miirriin.com/
+効果音：効果音ラボ
 
 VOICEVOX:春日部つむぎ
 VOICEVOX:ずんだもん

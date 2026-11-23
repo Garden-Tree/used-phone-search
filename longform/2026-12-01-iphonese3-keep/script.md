@@ -215,6 +215,8 @@ iPhone 15 の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iph
 
 （画像のクレジットは video.tsx が data.json の credit から足す）
 イラスト：いらすとや
+動画素材：みりんの動画素材 https://miirriin.com/
+効果音：効果音ラボ
 
 VOICEVOX:春日部つむぎ
 VOICEVOX:ずんだもん
