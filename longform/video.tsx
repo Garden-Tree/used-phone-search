@@ -178,6 +178,8 @@ const segFile = (i: number, open = false) => `seg-${String(i + 1).padStart(4, "0
 /**
  * PNG を並べて作る数（11/23 ユーザー「CPU をガンガン使っていい・24スレッド」）。既定は論理コア数 − 2。LONGFORM_JOBS で変える（1 で今までどおり1本）
  */
+/** ffmpeg のスレッド数（11/23〜 ユーザー「CPU をガンガン使っていい」。既定 16・LONGFORM_FF_THREADS で変える） */
+const FF_THREADS = String(Number(process.env.LONGFORM_FF_THREADS ?? 16));
 const JOBS = Math.max(1, Number(process.env.LONGFORM_JOBS ?? Math.max(1, os.cpus().length - 2)));
 
 /** 子のプロセスを JOBS 本立てて、PNG を k 番目ずつ分けて作る（子は frames-part k n で呼ばれる） */
@@ -227,8 +229,8 @@ function concatList(segs: Segment[], totalFrames: number): string {
 
 async function encode(work: string, preset: string) {
   await ffmpeg(
-    ["-y", "-threads", "2", "-f", "concat", "-safe", "0", "-i", join(work, "list.txt"), "-vf", `fps=${FPS},format=yuv420p`, "-fps_mode", "cfr",
-      "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", "20", "-g", String(FPS * 10), "-threads", "2", "-x264-params", "threads=2:lookahead-threads=1",
+    ["-y", "-threads", FF_THREADS, "-f", "concat", "-safe", "0", "-i", join(work, "list.txt"), "-vf", `fps=${FPS},format=yuv420p`, "-fps_mode", "cfr",
+      "-c:v", "libx264", "-preset", preset, "-tune", "stillimage", "-crf", "20", "-g", String(FPS * 10), "-threads", FF_THREADS, "-x264-params", `threads=${FF_THREADS}`,
       "-an", "-movflags", "+faststart", join(work, "video-only.mp4")],
     `映像（H.264 ${preset}）`,
   );
@@ -323,7 +325,7 @@ async function mux(dir: string, work: string, tl?: Timeline) {
     const T = at.toFixed(3);
     const fc = `[2:v]trim=0:${SUBSCRIBE_SEC},setpts=PTS-STARTPTS+${T}/TB,chromakey=0x00FF01:0.18:0.08,scale=620:-1[ov];[0:v][ov]overlay=(W-w)/2:(H-h)/2-60:enable='between(t,${T},${(at + SUBSCRIBE_SEC).toFixed(3)})':eof_action=pass,format=yuv420p[v]`;
     await ffmpeg(["-y", "-i", join(work, "video-only.mp4"), "-i", join(work, "audio.m4a"), "-i", SUBSCRIBE_GB, "-filter_complex", fc, "-map", "[v]", "-map", "1:a",
-      "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-threads", "2", "-c:a", "copy", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], `映像と音をまとめる（チャンネル登録 ${T} 秒）`);
+      "-c:v", "libx264", "-preset", "fast", "-crf", "20", "-threads", FF_THREADS, "-c:a", "copy", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], `映像と音をまとめる（チャンネル登録 ${T} 秒）`);
     return;
   }
   await ffmpeg(["-y", "-i", join(work, "video-only.mp4"), "-i", join(work, "audio.m4a"), "-map", "0:v", "-map", "1:a", "-c", "copy", "-shortest", "-movflags", "+faststart", join(dir, "video.mp4")], "映像と音をまとめる");
