@@ -39,8 +39,9 @@ function Frame({ children }: { children: ReactNode }) {
 const TagBox = ({ text, style }: { text: string; style?: React.CSSProperties }) => (
   <div style={{ display: "flex", alignSelf: "flex-start", padding: "4px 24px 10px", background: WHITE, border: "6px solid #000000", borderRadius: 16, fontSize: 104, fontWeight: 900, color: RED, letterSpacing: -5, lineHeight: 1.1, boxShadow: "0 10px 24px rgba(0,0,0,0.5)", ...style }}>{text}</div>
 );
-const Col = ({ top, children }: { top: number; children: ReactNode }) => (
-  <div style={{ display: "flex", flexDirection: "column", position: "absolute", left: EDGE + 4, top }}>{children}</div>
+/** 文字の塊は上下の真ん中に（11/24 ユーザー「上下中央揃えで」）。top は使わない */
+const Col = ({ children }: { top?: number; children: ReactNode }) => (
+  <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", position: "absolute", left: EDGE + 4, top: 0, height: H }}>{children}</div>
 );
 
 const Phone = ({ file, x, y, h, rot }: { file: string; x: number; y: number; h: number; rot: number }) => {
@@ -54,28 +55,30 @@ const Phone = ({ file, x, y, h, rot }: { file: string; x: number; y: number; h: 
 const plans: [string, string, ReactNode][] = [
   ["2026-11-14-iphone13", "N1", (
     <Frame>
-      <Phone file="iphone13-tora-flat.png" x={850} y={20} h={760} rot={-8} />
-      <Col top={60}>
-        <Outlined text="iPhone 13" size={124} color={WHITE} />
-        <Outlined text="今買い？" size={180} color={YELLOW} />
-        <TagBox text="相場5.1万円" style={{ marginTop: 30 }} />
+      <Phone file="iphone13-tora-flat.png" x={880} y={20} h={760} rot={-8} />
+      <Col top={30}>
+        <Outlined text="iPhone 13" size={140} color={WHITE} />
+        <Outlined text="今買い？" size={184} color={YELLOW} />
+        <TagBox text="相場5.1万円" style={{ marginTop: 22, fontSize: 116 }} />
+        <div style={{ display: "flex", marginTop: 18 }}><Outlined text="条件は電池85%" size={104} color={WHITE} /></div>
       </Col>
     </Frame>
   )],
   ["2026-10-25-pro-or-standard", "N1", (
     <Frame>
-      <Phone file="iphone16promax-desert-cut2.png" x={800} y={10} h={780} rot={-8} />
-      <Col top={60}>
-        <Outlined text="Proの差額で" size={120} color={WHITE} />
-        <Outlined text="何が増える？" size={126} color={YELLOW} />
-        <TagBox text="+1.5万円〜" style={{ marginTop: 34 }} />
+      <Phone file="iphone16promax-desert-cut2.png" x={870} y={10} h={780} rot={-8} />
+      <Col top={30}>
+        <Outlined text="Proの差額で" size={128} color={WHITE} />
+        <Outlined text="何が増える？" size={132} color={YELLOW} />
+        <TagBox text="+1.5万円〜" style={{ marginTop: 22, fontSize: 120 }} />
+        <div style={{ display: "flex", marginTop: 18 }}><Outlined text="120Hz・望遠" size={112} color={WHITE} /></div>
       </Col>
     </Frame>
   )],
 ];
 
 (async () => {
-  const fonts = await notoSansJp("iPhone 13今買い？相場5.1万円Proの差額で何が増える？+1.5万円〜");
+  const fonts = await notoSansJp("iPhone 13今買い？相場5.1万円Proの差額で何が増える？+1.5万円〜条件は電池85%120Hz・望遠");
   for (const [dir, name, node] of plans) {
     const d = join(__dirname, dir); if (!existsSync(d)) mkdirSync(d, { recursive: true });
     const out = join(d, `thumb-${name}.png`);
