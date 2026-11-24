@@ -18,7 +18,7 @@
                全ページ静的。検索ページは /data/inventory/<機種>.json をブラウザで絞り込む。監視用 /health.json
                                    ↑
 [シンレンタルサーバー cron 毎日10:00] ~/rakuten-sync/healthcheck.php → /health.json とページ2つ
-  → 問題（店の24時間停止・書き出しの14時間停止・ページが開けない）があるときだけ keigo3142011@yahoo.co.jp にメール
+  → 問題（店の24時間停止・書き出しの14時間停止・ページが開けない）があるときだけ管理者にメール
 ```
 
 - **サイトの中身が変わるのは Actions が書き出したときだけ**。実行時に DB は使わない（Neon が起きるのは Actions の間だけ）
@@ -41,17 +41,17 @@
 
 | 用途 | 場所 | 備考 |
 | --- | --- | --- |
-| DB 接続 | GitHub Secrets `DATABASE_URL`、ローカル `.env` | Neon（`ep-shy-sunset-...ap-southeast-1`）。**本番と同じ DB** |
+| DB 接続 | GitHub Secrets `DATABASE_URL`、ローカル `.env` | Neon。**本番と同じ DB** |
 | 配置 | GitHub Secrets `CLOUDFLARE_API_TOKEN`（Account / Cloudflare Pages / Edit だけ）・`CLOUDFLARE_ACCOUNT_ID` | ユーザーが作成・登録。Claude はトークンを扱わない |
 | 楽天の JSON の場所 | GitHub Secrets `RAKUTEN_DATA_URL`（`https://gadelog.com/<推測されにくいフォルダ>/`）と `config.php` の `output_dir` | フォルダ名は Git に書かない |
 | Yahoo!ショッピング API | GitHub Secrets `YAHOO_APP_ID`（Yahoo! デベロッパーネットワークのアプリの Client ID） | ユーザーが登録。未登録のあいだは Yahoo の取り込みを飛ばす。Claude は値を扱わない |
 | Amazon Creators API | GitHub Secrets `AMAZON_CREDENTIAL_ID`・`AMAZON_CREDENTIAL_SECRET`・`AMAZON_PARTNER_TAG`（アソシエイトのトラッキングID）、Variables `AMAZON_CREDENTIAL_VERSION`（認証情報のバージョン。未設定は 3.3＝極東。3.1 北米・3.2 欧州） | ユーザーが登録。`AMAZON_CREDENTIAL_ID` が空なら Amazon の取り込みを飛ばす。Claude は値を扱わない |
 | ValueCommerce のリンク | GitHub Secrets `VC_SID`（サイトID）・`VC_PID`（プロモーションID）→ ビルド時に `NEXT_PUBLIC_VC_SID`/`NEXT_PUBLIC_VC_PID` | リンクの URL に出る公開の値。10/26 に登録済み（Yahoo のリンクは ValueCommerce）。空にするともしもアフィリエイト経由に戻る（もしもは否認済み） |
 | Actions の即時起動 | `config.php` の `github_dispatch_token`（Fine-grained・このリポジトリだけ・Actions: Read and write） | **期限 2027/10/05**。ユーザーが作成・入力 |
-| 楽天API | `config.php`（アプリID・Access Key） | アプリ「中古スマホ一括検索」・Backend・許可IP 210.157.79.113 |
+| 楽天API | `config.php`（アプリID・Access Key） | アプリ「中古スマホ一括検索」・Backend・許可IP制（値は `docs/private.local.md`、git 外） |
 | サイトURL・GA4 | ワークフローの `NEXT_PUBLIC_SITE_URL`・`NEXT_PUBLIC_GA_ID=G-YV3ZR0N6B1`（公開される値なので直書き） | GA4 の詳細は `measurement.md` |
 | DNS | シンドメイン → DNSレコード設定（`used` の CNAME → `used-phone-search.pages.dev`・TTL 300） | DNS の変更はユーザー（Claude Code の安全確認で止まる） |
-| サーバー | シンレンタルサーバー sv3112（サーバーID wp760415、gadelog.com と共用） | ファイルマネージャ・Cron 設定はサーバーパネル（`https://secure.wpx.ne.jp/`） |
+| サーバー | シンレンタルサーバー（gadelog.com と共用。サーバー名・ID は `docs/private.local.md`、git 外） | ファイルマネージャ・Cron 設定はサーバーパネル（`https://secure.wpx.ne.jp/`） |
 
 `config.php` は秘密情報。Claude は中身を読まない・書かない（文法の確認は一度だけの cron で `php -l` を実行し、結果のファイルだけ見る）。
 

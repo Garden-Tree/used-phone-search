@@ -7,7 +7,7 @@ return [
     'ingest_secret'        => '（Vercel の RAKUTEN_INGEST_SECRET と同じ値）',
     // Cloudflare Pages 版（docs/operations.md）では、送信をやめてここに保存する。
     // 公開フォルダの中の推測されにくいフォルダにする（その URL を GitHub の Secrets「RAKUTEN_DATA_URL」に登録）
-    // 'output_dir'        => '/home/wp760415/gadelog.com/public_html/（推測されにくい名前）',
+    // 'output_dir'        => '/home/<サーバーID>/gadelog.com/public_html/（推測されにくい名前）',
     // 書き出し後に GitHub Actions をすぐ起動する（任意）。Fine-grained トークン・このリポジトリだけ・Actions: Read and write
     // 'github_dispatch_token' => '（github_pat_...）',
 ];

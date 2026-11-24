@@ -108,3 +108,6 @@ longform/**/*.mp4
 
 # yomiyasu の検査記録
 /.yomiyasu/
+
+# 公開しない運用メモ（サーバーID・許可IP・連絡先など）
+/docs/private.local.md
