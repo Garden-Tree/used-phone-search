@@ -4,11 +4,13 @@ import { AMAZON_SHOP_NAMES } from "@/lib/amazonShops";
 
 // 楽天アフィリエイトID（公開情報。楽天ウェブサービスのアプリ管理画面に表示される）
 const RAKUTEN_AFFILIATE_ID = "5356a96f.f87a73cf.5356a970.2f9f146a";
+// 楽天アフィリエイトの計測ID「used」（管理画面で登録・2026-11-25〜）。ブログの記事のリンク（計測IDなし）と成果を分けるため。外すときは空文字に
+const RAKUTEN_MEASURE_ID = "_RTLink159572";
 
 /** 楽天の商品URLを楽天アフィリエイト経由のURLにする */
 export function rakutenAffiliateUrl(itemUrl: string): string {
   const u = encodeURIComponent(itemUrl);
-  return `https://hb.afl.rakuten.co.jp/hgc/${RAKUTEN_AFFILIATE_ID}/?pc=${u}&m=${u}`;
+  return `https://hb.afl.rakuten.co.jp/hgc/${RAKUTEN_AFFILIATE_ID}/${RAKUTEN_MEASURE_ID}?pc=${u}&m=${u}`;
 }
 
 /**
