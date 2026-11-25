@@ -120,18 +120,22 @@ const Two = () => (
     <Card file={P15} crop={K15} x={985} y={130} w={340} h={620} rot={6} />
   </>
 );
-const V = ({ l1, l2, tag, s2 = 160 }: { l1: string; l2: string; tag: string; s2?: number }) => (
+const V = ({ l1, l2, tag, tag2, s2 = 160 }: { l1: string; l2: string; tag: string; tag2?: string; s2?: number }) => (
   <Frame>
     <Two />
     <Col top={62}>
       <Outlined text={l1} size={120} color={WHITE} />
       <Outlined text={l2} size={s2} color={YELLOW} />
-      <TagBox text={tag} style={{ marginTop: 50 }} />
+      {tag2 ? (
+        <div style={{ display: "flex", flexDirection: "column", alignSelf: "flex-start", marginTop: 26, padding: "2px 26px 12px", background: WHITE, border: "6px solid #000000", borderRadius: 16, fontSize: 112, fontWeight: 900, color: RED, letterSpacing: -5, lineHeight: 1.08, boxShadow: "0 10px 24px rgba(0,0,0,0.5)" }}>
+          <div style={{ display: "flex" }}>{tag}</div><div style={{ display: "flex" }}>{tag2}</div>
+        </div>
+      ) : <TagBox text={tag} style={{ marginTop: 50 }} />}
     </Col>
   </Frame>
 );
 const plansV: [string, ReactNode][] = [
-  ["V1", <V key="v1" l1="iPhone 17e" l2="買う前に" tag="中古Pro+4千円" />],
+  ["V1", <V key="v1" l1="iPhone 17e" l2="買う前に" tag="中古Pro" tag2="+4000円" />],
   ["V2", <V key="v2" l1="12.5万円" l2="どっち？" tag="新17e 中15Pro" s2={170} />],
   ["V3", <V key="v3" l1="17e+4千円で" l2="中古Pro" tag="望遠つき" s2={176} />],
 ];
