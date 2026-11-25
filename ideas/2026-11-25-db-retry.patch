@@ -1,0 +1,37 @@
+--- a/lib/prisma.ts
++++ b/lib/prisma.ts
+@@ -2,10 +2,33 @@
+ import { Pool } from 'pg'
+ import { PrismaPg } from '@prisma/adapter-pg'
+ 
++// 読むだけの操作は、DB への接続が切れた・つながらないときに最大2回やり直す（書き出しが1回の接続失敗で止まらないように）。
++// 書き込みはやり直さない（二重に書かないため）
++const READS = new Set(['findFirst', 'findFirstOrThrow', 'findUnique', 'findUniqueOrThrow', 'findMany', 'count', 'aggregate', 'groupBy'])
++const CONNECTION_CODES = new Set(['ETIMEDOUT', 'ECONNRESET', 'ECONNREFUSED', 'EPIPE', 'P1001', 'P1002', 'P1017'])
++const WAITS_MS = [3000, 10000]
++
++export async function retryRead<T>(operation: string, run: () => Promise<T>, waits: number[] = WAITS_MS): Promise<T> {
++  for (let i = 0; ; i++) {
++    try {
++      return await run()
++    } catch (e) {
++      const code = (e as { code?: string })?.code
++      if (i >= waits.length || !READS.has(operation) || !code || !CONNECTION_CODES.has(code)) throw e
++      console.warn(`DB 接続のやり直し ${i + 1}/${waits.length}（${operation}・${code}）`)
++      await new Promise((r) => setTimeout(r, waits[i]))
++    }
++  }
++}
++
+ const prismaClientSingleton = () => {
+   const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+   const adapter = new PrismaPg(pool)
+-  return new PrismaClient({ adapter })
++  const client = new PrismaClient({ adapter })
++  // 型は元のまま使う（呼ぶ側を変えない）
++  return client.$extends({
++    query: { $allModels: { $allOperations: ({ operation, args, query }) => retryRead(operation, () => query(args)) } },
++  }) as unknown as PrismaClient
+ }
+ 
+ declare const globalThis: {

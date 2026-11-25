@@ -113,6 +113,28 @@ const plansB: [string, ReactNode][] = [
     </Frame>
   )],
 ];
+// 差し替え用（11/25・公開10時間で CTR 1.5%）: 要素を減らす。端末は2台を大きく・文字2行＋札1つ
+const Two = () => (
+  <>
+    <Card file={E17} crop={K17} x={760} y={60} w={330} h={620} rot={-6} />
+    <Card file={P15} crop={K15} x={985} y={130} w={340} h={620} rot={6} />
+  </>
+);
+const V = ({ l1, l2, tag, s2 = 160 }: { l1: string; l2: string; tag: string; s2?: number }) => (
+  <Frame>
+    <Two />
+    <Col top={62}>
+      <Outlined text={l1} size={120} color={WHITE} />
+      <Outlined text={l2} size={s2} color={YELLOW} />
+      <TagBox text={tag} style={{ marginTop: 50 }} />
+    </Col>
+  </Frame>
+);
+const plansV: [string, ReactNode][] = [
+  ["V1", <V key="v1" l1="iPhone 17e" l2="買う前に" tag="中古Pro+4千円" />],
+  ["V2", <V key="v2" l1="12.5万円" l2="どっち？" tag="新17e 中15Pro" s2={170} />],
+  ["V3", <V key="v3" l1="17e+4千円で" l2="中古Pro" tag="望遠つき" s2={176} />],
+];
 const plans: [string, ReactNode][] = [
   ["A1", <Big key="a1" lines={[["新品か", 170, WHITE], ["中古か", 170, YELLOW]]} tag="差4,180円" />],
   ["A2", <Big key="a2" lines={[["同じ値段で", 106, WHITE], ["望遠つき", 132, YELLOW]]} tag="中古15Pro" />],
@@ -123,8 +145,8 @@ const plans: [string, ReactNode][] = [
 ];
 
 (async () => {
-  const fonts = await notoSansJp("17e 新品か中古か差4,180円新品の？中古15ProVS同じ12.5万円どれ買う・16値段で望遠つきvsよりライバル2台120Hzとカメラ");
-  for (const [name, node] of [...plansB, ...plans]) {
+  const fonts = await notoSansJp("17e 新品か中古か差4,180円新品の？中古15ProVS同じ12.5万円どれ買う・16値段で望遠つきvsよりライバル2台120Hzとカメラ前同額千+っち中新iPhone買うに");
+  for (const [name, node] of [...plansB, ...plans, ...plansV]) {
     const res = new ImageResponse(node as React.ReactElement, { width: W, height: H, fonts });
     const out = join(__dirname, "2026-11-27-17e-vs-used", `thumb-${name}.png`);
     writeFileSync(out, Buffer.from(await res.arrayBuffer()));
