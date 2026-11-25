@@ -45,6 +45,8 @@ export const VIDEOS = {
   iphone15Now: { id: "4P5c1LG_57s", title: "中古iPhone 15は今買い？相場9万980円｜14との差2.6万円はUSB-Cの差【2026年11月】", minutes: 9, asOf: "2026-11-22", heading: "iPhone 15 がいま買いかを動画で見る" },
   // 11/23 公開（SE 3 まだ使う？電池交換か、14 Pro・15・17e に替えるか。/iphone/iphone-se-3rd-gen に）
   se3Keep: { id: "oKXwnypRDVs", title: "iPhone SE（第3世代）、まだ使う？電池交換は1万2,000円｜替えるなら14 Pro・15・17eで何が増える？【2026年11月】", minutes: 8, asOf: "2026-11-23", heading: "SE 3 をまだ使うか・替えるかを動画で見る" },
+  // 11/25 12:00 公開（17e を新品で買うか、同じ値段の中古の 15 Pro・16 か。/iphone/iphone-17e・iphone-15-pro に）
+  e17VsUsed: { id: "ARXtjpbIF2E", title: "17eを新品で買う？同じ12.5万円で中古の15 Pro・16？｜増える機能と、新品にしかないもの【2026年11月】", minutes: 8, asOf: "2026-11-23", heading: "新品の17eと中古の15 Pro・16の比較を動画で見る" },
 } satisfies Record<string, Video>;
 
 /**
@@ -53,13 +55,14 @@ export const VIDEOS = {
  */
 export function videoForModel(model: string): Video | null {
   // 中古の相場が新品より高い機種（地雷の回）
-  if (/^iPhone (17e|18 Pro( Max)?)$/.test(model)) return VIDEOS.jirai;
+  if (/^iPhone 18 Pro( Max)?$/.test(model)) return VIDEOS.jirai;
   // 機種そのものの回がある機種は、Proと無印の回より先に（1ページに1本）
   if (model === "iPhone 13") return VIDEOS.iphone13Now;
   if (model === "iPhone 16") return VIDEOS.iphone16Now;
   if (model === "iPhone 12") return VIDEOS.iphone12Now;
   if (model === "iPhone 15") return VIDEOS.iphone15Now;
   if (model === "iPhone SE (第3世代)") return VIDEOS.se3Keep;
+  if (model === "iPhone 17e" || model === "iPhone 15 Pro") return VIDEOS.e17VsUsed;
   if (/^iPhone 1[3-7]( Pro( Max)?)?$/.test(model)) return VIDEOS.proOrStandard;
   // 4択の回の中心（中古の M5 Pro 24GB・1TB と、16インチ M5 Pro）
   if (/^MacBook Pro 1[46]インチ M5 Pro$/.test(model)) return VIDEOS.mbpProled;
