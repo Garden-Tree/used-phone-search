@@ -1,0 +1,671 @@
+{
+  "date": "2026-11-25",
+  "shops": 18,
+  "source": "script.md（data-query-1112.log・集計 2026/11/25 22:57 JST・18店）。公開の前日に取り直す",
+  "thumbnail": {
+    "lines": [
+      "iPhone 12・11",
+      "まだ使う？"
+    ],
+    "badge": [
+      {
+        "text": "電池交換"
+      },
+      {
+        "text": "1.6万円",
+        "red": true
+      }
+    ],
+    "footer": "12と11では答えが逆【2026年11月】"
+  },
+  "chapters": [
+    {
+      "title": "家に12と11。電池を替えるなら、どっち？",
+      "scene": {
+        "type": "photo",
+        "heading": "12と11、電池を替える？",
+        "src": "longform/assets/irasutoya/battery-low.png",
+        "credit": "",
+        "points": [
+          {
+            "text": "電池交換 15,600円",
+            "sub": "12も11も同じ（Apple）",
+            "cue": "電池の交換は、どっちも"
+          },
+          {
+            "text": "画面・通信・充電が違う",
+            "sub": "発売は1年違い",
+            "cue": "その1年で、画面も"
+          },
+          {
+            "text": "使い続ける？",
+            "sub": "電池交換",
+            "cue": "使い続けるか"
+          },
+          {
+            "text": "13・15・17e に替える？",
+            "sub": "最後に2台とも決める",
+            "cue": "使い続けるか"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone12-green-back-chinofutaba.jpg",
+            "credit": "iPhone 12 Green — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.24,
+              "y": 0.165,
+              "w": 0.52,
+              "h": 0.335
+            },
+            "cue": "電池の交換は、どっちも"
+          },
+          {
+            "src": "longform/assets/commons/iphone11-red-ahmadkurdi44.jpg",
+            "credit": "iPhone 11 RED — Ahmadkurdi44 / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.19,
+              "y": 0.16,
+              "w": 0.57,
+              "h": 0.62
+            },
+            "cue": "その1年で、画面も"
+          },
+          {
+            "src": "longform/assets/irasutoya/crossroads-undecided.png",
+            "credit": "",
+            "cue": "使い続けるか"
+          }
+        ]
+      }
+    },
+    {
+      "title": "iOS 27には両方対応。11は今年で7年目",
+      "scene": {
+        "type": "bars",
+        "heading": "新しい iOS が来た年数（Apple は年数を約束していない）",
+        "unit": "年",
+        "rows": [
+          {
+            "label": "6s",
+            "median": 6,
+            "cue": "グラフは、発売から",
+            "sub": "2015年→iOS 15"
+          },
+          {
+            "label": "8・X",
+            "median": 5,
+            "cue": "グラフは、発売から",
+            "sub": "2017年→iOS 16"
+          },
+          {
+            "label": "XS・XR",
+            "median": 6,
+            "cue": "XSとXRは6年で",
+            "sub": "2018年→iOS 18",
+            "say": "XSとXR"
+          },
+          {
+            "label": "11",
+            "median": 7,
+            "cue": "XSとXRは6年で",
+            "sub": "2019年→iOS 27も",
+            "say": "11は今年で",
+            "pick": true,
+            "pickLabel": "7年目"
+          },
+          {
+            "label": "12",
+            "median": 6,
+            "cue": "12は、あと1年は",
+            "sub": "2020年→iOS 27も"
+          }
+        ]
+      }
+    },
+    {
+      "title": "12と11の違い：画面・5G・MagSafe・重さ",
+      "scene": {
+        "type": "photo",
+        "heading": "11 と 12 の違い",
+        "src": "longform/assets/commons/iphone11-purple-rberchie.jpg",
+        "credit": "iPhone 11 — Rberchie / CC BY-SA 4.0 / Wikimedia Commons",
+        "crop": {
+          "x": 0.05,
+          "y": 0.25,
+          "w": 0.87,
+          "h": 0.65
+        },
+        "points": [
+          {
+            "text": "液晶 → 有機EL",
+            "sub": "326ppi → 460ppi",
+            "cue": "11は液晶で"
+          },
+          {
+            "text": "LTE → 5G",
+            "sub": "通信",
+            "cue": "11はLTEまで"
+          },
+          {
+            "text": "MagSafe なし → あり",
+            "sub": "磁石でくっつく",
+            "cue": "12はMagSafe対応で"
+          },
+          {
+            "text": "自撮りのナイトモード",
+            "sub": "12で使える",
+            "cue": "暗い所を明るく"
+          },
+          {
+            "text": "194g → 162g",
+            "sub": "32g 軽い",
+            "cue": "11が194グラムで"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone12-green-back-chinofutaba.jpg",
+            "credit": "iPhone 12 Green — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.24,
+              "y": 0.165,
+              "w": 0.52,
+              "h": 0.335
+            },
+            "cue": "夜に暗い部屋で"
+          },
+          {
+            "src": "longform/assets/commons/magsafe-charger-hand-trendingreviews.png",
+            "credit": "MagSafe (iPhone) — Trending Reviews / CC BY 3.0 / Wikimedia Commons",
+            "cue": "充電も違うの"
+          },
+          {
+            "src": "longform/assets/commons/iphone12-blue-camera-kkpcw.jpg",
+            "credit": "iPhone 12 — KKPCW / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "写真も。暗い所を"
+          },
+          {
+            "src": "longform/assets/commons/iphone11-purple-rberchie.jpg",
+            "credit": "iPhone 11 — Rberchie / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.05,
+              "y": 0.25,
+              "w": 0.87,
+              "h": 0.65
+            },
+            "cue": "最後に重さ"
+          },
+          {
+            "src": "longform/assets/commons/iphone12-green-back-chinofutaba.jpg",
+            "credit": "iPhone 12 Green — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.24,
+              "y": 0.165,
+              "w": 0.52,
+              "h": 0.335
+            },
+            "cue": "じゃあ12は、電池さえ"
+          }
+        ]
+      }
+    },
+    {
+      "title": "電池交換：同じ1万5,600円でも、重みが違う",
+      "scene": {
+        "type": "bars",
+        "heading": "電池交換と、64GB を売った値段",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "電池交換",
+            "median": 15600,
+            "cue": "グラフを見てね",
+            "sub": "12も11も",
+            "say": "一番うえ"
+          },
+          {
+            "label": "12 美品",
+            "median": 16800,
+            "cue": "12の美品は交換代より",
+            "sub": "売ると"
+          },
+          {
+            "label": "12 使用感小",
+            "median": 13650,
+            "cue": "12の美品は交換代より",
+            "sub": "売ると",
+            "say": "使用感"
+          },
+          {
+            "label": "11 美品",
+            "median": 11550,
+            "cue": "11は、きれいでも",
+            "sub": "売ると",
+            "pick": true,
+            "pickLabel": "届かない"
+          },
+          {
+            "label": "11 使用感小",
+            "median": 9450,
+            "cue": "11は美品でも",
+            "sub": "売ると"
+          }
+        ]
+      }
+    },
+    {
+      "title": "画面が割れたら",
+      "scene": {
+        "type": "bars",
+        "heading": "画面の修理（Apple）と、中古の相場（64GB）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "12 画面修理",
+            "median": 45800,
+            "cue": "割れているなら、12も",
+            "say": "画面修理は"
+          },
+          {
+            "label": "中古の12",
+            "median": 36080,
+            "cue": "割れているなら、12も",
+            "say": "中古の12"
+          },
+          {
+            "label": "11 画面修理",
+            "median": 30800,
+            "cue": "11も、修理代は",
+            "say": "修理代"
+          },
+          {
+            "label": "中古の11",
+            "median": 29800,
+            "cue": "11も、修理代は",
+            "say": "中古の相場"
+          }
+        ]
+      }
+    },
+    {
+      "title": "替えるなら① 中古の13",
+      "scene": {
+        "type": "photo",
+        "heading": "中古の13（11 の人向け）",
+        "src": "longform/assets/commons/iphone13-front-meidoriyo.jpg",
+        "credit": "iPhone 13 — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
+        "crop": {
+          "x": 0.08,
+          "y": 0.12,
+          "w": 0.84,
+          "h": 0.66
+        },
+        "points": [
+          {
+            "text": "有機EL・5G・MagSafe",
+            "sub": "11にない3つ",
+            "cue": "さっきの3つが"
+          },
+          {
+            "text": "ビデオ再生 19時間",
+            "sub": "11・12 は17時間",
+            "cue": "電池も、Appleの仕様の"
+          },
+          {
+            "text": "センサーシフトの手ぶれ補正",
+            "sub": "シネマティックモードも",
+            "cue": "センサーを動かして"
+          },
+          {
+            "text": "足すお金 +39,250円",
+            "sub": "11 64GB 美品を売って（12 からは +34,000円）",
+            "cue": "替える先の1つ目は"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone13-white-chinofutaba.jpg",
+            "credit": "iPhone 13 White — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.2,
+              "y": 0.18,
+              "w": 0.5,
+              "h": 0.31
+            },
+            "cue": "センサーを動かして"
+          },
+          {
+            "src": "longform/assets/commons/iphone12-blue-camera-kkpcw.jpg",
+            "credit": "iPhone 12 — KKPCW / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "12の人も、13が"
+          },
+          {
+            "src": "longform/assets/commons/iphone13-white-chinofutaba.jpg",
+            "credit": "iPhone 13 White — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.2,
+              "y": 0.18,
+              "w": 0.5,
+              "h": 0.31
+            },
+            "cue": "11の人向けなのだ"
+          }
+        ]
+      }
+    },
+    {
+      "title": "替えるなら② 中古の15",
+      "scene": {
+        "type": "photo",
+        "heading": "中古の15（USB-C とカメラ）",
+        "src": "longform/assets/commons/iphone15-pd.jpg",
+        "credit": "Apple iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons",
+        "points": [
+          {
+            "text": "USB-C",
+            "sub": "Mac や iPad と同じケーブル",
+            "cue": "いちばん大きいのは"
+          },
+          {
+            "text": "48MP・2倍の光学ズーム",
+            "sub": "12・11 はデジタルズームだけ",
+            "cue": "カメラは48MP"
+          },
+          {
+            "text": "Dynamic Island",
+            "sub": "タイマー・音楽",
+            "cue": "お子さんがいる人には"
+          },
+          {
+            "text": "SIMカードが使える",
+            "sub": "171g",
+            "cue": "12からなら、13より"
+          },
+          {
+            "text": "12 +74,900円・11 +80,150円",
+            "sub": "64GB 美品を売って足すお金",
+            "cue": "7万円台から"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone15-usbc-port-kyu3.jpg",
+            "credit": "USB-C port of iPhone 15 — Kyu3 / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.25,
+              "y": 0.28,
+              "w": 0.5,
+              "h": 0.36
+            },
+            "cue": "いちばん大きいのは"
+          },
+          {
+            "src": "longform/assets/commons/lightning-usbc-cable-kyu3a.jpg",
+            "credit": "Lightning USB type C cable — Kyu3a / CC BY-SA 4.0 / Wikimedia Commons",
+            "cue": "MacやiPad、ゲーム機"
+          },
+          {
+            "src": "longform/assets/commons/iphone15-back-blue-meidoriyo.jpg",
+            "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.18,
+              "y": 0.1,
+              "w": 0.6,
+              "h": 0.42
+            },
+            "cue": "カメラは48MP"
+          },
+          {
+            "src": "longform/assets/irasutoya/photo-taking.png",
+            "credit": "",
+            "cue": "運動会で使えそう"
+          },
+          {
+            "src": "longform/assets/commons/sim-card-multisize-izzzyy.jpg",
+            "credit": "Multi-size T-Mobile SIM card — Izzzyy / CC0 / Wikimedia Commons",
+            "cue": "12からなら、13より"
+          },
+          {
+            "src": "longform/assets/commons/iphone15-pd.jpg",
+            "credit": "Apple iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons",
+            "cue": "足すお金は？"
+          }
+        ]
+      }
+    },
+    {
+      "title": "替えるなら③ 新品の17e",
+      "scene": {
+        "type": "photo",
+        "heading": "新品の17e（電池の長さ）",
+        "src": "longform/assets/commons/iphone17e-pink-kyu3a.jpg",
+        "credit": "iPhone 17e Soft Pink Model — Kyu3a / CC BY-SA 4.0 / Wikimedia Commons",
+        "crop": {
+          "x": 0.2,
+          "y": 0.12,
+          "w": 0.6,
+          "h": 0.6
+        },
+        "points": [
+          {
+            "text": "ビデオ再生 26時間",
+            "sub": "12・11 は17時間",
+            "cue": "ビデオ再生は26時間"
+          },
+          {
+            "text": "A19・Apple Intelligence",
+            "sub": "要約・クリーンアップ",
+            "cue": "チップはA19で"
+          },
+          {
+            "text": "超広角カメラはない",
+            "sub": "12・11 にはある",
+            "cue": "17eに、超広角"
+          },
+          {
+            "text": "SIMカードは使えない",
+            "sub": "eSIM だけ",
+            "cue": "もう1つは、SIMカード"
+          },
+          {
+            "text": "12 +108,000円・11 +113,250円",
+            "sub": "新品 256GB・64GB 美品を売って",
+            "cue": "中古の真ん中の値段が"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone17e-back-chinofutaba.jpg",
+            "credit": "iPhone 17e backside — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.1,
+              "y": 0.02,
+              "w": 0.8,
+              "h": 0.96
+            },
+            "cue": "チップはA19で"
+          },
+          {
+            "src": "longform/assets/commons/iphone17e-back-chinofutaba.jpg",
+            "credit": "iPhone 17e backside — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.2,
+              "y": 0.1,
+              "w": 0.36,
+              "h": 0.27
+            },
+            "cue": "17eに、超広角"
+          },
+          {
+            "src": "longform/assets/commons/sim-card-multisize-izzzyy.jpg",
+            "credit": "Multi-size T-Mobile SIM card — Izzzyy / CC0 / Wikimedia Commons",
+            "cue": "もう1つは、SIMカード"
+          },
+          {
+            "src": "longform/assets/commons/iphone17e-pink-kyu3a.jpg",
+            "credit": "iPhone 17e Soft Pink Model — Kyu3a / CC BY-SA 4.0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.2,
+              "y": 0.12,
+              "w": 0.6,
+              "h": 0.6
+            },
+            "cue": "中古の17eじゃ"
+          }
+        ]
+      }
+    },
+    {
+      "title": "決め方と、売る前・買う前にすること",
+      "scene": {
+        "type": "checklist",
+        "heading": "不満で選ぶ",
+        "items": [
+          {
+            "text": "12・電池だけ → 電池交換",
+            "sub": "15,600円（Apple）",
+            "cue": "12で、電池だけが"
+          },
+          {
+            "text": "11・まだ使う → 売って中古の13",
+            "sub": "有機EL・5G・MagSafe",
+            "cue": "11で、まだ何年か"
+          },
+          {
+            "text": "USB-C・写真 → 中古の15",
+            "sub": "12からも11からも",
+            "cue": "ケーブルをUSB-Cに"
+          },
+          {
+            "text": "電池の長さ・新品 → 17e",
+            "sub": "ビデオ再生 26時間",
+            "cue": "ケーブルをUSB-Cに"
+          },
+          {
+            "text": "売る: 移す → サインアウト → 初期化",
+            "sub": "新しいほうで使えるか確かめてから",
+            "cue": "順番が大事"
+          },
+          {
+            "text": "買う: 電池・利用制限・保証",
+            "sub": "お店のページで見る",
+            "cue": "3つだけ。電池の数字"
+          }
+        ]
+      }
+    },
+    {
+      "title": "まとめ：2台の答え",
+      "scene": {
+        "type": "table",
+        "heading": "違うところだけ",
+        "columns": [
+          "",
+          "11",
+          "12",
+          "13",
+          "15",
+          "17e"
+        ],
+        "emphasis": [],
+        "rows": [
+          {
+            "cells": [
+              "有機EL",
+              "×",
+              "○",
+              "○",
+              "○",
+              "○"
+            ],
+            "cue": "まとめるね"
+          },
+          {
+            "cells": [
+              "5G",
+              "×",
+              "○",
+              "○",
+              "○",
+              "○"
+            ],
+            "cue": "まとめるね"
+          },
+          {
+            "cells": [
+              "MagSafe",
+              "×",
+              "○",
+              "○",
+              "○",
+              "○"
+            ],
+            "cue": "まとめるね"
+          },
+          {
+            "cells": [
+              "USB-C",
+              "×",
+              "×",
+              "×",
+              "○",
+              "○"
+            ],
+            "cue": "まとめるね"
+          },
+          {
+            "cells": [
+              "超広角",
+              "○",
+              "○",
+              "○",
+              "○",
+              "×"
+            ],
+            "cue": "まとめるね"
+          },
+          {
+            "cells": [
+              "SIMカード",
+              "○",
+              "○",
+              "○",
+              "○",
+              "×"
+            ],
+            "cue": "まとめるね"
+          },
+          {
+            "cells": [
+              "答え",
+              "売って13へ",
+              "電池交換",
+              "",
+              "",
+              ""
+            ],
+            "cue": "決めたのだ"
+          }
+        ]
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          {
+            "id": "vzlNKTznOTY",
+            "title": "iPhone 13、まだ使う？電池交換は1万5,600円｜売って中古の15なら+5万9,100円"
+          },
+          {
+            "id": "oKXwnypRDVs",
+            "title": "iPhone SE（第3世代）、まだ使う？電池交換は1万2,000円"
+          }
+        ]
+      }
+    }
+  ]
+}
