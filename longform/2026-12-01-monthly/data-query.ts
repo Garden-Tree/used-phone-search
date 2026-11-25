@@ -27,7 +27,7 @@ import { ALL_STORAGE } from "@/lib/priceHistory";
 type Where = Prisma.DeviceInventoryWhereInput;
 
 /** 予算（円）。帯は (max(前の予算, 予算−GAP), 予算] */
-const BUDGETS = [40000, 50000, 70000, 100000, 150000];
+const BUDGETS = [40000, 70000, 100000, 130000, 200000];
 /** 「予算ぴったり」の幅（shorts/themes/budget.ts の BUDGET_GAP と同じ 1万円） */
 const GAP = 10000;
 /** 在庫がこの件数以上の機種だけ（今月のおすすめなので、電池や店を選べるだけの在庫がある機種。10/26 の 12 Pro Max は260件で外れる） */
@@ -82,6 +82,21 @@ async function main() {
       console.log(`   予算を少しこえる: ${over[0]} ${over[1].medianPrice}(${over[1].medianStorage}GB・${over[1].count}件)`);
       show.add(over[0]);
     }
+  }
+
+  // 冒頭の値動き・買わない3台に出す機種
+  ["iPhone 12 mini", "iPhone 13 mini", "iPhone 14 Pro", "iPhone 14 Pro Max", "iPhone 15 Pro Max", "iPhone 16", "iPhone 16 Pro", "iPhone 16 Pro Max", "iPhone 17", "iPhone 17 Pro", "iPhone 17e", "iPhone 18 Pro", "iPhone 18 Pro Max"].forEach((m) => market.has(m) && show.add(m));
+
+  // 新品（Apple で売っている容量）と、同じ容量の中古の相場（ジャンクも含むサイトの中央値・在庫5件以上）
+  console.log("== 新品との差（中古の中央値 − Apple の新品。0以上＝いま買わない）");
+  for (const [m] of all) for (const gb of applePriceStorages(m)) {
+    const w: Where = { AND: [await modelWhere(m), { storage: gb }] };
+    const n = await prisma.deviceInventory.count({ where: w });
+    if (n < 5) continue;
+    const med = await medianPrice(w, n);
+    const mn = await prisma.deviceInventory.aggregate({ where: w, _min: { price: true } });
+    const under = await prisma.deviceInventory.count({ where: { AND: [w, { price: { lt: applePrice(m, gb)! } }] } });
+    console.log(`${m} ${gb}GB 中古${med} 新品${applePrice(m, gb)} 差${(med ?? 0) - applePrice(m, gb)!} 在庫${n} 最安${mn._min.price} 新品より安い在庫${under}`);
   }
 
   // 先月からの動き（PriceSnapshot。相場の容量どうし）
