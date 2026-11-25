@@ -203,6 +203,9 @@ iPhone 17 Pro Max の店ごとの在庫と最安値: https://used.gadelog.com/ip
 VOICEVOX:春日部つむぎ
 VOICEVOX:ずんだもん
 
+中古スマホにするなら回線も見直す
+楽天モバイル（Rakuten最強プラン 月1,078円〜・税込・10/26 公式で確認）【PR】: https://hb.afl.rakuten.co.jp/hsc/58858f0c.304dd67c.566a1a2e.942e4aef/?link_type=text&rafst=rmn&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJ0ZXh0IiwiY29sIjoxLCJjYXQiOjEsImJhbiI6Im5hbWUiLCJhbXAiOmZhbHNlfQ%3D%3D
+
 #中古iPhone #iPhone #iPhone15
 ```
 
@@ -211,4 +214,4 @@ VOICEVOX:ずんだもん
 - 新品: apple.com/jp 11/26 確認（17e 124,800・18 Pro 219,800・18 Pro Max 239,800）。17e は新品より安い在庫 202/470＝43%・18 Pro 9/165・18 Pro Max 1/22
 - 仕様: support.apple.com/ja-jp 111876・111871・111850・111831・111829・125091（11/26 確認）。Apple Intelligence: 121115
 - 20万円まで20円差 → 11/30 に超えていたら予算の区切りと台詞を直す
-- **作る前に確かめる**: 楽天モバイルの PR 行を足す（12・11 の回と同じ形・その日の公式の値）・写真（14・15 Pro・17 Pro Max）・16 の仕様の値（表に出すもの）
+- 16（121029）は 120Hz・3倍望遠の記載なし・12 と 15 は nano-SIM 対応（11/26 確認）。**11/30 に取り直す**: 相場・新品・楽天モバイルの月額。写真の出典は data.json の credit

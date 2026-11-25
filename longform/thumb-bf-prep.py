@@ -53,6 +53,10 @@ SETS = {
     "11keep": dict(dir=HERE / "assets" / "commons", src="iphone11-purple-crop.png", cut="iphone11-purple-cut.png",
                    cutline="iphone11-purple-cutline.png", edges=(), layers="12keep-layers",
                    place={"11k-back": (330, -8, 870, 24)}),
+    # dec（11/26 追加）: 横動画 2026-12-01-monthly。17 Pro Max オレンジ（Ahmad Ali Karim / CC0・Commons）。台の上だけ（下の端が切り口）
+    "dec": dict(dir=HERE / "assets" / "commons", src="iphone17promax-orange-crop.png", cut="iphone17promax-orange-cut.png",
+                cutline="iphone17promax-orange-cutline.png", edges=("bottom",), layers="dec-layers",
+                place={"17pm": (430, 5, 830, 48)}),
     # 15（11/21 追加）: 横動画 2026-11-24-iphone15。写真は iPhone 15 の前面（画面に「iPhone 15」）・Ka Kit Pang / Public domain（Commons）
     "15": dict(dir=HERE / "assets" / "commons", src="iphone15-pd-single.jpg", cut="iphone15-pd-single-cut.png",
                cutline="iphone15-pd-single-cutline.png", edges=(), layers="15-layers",
