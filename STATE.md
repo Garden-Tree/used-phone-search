@@ -31,6 +31,7 @@
 - **X**: 12/1 まで Claude は触らない（手で1日1本・URLなし）
 - **ショート**: 11/23 判定で新しく作らない（1本約1,000回で頭打ち・登録0.1/本・サイト訪問ほぼ0）
 - **横動画**: 週2〜3。「まだ使う？」は続ける・「今買い？」やめる・月1は BEST5 型
+- **Watch・Galaxy の表**: 11/26 判定・横ばい。残すが広げない
 - **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac（据え置き 11/15〜）・Xperia・AQUOS・OPPO・Xiaomi・Apple／Galaxy／Pixel Watch（storage＝mm・ケーブルなしは札）
 - **中古パソコン** `/pc`。PC WRAP・Qualit・PC next・Be-Stock は A8、他は楽天
 
@@ -49,7 +50,6 @@
 | 11/27 | iPad Pro 11 第3世代 | 対照と比べる |
 | **12/1** | 3行・買取の移動・`kaitori_link`・`side_sim` | クリック減→戻す |
 | **12/6** | `PickPair` 案B（+N円で保証1年） | 増えなければ一覧から外す |
-| 11/26 | Watch・Galaxy の表 | AI入口・店クリック |
 | 12/11 | 横動画サムネ 11/13〜 | CTR 前後4週 |
 | 12/3〜 | 15 Pro title 容量別 | 対照 iPad Pro M4 |
 | **11/30** | 比較の内部リンク | GSC 404→800/週 |
