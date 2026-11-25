@@ -27,8 +27,8 @@ const EDGE = 60;
 const SET = process.argv.find((a) => a.startsWith("--set="))?.slice(6) ?? "bf";
 const ARGV = process.argv.slice(2).filter((a) => !a.startsWith("--set="));
 const CHECK = ARGV[0] === "--check";
-const DIR = SET === "se3keep" || SET === "se3keepB" ? "2026-12-01-iphonese3-keep" : SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-24-iphone15" : "2026-11-26-blackfriday";
-const LAYERS = SET === "se3keepB" ? "se3keepB-layers" : SET === "se3keep" ? "se3keep-layers" : SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
+const DIR = SET === "12keep" ? "2026-11-28-iphone12-keep" : SET === "se3keep" || SET === "se3keepB" ? "2026-12-01-iphonese3-keep" : SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-24-iphone15" : "2026-11-26-blackfriday";
+const LAYERS = SET === "12keep" ? "12keep-layers" : SET === "se3keepB" ? "se3keepB-layers" : SET === "se3keep" ? "se3keep-layers" : SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
 const OUTC = (c: string) => (CHECK && c === BLACK ? "#808080" : c);
 
 function Layer({ name }: { name: string }) {
@@ -172,6 +172,17 @@ const k3 = (
   </Frame>
 );
 
+// ---- 12keep（2026-11-28-iphone12-keep・11/25）: 13・SE3 と同じ形。11（紫）を後ろ・12（緑）を手前に。数字は script.md: 電池交換 15,600円
+const n = (tag: string, size = 104) => (
+  <Frame>
+    <Layer name="11k-back" /><Layer name="12k-front" />
+    <T x={EDGE + 6} y={66}><Outlined text="iPhone 12・11" size={112} color={WHITE} w={6} spacing={-4} /></T>
+    <T x={EDGE + 9} y={204}><Outlined text="まだ使う？" size={172} color={YELLOW} w={9} spacing={-8} /></T>
+    <Tag x={EDGE} y={448} text={tag} size={size} color={RED} pad={16} spacing={-5} />
+  </Frame>
+);
+const n1 = n("電池1.6万円"), n2 = n("12は○ 11は？");
+
 // ---- se3keep（2026-12-01-iphonese3-keep・11/23）: 13keep の K3 と同じ形。iPhone SE 第3世代（赤）の前面。数字は script.md のもの: 電池交換 12,000円
 const s1 = (
   <Frame>
@@ -224,7 +235,7 @@ const f3 = (
 
 (async () => {
   const fonts = await notoSansJp(readFileSync(__filename, "utf8"));
-  const plans: [string, ReactNode][] = SET === "se3keepB" ? [["S2", s2]] : SET === "se3keep" ? [["S1", s1]] : SET === "15" ? [["F1", f1], ["F2", f2], ["F3", f3]] : SET === "13keep" ? [["K1", k1], ["K2", k2], ["K3", k3]] : SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
+  const plans: [string, ReactNode][] = SET === "12keep" ? [["N1", n1], ["N2", n2]] : SET === "se3keepB" ? [["S2", s2]] : SET === "se3keep" ? [["S1", s1]] : SET === "15" ? [["F1", f1], ["F2", f2], ["F3", f3]] : SET === "13keep" ? [["K1", k1], ["K2", k2], ["K3", k3]] : SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
   const checkDir = CHECK ? ARGV[1] : "";
   if (CHECK) mkdirSync(checkDir, { recursive: true });
   for (const [name, node] of plans) {

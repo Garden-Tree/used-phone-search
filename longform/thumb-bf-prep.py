@@ -45,6 +45,14 @@ SETS = {
     "se3keepB": dict(dir=HERE / "assets" / "commons", src="iphone-se3-back-starlight-meidoriyo.jpg", cut="iphone-se3-starlight-back-cut.png",
                      cutline="iphone-se3-starlight-back-cutline.png", edges=(), layers="se3keepB-layers",
                      place={"se3kb-big": (420, -8, 800, 0)}),
+    # 12keep・11keep（11/25 追加）: 横動画 2026-11-28-iphone12-keep（12・11 まだ使う？）。2台を2つの層に。写真は先に端末のまわりだけに切った *-crop.png
+    #   12 Green 茅野ふたば / CC BY-SA 4.0（店の札より上だけ・下の端が切り口）・11 Rberchie / CC BY-SA 4.0（Commons）
+    "12keep": dict(dir=HERE / "assets" / "commons", src="iphone12-green-crop.png", cut="iphone12-green-cut.png",
+                   cutline="iphone12-green-cutline.png", edges=("bottom",), layers="12keep-layers", shrink=8,
+                   place={"12k-front": (380, 0, 910, 362)}),
+    "11keep": dict(dir=HERE / "assets" / "commons", src="iphone11-purple-crop.png", cut="iphone11-purple-cut.png",
+                   cutline="iphone11-purple-cutline.png", edges=(), layers="12keep-layers",
+                   place={"11k-back": (330, -8, 870, 24)}),
     # 15（11/21 追加）: 横動画 2026-11-24-iphone15。写真は iPhone 15 の前面（画面に「iPhone 15」）・Ka Kit Pang / Public domain（Commons）
     "15": dict(dir=HERE / "assets" / "commons", src="iphone15-pd-single.jpg", cut="iphone15-pd-single-cut.png",
                cutline="iphone15-pd-single-cutline.png", edges=(), layers="15-layers",
