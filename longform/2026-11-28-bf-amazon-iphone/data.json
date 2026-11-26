@@ -45,9 +45,9 @@
           },
           {
             "cells": [
-              "17 Pro Max 256GB",
+              "17 Pro Max 512GB",
               "【A_17PM】",
-              "199,980円"
+              "238,780円"
             ],
             "cue": "iPhone Air、16 Plus"
           }
@@ -222,7 +222,7 @@
         "rows": [
           {
             "label": "Amazon ふだん",
-            "median": 0,
+            "median": 144800,
             "cue": "ふだんは",
             "sub": "新品"
           },
@@ -364,13 +364,13 @@
       "title": "iPhone 17 Pro Max：セールの新品と中古",
       "scene": {
         "type": "bars",
-        "heading": "iPhone 17 Pro Max 256GB",
+        "heading": "iPhone 17 Pro Max 512GB",
         "unit": "円",
         "rows": [
           {
             "label": "Amazon ふだん",
-            "median": 0,
-            "cue": "Amazonのふだんは",
+            "median": 251692,
+            "cue": "ふだんは25万",
             "sub": "新品"
           },
           {
@@ -381,8 +381,8 @@
           },
           {
             "label": "中古の相場",
-            "median": 199980,
-            "cue": "中古の真ん中は",
+            "median": 238780,
+            "cue": "中古の512GBの真ん中は",
             "sub": "電池85%以上 84%"
           }
         ]
@@ -453,7 +453,7 @@
       "title": "1つ前の16 Pro Maxなら",
       "scene": {
         "type": "table",
-        "heading": "16 Pro Max と 17 Pro Max（中古・Apple 公式の仕様）",
+        "heading": "16 Pro Max と 17 Pro Max（256GB の中古・Apple 公式の仕様）",
         "columns": [
           "",
           "16 Pro Max",
@@ -597,9 +597,9 @@
           },
           {
             "cells": [
-              "17 Pro Max",
+              "17 Pro Max 512GB",
               "【A_17PM】",
-              "199,980円",
+              "238,780円",
               "電池・望遠"
             ],
             "cue": "まとめるね"
