@@ -47,6 +47,8 @@ export const VIDEOS = {
   se3Keep: { id: "oKXwnypRDVs", title: "iPhone SE（第3世代）、まだ使う？電池交換は1万2,000円｜替えるなら14 Pro・15・17eで何が増える？【2026年11月】", minutes: 8, asOf: "2026-11-23", heading: "SE 3 をまだ使うか・替えるかを動画で見る" },
   // 11/25 12:00 公開（17e を新品で買うか、同じ値段の中古の 15 Pro・16 か。/iphone/iphone-17e・iphone-15-pro に）
   e17VsUsed: { id: "ARXtjpbIF2E", title: "17eを新品で買う？同じ12.5万円で中古の15 Pro・16？｜増える機能と、新品にしかないもの【2026年11月】", minutes: 8, asOf: "2026-11-23", heading: "新品の17eと中古の15 Pro・16の比較を動画で見る" },
+  // 11/26 14時台公開（12・11 まだ使う？12 は電池交換・11 は売って13。/iphone/iphone-11 に。12 のページは今買いの回のまま）
+  keep1211: { id: "70oYNTqwgRU", title: "iPhone 12・11、まだ使う？電池交換は同じ1万5,600円、答えは逆｜替えるなら13・15・17e【2026年11月】", minutes: 8, asOf: "2026-11-26", heading: "iPhone 11 をまだ使うか・替えるかを動画で見る" },
 } satisfies Record<string, Video>;
 
 /**
@@ -62,6 +64,7 @@ export function videoForModel(model: string): Video | null {
   if (model === "iPhone 12") return VIDEOS.iphone12Now;
   if (model === "iPhone 15") return VIDEOS.iphone15Now;
   if (model === "iPhone SE (第3世代)") return VIDEOS.se3Keep;
+  if (model === "iPhone 11") return VIDEOS.keep1211;
   if (model === "iPhone 17e" || model === "iPhone 15 Pro") return VIDEOS.e17VsUsed;
   if (/^iPhone 1[3-7]( Pro( Max)?)?$/.test(model)) return VIDEOS.proOrStandard;
   // 4択の回の中心（中古の M5 Pro 24GB・1TB と、16インチ M5 Pro）

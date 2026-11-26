@@ -113,7 +113,7 @@
 | 2026-11-24 | stockipad | 春日部つむぎ | 実写 | 中古でいちばん多いiPadはiPad（第9世代）！在庫2,534件ランキング |  |  |  |  |
 | 2026-11-25 | stockup | ずんだもん | AI | 先週から在庫がいちばん増えた中古iPhoneはAir！+53件ランキング |  |  |  |  |
 
-## 横動画（35本・台本だけの回を含む）
+## 横動画（37本・台本だけの回を含む）
 
 | 日付 | フォルダ | タイトル | 要約 | 視聴 | ID |
 |---|---|---|---|---|---|
@@ -148,7 +148,9 @@
 | 2026-11-22 | iphone13-keep | iPhone 13、まだ使う？電池交換は1万5,600円｜売って中古の15なら+5万9,100円【2026年11月】 | iPhone 13 を使っている人向けに、電池交換で使い続けるか、売って買い替えるかを、Apple 公式の修理料金・買取2店の価格（11/21）・大手中古ショップ16店の相場（20 |  |  |
 | 2026-11-24 | iphone15 | 中古iPhone 15は今買い？相場9万980円｜14との差2.6万円はUSB-Cの差【2026年11月】 | 中古の iPhone 15 を 2026年11月のいま買っていいかを、大手中古ショップ16店・販売中の iPhone 35,759件の相場（2026/11/22時点）と Apple |  |  |
 | 2026-11-26 | blackfriday | （youtube.txt なし・台本／構成案のみ） | | | |
-| 2026-11-28 | iphone12-keep | （youtube.txt なし・台本／構成案のみ） | | | |
-| 2026-12-01 | iphonese3-keep | iPhone SE（第3世代）、まだ使う？電池交換は1万2,000円｜替えるなら14 Pro・15・17eで何が増える？【2026年11月】 | iPhone SE（第3世代）を使っている人向けに、電池交換で使い続けるか、売って 14 Pro・15・17e に替えるかを、Apple 公式の仕様と修理料金・買取の価格（11/2 |  |  |
+| 2026-11-27 | 17e-vs-used | 17eを新品で買う？同じ12.5万円で中古の15 Pro・16？｜増える機能と、新品にしかないもの【2026年11月】 | iPhone 15 Pro の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-15-pro?utm_source=youtub |  |  |
+| 2026-11-28 | iphone12-keep | iPhone 12・11、まだ使う？電池交換は同じ1万5,600円、答えは逆｜替えるなら13・15・17e【2026年11月】 | iPhone 12 の買取価格: https://used.gadelog.com/iphone/iphone-12/kaitori?utm_source=youtube&utm_ |  |  |
+| 2026-12-01 | iphonese3-keep | iPhone SE（第3世代）、まだ使う？電池交換は1万2,000円｜替えるなら14 Pro・15・17eで何が増える？【2026年11月】 | iPhone SE（第3世代）の買取価格: https://used.gadelog.com/iphone/iphone-se-3rd-gen/kaitori?utm_source |  |  |
+| 2026-12-01 | monthly | 【2026年12月】中古iPhone、買っていい5台・いま買わない3台｜17 Pro Maxが1か月で8,800円下がった | 全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long |  |  |
 | 2026-12-03 | iphone16e-review | （youtube.txt なし・台本／構成案のみ） | | | |
 | 2026-12-05 | iphone-guide | （youtube.txt なし・台本／構成案のみ） | | | |
