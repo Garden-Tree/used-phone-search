@@ -27,8 +27,8 @@ const EDGE = 60;
 const SET = process.argv.find((a) => a.startsWith("--set="))?.slice(6) ?? "bf";
 const ARGV = process.argv.slice(2).filter((a) => !a.startsWith("--set="));
 const CHECK = ARGV[0] === "--check";
-const DIR = SET === "dec" ? "2026-12-01-monthly" : SET === "12keep" ? "2026-11-28-iphone12-keep" : SET === "se3keep" || SET === "se3keepB" ? "2026-12-01-iphonese3-keep" : SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-24-iphone15" : "2026-11-26-blackfriday";
-const LAYERS = SET === "dec" ? "dec-layers" : SET === "12keep" ? "12keep-layers" : SET === "se3keepB" ? "se3keepB-layers" : SET === "se3keep" ? "se3keep-layers" : SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
+const DIR = SET === "bfa" ? "2026-11-28-bf-amazon-iphone" : SET === "dec" ? "2026-12-01-monthly" : SET === "12keep" ? "2026-11-28-iphone12-keep" : SET === "se3keep" || SET === "se3keepB" ? "2026-12-01-iphonese3-keep" : SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-24-iphone15" : "2026-11-26-blackfriday";
+const LAYERS = SET === "bfa" ? "bfa-layers" : SET === "dec" ? "dec-layers" : SET === "12keep" ? "12keep-layers" : SET === "se3keepB" ? "se3keepB-layers" : SET === "se3keep" ? "se3keep-layers" : SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
 const OUTC = (c: string) => (CHECK && c === BLACK ? "#808080" : c);
 
 function Layer({ name }: { name: string }) {
@@ -189,6 +189,16 @@ const d2 = (
     <Tag x={EDGE + 4} y={492} text="−8800円" size={128} color={RED} pad={22} spacing={-4} />
   </Frame>
 );
+// ---- bfa（2026-11-28-bf-amazon-iphone・11/26）: Air の写真を右に。札はセール価格を見てから（11/27 0時〜）
+const bfa = (tag: string, size = 112) => (
+  <Frame>
+    <Layer name="air" />
+    <T x={EDGE + 8} y={64}><Outlined text="ブラックフライデー" size={104} color={WHITE} w={6} spacing={-6} /></T>
+    <T x={EDGE + 8} y={200}><Outlined text="新品と中古" size={160} color={YELLOW} w={9} spacing={-8} /></T>
+    <Tag x={EDGE + 4} y={450} text={tag} size={size} color={RED} pad={20} spacing={-5} />
+  </Frame>
+);
+const b1 = bfa("Air どっち？");
 // ---- 12keep（2026-11-28-iphone12-keep・11/25）: 13・SE3 と同じ形。11（紫）を後ろ・12（緑）を手前に。数字は script.md: 電池交換 15,600円
 const n = (tag: string, size = 104) => (
   <Frame>
@@ -252,7 +262,7 @@ const f3 = (
 
 (async () => {
   const fonts = await notoSansJp(readFileSync(__filename, "utf8"));
-  const plans: [string, ReactNode][] = SET === "dec" ? [["D1", d1], ["D2", d2]] : SET === "12keep" ? [["N1", n1], ["N2", n2]] : SET === "se3keepB" ? [["S2", s2]] : SET === "se3keep" ? [["S1", s1]] : SET === "15" ? [["F1", f1], ["F2", f2], ["F3", f3]] : SET === "13keep" ? [["K1", k1], ["K2", k2], ["K3", k3]] : SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
+  const plans: [string, ReactNode][] = SET === "bfa" ? [["B1", b1]] : SET === "dec" ? [["D1", d1], ["D2", d2]] : SET === "12keep" ? [["N1", n1], ["N2", n2]] : SET === "se3keepB" ? [["S2", s2]] : SET === "se3keep" ? [["S1", s1]] : SET === "15" ? [["F1", f1], ["F2", f2], ["F3", f3]] : SET === "13keep" ? [["K1", k1], ["K2", k2], ["K3", k3]] : SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
   const checkDir = CHECK ? ARGV[1] : "";
   if (CHECK) mkdirSync(checkDir, { recursive: true });
   for (const [name, node] of plans) {

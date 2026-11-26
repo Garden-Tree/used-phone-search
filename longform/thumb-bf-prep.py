@@ -61,6 +61,10 @@ SETS = {
     "15": dict(dir=HERE / "assets" / "commons", src="iphone15-pd-single.jpg", cut="iphone15-pd-single-cut.png",
                cutline="iphone15-pd-single-cutline.png", edges=(), layers="15-layers",
                place={"15-big": (340, -8, 880, 50)}),
+    # BF・Amazon（11/26 追加）: 横動画 2026-11-28-bf-amazon-iphone。写真は iPhone Air スカイブルーの背面・Ahmad Ali Karim / CC0（Commons）
+    "bfa": dict(dir=HERE / "assets" / "commons", src="iphoneair-skyblue-ahmadalikarim.jpg", cut="iphoneair-skyblue-cut.png",
+                cutline="iphoneair-skyblue-cutline.png", edges=("bottom",), layers="bfa-layers",
+                place={"air": (400, 6, 870, 185)}),
 }
 SET = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--set=")), "bf")
 ARGS = [a for a in sys.argv[1:] if not a.startswith("--set=")]
