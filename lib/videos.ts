@@ -49,6 +49,8 @@ export const VIDEOS = {
   e17VsUsed: { id: "ARXtjpbIF2E", title: "17eを新品で買う？同じ12.5万円で中古の15 Pro・16？｜増える機能と、新品にしかないもの【2026年11月】", minutes: 8, asOf: "2026-11-23", heading: "新品の17eと中古の15 Pro・16の比較を動画で見る" },
   // 11/26 14時台公開（12・11 まだ使う？12 は電池交換・11 は売って13。/iphone/iphone-11 に。12 のページは今買いの回のまま）
   keep1211: { id: "70oYNTqwgRU", title: "iPhone 12・11、まだ使う？電池交換は同じ1万5,600円、答えは逆｜替えるなら13・15・17e【2026年11月】", minutes: 8, asOf: "2026-11-26", heading: "iPhone 11 をまだ使うか・替えるかを動画で見る" },
+  // 11/27 0時台公開（Amazon ブラックフライデーの新品 Air と中古。1TB はセールの新品が中古より安い。/iphone/iphone-air に）
+  bfAir: { id: "HCX_rp7YzvQ", title: "ブラックフライデー、Amazonの新品iPhone Airと中古どっちが安い？1TBは新品が安い【2026年11月】", minutes: 8, asOf: "2026-11-27", heading: "セールの新品 Air と中古の比較を動画で見る" },
 } satisfies Record<string, Video>;
 
 /**
@@ -65,6 +67,7 @@ export function videoForModel(model: string): Video | null {
   if (model === "iPhone 15") return VIDEOS.iphone15Now;
   if (model === "iPhone SE (第3世代)") return VIDEOS.se3Keep;
   if (model === "iPhone 11") return VIDEOS.keep1211;
+  if (model === "iPhone Air") return VIDEOS.bfAir;
   if (model === "iPhone 17e" || model === "iPhone 15 Pro") return VIDEOS.e17VsUsed;
   if (/^iPhone 1[3-7]( Pro( Max)?)?$/.test(model)) return VIDEOS.proOrStandard;
   // 4択の回の中心（中古の M5 Pro 24GB・1TB と、16インチ M5 Pro）
