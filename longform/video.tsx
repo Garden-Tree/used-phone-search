@@ -481,7 +481,8 @@ async function audio(dir: string, tl: Timeline, work: string) {
     await ffmpeg(["-y", "-threads", "2", "-i", JINGLE_FILE, "-af", "aresample=48000,aformat=channel_layouts=stereo,volume=-8dB", "-c:a", "pcm_s16le", jingle], "ジングルを読み込む");
   } else makeJingle(jingle);
   const at = tl.chapters.slice(1).map((c) => Math.round(chapterShownAt(c) * 1000));
-  const jingles = `[2:a]${stereo},asplit=${at.length}${at.map((_, i) => `[j${i}]`).join("")};` + at.map((ms, i) => `[j${i}]adelay=${ms}|${ms}[d${i}];`).join("");
+  // 章が1つだけ（見本など）のときはジングルなし（asplit=0 は ffmpeg が受け付けない）
+  const jingles = at.length ? `[2:a]${stereo},asplit=${at.length}${at.map((_, i) => `[j${i}]`).join("")};` + at.map((ms, i) => `[j${i}]adelay=${ms}|${ms}[d${i}];`).join("") : "";
   console.log(`  ジングル ${at.length} か所（${at.map((ms) => fmtClock(ms / 1000)).join("・")}）`);
   // 効果音: 種類ごとに1つの入力を分けて、鳴らす秒へずらす
   const kinds = [...new Set(ses.map((e) => e.kind))].sort();
