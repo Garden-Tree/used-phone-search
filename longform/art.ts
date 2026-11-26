@@ -36,6 +36,11 @@ export function loadCharaArt(work: string): { art: CharaArt; files: string[] } {
     const closed = load(CHARA_FILE[who]);
     if (!closed) continue;
     art[who] = { closed, talk: load(`${CHARA_FILE[who]}-talk`) };
+    // 表情違い（11/27〜・chara-video-expr.py。あるものだけ）
+    for (const ex of ["surprised", "shock", "wink"] as const) {
+      const c = load(`${CHARA_FILE[who]}-${ex}`);
+      if (c) (art[who]!.expr ??= {})[ex] = { closed: c, talk: load(`${CHARA_FILE[who]}-${ex}-talk`) };
+    }
   }
   return { art, files };
 }

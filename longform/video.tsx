@@ -27,7 +27,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
-import { ANIM_STEPS, END_SCREEN, FPS, H, LAYOUT_NAME, MIN_FONT, W, animAt, animEvents, chapterShownAt, emptySprite, growPoints, ringPx, ringSprite, speakerDy, speakerSprite, spriteRegion, subDy, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, type CharaArt } from "./scenes";
+import { ANIM_STEPS, END_SCREEN, FPS, H, LAYOUT_NAME, MIN_FONT, W, animAt, animEvents, chapterShownAt, emptySprite, growPoints, ringPx, ringSprite, speakerDy, speakerSprite, spriteRegion, subDy, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, lineExpr, type CharaArt, type Expr } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, ThumbnailData, Timeline } from "./types";
 
@@ -99,7 +99,7 @@ async function measure(file: string, extra = ""): Promise<Record<string, string>
  */
 type Job =
   | { f: string; k: "base"; t: number; level: number }
-  | { f: string; k: "spk"; who: Who; open: boolean; dy: number }
+  | { f: string; k: "spk"; who: Who; open: boolean; dy: number; expr?: Expr }
   | { f: string; k: "ring"; who: Who; px: number; dy: number }
   | { f: string; k: "none"; w: number; h: number };
 /** 重ねる層（土台・左の立ち絵・右の立ち絵・縁の線）。層ごとに「何コマ目からどの絵か」の並び */
@@ -224,7 +224,8 @@ function plan(tl: Timeline, art: CharaArt, levels: number[] = []): Plan {
     for (const side of ["ずんだもん", "つむぎ"] as const) {
       if (who === side && a) {
         const dy = Math.round(speakerDy(anim.spk, level) * 1e6) / 1e6;
-        push(side, frame, { f: `s-${sha(["spk", code, side, open, dy])}`, k: "spk", who: side, open, dy });
+        const expr = EXPR_ON && st.line ? lineExpr(side, st.line.text) : undefined;
+        push(side, frame, { f: `s-${sha(["spk", code, side, open, dy, expr ?? ""])}`, k: "spk", who: side, open, dy, expr });
       } else push(side, frame, none(side));
     }
     const px = ringPx(who, subProgress(tl, t));
@@ -238,6 +239,8 @@ function plan(tl: Timeline, art: CharaArt, levels: number[] = []): Plan {
 
 // ───────── 各段 ─────────
 
+/** 表情を台詞で切り替える（11/27〜 見本。LONGFORM_EXPR=1 のときだけ） */
+const EXPR_ON = process.env.LONGFORM_EXPR === "1";
 /** ffmpeg のスレッド数（11/23〜 ユーザー「CPU をガンガン使っていい」。既定 論理コア数 − 2・LONGFORM_FF_THREADS で変える） */
 const FF_THREADS = String(Number(process.env.LONGFORM_FF_THREADS ?? Math.max(1, os.cpus().length - 2)));
 /** 話している間の動き（字幕の縁・立ち絵）を何 Hz で描くか（既定 30＝毎コマ。11/24 ユーザー「15Hz にしないで」。LONGFORM_MOTION_HZ で変える） */
@@ -264,7 +267,7 @@ async function renderFrames(tl: Timeline, art: CharaArt, work: string, part?: { 
   for (const [n, j] of jobs.entries()) {
     const el =
       j.k === "base" ? frameAt(tl, j.t, { instant: true, art, level: j.level, layer: "base" })
-      : j.k === "spk" ? speakerSprite(j.who, art[j.who]!, j.open, j.dy)
+      : j.k === "spk" ? speakerSprite(j.who, art[j.who]!, j.open, j.dy, j.expr)
       : j.k === "ring" ? ringSprite(j.who, j.px, j.dy)
       : emptySprite(j.w, j.h);
     const size = j.k === "base" ? { width: W, height: H } : j.k === "none" ? { width: j.w, height: j.h } : (({ w, h }) => ({ width: w, height: h }))(spriteRegion(j.k === "spk" ? j.who : "ring"));

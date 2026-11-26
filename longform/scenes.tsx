@@ -820,7 +820,22 @@ function ChapterBar({ ch, count }: { ch: TimelineChapter; count: number }) {
 
 /** 立ち絵（longform/assets/chara/。video.tsx の loadCharaArt が読む）。src は data URI、w・h は元の画像の大きさ */
 export type ArtImage = { src: string; w: number; h: number };
-export type CharaArt = Partial<Record<Who, { closed: ArtImage; talk?: ArtImage }>>;
+export type CharaArt = Partial<Record<Who, { closed: ArtImage; talk?: ArtImage; /** 表情違い（11/27〜・chara-video-expr.py） */ expr?: Partial<Record<Expr, { closed: ArtImage; talk?: ArtImage }>> }>>;
+export type Expr = "surprised" | "shock" | "wink";
+/**
+ * 台詞から表情を決める（11/27〜・競合の調査: 合成音声の動画は表情・ポーズの切り替えがいちばん多い）。
+ * ずんだもん: 「！」・「え、」で驚き、困る言葉で青ざめ。つむぎ: 「！」で驚き、勧める・締める言葉で得意げ
+ */
+export function lineExpr(who: Who, text: string): Expr | undefined {
+  if (who === "ずんだもん") {
+    if (/^(え[、っ]|ええ|えっ)|！|びっくり|すごい/.test(text)) return "surprised";
+    if (/(高い|高くなる|足りない|困る|止まる|割れ|損|使えない|ないのだ)/.test(text)) return "shock";
+    return undefined;
+  }
+  if (/！/.test(text)) return "surprised";
+  if (/(いいね|安心だよ|おすすめ|選んでね|見てね|だね。$)/.test(text)) return "wink";
+  return undefined;
+}
 
 /** 話し手の名前の札（話している人は塗り、もう1人は線だけ） */
 function NamePlate({ who, active, style }: { who: Who; active: boolean; style?: CSSProperties }) {
@@ -997,11 +1012,12 @@ export function spriteRegion(kind: Who | "ring"): { x: number; y: number; w: num
   return { x, y, w: even(Math.min(W, left + A.w + 2) - x, true), h: even(Math.min(H, A.y + A.h + 2) - y, true) };
 }
 /** 話している人の立ち絵だけ（spriteRegion の大きさの透明な紙） */
-export function speakerSprite(who: Who, art: NonNullable<CharaArt[Who]>, mouthOpen: boolean, dy: number): ReactElement {
+export function speakerSprite(who: Who, art: NonNullable<CharaArt[Who]>, mouthOpen: boolean, dy: number, expr?: Expr): ReactElement {
   const R = spriteRegion(who);
+  const a = (expr && art.expr?.[expr]) || art;
   return (
     <div style={{ display: "flex", position: "relative", width: R.w, height: R.h }}>
-      <SpeakerArt x={who === "ずんだもん" ? SLOT.left : SLOT.right} active art={art} mouthOpen={mouthOpen} dy={dy} ox={R.x} oy={R.y} />
+      <SpeakerArt x={who === "ずんだもん" ? SLOT.left : SLOT.right} active art={a} mouthOpen={mouthOpen} dy={dy} ox={R.x} oy={R.y} />
     </div>
   );
 }
