@@ -203,6 +203,13 @@ export default async function AboutPage() {
             <a href="https://policies.google.com/technologies/partner-sites?hl=ja" target="_blank" rel="noopener noreferrer" className={ext}>Google のポリシー</a>
             をご覧ください。
           </p>
+          <p>
+            また、ページの使いやすさを改善するため、Microsoft が提供する「Microsoft Clarity」を利用しています。
+            Clarity は Cookie などを使い、ページ内でのクリック・スクロールなどの操作を匿名で記録します（入力欄の内容は記録しません）。
+            詳しくは{" "}
+            <a href="https://privacy.microsoft.com/ja-jp/privacystatement" target="_blank" rel="noopener noreferrer" className={ext}>Microsoft のプライバシーに関する声明</a>
+            {" "}をご覧ください。
+          </p>
           <h3 className="font-bold text-ink pt-2">アフィリエイト</h3>
           <p>
             ショップへのリンクから移動した際、成果の計測のために A8.net・楽天などの事業者が Cookie を使用することがあります。

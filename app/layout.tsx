@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans_JP } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 import { siteDescription, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 import ShopClickTracker from "./components/ShopClickTracker";
@@ -16,6 +17,8 @@ const plex = IBM_Plex_Sans_JP({
 });
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+// Microsoft Clarity（ヒートマップ・操作の録画。11/26〜。プロジェクト used.gadelog.com）。GA と同じく本番の書き出しだけ
+const CLARITY_ID = "zjkv2gae7n";
 
 // 店の数・店名は、いま在庫がある店だけ（lib/activeShops.ts）
 export async function generateMetadata(): Promise<Metadata> {
@@ -65,6 +68,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">{children}</body>
       {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
       {GA_ID && <ShopClickTracker />}
+      {GA_ID && (
+        <Script id="clarity" strategy="lazyOnload">
+          {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${CLARITY_ID}");`}
+        </Script>
+      )}
     </html>
   );
 }
