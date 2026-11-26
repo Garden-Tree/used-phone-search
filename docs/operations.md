@@ -42,6 +42,7 @@
 | 用途 | 場所 | 備考 |
 | --- | --- | --- |
 | DB 接続 | GitHub Secrets `DATABASE_URL`、ローカル `.env` | Neon。**本番と同じ DB** |
+| Gemini API（動画の説明・競合の調査） | ローカル `.env.local` の `GEMINI_API_KEY`（11/27・AI Studio のキー名「used-phone-search video」・プロジェクト blog-surporter・無料枠） | `scripts/gemini-video.ts`。無料枠は送った中身が Google の改善に使われる → 公開の動画だけ送る |
 | 配置 | GitHub Secrets `CLOUDFLARE_API_TOKEN`（Account / Cloudflare Pages / Edit だけ）・`CLOUDFLARE_ACCOUNT_ID` | ユーザーが作成・登録。Claude はトークンを扱わない |
 | 楽天の JSON の場所 | GitHub Secrets `RAKUTEN_DATA_URL`（`https://gadelog.com/<推測されにくいフォルダ>/`）と `config.php` の `output_dir` | フォルダ名は Git に書かない |
 | Yahoo!ショッピング API | GitHub Secrets `YAHOO_APP_ID`（Yahoo! デベロッパーネットワークのアプリの Client ID） | ユーザーが登録。未登録のあいだは Yahoo の取り込みを飛ばす。Claude は値を扱わない |
