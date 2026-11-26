@@ -344,3 +344,4 @@
 - 11/27 BF Air 横動画を公開（HCX_rp7YzvQ）・/iphone/iphone-air に載せる（lib/videos.ts）
 - 11/27 X: BF Air の投稿にユーザーの判断で Amazon のリンク・返信に動画の URL（12/1 までの「URLなし」の例外。下書きだけ Claude・投稿は手で）
 - 11/27 BF Air の切り抜きショート clip-air1tb（43秒・0秒目から1TBの逆転・上にサムネ B1）。投稿は OK 待ち
+- 11/27 BF Air 切り抜きショートを公開（Ly71sE0ePes・関連動画 HCX_rp7YzvQ）
