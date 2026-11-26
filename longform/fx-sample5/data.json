@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-27",
+  "shops": 18,
+  "chapters": [
+    {
+      "title": "発売から何年目？",
+      "scene": {
+        "type": "years",
+        "heading": "発売から今日まで（Apple の発売日）",
+        "start": 2020,
+        "end": 2028,
+        "today": 2026.9,
+        "todayLabel": "2026年11月",
+        "rows": [
+          {
+            "label": "iPhone 12",
+            "from": 2020.8,
+            "cue": "発売した年"
+          },
+          {
+            "label": "iPhone 13",
+            "from": 2021.7,
+            "cue": "発売した年"
+          },
+          {
+            "label": "SE（第3世代）",
+            "from": 2022.2,
+            "cue": "発売した年"
+          },
+          {
+            "label": "iPhone 15",
+            "from": 2023.7,
+            "cue": "発売した年"
+          },
+          {
+            "label": "iPhone 17",
+            "from": 2025.7,
+            "cue": "発売した年",
+            "pick": true
+          }
+        ],
+        "sweep": "時計を進めると"
+      }
+    }
+  ]
+}

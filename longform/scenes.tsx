@@ -16,7 +16,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { CHAPTER_LEAD, type Who } from "./script";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, GaugesScene, LineupScene, PairsScene, PhotoScene, ScreenScene, TableScene, VersusScene, TrendScene, FlowScene, ProblemsScene, CostsScene, Timeline, TimelineChapter } from "./types";
+import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, GaugesScene, LineupScene, PairsScene, PhotoScene, ScreenScene, TableScene, VersusScene, TrendScene, FlowScene, ProblemsScene, CostsScene, YearsScene, Timeline, TimelineChapter } from "./types";
 
 export const W = 1920;
 export const H = 1080;
@@ -1397,6 +1397,57 @@ function Costs({ s, t, reveal }: { s: CostsScene; t: number; reveal: Record<stri
   );
 }
 
+
+/** 年表（11/27〜・タコの年表の型）: 機種ごとの横の帯（from 年 → to 年）。sweep の cue で「今日」の縦線が左から右へ進み、各行に「◯年目」の札 */
+export const YEARS_SEC = 2.0;
+function Years({ s, t, reveal }: { s: YearsScene; t: number; reveal: Record<string, number> }) {
+  const areaH = bodyH(s.heading, s.note);
+  const raw = (s as { revealRaw?: Record<string, number> }).revealRaw ?? reveal;
+  const LABEL = 300, R = 40, axisH = 56;
+  const W0 = INNER_W - LABEL - R;
+  const rowH = Math.min(cap(110), Math.floor((areaH - axisH - 20) / s.rows.length));
+  const xOf = (y: number) => LABEL + (W0 * (y - s.start)) / (s.end - s.start);
+  const sw = raw.sweep !== undefined ? Math.max(0, Math.min(1, (t - raw.sweep) / YEARS_SEC)) : 0;
+  const nowY = s.start + (s.today - s.start) * easeOut(sw);
+  const years: number[] = [];
+  for (let y = Math.ceil(s.start); y <= s.end; y++) years.push(y);
+  return (
+    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+      <Heading text={s.heading} />
+      <div style={{ display: "flex", position: "relative", width: INNER_W, height: areaH }}>
+        {years.map((y) => (
+          <div key={y} style={{ display: "flex", position: "absolute", left: Math.round(xOf(y)) - 1, top: 0, width: 2, height: areaH - axisH, background: C.line }} />
+        ))}
+        {years.map((y) => (
+          <div key={`l${y}`} style={{ display: "flex", position: "absolute", left: Math.round(xOf(y)) - 40, top: areaH - axisH + 8, width: 80, justifyContent: "center", fontSize: MIN_FOOT, fontWeight: 700, color: C.sub }}>{String(y)}</div>
+        ))}
+        {s.rows.map((r, i) => {
+          const p = shown(reveal, `item:${i}`, t);
+          const y0 = 10 + i * rowH;
+          const x0 = xOf(r.from), x1 = xOf(Math.min(r.to ?? s.today, nowY > r.from ? Math.max(r.from, nowY) : r.from));
+          const age = Math.max(0, Math.floor(nowY - r.from) + 1);
+          return (
+            <div key={i} style={{ display: "flex", position: "absolute", left: 0, top: y0, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0.15 }}>
+              <div style={{ display: "flex", position: "absolute", left: 0, top: 0, width: LABEL - 20, height: rowH, alignItems: "center", fontSize: fit(r.label, LABEL - 30, cap(44), MIN_FONT, "年表の名前"), fontWeight: 900, color: r.pick ? C.red : C.ink, whiteSpace: "nowrap" }}>{r.label}</div>
+              <div style={{ display: "flex", position: "absolute", left: Math.round(x0), top: Math.round(rowH * 0.25), width: Math.max(8, Math.round(x1 - x0)), height: Math.round(rowH * 0.5), borderRadius: 10, background: r.pick ? C.red : C.barFill }} />
+              {sw > 0 && nowY > r.from ? (
+                <div style={{ display: "flex", position: "absolute", left: Math.round(x1) + 14, top: Math.round(rowH * 0.2), height: Math.round(rowH * 0.6), alignItems: "center", padding: "0 14px", borderRadius: 10, background: C.white, border: `3px solid ${r.pick ? C.red : C.bar}`, fontSize: MIN_FONT, fontWeight: 900, color: r.pick ? C.red : C.ink, whiteSpace: "nowrap" }}>{`${age}年目`}</div>
+              ) : null}
+            </div>
+          );
+        })}
+        {sw > 0 ? (
+          <div style={{ display: "flex", position: "absolute", left: Math.round(xOf(nowY)) - 4, top: 0, width: 8, height: areaH - axisH, background: "#F4B400", boxShadow: "0 0 18px rgba(244,180,0,0.8)" }} />
+        ) : null}
+        {sw > 0 ? (
+          <div style={{ display: "flex", position: "absolute", left: Math.round(xOf(nowY)) - 70, top: -6, width: 140, justifyContent: "center", padding: "2px 0", borderRadius: 999, background: "#F4B400", color: C.ink, fontSize: MIN_FOOT, fontWeight: 900 }}>{sw >= 1 ? s.todayLabel ?? "今日" : String(Math.floor(nowY))}</div>
+        ) : null}
+      </div>
+      <Note text={s.note} />
+    </div>
+  );
+}
+
 function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
   const s = ch.scene;
   const reveal = s.reveal;
@@ -1431,6 +1482,8 @@ function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
       return <Problems s={s} t={t} reveal={reveal} />;
     case "costs":
       return <Costs s={s} t={t} reveal={reveal} />;
+    case "years":
+      return <Years s={s} t={t} reveal={reveal} />;
   }
 }
 

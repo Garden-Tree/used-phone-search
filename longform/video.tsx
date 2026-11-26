@@ -28,7 +28,7 @@ import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
 import { visemesOf } from "../shorts/voice";
-import { ANIM_STEPS, END_SCREEN, FPS, H, LAYOUT_NAME, MIN_FONT, W, animAt, animEvents, chapterShownAt, emptySprite, growPoints, ringPx, ringSprite, speakerDy, speakerSprite, spriteRegion, subDy, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, lineExpr, burstOn, BURST_SEC, markedKeys, slideFrame, SLIDE_F, ZOOM_F, noteZoom, thinkOn, LINEUP_BIG, TREND_SEC, type CharaArt, type Expr } from "./scenes";
+import { ANIM_STEPS, END_SCREEN, FPS, H, LAYOUT_NAME, MIN_FONT, W, animAt, animEvents, chapterShownAt, emptySprite, growPoints, ringPx, ringSprite, speakerDy, speakerSprite, spriteRegion, subDy, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, lineExpr, burstOn, BURST_SEC, markedKeys, slideFrame, SLIDE_F, ZOOM_F, noteZoom, thinkOn, LINEUP_BIG, TREND_SEC, YEARS_SEC, type CharaArt, type Expr } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, ThumbnailData, Timeline } from "./types";
 
@@ -240,6 +240,8 @@ function plan(tl: Timeline, art: CharaArt, levels: number[] = [], vis: Map<strin
     // 並べる（大きく出ていた1枚が戻る秒）・思考の吹き出しが消える秒
     if (ch.scene.type === "lineup") for (const [k, r] of Object.entries(ch.scene.reveal)) if (k.startsWith("item:")) points.add(Math.round((ch.start + r + LINEUP_BIG) * 1000) / 1000);
     if (ch.scene.think && ch.scene.reveal.think !== undefined) { const th = ch.scene.reveal.think; const l = ch.lines.find((x) => x.start - ch.start <= th + 0.01 && x.end - ch.start > th); points.add(Math.round((l ? l.end + 0.6 : ch.start + th + 3) * 1000) / 1000); }
+    // 年表の「今日」の線が進む間（毎コマ）
+    if (ch.scene.type === "years" && ch.scene.reveal.sweep !== undefined) { const d0 = ch.start + ch.scene.reveal.sweep; for (let j = 1; j <= Math.round(YEARS_SEC * FPS); j++) points.add(Math.round((d0 + j / FPS) * 1000) / 1000); }
     // 線グラフが描かれる間（毎コマ）
     if (ch.scene.type === "trend") { const d0 = ch.start + (ch.scene.reveal.draw ?? 0); for (let j = 1; j <= Math.round(TREND_SEC * FPS); j++) points.add(Math.round((d0 + j / FPS) * 1000) / 1000); }
     // 集中線が消える秒
@@ -297,7 +299,7 @@ function plan(tl: Timeline, art: CharaArt, levels: number[] = [], vis: Map<strin
     const open = vowel !== undefined ? vowel !== "_" : !!(a?.talk && st.talking && (levels.length ? level >= 0.5 : !moving && Math.floor((frame - lineFrame) / step) % 2 === 0));
     // 土台: 話している人の立ち絵・縁の線・声の大きさ・口を含めない
     const { spk: _spk, ...animBase } = anim;
-    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), animBase, plateOpacity(t), burstOn(st.ch.scene.reveal, localAt(st.ch, t)), markedKeys(st.ch.scene, localAt(st.ch, t)), slideFrame(st.ch, t) ?? -1, zoomKey(st.ch, localAt(st.ch, t)), thinkOn(st.ch, localAt(st.ch, t)), lineupBig(st.ch, localAt(st.ch, t)), st.ch.scene.type === "trend" ? Math.min(Math.round(TREND_SEC * FPS), Math.max(-1, Math.floor((localAt(st.ch, t) - (st.ch.scene.reveal.draw ?? 0)) * FPS))) : -1]);
+    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), animBase, plateOpacity(t), burstOn(st.ch.scene.reveal, localAt(st.ch, t)), markedKeys(st.ch.scene, localAt(st.ch, t)), slideFrame(st.ch, t) ?? -1, zoomKey(st.ch, localAt(st.ch, t)), thinkOn(st.ch, localAt(st.ch, t)), lineupBig(st.ch, localAt(st.ch, t)), st.ch.scene.type === "trend" ? Math.min(Math.round(TREND_SEC * FPS), Math.max(-1, Math.floor((localAt(st.ch, t) - (st.ch.scene.reveal.draw ?? 0)) * FPS))) : -1, st.ch.scene.type === "years" && st.ch.scene.reveal.sweep !== undefined ? Math.min(Math.round(YEARS_SEC * FPS), Math.max(-1, Math.floor((localAt(st.ch, t) - st.ch.scene.reveal.sweep) * FPS))) : -1]);
     const plate = t <= 10;
     push("base", frame, { f: `c-${sha(["layers1", code, chHash.get(st.ch.index), key, plate, artKeys])}`, k: "base", t, level });
     for (const side of ["ずんだもん", "つむぎ"] as const) {

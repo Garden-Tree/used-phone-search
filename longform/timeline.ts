@@ -216,6 +216,7 @@ function resolveReveal(scene: SceneData, lines: TimelineLine[], chStart: number,
   if (scene.type === "trend") { words.draw = scene.draw ?? null; find("draw", scene.draw); if (scene.callout) reveal.callout = round((reveal.draw ?? 0) + 2.4); } // 2.4 = scenes.tsx の TREND_SEC
   if (scene.type === "flow") scene.branches.forEach((b, i) => find(`item:${i}`, b.cue));
   if (scene.type === "problems") scene.items.forEach((it, i) => find(`item:${i}`, it.cue));
+  if (scene.type === "years") { scene.rows.forEach((r, i) => find(`item:${i}`, r.cue)); words.sweep = scene.sweep ?? null; find("sweep", scene.sweep); }
   if (scene.type === "costs") { scene.items.forEach((it, i) => find(`item:${i}`, it.cue)); if (scene.diff) { words.diff = scene.diff.cue ?? null; find("diff", scene.diff.cue); } }
   if (scene.type === "checklist") scene.items.forEach((it, i) => { if (it.checkCue) { words[`check:${i}`] = null; find(`check:${i}`, it.checkCue); } });
   // 同じ秒に出る項目が並んだら、0.2 秒ずつずらして上から順に出す（横棒が1本ずつ伸びる。11/23）

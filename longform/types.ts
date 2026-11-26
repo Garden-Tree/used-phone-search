@@ -176,6 +176,19 @@ export type CostsScene = {
   note?: string;
 };
 
+/** 年表（11/27〜）: 行ごとに from 年からの帯。sweep の cue で「今日」の線が start から today へ進み、各行に「◯年目」 */
+export type YearsScene = {
+  type: "years";
+  heading: string;
+  start: number;
+  end: number;
+  today: number;
+  todayLabel?: string;
+  rows: { label: string; from: number; to?: number; cue?: string; pick?: boolean }[];
+  sweep?: string;
+  note?: string;
+};
+
 /** 2択のカード（11/27〜）: 左右に1枚ずつ、cue で出る。win の cue で勝った方に札 */
 export type VersusScene = {
   type: "versus";
@@ -193,7 +206,7 @@ export type LineupScene = {
   items: { title: string; value: string; sub?: string; src?: string; cue?: string; pick?: boolean }[];
   note?: string;
 };
-export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene | GaugesScene | ScreenScene | VersusScene | LineupScene | TrendScene | FlowScene | ProblemsScene | CostsScene) & SceneExtras;
+export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene | GaugesScene | ScreenScene | VersusScene | LineupScene | TrendScene | FlowScene | ProblemsScene | CostsScene | YearsScene) & SceneExtras;
 
 export type LongData = {
   date: string;
