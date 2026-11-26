@@ -354,3 +354,4 @@
 - 11/27 動き（カメラの寄り・差の札・値のポップ）は使わない（ユーザー「微妙」）。コードは使う回だけの設定で残す・既定は今のまま
 - 11/27 Gemini で動画を読むスクリプト（scripts/gemini-video.ts・キーは .env.local・無料枠）。競合4本とうちの2本の冒頭90秒を比べた（ideas/2026-11-27.md）
 - 11/27 立ち絵の表情を台詞で切り替える見本（chara-video-expr.py・scenes.tsx の lineExpr・LONGFORM_EXPR=1 のときだけ）。BF Air の冒頭38秒で見本
+- 11/27 d2 の立ち絵: つむぎの顔をずんだもんと同じ大きさに（bustRight 0.34・topRight・dxRight で少し左へ。ユーザー）

@@ -61,7 +61,7 @@ const HEADER = { x: 40, y: 24, h: 72 };
  */
 type Layout = {
   card: { x: number; y: number; w: number; h: number; pad: number; scale: number };
-  art: { w: number; y: number; h: number; imgH: number; left: number; right: number; bust?: number };
+  art: { w: number; y: number; h: number; imgH: number; left: number; right: number; bust?: number; /** 右（つむぎ）だけの bust（絵の全身が長く顔が小さいので寄せる。11/27） */ bustRight?: number; /** 右だけ絵を上へずらす px（顔を枠の中ほどに） */ topRight?: number; /** 右だけ絵を枠の中で横へずらす px（負で左。11/27 ユーザー「少し左に」） */ dxRight?: number };
   /** 立ち絵がないときの枠（名前の札だけ） */
   slot: { y: number; w: number; h: number; left: number; right: number };
   plate: { w: number; font: number; show: "always" | "first10" };
@@ -102,7 +102,8 @@ const LAYOUTS: Record<string, Layout> = {
   d2: {
     card: { x: 16, y: 104, w: W - 32, h: 782, pad: 44, scale: 1.5 },
     // bust: 絵の上から何割を枠に入れるか（顔〜胸のバストアップ）
-    art: { w: 200, y: 1066 - 200, h: 200, imgH: 200, left: 4, right: W - 204, bust: 0.5 },
+    // 11/27 ユーザー: つむぎの顔をずんだもんと同じくらいに（bustRight）・少し左へ（右の余白を詰める）
+    art: { w: 200, y: 1066 - 200, h: 200, imgH: 200, left: 4, right: W - 204, bust: 0.5, bustRight: 0.34, topRight: -30, dxRight: -22 },
     slot: { y: 1066 - 200, w: 190, h: 200, left: 9, right: W - 199 },
     plate: { w: 172, font: 26, show: "first10" },
     sub: { x: 212, y: 898, w: W - 424, h: 168, tag: "never", tagW: 200, padX: 28, gap: 20, font: 62, lineHeight: 1.15, edge: 6, edgeSide: "speaker" },
@@ -864,14 +865,15 @@ function SpeakerArt({ x, active, art, mouthOpen, dy = 0, ox = 0, oy = 0 }: { x: 
   const A = L.art;
   const img = active && mouthOpen && art.talk ? art.talk : art.closed;
   // バストアップ（bust）: 絵の上から bust 割を枠の高さに合わせて拡大し、上ぞろえで切る
-  const h = A.bust ? Math.round((A.h / A.bust) * (active ? 1 : 0.94)) : Math.round(A.imgH * (active ? 1 : 0.92));
+  const bust = x === SLOT.left ? A.bust : (A.bustRight ?? A.bust);
+  const h = bust ? Math.round((A.h / bust) * (active ? 1 : 0.94)) : Math.round(A.imgH * (active ? 1 : 0.92));
   const w = Math.round((img.w * h) / img.h);
   const left = x === SLOT.left ? A.left : A.right;
-  const top = A.bust ? Math.round(A.h * (active ? 0 : 0.06)) : A.h - h;
+  const top = A.bust ? Math.round(A.h * (active ? 0 : 0.06)) + (x === SLOT.left ? 0 : (A.topRight ?? 0)) : A.h - h;
   return (
     <div style={{ ...col, position: "absolute", left: left - ox, top: A.y + dy - oy, width: A.w, height: A.h, justifyContent: "flex-end", alignItems: "center", overflow: "hidden", borderRadius: A.bust ? 20 : 0 }}>
       {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-      <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((A.w - w) / 2), top, width: w, height: h, opacity: active ? 1 : 0.5 }} />
+      <img src={img.src} width={w} height={h} style={{ position: "absolute", left: Math.round((A.w - w) / 2) + (x === SLOT.left ? 0 : (A.dxRight ?? 0)), top, width: w, height: h, opacity: active ? 1 : 0.5 }} />
     </div>
   );
 }
