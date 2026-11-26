@@ -52,12 +52,12 @@ const BGM = existsSync(BGM_LONG) ? BGM_LONG : join(ROOT, "shorts/assets/bgm.mp3"
 const BGM_CREDIT = existsSync(BGM_LONG) ? "BGM: Cyber Society by のる（OpenTracks）" : "BGM: Okay For Now - Televisions（YouTube オーディオライブラリ）";
 /**
  * 効果音（12/1 の回〜・11/27 ユーザー「揺らすとき・画面が変わるときに SE を」）: shorts/assets/se（効果音ラボ・クレジット不要）。
- * 項目が出る・写真が替わる・✓＝pop、台詞が項目に触れて揺れる＝shake1〜3（各項目の最初の1回・順番に替える）、蛍光ペン＝mark1〜3（11/27 効果音ラボ
- * カーソル移動2・6・キラッ2／ちょこっと触る・ぷよん・決定34）。近すぎる音（0.7 秒以内）と章のジングルの前後 0.8 秒は鳴らさない。
+ * 項目が出る・写真が替わる・✓＝pop、台詞が項目に触れて揺れる＝shake1（ちょこっと触る・各項目の最初の1回）、蛍光ペン＝mark1（カーソル移動2）。
+ * 動きごとに1種類（11/27 ユーザー）。近すぎる音（0.7 秒以内）と章のジングルの前後 0.8 秒は鳴らさない。
  * LONGFORM_SE=0 で止める
  */
 const SE_DIR = join(ROOT, "shorts/assets/se");
-/** 種類 → 音量（dB）。揺れ（shake1〜3）と蛍光ペン（mark1〜3）は順番に替える（11/27 ユーザー「2・3種類」）。長い音は 0.7 秒で切る */
+/** 種類 → 音量（dB）。長い音は 0.7 秒で切る */
 const SE_DB: Record<string, number> = { pop: -15, shake1: -17, shake2: -17, shake3: -19, mark1: -17, mark2: -17, mark3: -20 };
 const SE_MAX = 0.7;
 type SeEv = { at: number; kind: string };
@@ -65,7 +65,6 @@ function seEvents(tl: Timeline): SeEv[] {
   if (process.env.LONGFORM_SE === "0") return [];
   const jingles = tl.chapters.slice(1).map((c) => chapterShownAt(c));
   const raw: SeEv[] = [];
-  let nShake = 0, nMark = 0;
   for (const ch of tl.chapters) {
     if (ch.scene.type === "endScreen") continue;
     for (const [k, r] of Object.entries(ch.scene.reveal)) if (r > 0.05 && /^(item|img|chk):/.test(k)) raw.push({ at: ch.start + r, kind: "pop" });
@@ -84,7 +83,8 @@ function seEvents(tl: Timeline): SeEv[] {
     }
     kept.push(e);
   }
-  return kept.map((e) => ({ at: e.at, kind: e.kind === "shake" ? `shake${(nShake++ % 3) + 1}` : e.kind === "mark" ? `mark${(nMark++ % 3) + 1}` : e.kind }));
+  // 動きごとに1種類（11/27 ユーザー）: 出す＝pop・揺らす＝shake1（ちょこっと触る）・蛍光ペン＝mark1（カーソル移動2）
+  return kept.map((e) => ({ at: e.at, kind: e.kind === "shake" ? "shake1" : e.kind === "mark" ? "mark1" : e.kind }));
 }
 
 /** 章のジングル: 効果音ラボ「シーン切り替え1」（クレジット不要・収益化可）。なければ自作の3音 */
