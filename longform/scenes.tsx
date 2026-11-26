@@ -16,7 +16,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { CHAPTER_LEAD, type Who } from "./script";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, PairsScene, PhotoScene, TableScene, Timeline, TimelineChapter } from "./types";
+import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, GaugesScene, PairsScene, PhotoScene, ScreenScene, TableScene, Timeline, TimelineChapter } from "./types";
 
 export const W = 1920;
 export const H = 1080;
@@ -333,6 +333,17 @@ export function noteZoom(scene: PhotoScene, reveal: Record<string, number>, t: n
 }
 type PhotoNote = NonNullable<PhotoScene["notes"]>[number];
 
+/** 矢印の絵（11/27〜）。satori は透明な枠線の三角を描けないので SVG で。dir: "both"＝＜ーー＞・"left"＝←ーー */
+function arrowSvg(w: number, h: number, dir: "both" | "left", color: string): string {
+  const y = h / 2, t = Math.max(6, Math.round(h * 0.22)), ah = Math.min(h * 0.9, w * 0.4);
+  const head = (x: number, sgn: number) => `M${x},${y} L${x + sgn * ah},${y - h / 2} L${x + sgn * ah},${y + h / 2} Z`;
+  const x0 = dir === "both" ? ah - 1 : ah - 1, x1 = dir === "both" ? w - ah + 1 : w;
+  const body = `<rect x="${x0}" y="${y - t / 2}" width="${Math.max(0, x1 - x0)}" height="${t}" fill="${color}"/>`;
+  const heads = dir === "both" ? `<path d="${head(0, 1)} ${head(w, -1)}" fill="${color}"/>` : `<path d="${head(0, 1)}" fill="${color}"/>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${body}${heads}</svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+}
+
 /** 表のセルの ○・× を色つきの丸に（11/27〜） */
 function Mark({ v, size, pop = 1 }: { v: string; size: number; pop?: number }) {
   const ok = v === "○" || v === "◯" || v === "✓";
@@ -364,7 +375,7 @@ const GROW = 18;
 export function growPoints(tl: Timeline): number[] {
   const out: number[] = [];
   for (const ch of tl.chapters) {
-    if (ch.scene.type !== "bars" && ch.scene.type !== "table") continue;
+    if (ch.scene.type !== "bars" && ch.scene.type !== "table" && ch.scene.type !== "gauges") continue;
     for (const [k, r] of Object.entries(ch.scene.reveal)) {
       if (!k.startsWith("item:")) continue;
       const base = r > 0 ? ch.start + r : chapterShownAt(ch);
@@ -405,7 +416,7 @@ export function animAt(tl: Timeline, t: number): { items: Record<string, number>
     }
   }
   const grow: Record<string, number> = {};
-  if (ch.scene.type === "bars" || ch.scene.type === "table") {
+  if (ch.scene.type === "bars" || ch.scene.type === "table" || ch.scene.type === "gauges") {
     for (const [k, r] of Object.entries(ch.scene.reveal)) {
       if (!k.startsWith("item:")) continue;
       const base = r > 0 ? ch.start + r : chapterShownAt(ch);
@@ -836,6 +847,24 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
                 const labelW = Math.min(w - 16, Math.round(MIN_FONT * 1.0 * n.label.length + 40));
                 const lx = Math.min(w - labelW - 8, Math.max(8, c.x - labelW / 2));
                 const ly = c.y + r + 14 + 68 <= h - 8 ? c.y + r + 14 : Math.max(8, c.y - r - 14 - 68);
+                if (n.kind === "span") {
+                  // ＜ーー＞: x から x2 まで（厚さ・幅）。両端に細い縦の線、間に両向きの矢印。札は矢印の下
+                  const c2 = toBox(n.x2 ?? n.x, n.y);
+                  const x1 = Math.min(c.x, c2.x), x2 = Math.max(c.x, c2.x);
+                  const AW = Math.max(40, Math.round(x2 - x1)), AHt = 34;
+                  const spanW = n.label.length * MIN_FONT + 40;
+                  const sx = Math.min(w - spanW - 8, Math.max(8, (x1 + x2) / 2 - spanW / 2));
+                  const guide = { display: "flex", position: "absolute", top: Math.round(c.y - 60), width: 5, height: 120, background: C.red } as const;
+                  return (
+                    <div key={`n${i}`} style={{ display: "flex", position: "absolute", left: 0, top: 0, width: w, height: h, opacity: Math.min(1, pop) }}>
+                      <div style={{ ...guide, left: Math.round(x1 - 2) }} />
+                      <div style={{ ...guide, left: Math.round(x2 - 3) }} />
+                      {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+                      <img src={arrowSvg(AW, AHt, "both", C.red)} width={AW} height={AHt} style={{ position: "absolute", left: Math.round((x1 + x2) / 2 - AW / 2), top: Math.round(c.y - AHt / 2), width: AW, height: AHt }} />
+                      <div style={{ display: "flex", position: "absolute", left: Math.round(sx), top: Math.round(Math.min(h - 76, c.y + 76)), height: 68, alignItems: "center", padding: "0 18px", borderRadius: 14, background: C.red, color: C.white, fontSize: MIN_FONT, fontWeight: 900, whiteSpace: "nowrap", boxShadow: "0 6px 16px rgba(0,0,0,0.3)", transform: `scale(${pop})` }}>{n.label}</div>
+                    </div>
+                  );
+                }
                 return (
                   <div key={`n${i}`} style={{ display: "flex", position: "absolute", left: 0, top: 0, width: w, height: h }}>
                     <div style={{ display: "flex", position: "absolute", left: Math.round(c.x - r), top: Math.round(c.y - r), width: Math.round(r * 2), height: Math.round(r * 2), borderRadius: 999, border: `7px solid ${C.red}`, transform: `scale(${pop})` }} />
@@ -901,6 +930,95 @@ function EndScreenSlots({ s }: { s: EndScreenScene }) {
   );
 }
 
+
+/** 電池の形のゲージ（11/27〜・図解）。cue で1本ずつ、下から値まで満ちる（横棒と同じ伸び方・値も数え上がる） */
+function Gauges({ s, t, reveal }: { s: GaugesScene; t: number; reveal: Record<string, number> }) {
+  const n = s.items.length;
+  const max = s.max ?? Math.max(...s.items.map((it) => it.value)) * 1.1;
+  const areaH = bodyH(s.heading, s.note);
+  const colW = Math.floor(INNER_W / n);
+  const bodyW = Math.min(170, Math.floor(colW * 0.5));
+  const capH = 22, labelH = cap(64), valueH = cap(70);
+  const bodyHt = areaH - labelH - valueH - capH - 40;
+  return (
+    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+      <Heading text={s.heading} />
+      <div style={{ ...row, width: INNER_W, height: areaH, alignItems: "flex-end" }}>
+        {s.items.map((it, i) => {
+          const p = shown(reveal, `item:${i}`, t);
+          const g = (s as { grow?: Record<string, number> }).grow?.[`item:${i}`] ?? 1;
+          const v = it.value * (p > 0 ? g : 0);
+          const fillH = Math.round((bodyHt - 28) * Math.min(1, v / max));
+          const color = it.pick ? C.red : SITE.safe;
+          return (
+            <div key={i} style={{ ...col, width: colW, height: areaH, alignItems: "center", justifyContent: "flex-end", opacity: p > 0 ? 1 : 0.25, ...bump(s, `item:${i}`) }}>
+              <div style={{ display: "flex", height: valueH, alignItems: "flex-end", fontSize: cap(60), fontWeight: 900, color: it.pick ? C.red : C.ink, lineHeight: 1 }}>{p > 0 ? `${Math.round(v)}${s.unit}` : ""}</div>
+              <div style={{ display: "flex", width: Math.round(bodyW * 0.4), height: capH, marginTop: 12, background: C.ink, borderRadius: "8px 8px 0 0" }} />
+              <div style={{ display: "flex", width: bodyW, height: bodyHt, border: `8px solid ${C.ink}`, borderRadius: 20, alignItems: "flex-end", justifyContent: "center", padding: 6 }}>
+                <div style={{ display: "flex", width: bodyW - 28, height: Math.max(0, fillH), background: color, borderRadius: 10 }} />
+              </div>
+              <div style={{ ...col, height: labelH, marginTop: 12, alignItems: "center" }}>
+                <div style={{ display: "flex", fontSize: fit(it.label, colW - 16, cap(44), MIN_FONT, "ゲージの名前"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{it.label}</div>
+                {it.sub ? <div style={{ display: "flex", fontSize: MIN_FOOT, fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <Note text={s.note} />
+    </div>
+  );
+}
+
+/** スマホの画面の絵（11/27〜・図解）。左にスマホの枠と行、cue でその行に赤い枠と矢印、右に説明 */
+function Screen({ s, t, reveal }: { s: ScreenScene; t: number; reveal: Record<string, number> }) {
+  const areaH = bodyH(s.heading, s.note);
+  const phoneH = areaH - 10, phoneW = Math.round(INNER_W * 0.4);
+  const HEAD = 120;
+  const rowH = Math.min(96, Math.floor((phoneH - HEAD - 40) / Math.max(1, s.rows.length)));
+  const points = s.points ?? [];
+  const on = points.map((pt, i) => ({ pt, i, p: shown(reveal, `item:${i}`, t) })).filter((x) => x.p > 0);
+  const last = on[on.length - 1];
+  const PX = 20, BORDER = 12;
+  const textX = PX + phoneW + 190;
+  const textW = INNER_W - textX;
+  const rowTop = (r: number) => BORDER + HEAD + r * rowH;
+  return (
+    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+      <Heading text={s.heading} />
+      <div style={{ display: "flex", position: "relative", width: INNER_W, height: areaH }}>
+        <div style={{ ...col, position: "absolute", left: PX, top: 0, width: phoneW, height: phoneH, background: "#F2F2F7", border: `${BORDER}px solid ${C.ink}`, borderRadius: 48, overflow: "hidden" }}>
+          <div style={{ display: "flex", alignSelf: "center", width: 110, height: 26, marginTop: 12, background: C.ink, borderRadius: 20 }} />
+          <div style={{ display: "flex", height: HEAD - 38, alignItems: "center", padding: "0 24px", fontSize: 36, fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{s.title}</div>
+          {s.rows.map((r, j) => (
+            <div key={j} style={{ ...row, height: rowH, margin: "0 14px", padding: "0 18px", background: C.white, borderTop: j ? `1px solid ${C.line}` : "none", justifyContent: "space-between" }}>
+              <div style={{ ...col }}>
+                <div style={{ display: "flex", fontSize: 30, fontWeight: 500, color: C.ink, whiteSpace: "nowrap" }}>{r.label}</div>
+                {r.sub ? <div style={{ display: "flex", fontSize: 20, color: C.sub, whiteSpace: "nowrap" }}>{r.sub}</div> : null}
+              </div>
+              {r.value ? <div style={{ display: "flex", fontSize: 32, fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{r.value}</div> : null}
+            </div>
+          ))}
+        </div>
+        {on.map(({ pt, i, p }) => (
+          <div key={`m${i}`} style={{ display: "flex", position: "absolute", left: PX + BORDER + 6, top: rowTop(pt.row) - 6, width: phoneW - BORDER * 2 - 12, height: rowH + 12, border: `6px solid ${C.red}`, borderRadius: 16, opacity: p }} />
+        ))}
+        {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+        {last ? <img src={arrowSvg(190, 48, "left", C.red)} width={190} height={48} style={{ position: "absolute", left: PX + phoneW - 14, top: Math.round(rowTop(last.pt.row) + rowH / 2 - 24), width: 190, height: 48, opacity: last.p }} /> : null}
+        <div style={{ ...col, position: "absolute", left: textX, top: 40, width: textW }}>
+          {on.map(({ pt, i, p }) => (
+            <div key={`t${i}`} style={{ ...col, marginBottom: 28, opacity: p, ...bump(s, `item:${i}`) }}>
+              <div style={{ display: "flex", fontSize: fit(pt.text, textW, cap(56), MIN_FONT, "画面の説明"), fontWeight: 900, color: i === last?.i ? C.red : C.ink, lineHeight: 1.2 }}>{pt.text}</div>
+              {pt.sub ? <div style={{ display: "flex", fontSize: fit(pt.sub, textW, cap(36), MIN_FOOT, "画面の説明の補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{pt.sub}</div> : null}
+            </div>
+          ))}
+        </div>
+      </div>
+      <Note text={s.note} />
+    </div>
+  );
+}
+
 function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
   const s = ch.scene;
   const reveal = s.reveal;
@@ -919,6 +1037,10 @@ function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
       return <Photo s={s} t={t} reveal={reveal} />;
     case "endScreen":
       return <EndScreen s={s} />;
+    case "gauges":
+      return <Gauges s={s} t={t} reveal={reveal} />;
+    case "screen":
+      return <Screen s={s} t={t} reveal={reveal} />;
   }
 }
 

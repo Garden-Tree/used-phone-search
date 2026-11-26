@@ -146,6 +146,8 @@ function itemWords(scene: SceneData): Record<string, string | null> {
     case "bars": case "pairs": scene.rows.forEach((r, i) => (out[`item:${i}`] = (r as { say?: string }).say ?? keywordOf(r.label))); break;
     case "table": scene.rows.forEach((r, i) => (out[`item:${i}`] = keywordOf(r.cells[0]))); break;
     case "photo": (scene.points ?? []).forEach((it, i) => (out[`item:${i}`] = (it as { say?: string }).say ?? keywordOf(it.text))); break;
+    case "gauges": scene.items.forEach((it, i) => (out[`item:${i}`] = keywordOf(it.label))); break;
+    case "screen": (scene.points ?? []).forEach((it, i) => (out[`item:${i}`] = keywordOf(it.text))); break;
     default: break;
   }
   return out;
@@ -193,6 +195,12 @@ function resolveReveal(scene: SceneData, lines: TimelineLine[], chStart: number,
       (scene.points ?? []).forEach((it, i) => find(`item:${i}`, it.cue));
       (scene.images ?? []).forEach((it, i) => find(`img:${i}`, it.cue));
       (scene.notes ?? []).forEach((it, i) => { words[`note:${i}`] = it.cue ?? null; find(`note:${i}`, it.cue); });
+      break;
+    case "gauges":
+      scene.items.forEach((it, i) => find(`item:${i}`, it.cue));
+      break;
+    case "screen":
+      (scene.points ?? []).forEach((it, i) => find(`item:${i}`, it.cue));
       break;
     case "endScreen":
       // 項目は出し分けない（YouTube の要素を重ねる枠。章の絵と一緒に全部出す）

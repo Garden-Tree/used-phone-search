@@ -95,13 +95,36 @@ export type PhotoScene = {
    * 図解（11/27〜）: 写真の上に赤い丸と札を、cue の台詞で出す。img は何枚目の画像の上か（0＝src）。x・y・r は画像の幅・高さに対する割合（r は幅に対する半径）。
    * zoom を付けると、出た瞬間に丸の所へ 0.6 秒で寄る（2＝2倍）
    */
-  notes?: { img?: number; x: number; y: number; r?: number; label: string; cue?: string; zoom?: number; side?: "left" | "right" }[];
+  notes?: { img?: number; x: number; y: number; r?: number; label: string; cue?: string; zoom?: number; side?: "left" | "right"; /** span＝x から x2 までの横の矢印（＜ーー＞。厚さ・幅） */ kind?: "circle" | "span"; x2?: number }[];
+  note?: string;
+};
+
+/** 電池の形のゲージ（11/27〜・図解）: 値まで下から満ちる。cue で1本ずつ */
+export type GaugesScene = {
+  type: "gauges";
+  heading: string;
+  unit: string;
+  /** ゲージのいちばん上の値（なければいちばん大きい値の 1.1 倍） */
+  max?: number;
+  items: { label: string; value: number; sub?: string; cue?: string; pick?: boolean }[];
+  note?: string;
+};
+
+/** スマホの画面の絵（11/27〜・図解）: 設定の画面などを行で描き、cue でその行に赤い丸と矢印。実物の画面ではないので見出しに「イメージ」 */
+export type ScreenScene = {
+  type: "screen";
+  heading: string;
+  /** 画面の上の題（例「バッテリーの状態と充電」） */
+  title: string;
+  rows: { label: string; value?: string; sub?: string }[];
+  /** 丸と矢印で指す行と、横に出す説明 */
+  points?: { row: number; text: string; sub?: string; cue?: string }[];
   note?: string;
 };
 
 /** どの場面にも付けられるもの（11/27〜）: burst＝この言葉を言う瞬間にカードのまわりへ集中線（約1.2秒）。11/27 ユーザー「微妙」で使わない */
 export type SceneExtras = { burst?: string };
-export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene) & SceneExtras;
+export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene | GaugesScene | ScreenScene) & SceneExtras;
 
 export type LongData = {
   date: string;
