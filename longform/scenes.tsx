@@ -271,6 +271,39 @@ const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 const ease = (x: number) => 1 - Math.pow(1 - clamp01(x), 3);
 /** 項目が出る進み具合（0〜1）。0.4 秒で出きる */
 const shown = (reveal: Record<string, number>, key: string, t: number) => ease((t - (reveal[key] ?? 0)) / 0.4);
+/** 集中線（11/27〜）: burst の秒から BURST_SEC 秒だけ出す */
+export const BURST_SEC = 1.2;
+export const burstOn = (reveal: Record<string, number>, local: number) => reveal.burst !== undefined && local >= reveal.burst && local < reveal.burst + BURST_SEC;
+let burstSvg = "";
+/** カードの大きさの集中線（端から中へ細くなる線・真ん中は空ける）。一度だけ作る */
+function burstImage(w: number, h: number): string {
+  if (burstSvg) return burstSvg;
+  const cx = w / 2, cy = h / 2, N = 72;
+  const R = Math.hypot(w, h) / 2 + 10;
+  let paths = "";
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2 + rnd() * 0.05;
+    const inner = 0.84 + rnd() * 0.1; // 中ほどの空き（楕円）。文字にかからないよう端の帯だけ
+    const ix = cx + Math.cos(a) * (w / 2) * inner, iy = cy + Math.sin(a) * (h / 2) * inner;
+    const da = 0.012 + rnd() * 0.018;
+    const ox1 = cx + Math.cos(a - da) * R, oy1 = cy + Math.sin(a - da) * R;
+    const ox2 = cx + Math.cos(a + da) * R, oy2 = cy + Math.sin(a + da) * R;
+    paths += `<path d="M${ix.toFixed(1)},${iy.toFixed(1)} L${ox1.toFixed(1)},${oy1.toFixed(1)} L${ox2.toFixed(1)},${oy2.toFixed(1)} Z"/>`;
+  }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><g fill="#1b1d4a" fill-opacity="0.7">${paths}</g></svg>`;
+  burstSvg = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  return burstSvg;
+}
+/** 表のセルの ○・× を色つきの丸に（11/27〜） */
+function Mark({ v, size, pop = 1 }: { v: string; size: number; pop?: number }) {
+  const ok = v === "○" || v === "◯" || v === "✓";
+  return (
+    <div style={{ display: "flex", width: size, height: size, borderRadius: 999, background: ok ? SITE.safe : C.red, color: C.white, fontSize: Math.round(size * 0.66), fontWeight: 900, lineHeight: 1, alignItems: "center", justifyContent: "center", transform: `scale(${pop})` }}>{ok ? "✓" : "×"}</div>
+  );
+}
+
 /** ポップ（11/27 動きの見本）: 0 から peak まで 0.12 秒で膨らみ、0.35 秒で 1 に戻る。出る前は 0（見えない）、出たあとは 1 */
 const popScale = (u: number, peak = 1.18) => (u < 0 ? 1 : u < 0.12 ? 0.6 + (peak - 0.6) * easeOut(u / 0.12) : u < 0.47 ? peak - (peak - 1) * easeOut((u - 0.12) / 0.35) : 1);
 
@@ -601,6 +634,12 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
             {s.columns.map((_, j) => {
               const v = r.cells[j] ?? "";
               const em = (r.emphasis ?? s.emphasis)?.includes(j);
+              // ○・× だけのセルは色つきの丸に。行が出た瞬間に少し大きく出る（揺れのコマを使う）
+              if (j > 0 && /^[○◯×✓]$/.test(v.trim())) {
+                const k = (s as { pulse?: Record<string, number> }).pulse?.[`item:${i}`];
+                const pop = k === undefined ? 1 : 1 + 0.35 * (1 - Math.min(1, k / 8));
+                return <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX }}><Mark v={v.trim()} size={Math.round(cellFont * 1.15)} pop={pop} /></div>;
+              }
               return (
                 <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX, fontSize: cellFont, fontWeight: em ? 900 : 500, color: em ? C.red : C.ink, whiteSpace: "nowrap" }}>{v}</div>
               );
@@ -626,7 +665,15 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
         const p = shown(reveal, `item:${i}`, t);
         return (
           <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p, borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
-            <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: Math.round(NUM * 0.58), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0, paddingBottom: Math.round(NUM * 0.1) }}>{String(i + 1)}</div>
+            {(() => {
+              // ✓（11/27〜 checks）: checkCue の秒か、項目に台詞が触れた最初の秒から。触れた瞬間に少し大きく
+              const sc = s as ChecklistScene & { mention?: Record<string, number[]>; shake?: Record<string, number> };
+              const at = reveal[`check:${i}`] ?? sc.mention?.[`item:${i}`]?.[0];
+              const checked = sc.checks && at !== undefined && t >= at;
+              const j = sc.shake?.[`item:${i}`];
+              const pop = checked && j !== undefined ? 1 + 0.3 * (1 - Math.min(1, j / 8)) : 1;
+              return <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: checked ? C.red : SITE.safe, color: C.white, fontSize: Math.round(NUM * (checked ? 0.66 : 0.58)), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0, paddingBottom: checked ? 0 : Math.round(NUM * 0.1), transform: `scale(${pop})` }}>{checked ? "✓" : String(i + 1)}</div>;
+            })()}
             <div style={{ ...col, width: textW, marginLeft: 32 }}>
               <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(56), Math.floor(rowH * 0.5)), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
               {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.min(cap(38), Math.floor(rowH * 0.28)), MIN_FOOT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
@@ -1093,6 +1140,10 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
         ) : (
           <SceneBody ch={scene} t={local} />
         )}
+        {burstOn(ch.scene.reveal, local) ? (
+          // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+          <img src={burstImage(CARD.w, CARD.h)} width={CARD.w} height={CARD.h} style={{ position: "absolute", left: 0, top: 0, width: CARD.w, height: CARD.h, borderRadius: 24 }} />
+        ) : null}
       </div>
       {ch.scene.type === "endScreen" ? <EndScreenSlots s={ch.scene} /> : null}
       {/* 立ち絵はカードの上に描く（d2 では立ち絵がカードの下の角に少し重なる） */}

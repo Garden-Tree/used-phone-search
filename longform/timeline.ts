@@ -197,6 +197,9 @@ function resolveReveal(scene: SceneData, lines: TimelineLine[], chStart: number,
       // 項目は出し分けない（YouTube の要素を重ねる枠。章の絵と一緒に全部出す）
       break;
   }
+  // 集中線（11/27〜）: その言葉を言い始める秒
+  if (scene.burst) { words.burst = scene.burst; find("burst", scene.burst); }
+  if (scene.type === "checklist") scene.items.forEach((it, i) => { if (it.checkCue) { words[`check:${i}`] = null; find(`check:${i}`, it.checkCue); } });
   // 同じ秒に出る項目が並んだら、0.2 秒ずつずらして上から順に出す（横棒が1本ずつ伸びる。11/23）
   if (scene.type === "bars") {
     const seen: Record<string, number> = {};
