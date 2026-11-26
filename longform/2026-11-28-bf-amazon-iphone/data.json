@@ -1,0 +1,628 @@
+{
+  "date": "2026-11-26",
+  "shops": 18,
+  "source": "script.md（中古は 11/26 16:58・セール価格は 11/27 に Amazon で読む）",
+  "thumbnail": {
+    "lines": [
+      "ブラックフライデー",
+      "新品と中古"
+    ],
+    "badge": [
+      {
+        "text": "iPhone Air"
+      }
+    ],
+    "footer": "16 Plus・17 Pro Max【2026年】"
+  },
+  "chapters": [
+    {
+      "title": "セールの新品と中古、安いのは？",
+      "scene": {
+        "type": "table",
+        "heading": "セールの新品と中古の相場",
+        "columns": [
+          "",
+          "セールの新品",
+          "中古の相場"
+        ],
+        "emphasis": [],
+        "rows": [
+          {
+            "cells": [
+              "iPhone Air 256GB",
+              "【A_AIR】",
+              "140,680円"
+            ],
+            "cue": "iPhone Air、16 Plus"
+          },
+          {
+            "cells": [
+              "16 Plus 128GB",
+              "【A_16P】",
+              "134,980円"
+            ],
+            "cue": "iPhone Air、16 Plus"
+          },
+          {
+            "cells": [
+              "17 Pro Max 256GB",
+              "【A_17PM】",
+              "199,980円"
+            ],
+            "cue": "iPhone Air、16 Plus"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Amazonのブラックフライデー（期間・見る所）",
+      "scene": {
+        "type": "checklist",
+        "heading": "Amazonのセールで見る所",
+        "items": [
+          {
+            "text": "先行 11/27〜29・本番 11/30〜12/7",
+            "sub": "aboutamazon.jp",
+            "cue": "先行セールが"
+          },
+          {
+            "text": "販売元がAmazonか・容量",
+            "sub": "同じ容量で比べる",
+            "cue": "販売元がAmazonかどうか"
+          },
+          {
+            "text": "AirとPro MaxはeSIMだけ",
+            "sub": "SIMカードは使えない",
+            "cue": "AirとPro Maxは"
+          }
+        ]
+      }
+    },
+    {
+      "title": "iPhone Air：セールの新品と中古",
+      "scene": {
+        "type": "bars",
+        "heading": "iPhone Air 256GB",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "Apple",
+            "median": 189800,
+            "cue": "Appleの値段は",
+            "sub": "新品"
+          },
+          {
+            "label": "Amazon セール",
+            "median": 0,
+            "cue": "Amazonのセールは",
+            "sub": "新品"
+          },
+          {
+            "label": "中古の相場",
+            "median": 140680,
+            "cue": "中古の真ん中の値段は",
+            "sub": "電池85%以上 70%"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Airはどんな機種？薄さと引き換えのもの",
+      "scene": {
+        "type": "photo",
+        "heading": "iPhone Air（Apple 公式の仕様）",
+        "src": "longform/assets/commons/iphoneair-side-ahmadalikarim.jpg",
+        "credit": "iPhone Air（側面）— Ahmad Ali Karim / CC0 / Wikimedia Commons",
+        "points": [
+          {
+            "text": "厚さ 5.64mm・165g",
+            "sub": "6.5インチ・120Hz",
+            "cue": "厚さは5.64ミリ"
+          },
+          {
+            "text": "背面カメラは48MPの1つ",
+            "sub": "超広角はない",
+            "cue": "後ろのカメラは"
+          },
+          {
+            "text": "SIMカードは使えない",
+            "sub": "eSIMだけ",
+            "cue": "それとSIMカードは"
+          },
+          {
+            "text": "ビデオ再生 27時間",
+            "sub": "16 Plusと同じ",
+            "cue": "ビデオ再生が27時間"
+          },
+          {
+            "text": "電池交換 21,000円",
+            "sub": "16 Plusは17,200円（Apple）",
+            "cue": "Appleの電池交換は"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphoneair-skyblue-ahmadalikarim.jpg",
+            "credit": "Sky Blue iPhone Air — Ahmad Ali Karim / CC0 / Wikimedia Commons",
+            "cue": "後ろのカメラは"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Airと同じ値段なら、中古の17？",
+      "scene": {
+        "type": "table",
+        "heading": "Air と 17（中古・Apple 公式の仕様）",
+        "columns": [
+          "",
+          "Air",
+          "17"
+        ],
+        "emphasis": [],
+        "rows": [
+          {
+            "cells": [
+              "中古の相場",
+              "140,680円",
+              "148,980円"
+            ],
+            "cue": "17の中古の真ん中は"
+          },
+          {
+            "cells": [
+              "ビデオ再生",
+              "27時間",
+              "30時間"
+            ],
+            "cue": "ビデオ再生も30時間"
+          },
+          {
+            "cells": [
+              "超広角",
+              "×",
+              "○"
+            ],
+            "cue": "17は、後ろに超広角"
+          },
+          {
+            "cells": [
+              "重さ",
+              "165g",
+              "177g"
+            ],
+            "cue": "Airは、12グラム"
+          },
+          {
+            "cells": [
+              "厚さ",
+              "5.64mm",
+              "7.95mm"
+            ],
+            "cue": "Airは、12グラム"
+          },
+          {
+            "cells": [
+              "SIMカード",
+              "×",
+              "×"
+            ],
+            "cue": "どっちもeSIMだけ",
+            "emphasis": []
+          }
+        ]
+      }
+    },
+    {
+      "title": "iPhone 16 Plus：セールの新品と中古",
+      "scene": {
+        "type": "bars",
+        "heading": "iPhone 16 Plus 128GB",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "Amazon ふだん",
+            "median": 0,
+            "cue": "ふだんは",
+            "sub": "新品"
+          },
+          {
+            "label": "Amazon セール",
+            "median": 0,
+            "cue": "セールで",
+            "sub": "新品"
+          },
+          {
+            "label": "中古の相場",
+            "median": 134980,
+            "cue": "中古の真ん中は",
+            "sub": "電池85%以上 61%"
+          }
+        ]
+      }
+    },
+    {
+      "title": "16 PlusとAir、同じ27時間で何が違う？",
+      "scene": {
+        "type": "table",
+        "heading": "16 Plus と Air（Apple 公式の仕様）",
+        "columns": [
+          "",
+          "16 Plus",
+          "Air"
+        ],
+        "emphasis": [],
+        "rows": [
+          {
+            "cells": [
+              "ビデオ再生",
+              "27時間",
+              "27時間"
+            ],
+            "cue": "表で比べるね",
+            "emphasis": []
+          },
+          {
+            "cells": [
+              "重さ",
+              "199g",
+              "165g"
+            ],
+            "cue": "Airは34グラム"
+          },
+          {
+            "cells": [
+              "画面",
+              "6.7インチ",
+              "6.5インチ・120Hz"
+            ],
+            "cue": "Airは34グラム"
+          },
+          {
+            "cells": [
+              "超広角",
+              "○",
+              "×"
+            ],
+            "cue": "16 Plusは、超広角"
+          },
+          {
+            "cells": [
+              "SIMカード",
+              "○",
+              "×"
+            ],
+            "cue": "16 Plusは、超広角"
+          },
+          {
+            "cells": [
+              "厚さ",
+              "7.80mm",
+              "5.64mm"
+            ],
+            "cue": "動画をたくさん見るなら"
+          }
+        ]
+      }
+    },
+    {
+      "title": "1つ前の15 Plusなら",
+      "scene": {
+        "type": "table",
+        "heading": "15 Plus と 16 Plus（中古・Apple 公式の仕様）",
+        "columns": [
+          "",
+          "15 Plus",
+          "16 Plus"
+        ],
+        "emphasis": [],
+        "rows": [
+          {
+            "cells": [
+              "中古の相場",
+              "104,291円",
+              "134,980円"
+            ],
+            "cue": "1つ前の15 Plusの中古は"
+          },
+          {
+            "cells": [
+              "ビデオ再生",
+              "26時間",
+              "27時間"
+            ],
+            "cue": "ビデオ再生は26時間"
+          },
+          {
+            "cells": [
+              "チップ",
+              "A16",
+              "A18"
+            ],
+            "cue": "違うのはチップ"
+          },
+          {
+            "cells": [
+              "Apple Intelligence",
+              "×",
+              "○"
+            ],
+            "cue": "違うのはチップ"
+          },
+          {
+            "cells": [
+              "重さ",
+              "201g",
+              "199g"
+            ],
+            "cue": "使わない人なら"
+          }
+        ]
+      }
+    },
+    {
+      "title": "iPhone 17 Pro Max：セールの新品と中古",
+      "scene": {
+        "type": "bars",
+        "heading": "iPhone 17 Pro Max 256GB",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "Amazon ふだん",
+            "median": 0,
+            "cue": "Amazonのふだんは",
+            "sub": "新品"
+          },
+          {
+            "label": "Amazon セール",
+            "median": 0,
+            "cue": "セールは",
+            "sub": "新品"
+          },
+          {
+            "label": "中古の相場",
+            "median": 199980,
+            "cue": "中古の真ん中は",
+            "sub": "電池85%以上 84%"
+          }
+        ]
+      }
+    },
+    {
+      "title": "17 Pro Maxにしかないもの",
+      "scene": {
+        "type": "photo",
+        "heading": "iPhone 17 Pro Max（Apple 公式の仕様）",
+        "src": "longform/assets/commons/iphone17promax-orange-ahmadalikarim.jpg",
+        "credit": "Cosmic Orange iPhone 17 Pro Max — Ahmad Ali Karim / CC0 / Wikimedia Commons",
+        "crop": {
+          "x": 0.1,
+          "y": 0.04,
+          "w": 0.82,
+          "h": 0.9
+        },
+        "points": [
+          {
+            "text": "ビデオ再生 39時間",
+            "sub": "Airより12時間長い",
+            "cue": "まず電池"
+          },
+          {
+            "text": "4倍・8倍の望遠",
+            "sub": "離れた席からでも大きく",
+            "cue": "カメラは4倍と8倍"
+          },
+          {
+            "text": "USB 3（最大10Gb/s）",
+            "sub": "Airと16 PlusはUSB 2",
+            "cue": "USB 3で"
+          },
+          {
+            "text": "233g・eSIMだけ",
+            "sub": "SIMカードは使えない",
+            "cue": "重さが233グラム"
+          }
+        ],
+        "images": [
+          {
+            "src": "longform/assets/commons/iphone17promax-orange-ahmadalikarim.jpg",
+            "credit": "Cosmic Orange iPhone 17 Pro Max — Ahmad Ali Karim / CC0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.17,
+              "y": 0.07,
+              "w": 0.66,
+              "h": 0.26
+            },
+            "cue": "カメラは4倍と8倍"
+          },
+          {
+            "src": "longform/assets/commons/iphone17promax-orange-ahmadalikarim.jpg",
+            "credit": "Cosmic Orange iPhone 17 Pro Max — Ahmad Ali Karim / CC0 / Wikimedia Commons",
+            "crop": {
+              "x": 0.1,
+              "y": 0.04,
+              "w": 0.82,
+              "h": 0.9
+            },
+            "cue": "USB 3で"
+          }
+        ]
+      }
+    },
+    {
+      "title": "1つ前の16 Pro Maxなら",
+      "scene": {
+        "type": "table",
+        "heading": "16 Pro Max と 17 Pro Max（中古・Apple 公式の仕様）",
+        "columns": [
+          "",
+          "16 Pro Max",
+          "17 Pro Max"
+        ],
+        "emphasis": [],
+        "rows": [
+          {
+            "cells": [
+              "中古の相場",
+              "175,780円",
+              "199,980円"
+            ],
+            "cue": "16 Pro Maxの中古は"
+          },
+          {
+            "cells": [
+              "ビデオ再生",
+              "33時間",
+              "39時間"
+            ],
+            "cue": "電池は33時間"
+          },
+          {
+            "cells": [
+              "望遠",
+              "5倍",
+              "4倍・8倍"
+            ],
+            "cue": "望遠は5倍の1つ"
+          },
+          {
+            "cells": [
+              "SIMカード",
+              "○",
+              "×"
+            ],
+            "cue": "16 Pro MaxはSIMカード"
+          },
+          {
+            "cells": [
+              "重さ",
+              "227g",
+              "233g"
+            ],
+            "cue": "SIMカードのままで"
+          }
+        ]
+      }
+    },
+    {
+      "title": "未使用品は、セールの新品より高い？",
+      "scene": {
+        "type": "bars",
+        "heading": "未使用品（ランクS）と新品（256GB）",
+        "unit": "円",
+        "rows": [
+          {
+            "label": "Air 未使用品",
+            "median": 155980,
+            "cue": "Airの未使用品は",
+            "sub": "中古の店"
+          },
+          {
+            "label": "Air セールの新品",
+            "median": 0,
+            "cue": "Airの未使用品は",
+            "sub": "Amazon"
+          },
+          {
+            "label": "17 未使用品",
+            "median": 160980,
+            "cue": "17はもっとはっきり",
+            "sub": "中古の店",
+            "pick": true,
+            "pickLabel": "+1,180円"
+          },
+          {
+            "label": "17 新品",
+            "median": 159800,
+            "cue": "Appleの新品の",
+            "sub": "Apple"
+          }
+        ]
+      }
+    },
+    {
+      "title": "中古を選ぶなら見る3つ",
+      "scene": {
+        "type": "checklist",
+        "heading": "中古で見る3つ",
+        "items": [
+          {
+            "text": "電池の数字",
+            "sub": "85%以上が目安",
+            "cue": "3つだけ"
+          },
+          {
+            "text": "ネットワーク利用制限 ○",
+            "sub": "お店のページで",
+            "cue": "3つだけ"
+          },
+          {
+            "text": "保証の長さ",
+            "sub": "新品はAppleの1年",
+            "cue": "新品のセールは"
+          }
+        ]
+      }
+    },
+    {
+      "title": "まとめ：3台の答え",
+      "scene": {
+        "type": "table",
+        "heading": "3台の答え",
+        "columns": [
+          "",
+          "セールの新品",
+          "中古",
+          "向いている人"
+        ],
+        "emphasis": [],
+        "rows": [
+          {
+            "cells": [
+              "Air",
+              "【A_AIR】",
+              "140,680円",
+              "軽さ"
+            ],
+            "cue": "まとめるね"
+          },
+          {
+            "cells": [
+              "16 Plus",
+              "【A_16P】",
+              "134,980円",
+              "SIMカード・超広角"
+            ],
+            "cue": "まとめるね"
+          },
+          {
+            "cells": [
+              "17 Pro Max",
+              "【A_17PM】",
+              "199,980円",
+              "電池・望遠"
+            ],
+            "cue": "まとめるね"
+          }
+        ]
+      }
+    },
+    {
+      "title": "次におすすめの動画",
+      "scene": {
+        "type": "endScreen",
+        "heading": "次はこちらの動画がおすすめ",
+        "videos": [
+          {
+            "id": "70oYNTqwgRU",
+            "title": "iPhone 12・11、まだ使う？電池交換は同じ1万5,600円、答えは逆"
+          },
+          {
+            "id": "ARXtjpbIF2E",
+            "title": "17eを新品で買う？同じ12.5万円で中古の15 Pro・16？"
+          }
+        ]
+      }
+    }
+  ]
+}
