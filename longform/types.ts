@@ -133,6 +133,26 @@ export type SceneExtras = {
   stamp?: { text: string; cue?: string };
 };
 
+/** 線グラフが左から描かれる（11/27〜）。points は [日付の札, 値]。draw の cue で描き始める。callout は描き終わりに出す札 */
+export type TrendScene = {
+  type: "trend";
+  heading: string;
+  unit: string;
+  series: { label: string; points: [string, number][]; color?: string }[];
+  draw?: string;
+  callout?: { text: string };
+  note?: string;
+};
+
+/** 分かれ道（11/27〜）: 問いの箱から、cue で答えへ矢印が伸びる */
+export type FlowScene = {
+  type: "flow";
+  heading: string;
+  q: string;
+  branches: { label: string; answer: string; sub?: string; cue?: string; pick?: boolean }[];
+  note?: string;
+};
+
 /** 2択のカード（11/27〜）: 左右に1枚ずつ、cue で出る。win の cue で勝った方に札 */
 export type VersusScene = {
   type: "versus";
@@ -150,7 +170,7 @@ export type LineupScene = {
   items: { title: string; value: string; sub?: string; src?: string; cue?: string; pick?: boolean }[];
   note?: string;
 };
-export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene | GaugesScene | ScreenScene | VersusScene | LineupScene) & SceneExtras;
+export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene | GaugesScene | ScreenScene | VersusScene | LineupScene | TrendScene | FlowScene) & SceneExtras;
 
 export type LongData = {
   date: string;

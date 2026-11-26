@@ -16,7 +16,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { CHAPTER_LEAD, type Who } from "./script";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, GaugesScene, LineupScene, PairsScene, PhotoScene, ScreenScene, TableScene, VersusScene, Timeline, TimelineChapter } from "./types";
+import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, GaugesScene, LineupScene, PairsScene, PhotoScene, ScreenScene, TableScene, VersusScene, TrendScene, FlowScene, Timeline, TimelineChapter } from "./types";
 
 export const W = 1920;
 export const H = 1080;
@@ -1165,6 +1165,118 @@ function ThinkBubble({ ch, t }: { ch: TimelineChapter; t: number }) {
   );
 }
 
+
+/** 線グラフが左から描かれる（11/27〜・図解）。draw の cue から TREND_SEC 秒で右端まで。先頭の点に今の値 */
+export const TREND_SEC = 2.4;
+function Trend({ s, t, reveal }: { s: TrendScene; t: number; reveal: Record<string, number> }) {
+  const areaH = bodyH(s.heading, s.note);
+  const raw = (s as { revealRaw?: Record<string, number> }).revealRaw ?? reveal;
+  const t0 = raw.draw ?? 0;
+  const prog = Math.max(0, Math.min(1, (t - t0) / TREND_SEC));
+  const pe = easeOut(prog);
+  const all = s.series.flatMap((x) => x.points.map((p) => p[1]));
+  const lo = Math.min(...all), hi = Math.max(...all);
+  const pad = (hi - lo) * 0.25 || hi * 0.05;
+  const vmin = lo - pad, vmax = hi + pad;
+  const W0 = INNER_W - 260, H0 = areaH - 90, X0 = 20, Y0 = 20;
+  const n = s.series[0].points.length;
+  const xAt = (i: number) => X0 + (W0 * i) / Math.max(1, n - 1);
+  const yAt = (v: number) => Y0 + H0 * (1 - (v - vmin) / (vmax - vmin));
+  const colors = [C.barFill, C.red, SITE.safe];
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W0 + 40}" height="${H0 + 40}" viewBox="0 0 ${W0 + 40} ${H0 + 40}">`;
+  for (let g = 0; g <= 4; g++) { const y = Y0 + (H0 * g) / 4; svg += `<line x1="${X0}" y1="${y}" x2="${X0 + W0}" y2="${y}" stroke="#E2E5EE" stroke-width="2"/>`; }
+  const heads: { x: number; y: number; v: number; c: string; label: string }[] = [];
+  s.series.forEach((ser, k) => {
+    const upto = pe * (n - 1);
+    const pts: string[] = [];
+    for (let i = 0; i <= Math.floor(upto); i++) pts.push(`${xAt(i).toFixed(1)},${yAt(ser.points[i][1]).toFixed(1)}`);
+    let hx = xAt(Math.floor(upto)), hv = ser.points[Math.floor(upto)][1];
+    if (upto < n - 1) {
+      const i = Math.floor(upto), f = upto - i;
+      hv = ser.points[i][1] + (ser.points[i + 1][1] - ser.points[i][1]) * f;
+      hx = xAt(i) + (xAt(i + 1) - xAt(i)) * f;
+      pts.push(`${hx.toFixed(1)},${yAt(hv).toFixed(1)}`);
+    }
+    const c = ser.color ?? colors[k % colors.length];
+    if (pts.length > 1) svg += `<polyline points="${pts.join(" ")}" fill="none" stroke="${c}" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>`;
+    svg += `<circle cx="${hx}" cy="${yAt(hv)}" r="14" fill="${c}" stroke="#fff" stroke-width="5"/>`;
+    heads.push({ x: hx, y: yAt(hv), v: hv, c, label: ser.label });
+  });
+  svg += `</svg>`;
+  const uri = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  const first = s.series[0].points[0][0], last = s.series[0].points[n - 1][0];
+  return (
+    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+      <Heading text={s.heading} />
+      <div style={{ display: "flex", position: "relative", width: INNER_W, height: areaH }}>
+        {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+        <img src={uri} width={W0 + 40} height={H0 + 40} style={{ position: "absolute", left: 0, top: 0, width: W0 + 40, height: H0 + 40 }} />
+        <div style={{ display: "flex", position: "absolute", left: X0, top: H0 + 44, fontSize: MIN_FOOT, color: C.sub, fontWeight: 700 }}>{first}</div>
+        <div style={{ display: "flex", position: "absolute", left: X0 + W0 - 80, top: H0 + 44, fontSize: MIN_FOOT, color: C.sub, fontWeight: 700 }}>{last}</div>
+        {prog > 0 ? heads.map((h, k) => (
+          <div key={k} style={{ ...col, position: "absolute", left: Math.min(INNER_W - 300, h.x + 26), top: Math.round(h.y - 46), padding: "6px 16px", borderRadius: 12, background: h.c, color: C.white }}>
+            <div style={{ display: "flex", fontSize: MIN_FOOT, fontWeight: 700 }}>{h.label}</div>
+            <div style={{ display: "flex", fontSize: cap(44), fontWeight: 900, lineHeight: 1.05 }}>{`${Math.round(h.v).toLocaleString("ja-JP")}${s.unit}`}</div>
+          </div>
+        )) : null}
+        {prog > 0 ? (
+          <div style={{ display: "flex", position: "absolute", left: X0 + 4, top: Math.round(yAt(s.series[0].points[0][1]) - 64), padding: "4px 14px", borderRadius: 10, background: C.white, border: `3px solid ${C.line}`, fontSize: cap(34), fontWeight: 900, color: C.sub }}>{`${s.series[0].points[0][1].toLocaleString("ja-JP")}${s.unit}`}</div>
+        ) : null}
+        {s.callout && prog >= 1 ? (
+          <div style={{ display: "flex", position: "absolute", left: Math.round(W0 * 0.32), top: 10, padding: "10px 26px", borderRadius: 16, background: C.red, color: C.white, fontSize: cap(48), fontWeight: 900, transform: `scale(${(() => { const k = (s as { pulse?: Record<string, number> }).pulse?.callout; return k === undefined ? 1 : 0.6 + 0.4 * easeOut(Math.min(1, k / 8)); })()})` }}>{s.callout.text}</div>
+        ) : null}
+      </div>
+      <Note text={s.note} />
+    </div>
+  );
+}
+
+/** 分かれ道（11/27〜・図解）: 上に問いの箱、cue で下の答えへ矢印が1本ずつ伸びる */
+function Flow({ s, t, reveal }: { s: FlowScene; t: number; reveal: Record<string, number> }) {
+  const areaH = bodyH(s.heading, s.note);
+  const n = s.branches.length;
+  const qW = Math.round(INNER_W * 0.5), qH = 120;
+  const GAP = 40;
+  const bW = Math.floor((INNER_W - GAP * (n - 1)) / n), bH = Math.round(areaH * 0.42);
+  const bY = areaH - bH - 10;
+  const qX = Math.round((INNER_W - qW) / 2);
+  return (
+    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+      <Heading text={s.heading} />
+      <div style={{ display: "flex", position: "relative", width: INNER_W, height: areaH }}>
+        <div style={{ display: "flex", position: "absolute", left: qX, top: 0, width: qW, height: qH, borderRadius: 24, background: C.bar, color: C.white, alignItems: "center", justifyContent: "center", fontSize: fit(s.q, qW - 40, cap(56), MIN_FONT, "分かれ道の問い"), fontWeight: 900 }}>{s.q}</div>
+        {s.branches.map((b, i) => {
+          const p = shown(reveal, `item:${i}`, t);
+          const bx = i * (bW + GAP);
+          const cx = bx + bW / 2;
+          // 問いの箱の下から答えの箱の上へ、斜めの線（SVG）
+          const x1 = qX + qW / 2 + (i - (n - 1) / 2) * 60, y1 = qH;
+          const x2 = cx, y2 = bY - 4;
+          const minX = Math.min(x1, x2) - 30, wS = Math.abs(x2 - x1) + 60, hS = y2 - y1;
+          const len = Math.hypot(x2 - x1, hS);
+          const ang = Math.atan2(hS, x2 - x1);
+          const ex = x2 - minX, ey = hS;
+          const ah = 30;
+          const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${wS}" height="${hS}" viewBox="0 0 ${wS} ${hS}"><line x1="${x1 - minX}" y1="0" x2="${ex - Math.cos(ang) * ah * 0.8}" y2="${ey - Math.sin(ang) * ah * 0.8}" stroke="${C.red}" stroke-width="10" stroke-linecap="round"/><path d="M${ex},${ey} L${ex - Math.cos(ang - 0.45) * ah},${ey - Math.sin(ang - 0.45) * ah} L${ex - Math.cos(ang + 0.45) * ah},${ey - Math.sin(ang + 0.45) * ah} Z" fill="${C.red}"/></svg>`;
+          void len;
+          return (
+            <div key={i} style={{ display: "flex", position: "absolute", left: 0, top: 0, width: INNER_W, height: areaH, opacity: p }}>
+              {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+              <img src={`data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`} width={wS} height={hS} style={{ position: "absolute", left: Math.round(minX), top: y1, width: wS, height: hS }} />
+              <div style={{ display: "flex", position: "absolute", left: Math.round((x1 + x2) / 2 - 110), top: Math.round((y1 + y2) / 2 - 30), width: 220, height: 60, borderRadius: 999, background: C.white, border: `4px solid ${C.red}`, color: C.red, alignItems: "center", justifyContent: "center", fontSize: MIN_FONT, fontWeight: 900 }}>{b.label}</div>
+              <div style={{ ...col, position: "absolute", left: bx, top: bY, width: bW, height: bH, borderRadius: 24, border: `6px solid ${b.pick ? C.red : C.line}`, background: b.pick ? "#FFF5F5" : C.rowAlt, alignItems: "center", justifyContent: "center", ...bump(s, `item:${i}`) }}>
+                <div style={{ display: "flex", fontSize: fit(b.answer, bW - 40, cap(64), MIN_FONT, "分かれ道の答え"), fontWeight: 900, color: b.pick ? C.red : C.ink }}>{b.answer}</div>
+                {b.sub ? <div style={{ display: "flex", marginTop: 10, fontSize: fit(b.sub, bW - 40, cap(36), MIN_FOOT, "分かれ道の補足"), fontWeight: 500, color: C.sub }}>{b.sub}</div> : null}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <Note text={s.note} />
+    </div>
+  );
+}
+
 function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
   const s = ch.scene;
   const reveal = s.reveal;
@@ -1191,6 +1303,10 @@ function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
       return <Versus s={s} t={t} reveal={reveal} />;
     case "lineup":
       return <Lineup s={s} t={t} reveal={reveal} />;
+    case "trend":
+      return <Trend s={s} t={t} reveal={reveal} />;
+    case "flow":
+      return <Flow s={s} t={t} reveal={reveal} />;
   }
 }
 
