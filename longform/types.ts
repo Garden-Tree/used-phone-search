@@ -56,7 +56,7 @@ export type ChecklistScene = {
   type: "checklist";
   heading: string;
   items: { text: string; sub?: string; cue?: string; /** ✓ を付ける台詞（なければ、項目に台詞が触れた最初の秒）。11/27〜 */ checkCue?: string }[];
-  /** 番号の丸を、説明した項目から ✓ に替える（11/27〜） */
+  /** 番号の丸を、説明した項目から ✓ に替える（12/1 の回〜標準。false で止める） */
   checks?: boolean;
   /** 2 で2列（左→右・上→下に 1,2 / 3,4 / 5,6。6項目を3x2に。11/26〜）。行の文字は1行（長ければ縮める） */
   columns?: 1 | 2;
@@ -94,7 +94,7 @@ export type PhotoScene = {
   note?: string;
 };
 
-/** どの場面にも付けられるもの（11/27〜）: burst＝この言葉を言う瞬間にカードのまわりへ集中線（約1.2秒） */
+/** どの場面にも付けられるもの（11/27〜）: burst＝この言葉を言う瞬間にカードのまわりへ集中線（約1.2秒）。11/27 ユーザー「微妙」で使わない */
 export type SceneExtras = { burst?: string };
 export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene) & SceneExtras;
 

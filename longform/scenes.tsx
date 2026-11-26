@@ -668,11 +668,13 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
             {(() => {
               // ✓（11/27〜 checks）: checkCue の秒か、項目に台詞が触れた最初の秒から。触れた瞬間に少し大きく
               const sc = s as ChecklistScene & { mention?: Record<string, number[]>; shake?: Record<string, number> };
-              const at = reveal[`check:${i}`] ?? sc.mention?.[`item:${i}`]?.[0];
-              const checked = sc.checks && at !== undefined && t >= at;
-              const j = sc.shake?.[`item:${i}`];
+              // 上から順に付ける（11/27 ユーザー）: 説明した秒を早い順に並べ、上の項目から当てる
+              const at = reveal[`chk:${i}`];
+              const checked = sc.checks !== false && at !== undefined && t >= at;
+              const j = (sc as { pulse?: Record<string, number> }).pulse?.[`chk:${i}`];
               const pop = checked && j !== undefined ? 1 + 0.3 * (1 - Math.min(1, j / 8)) : 1;
-              return <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: checked ? C.red : SITE.safe, color: C.white, fontSize: Math.round(NUM * (checked ? 0.66 : 0.58)), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0, paddingBottom: checked ? 0 : Math.round(NUM * 0.1), transform: `scale(${pop})` }}>{checked ? "✓" : String(i + 1)}</div>;
+              // ✓ は緑（赤の ✓ は日本では「まちがい」に見える。11/27 ユーザー）。✓ の前の番号は灰色
+              return <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: checked ? SITE.safe : sc.checks !== false ? C.sub : SITE.safe, color: C.white, fontSize: Math.round(NUM * (checked ? 0.66 : 0.58)), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0, paddingBottom: checked ? 0 : Math.round(NUM * 0.1), transform: `scale(${pop})` }}>{checked ? "✓" : String(i + 1)}</div>;
             })()}
             <div style={{ ...col, width: textW, marginLeft: 32 }}>
               <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(56), Math.floor(rowH * 0.5)), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>

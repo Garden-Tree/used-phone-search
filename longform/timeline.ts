@@ -268,6 +268,11 @@ export async function buildTimeline(dir: string, speed = DEFAULT_LONG_SPEED): Pr
     const p0 = sl.pages[0];
     const stillAt = round(Math.max(p0.start + 0.6, Math.min(p0.end - 0.1, (p0.start + p0.end) / 2)));
     const mention = resolveMentions(d.scene, lines, chStart, reveal);
+    // チェックリストの ✓（11/27〜）: 説明した秒（checkCue か最初に触れた秒）を早い順に並べ、上の項目から chk:i に当てる（上から順に付く）
+    if (d.scene.type === "checklist" && d.scene.checks !== false) {
+      const ts = d.scene.items.map((_, i) => reveal[`check:${i}`] ?? mention[`item:${i}`]?.[0]).filter((x): x is number => x !== undefined).sort((a, b) => a - b);
+      ts.forEach((x, i) => (reveal[`chk:${i}`] = Math.max(x, reveal[`item:${i}`] ?? 0)));
+    }
     out.push({ index: ci + 1, title: ch.title, start: round(chStart), end: round(t), cues: ch.cues, scene: { ...d.scene, reveal, mention }, lines, stillAt });
   }
   const timeline: Timeline = { date: data.date, shops: data.shops, width: W, height: H, fps: FPS, speed, total: round(t), chapters: out };

@@ -50,6 +50,32 @@ const ROOT = resolve(__dirname, "..");
 const BGM_LONG = join(ROOT, "longform/assets/sound/Cyber_Society_2.mp3");
 const BGM = existsSync(BGM_LONG) ? BGM_LONG : join(ROOT, "shorts/assets/bgm.mp3");
 const BGM_CREDIT = existsSync(BGM_LONG) ? "BGM: Cyber Society by のる（OpenTracks）" : "BGM: Okay For Now - Televisions（YouTube オーディオライブラリ）";
+/**
+ * 効果音（12/1 の回〜・11/27 ユーザー「揺らすとき・画面が変わるときに SE を」）: shorts/assets/se（効果音ラボ・クレジット不要）。
+ * 項目が出る・写真が替わる＝pop、台詞が項目に触れて揺れる＝whoosh（各項目の最初の1回だけ）。近すぎる音（0.7 秒以内）と章のジングルの前後 0.8 秒は鳴らさない。
+ * LONGFORM_SE=0 で止める
+ */
+const SE_DIR = join(ROOT, "shorts/assets/se");
+const SE_DB: Record<"pop" | "whoosh", number> = { pop: -15, whoosh: -20 };
+function seEvents(tl: Timeline): { at: number; kind: "pop" | "whoosh" }[] {
+  if (process.env.LONGFORM_SE === "0") return [];
+  const jingles = tl.chapters.slice(1).map((c) => chapterShownAt(c));
+  const raw: { at: number; kind: "pop" | "whoosh" }[] = [];
+  for (const ch of tl.chapters) {
+    if (ch.scene.type === "endScreen") continue;
+    for (const [k, r] of Object.entries(ch.scene.reveal)) if (r > 0.05 && /^(item|img|chk):/.test(k)) raw.push({ at: ch.start + r, kind: "pop" });
+    for (const ts of Object.values(ch.scene.mention ?? {})) if (ts.length) raw.push({ at: ch.start + ts[0], kind: "whoosh" });
+  }
+  raw.sort((a, b) => a.at - b.at);
+  const out: typeof raw = [];
+  for (const e of raw) {
+    if (jingles.some((j) => Math.abs(j - e.at) < 0.8)) continue;
+    if (out.length && e.at - out[out.length - 1].at < 0.7) continue;
+    out.push(e);
+  }
+  return out;
+}
+
 /** 章のジングル: 効果音ラボ「シーン切り替え1」（クレジット不要・収益化可）。なければ自作の3音 */
 const JINGLE_FILE = join(ROOT, "longform/assets/sound/sceneswitch1.mp3");
 
@@ -394,7 +420,8 @@ async function audio(dir: string, tl: Timeline, work: string) {
   // 声・BGM・ジングルの位置・長さが前と同じなら、前の audio.m4a を使い回す（11/24 ユーザー「声が変わっていない時は使い回す」）
   const at0 = tl.chapters.slice(1).map((c) => Math.round(chapterShownAt(c) * 1000));
   const fileKey = (f: string) => (existsSync(f) ? createHash("sha1").update(readFileSync(f)).digest("hex") : "none");
-  const akey = createHash("sha1").update(JSON.stringify([fileKey(voice), fileKey(BGM), fileKey(JINGLE_FILE), total, at0, VOICE_LUFS, BGM_VOLUME, "audio-v1"])).digest("hex").slice(0, 16);
+  const ses = seEvents(tl).filter((e) => existsSync(join(SE_DIR, `${e.kind}.mp3`)));
+  const akey = createHash("sha1").update(JSON.stringify([fileKey(voice), fileKey(BGM), fileKey(JINGLE_FILE), total, at0, VOICE_LUFS, BGM_VOLUME, "audio-v1", ses, SE_DB])).digest("hex").slice(0, 16);
   const cached = join(work, `audio-${akey}.m4a`);
   if (existsSync(cached)) {
     copyFileSync(cached, join(work, "audio.m4a"));
@@ -414,12 +441,23 @@ async function audio(dir: string, tl: Timeline, work: string) {
   const at = tl.chapters.slice(1).map((c) => Math.round(chapterShownAt(c) * 1000));
   const jingles = `[2:a]${stereo},asplit=${at.length}${at.map((_, i) => `[j${i}]`).join("")};` + at.map((ms, i) => `[j${i}]adelay=${ms}|${ms}[d${i}];`).join("");
   console.log(`  ジングル ${at.length} か所（${at.map((ms) => fmtClock(ms / 1000)).join("・")}）`);
+  // 効果音: 種類ごとに1つの入力を分けて、鳴らす秒へずらす
+  const kinds = (["pop", "whoosh"] as const).filter((k) => ses.some((e) => e.kind === k));
+  const seInputs = kinds.flatMap((k) => ["-i", join(SE_DIR, `${k}.mp3`)]);
+  let seGraph = "";
+  const seLabels: string[] = [];
+  kinds.forEach((k, ki) => {
+    const list = ses.filter((e) => e.kind === k);
+    seGraph += `[${3 + ki}:a]${stereo},volume=${SE_DB[k]}dB,asplit=${list.length}${list.map((_, i) => `[s${ki}_${i}]`).join("")};`;
+    list.forEach((e, i) => { const ms = Math.round(e.at * 1000); seGraph += `[s${ki}_${i}]adelay=${ms}|${ms}[e${ki}_${i}];`; seLabels.push(`[e${ki}_${i}]`); });
+  });
+  if (ses.length) console.log(`  効果音 ${ses.length} か所（pop ${ses.filter((e) => e.kind === "pop").length}・whoosh ${ses.filter((e) => e.kind === "whoosh").length}）`);
   await ffmpeg(
-    ["-y", "-threads", "2", "-i", voice, "-stream_loop", "-1", "-i", BGM, "-i", jingle, "-filter_complex",
+    ["-y", "-threads", "2", "-i", voice, "-stream_loop", "-1", "-i", BGM, "-i", jingle, ...seInputs, "-filter_complex",
       `[0:a]${stereo},volume=${gain.toFixed(2)}dB,apad=whole_dur=${total}[v];` +
       `[1:a]${stereo},atrim=0:${total},asetpts=PTS-STARTPTS,volume=${BGM_VOLUME},afade=t=in:st=0:d=2,afade=t=out:st=${(total - 4).toFixed(3)}:d=4[b];` +
-      jingles +
-      `[v][b]${at.map((_, i) => `[d${i}]`).join("")}amix=inputs=${at.length + 2}:duration=first:normalize=0[a]`,
+      jingles + seGraph +
+      `[v][b]${at.map((_, i) => `[d${i}]`).join("")}${seLabels.join("")}amix=inputs=${at.length + 2 + seLabels.length}:duration=first:normalize=0[a]`,
       "-map", "[a]", "-t", String(total), "-c:a", "pcm_s16le", mix],
     "声と BGM を混ぜる",
   );
