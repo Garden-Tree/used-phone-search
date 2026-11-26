@@ -39,6 +39,12 @@ description: used.gadelog.com の YouTube（@used_gadelog「中古スマホ一�
 6. ユーザーに見せる（SendUserFile）→ OK ならアップロードのときにこの画像を入れる
 7. コミット（`longform/thumb-*.tsx`・`thumb-*.py`。素材の PNG と assets は Git に入れない）
 
+## A/B テスト（11/27〜・ユーザー決定。毎回やる）
+
+- 横動画は毎回、型の違う2〜3枚を作り、Studio の「テストと比較」（サムネのテスト）に入れる。凝った1枚より、違いが1つの2枚（例: 数字が最大／問いが最大、写真の大小、札の文言）
+- 結果（勝った案・視聴時間の割合）は ideas/YYYY-MM-DD.md と docs/video-metrics.tsv の回に書き、勝った型をこのスキルの「型」に反映する
+- 1本で変えるのは1要素だけ（何が効いたか分かるように）
+
 ## 記録
 
 - サムネの決まりはこのスキルだけに置く（longform/README.md「サムネ」はここを指す1行だけ）。型を変えたらここを直す
