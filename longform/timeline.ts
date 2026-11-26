@@ -212,7 +212,7 @@ function resolveReveal(scene: SceneData, lines: TimelineLine[], chStart: number,
   if (scene.think) { words.think = scene.think.cue ?? null; find("think", scene.think.cue); }
   if (scene.stamp) { words.stamp = scene.stamp.cue ?? null; find("stamp", scene.stamp.cue); }
   if (scene.type === "versus") { find("item:0", scene.left.cue); find("item:1", scene.right.cue); if (scene.win) { words.win = scene.win.cue ?? null; find("win", scene.win.cue); } }
-  if (scene.type === "lineup") scene.items.forEach((it, i) => find(`item:${i}`, it.cue));
+  if (scene.type === "lineup") scene.items.forEach((it, i) => { words[`item:${i}`] = it.cue ?? null; find(`item:${i}`, it.cue); });
   if (scene.type === "trend") { words.draw = scene.draw ?? null; find("draw", scene.draw); if (scene.callout) reveal.callout = round((reveal.draw ?? 0) + 2.4); } // 2.4 = scenes.tsx の TREND_SEC
   if (scene.type === "flow") scene.branches.forEach((b, i) => find(`item:${i}`, b.cue));
   if (scene.type === "problems") scene.items.forEach((it, i) => find(`item:${i}`, it.cue));
