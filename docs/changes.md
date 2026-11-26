@@ -334,3 +334,4 @@
 - 11/26 台本の「効く」を言い換え（12・11 2か所・12/1 1か所。ユーザー）。longform-video スキルにも書いた
 - 11/26 14時台 12・11 横動画を公開（70oYNTqwgRU・予定の 11/28 を前倒し・ユーザー）。/iphone/iphone-11 に埋め込み（lib/videos.ts keep1211）・固定コメント
 - 11/26 Microsoft Clarity を入れた（プロジェクト used.gadelog.com・ID zjkv2gae7n・lazyOnload・本番のみ）。/about のプライバシーポリシーに追記。1週間ためて iPhone 16 と iPad 第9世代の機種ページを比べる（④ 入口を足す案は、上部の3行と固定の「在庫を見る」がすでにあったので取り下げ）
+- 11/26 横動画「電池が長持ちする中古iPhone」構成案（longform/2026-12-04-battery-long/outline.md・Apple 技術仕様30機種のビデオ再生）・YouTube 未返信コメント 0件
