@@ -336,3 +336,4 @@
 - 11/26 Microsoft Clarity を入れた（プロジェクト used.gadelog.com・ID zjkv2gae7n・lazyOnload・本番のみ）。/about のプライバシーポリシーに追記。1週間ためて iPhone 16 と iPad 第9世代の機種ページを比べる（④ 入口を足す案は、上部の3行と固定の「在庫を見る」がすでにあったので取り下げ）
 - 11/26 横動画「電池が長持ちする中古iPhone」構成案（longform/2026-12-04-battery-long/outline.md・Apple 技術仕様30機種のビデオ再生）・YouTube 未返信コメント 0件
 - 11/26 横動画「BF・Amazon の新品 iPhone（Air・16 Plus・17 Pro Max）と中古」第1稿（セール価格は空欄・11/27 に Amazon の商品ページで埋める。ユーザーの依頼）
+- 11/26 Amazon アソシエイトのサイト一覧に YouTube（@used_gadelog）を追加（ユーザー OK・案B）。BF 回は Amazon のリンクを説明欄に入れ、値段も言う（ポリシーの価格表示の条件はユーザーに伝えた上での判断・%オフの言い方はしない・日時を添える）。used.gadelog.com は一覧に無いまま（別に判断）
