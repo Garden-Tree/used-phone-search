@@ -192,10 +192,10 @@ iPhone 12・11 を使っている人向けに、電池交換で使い続ける�
 
 （チャプターは書き出し後の実測）
 
-iPhone 12 の買取価格: https://used.gadelog.com/iphone/iphone-12/kaitori?utm_source=youtube&utm_medium=social&utm_campaign=long_20261128
-iPhone 11 の買取価格: https://used.gadelog.com/iphone/iphone-11/kaitori?utm_source=youtube&utm_medium=social&utm_campaign=long_20261128
-iPhone 13 の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-13?utm_source=youtube&utm_medium=social&utm_campaign=long_20261128
-全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261128
+iPhone 12 の買取価格: https://used.gadelog.com/iphone/iphone-12/kaitori?utm_source=youtube&utm_medium=social&utm_campaign=long_20261126
+iPhone 11 の買取価格: https://used.gadelog.com/iphone/iphone-11/kaitori?utm_source=youtube&utm_medium=social&utm_campaign=long_20261126
+iPhone 13 の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-13?utm_source=youtube&utm_medium=social&utm_campaign=long_20261126
+全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261126
 
 イラスト：いらすとや
 動画素材：みりんの動画素材 https://miirriin.com/
