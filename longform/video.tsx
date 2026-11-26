@@ -52,28 +52,39 @@ const BGM = existsSync(BGM_LONG) ? BGM_LONG : join(ROOT, "shorts/assets/bgm.mp3"
 const BGM_CREDIT = existsSync(BGM_LONG) ? "BGM: Cyber Society by のる（OpenTracks）" : "BGM: Okay For Now - Televisions（YouTube オーディオライブラリ）";
 /**
  * 効果音（12/1 の回〜・11/27 ユーザー「揺らすとき・画面が変わるときに SE を」）: shorts/assets/se（効果音ラボ・クレジット不要）。
- * 項目が出る・写真が替わる＝pop、台詞が項目に触れて揺れる＝whoosh（各項目の最初の1回だけ）。近すぎる音（0.7 秒以内）と章のジングルの前後 0.8 秒は鳴らさない。
+ * 項目が出る・写真が替わる・✓＝pop、台詞が項目に触れて揺れる＝shake1〜3（各項目の最初の1回・順番に替える）、蛍光ペン＝mark1〜3（11/27 効果音ラボ
+ * カーソル移動2・6・キラッ2／ちょこっと触る・ぷよん・決定34）。近すぎる音（0.7 秒以内）と章のジングルの前後 0.8 秒は鳴らさない。
  * LONGFORM_SE=0 で止める
  */
 const SE_DIR = join(ROOT, "shorts/assets/se");
-const SE_DB: Record<"pop" | "whoosh", number> = { pop: -15, whoosh: -20 };
-function seEvents(tl: Timeline): { at: number; kind: "pop" | "whoosh" }[] {
+/** 種類 → 音量（dB）。揺れ（shake1〜3）と蛍光ペン（mark1〜3）は順番に替える（11/27 ユーザー「2・3種類」）。長い音は 0.7 秒で切る */
+const SE_DB: Record<string, number> = { pop: -15, shake1: -17, shake2: -17, shake3: -19, mark1: -17, mark2: -17, mark3: -20 };
+const SE_MAX = 0.7;
+type SeEv = { at: number; kind: string };
+function seEvents(tl: Timeline): SeEv[] {
   if (process.env.LONGFORM_SE === "0") return [];
   const jingles = tl.chapters.slice(1).map((c) => chapterShownAt(c));
-  const raw: { at: number; kind: "pop" | "whoosh" }[] = [];
+  const raw: SeEv[] = [];
+  let nShake = 0, nMark = 0;
   for (const ch of tl.chapters) {
     if (ch.scene.type === "endScreen") continue;
     for (const [k, r] of Object.entries(ch.scene.reveal)) if (r > 0.05 && /^(item|img|chk):/.test(k)) raw.push({ at: ch.start + r, kind: "pop" });
-    for (const ts of Object.values(ch.scene.mention ?? {})) if (ts.length) raw.push({ at: ch.start + ts[0], kind: "whoosh" });
+    for (const ts of Object.values(ch.scene.mention ?? {})) if (ts.length) raw.push({ at: ch.start + ts[0], kind: "shake" });
+    for (const rs of Object.values(ch.scene.marks ?? {})) for (const [a] of rs) raw.push({ at: ch.start + a + 0.05, kind: "mark" });
   }
   raw.sort((a, b) => a.at - b.at);
-  const out: typeof raw = [];
+  // 近い音（0.7 秒以内）は1つに。蛍光ペン＞揺れ（行が光る音を優先）・項目が出る音はそのまま先着
+  const kept: SeEv[] = [];
   for (const e of raw) {
     if (jingles.some((j) => Math.abs(j - e.at) < 0.8)) continue;
-    if (out.length && e.at - out[out.length - 1].at < 0.7) continue;
-    out.push(e);
+    const prev = kept[kept.length - 1];
+    if (prev && e.at - prev.at < 0.7) {
+      if (e.kind === "mark" && prev.kind === "shake") kept[kept.length - 1] = e;
+      continue;
+    }
+    kept.push(e);
   }
-  return out;
+  return kept.map((e) => ({ at: e.at, kind: e.kind === "shake" ? `shake${(nShake++ % 3) + 1}` : e.kind === "mark" ? `mark${(nMark++ % 3) + 1}` : e.kind }));
 }
 
 /** 章のジングル: 効果音ラボ「シーン切り替え1」（クレジット不要・収益化可）。なければ自作の3音 */
@@ -445,16 +456,16 @@ async function audio(dir: string, tl: Timeline, work: string) {
   const jingles = `[2:a]${stereo},asplit=${at.length}${at.map((_, i) => `[j${i}]`).join("")};` + at.map((ms, i) => `[j${i}]adelay=${ms}|${ms}[d${i}];`).join("");
   console.log(`  ジングル ${at.length} か所（${at.map((ms) => fmtClock(ms / 1000)).join("・")}）`);
   // 効果音: 種類ごとに1つの入力を分けて、鳴らす秒へずらす
-  const kinds = (["pop", "whoosh"] as const).filter((k) => ses.some((e) => e.kind === k));
+  const kinds = [...new Set(ses.map((e) => e.kind))].sort();
   const seInputs = kinds.flatMap((k) => ["-i", join(SE_DIR, `${k}.mp3`)]);
   let seGraph = "";
   const seLabels: string[] = [];
   kinds.forEach((k, ki) => {
     const list = ses.filter((e) => e.kind === k);
-    seGraph += `[${3 + ki}:a]${stereo},volume=${SE_DB[k]}dB,asplit=${list.length}${list.map((_, i) => `[s${ki}_${i}]`).join("")};`;
+    seGraph += `[${3 + ki}:a]${stereo},atrim=0:${SE_MAX},afade=t=out:st=${SE_MAX - 0.15}:d=0.15,volume=${SE_DB[k] ?? -18}dB,asplit=${list.length}${list.map((_, i) => `[s${ki}_${i}]`).join("")};`;
     list.forEach((e, i) => { const ms = Math.round(e.at * 1000); seGraph += `[s${ki}_${i}]adelay=${ms}|${ms}[e${ki}_${i}];`; seLabels.push(`[e${ki}_${i}]`); });
   });
-  if (ses.length) console.log(`  効果音 ${ses.length} か所（pop ${ses.filter((e) => e.kind === "pop").length}・whoosh ${ses.filter((e) => e.kind === "whoosh").length}）`);
+  if (ses.length) console.log(`  効果音 ${ses.length} か所（${kinds.map((k) => `${k} ${ses.filter((e) => e.kind === k).length}`).join("・")}）`);
   await ffmpeg(
     ["-y", "-threads", "2", "-i", voice, "-stream_loop", "-1", "-i", BGM, "-i", jingle, ...seInputs, "-filter_complex",
       `[0:a]${stereo},volume=${gain.toFixed(2)}dB,apad=whole_dur=${total}[v];` +
