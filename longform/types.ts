@@ -23,6 +23,10 @@ export type BarsScene = {
   unit: "万円" | "円" | "件" | "機種" | "年" | "時間" | "g";
   rows: { label: string; sub?: string; median: number; min?: number; minLabel?: string; stock?: string; pick?: boolean; /** 札の文字（なければ「おすすめ」） */ pickLabel?: string; /** 台詞の中でこの行を指す言葉（なければラベルの先頭の語） */ say?: string; cue?: string; minCue?: string }[];
   note?: string;
+  /** 2つの行の差の札（11/27 動きの見本〜）。at はその章の頭からの秒（timeline が cue から入れる） */
+  diffs?: { from: number; to: number; label: string; cue?: string; at?: number }[];
+  /** 数字の札・値のポップを出す（11/27 動きの見本〜） */
+  motion?: boolean;
 };
 
 /** 2本ずつの棒（新品と中古・無印と Pro） */

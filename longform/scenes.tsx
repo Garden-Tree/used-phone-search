@@ -270,6 +270,8 @@ const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 const ease = (x: number) => 1 - Math.pow(1 - clamp01(x), 3);
 /** 項目が出る進み具合（0〜1）。0.4 秒で出きる */
 const shown = (reveal: Record<string, number>, key: string, t: number) => ease((t - (reveal[key] ?? 0)) / 0.4);
+/** ポップ（11/27 動きの見本）: 0 から peak まで 0.12 秒で膨らみ、0.35 秒で 1 に戻る。出る前は 0（見えない）、出たあとは 1 */
+const popScale = (u: number, peak = 1.18) => (u < 0 ? 1 : u < 0.12 ? 0.6 + (peak - 0.6) * easeOut(u / 0.12) : u < 0.47 ? peak - (peak - 1) * easeOut((u - 0.12) / 0.35) : 1);
 
 /**
  * 揺れ（11/23〜・ユーザーの指示）: 項目が出た・字幕が切り替わった・話し始めた瞬間に、短く揺らす。
@@ -452,7 +454,7 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
   const DOT = 30;
   const MIN_H = MIN_FONT + 4;
   return (
-    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+    <div style={{ ...col, position: "relative", width: INNER_W, height: "100%" }}>
       <Heading text={s.heading} />
       {s.rows.map((r, i) => {
         const p = shown(reveal, `item:${i}`, t);
@@ -488,13 +490,30 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
                 <div style={{ display: "flex", position: "absolute", left: Math.max(0, Math.round((track * r.min) / max) - 40), top: DOT + 10, fontSize: MIN_H - 4, fontWeight: 900, color: C.red, opacity: pm, whiteSpace: "nowrap" }}>{`最安 ${r.minLabel ?? money(r.min, s.unit)}`}</div>
               ) : null}
             </div>
-            <div style={{ ...col, width: VALUE, marginLeft: GAP, opacity: p }}>
-              <div style={{ display: "flex", fontSize: fit(money(r.median, s.unit), VALUE, F.value, MIN_FONT, "棒の値"), fontWeight: 900, color: C.ink, lineHeight: 1.1, whiteSpace: "nowrap" }}>{shownValue}</div>
+            <div style={{ ...col, width: VALUE, marginLeft: GAP, opacity: p, ...(s.motion ? { transform: `scale(${popScale(t - (reveal[`item:${i}`] ?? -99))})`, transformOrigin: "left center" } : {}) }}>
+              <div style={{ display: "flex", fontSize: fit(money(r.median, s.unit), VALUE, F.value, MIN_FONT, "棒の値"), fontWeight: 900, color: s.motion && popScale(t - (reveal[`item:${i}`] ?? -99)) > 1.01 ? C.red : C.ink, lineHeight: 1.1, whiteSpace: "nowrap" }}>{shownValue}</div>
               {r.stock ? <div style={{ display: "flex", fontSize: F.small, fontWeight: 500, color: C.sub, lineHeight: LH }}>{r.stock}</div> : null}
             </div>
           </div>
         );
       })}
+      {s.motion && s.diffs
+        ? s.diffs.map((d, k) => {
+            const u = t - (d.at ?? 1e9);
+            if (u < 0) return null;
+            const headH = headingH(s.heading);
+            const y1 = headH + rowH * (d.from + 0.5), y2 = headH + rowH * (d.to + 0.5);
+            const sc = popScale(u, 1.25);
+            const x = INNER_W - VALUE - GAP - 20;
+            return (
+              <div key={`d${k}`} style={{ display: "flex", position: "absolute", left: 0, top: 0, width: INNER_W, height: "100%" }}>
+                {/* 2つの行をつなぐ括弧（右の値の手前） */}
+                <div style={{ display: "flex", position: "absolute", left: x, top: y1, width: 18, height: y2 - y1, borderTop: `6px solid ${C.red}`, borderRight: `6px solid ${C.red}`, borderBottom: `6px solid ${C.red}`, borderRadius: 6, opacity: ease(u / 0.25) }} />
+                <div style={{ display: "flex", position: "absolute", right: VALUE + GAP + 60, top: (y1 + y2) / 2 - 46, height: 92, alignItems: "center", padding: "0 28px", borderRadius: 18, background: C.red, color: C.white, fontSize: 52, fontWeight: 900, whiteSpace: "nowrap", boxShadow: "0 8px 24px rgba(0,0,0,0.25)", transform: `scale(${sc})`, transformOrigin: "right center" }}>{d.label}</div>
+              </div>
+            );
+          })
+        : null}
       <Note text={s.note} />
     </div>
   );
@@ -956,6 +975,8 @@ export type FrameOpts = {
    * speakerSprite・ringSprite の小さな絵を ffmpeg で毎コマ重ねる）
    */
   layer?: "base";
+  /** カメラ（11/27 動きの見本〜）: カードの中身を拡大・移動する。x・y は px（拡大の後） */
+  camera?: { scale: number; x: number; y: number };
 };
 
 /** 話している人の立ち絵の y のずれ（話し始めの浮き上がり＋声の大きさ）。frameAt と video.tsx で同じ式 */
@@ -1044,8 +1065,14 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
       <ChapterBar ch={ch} count={tl.chapters.length} />
       <div style={{ display: "flex", position: "absolute", right: (L.headerX ?? 40) + 8, top: HEADER.y + 16, fontSize: MIN_FONT, fontWeight: 900, color: C.url }}>used.gadelog.com</div>
-      <div style={{ ...col, position: "absolute", left: CARD.x, top: CARD.y, width: CARD.w, height: CARD.h, padding: CARD.pad, background: C.white, borderRadius: 24 }}>
-        <SceneBody ch={scene} t={local} />
+      <div style={{ ...col, position: "absolute", left: CARD.x, top: CARD.y, width: CARD.w, height: CARD.h, padding: CARD.pad, background: C.white, borderRadius: 24, ...(opts.camera ? { overflow: "hidden" } : {}) }}>
+        {opts.camera ? (
+          <div style={{ ...col, width: "100%", height: "100%", transform: `translate(${opts.camera.x}px, ${opts.camera.y}px) scale(${opts.camera.scale})`, transformOrigin: "center center" }}>
+            <SceneBody ch={scene} t={local} />
+          </div>
+        ) : (
+          <SceneBody ch={scene} t={local} />
+        )}
       </div>
       {ch.scene.type === "endScreen" ? <EndScreenSlots s={ch.scene} /> : null}
       {/* 立ち絵はカードの上に描く（d2 では立ち絵がカードの下の角に少し重なる） */}
