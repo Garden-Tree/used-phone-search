@@ -52,6 +52,8 @@ export type ChecklistScene = {
   type: "checklist";
   heading: string;
   items: { text: string; sub?: string; cue?: string }[];
+  /** 2 で2列（左→右・上→下に 1,2 / 3,4 / 5,6。6項目を3x2に。11/26〜）。行の文字は1行（長ければ縮める） */
+  columns?: 1 | 2;
   note?: string;
 };
 

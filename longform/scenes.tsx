@@ -594,6 +594,7 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
 }
 
 function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Record<string, number> }) {
+  if (s.columns === 2) return <Checklist2 s={s} t={t} reveal={reveal} />;
   // 行の高さはカードの残り（見出し・脚注を除く）で割る（d2 は脚注なし。11/23: 4行で下が切れた）
   const rowH = Math.min(cap(150), Math.floor(bodyH(s.heading, s.note) / s.items.length));
   const NUM = Math.min(cap(76), Math.floor(rowH * 0.62));
@@ -613,6 +614,42 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
           </div>
         );
       })}
+      <Note text={s.note} />
+    </div>
+  );
+}
+
+/** 2列のチェックリスト（1,2 / 3,4 / 5,6・11/26 ユーザー「3x2にできない？」）。1つのマスは番号＋文字（1行）＋補足 */
+function Checklist2({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Record<string, number> }) {
+  const GAP = cap(40);
+  const cellW = Math.floor((INNER_W - GAP) / 2);
+  const rows = Math.ceil(s.items.length / 2);
+  const rowH = Math.floor(bodyH(s.heading, s.note) / rows);
+  const NUM = Math.min(cap(64), Math.floor(rowH * 0.36));
+  const textW = cellW - NUM - 24;
+  const size = Math.min(cap(46), Math.floor(rowH * 0.24));
+  return (
+    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+      <Heading text={s.heading} />
+      {Array.from({ length: rows }, (_, r) => (
+        <div key={r} style={{ ...row, width: INNER_W, height: rowH, borderTop: r ? `2px solid ${C.line}` : "none", alignItems: "center" }}>
+          {[0, 1].map((c) => {
+            const i = r * 2 + c;
+            const it = s.items[i];
+            if (!it) return <div key={c} style={{ display: "flex", width: cellW }} />;
+            const p = shown(reveal, `item:${i}`, t);
+            return (
+              <div key={c} style={{ ...row, width: cellW, marginLeft: c ? GAP : 0, alignItems: "center", opacity: p, ...bump(s, `item:${i}`) }}>
+                <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: Math.round(NUM * 0.58), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0, paddingBottom: Math.round(NUM * 0.1) }}>{String(i + 1)}</div>
+                <div style={{ ...col, width: textW, marginLeft: 24 }}>
+                  <div style={{ display: "flex", fontSize: fit(it.text, textW, size, MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
+                  {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, textW, cap(32), MIN_FOOT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ))}
       <Note text={s.note} />
     </div>
   );
