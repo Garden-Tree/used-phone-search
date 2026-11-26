@@ -356,3 +356,4 @@
 - 11/27 立ち絵の表情を台詞で切り替える見本（chara-video-expr.py・scenes.tsx の lineExpr・LONGFORM_EXPR=1 のときだけ）。BF Air の冒頭38秒で見本
 - 11/27 d2 の立ち絵: つむぎの顔をずんだもんと同じ大きさに（bustRight 0.34・topRight・dxRight で少し左へ。ユーザー）
 - 11/27 リップシンクの見本: VOICEVOX のモーラの時刻から母音ごとの口（あいうえお・ん/っ/間は閉じる）。shorts/voice.ts の visemesOf・chara-video-expr.py の口の絵・LONGFORM_LIPSYNC=1 のときだけ
+- 11/27 表情の切り替えとリップシンクを 12/1 の回から標準に（ユーザー OK・LONGFORM_EXPR=0／LONGFORM_LIPSYNC=0 で止める・README「動き」）

@@ -250,8 +250,8 @@ function plan(tl: Timeline, art: CharaArt, levels: number[] = [], vis: Map<strin
 
 // ───────── 各段 ─────────
 
-/** 表情を台詞で切り替える（11/27〜 見本。LONGFORM_EXPR=1 のときだけ） */
-const EXPR_ON = process.env.LONGFORM_EXPR === "1";
+/** 表情を台詞で切り替える（12/1 の回から標準・11/27 ユーザー。LONGFORM_EXPR=0 で止める） */
+const EXPR_ON = process.env.LONGFORM_EXPR !== "0";
 /** ffmpeg のスレッド数（11/23〜 ユーザー「CPU をガンガン使っていい」。既定 論理コア数 − 2・LONGFORM_FF_THREADS で変える） */
 const FF_THREADS = String(Number(process.env.LONGFORM_FF_THREADS ?? Math.max(1, os.cpus().length - 2)));
 /** 話している間の動き（字幕の縁・立ち絵）を何 Hz で描くか（既定 30＝毎コマ。11/24 ユーザー「15Hz にしないで」。LONGFORM_MOTION_HZ で変える） */
@@ -668,10 +668,13 @@ async function check(dir: string, tl: Timeline) {
   const bad = tl.chapters.flatMap((c) => c.lines).filter((l) => l.stale || l.estimated);
   if (bad.length) throw new Error(`古い声・見積もりの行が ${bad.length} 行あります。voice-draft.ts → timeline.ts をやり直してください`);
 
-  // リップシンク（11/27〜 見本。LONGFORM_LIPSYNC=1 のときだけ）: 台詞の WAV ごとに母音の時刻表を読む（なければ VOICEVOX でクエリを作り直す）
+  // リップシンク（12/1 の回から標準・11/27 ユーザー。LONGFORM_LIPSYNC=0 で止める）: 台詞の WAV ごとに母音の時刻表を読む
+  // （なければ VOICEVOX でクエリを作り直す。エンジンが止まっていれば、その声は今までの開く・閉じるだけ）
   const vis = new Map<string, [number, string][]>();
-  if (process.env.LONGFORM_LIPSYNC === "1") {
-    for (const ch of tl.chapters) for (const l of ch.lines) if (l.audio && !vis.has(l.audio)) { const v = await visemesOf(l.audio); if (v) vis.set(l.audio, v); }
+  if (process.env.LONGFORM_LIPSYNC !== "0") {
+    for (const ch of tl.chapters) for (const l of ch.lines) if (l.audio && !vis.has(l.audio)) {
+      try { const v = await visemesOf(l.audio); if (v) vis.set(l.audio, v); } catch { /* エンジンなし */ }
+    }
     console.log(`  リップシンク: ${vis.size} 本の声`);
   }
   const p = plan(tl, art, voiceLevels(dir), vis);
