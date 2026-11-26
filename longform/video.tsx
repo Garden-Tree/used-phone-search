@@ -28,7 +28,7 @@ import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
 import { visemesOf } from "../shorts/voice";
-import { ANIM_STEPS, END_SCREEN, FPS, H, LAYOUT_NAME, MIN_FONT, W, animAt, animEvents, chapterShownAt, emptySprite, growPoints, ringPx, ringSprite, speakerDy, speakerSprite, spriteRegion, subDy, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, lineExpr, burstOn, BURST_SEC, type CharaArt, type Expr } from "./scenes";
+import { ANIM_STEPS, END_SCREEN, FPS, H, LAYOUT_NAME, MIN_FONT, W, animAt, animEvents, chapterShownAt, emptySprite, growPoints, ringPx, ringSprite, speakerDy, speakerSprite, spriteRegion, subDy, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, lineExpr, burstOn, BURST_SEC, markedKeys, slideFrame, SLIDE_F, type CharaArt, type Expr } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, ThumbnailData, Timeline } from "./types";
 
@@ -202,6 +202,9 @@ function plan(tl: Timeline, art: CharaArt, levels: number[] = [], vis: Map<strin
     points.add(chapterShownAt(ch));
     points.add(ch.start);
     for (const r of Object.values(ch.scene.reveal)) if (r > 0) points.add(ch.start + r);
+    // 蛍光ペンが消える秒・章の切り替えでカードが寄ってくる間
+    for (const rs of Object.values(ch.scene.marks ?? {})) for (const [a, b] of rs) { points.add(ch.start + a); points.add(ch.start + b); }
+    if (ch.index > 1) for (let j = 1; j <= SLIDE_F; j++) points.add(Math.round((chapterShownAt(ch) + j / FPS) * 1000) / 1000);
     // 集中線が消える秒
     if (ch.scene.reveal.burst !== undefined) points.add(ch.start + ch.scene.reveal.burst + BURST_SEC);
     for (const l of ch.lines) {
@@ -257,7 +260,7 @@ function plan(tl: Timeline, art: CharaArt, levels: number[] = [], vis: Map<strin
     const open = vowel !== undefined ? vowel !== "_" : !!(a?.talk && st.talking && (levels.length ? level >= 0.5 : !moving && Math.floor((frame - lineFrame) / step) % 2 === 0));
     // 土台: 話している人の立ち絵・縁の線・声の大きさ・口を含めない
     const { spk: _spk, ...animBase } = anim;
-    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), animBase, plateOpacity(t), burstOn(st.ch.scene.reveal, localAt(st.ch, t))]);
+    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), animBase, plateOpacity(t), burstOn(st.ch.scene.reveal, localAt(st.ch, t)), markedKeys(st.ch.scene, localAt(st.ch, t)), slideFrame(st.ch, t) ?? -1]);
     const plate = t <= 10;
     push("base", frame, { f: `c-${sha(["layers1", code, chHash.get(st.ch.index), key, plate, artKeys])}`, k: "base", t, level });
     for (const side of ["ずんだもん", "つむぎ"] as const) {

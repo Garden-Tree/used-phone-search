@@ -296,6 +296,29 @@ function burstImage(w: number, h: number): string {
   burstSvg = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
   return burstSvg;
 }
+/** 蛍光ペン（11/27〜）: 台詞の頭で項目に触れた台詞の間、その行に薄い黄色を敷く（timeline.ts の resolveMarks） */
+export const MARK_SEC = 1.8;
+const MARK_BG = "#FFF1A8";
+export function markedKeys(scene: { marks?: Record<string, [number, number][]> }, local: number): string[] {
+  return Object.entries(scene.marks ?? {}).filter(([, rs]) => rs.some(([a, b]) => local >= a && local < b)).map(([k]) => k).sort();
+}
+const isMarked = (scene: object, key: string, t: number) => markedKeys(scene as { marks?: Record<string, [number, number][]> }, t).includes(key);
+/** 章の切り替え（11/27〜）: カードが右から SLIDE_PX 寄ってくる（SLIDE_F コマ・ease-out） */
+export const SLIDE_F = 10;
+const SLIDE_PX = 90;
+export function slideFrame(ch: TimelineChapter, t: number): number | undefined {
+  if (ch.index <= 1) return undefined;
+  const f = Math.floor((t - chapterShownAt(ch)) * FPS + 1e-6);
+  return f >= 0 && f < SLIDE_F ? f : undefined;
+}
+/** 表の金額を 0 から数え上げる（横棒と同じ伸び方。「145,900円（セール）」の頭の数字だけ） */
+function countUp(v: string, g: number): string {
+  if (g >= 1) return v;
+  const m = v.match(/^([0-9]{1,3}(?:,[0-9]{3})+)(.*)$/);
+  if (!m) return v;
+  return `${Math.round(Number(m[1].replace(/,/g, "")) * g).toLocaleString("ja-JP")}${m[2]}`;
+}
+
 /** 表のセルの ○・× を色つきの丸に（11/27〜） */
 function Mark({ v, size, pop = 1 }: { v: string; size: number; pop?: number }) {
   const ok = v === "○" || v === "◯" || v === "✓";
@@ -327,7 +350,7 @@ const GROW = 18;
 export function growPoints(tl: Timeline): number[] {
   const out: number[] = [];
   for (const ch of tl.chapters) {
-    if (ch.scene.type !== "bars") continue;
+    if (ch.scene.type !== "bars" && ch.scene.type !== "table") continue;
     for (const [k, r] of Object.entries(ch.scene.reveal)) {
       if (!k.startsWith("item:")) continue;
       const base = r > 0 ? ch.start + r : chapterShownAt(ch);
@@ -368,7 +391,7 @@ export function animAt(tl: Timeline, t: number): { items: Record<string, number>
     }
   }
   const grow: Record<string, number> = {};
-  if (ch.scene.type === "bars") {
+  if (ch.scene.type === "bars" || ch.scene.type === "table") {
     for (const [k, r] of Object.entries(ch.scene.reveal)) {
       if (!k.startsWith("item:")) continue;
       const base = r > 0 ? ch.start + r : chapterShownAt(ch);
@@ -503,7 +526,7 @@ function Bars({ s, t, reveal }: { s: BarsScene; t: number; reveal: Record<string
         const needH = Math.max(labelFont * LH + subs.length * F.sub * LH, F.value * 1.1 + (r.stock ? F.small * LH : 0), DOT + 8 + (r.min !== undefined ? MIN_H : 0));
         if (needH > rowH + 2) report(`棒の行「${r.label}」は高さ ${Math.round(needH)}px 要るが ${rowH}px しかない（行を減らすか補足を短く）`);
         return (
-          <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0, borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
+          <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p > 0 ? 1 : 0, borderTop: i ? `2px solid ${C.line}` : "none", background: isMarked(s, `item:${i}`, t) ? MARK_BG : "transparent", borderRadius: 10, ...bump(s, `item:${i}`) }}>
             <div style={{ ...col, width: LABEL }}>
               <div style={{ ...row }}>
                 <div style={{ display: "flex", fontSize: labelFont, fontWeight: 900, color: C.ink, lineHeight: LH, whiteSpace: "nowrap" }}>{r.label}</div>
@@ -630,7 +653,7 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
       {s.rows.map((r, i) => {
         const p = shown(reveal, `item:${i}`, t);
         return (
-          <div key={i} style={{ ...row, width: INNER_W, height: rowH, background: i % 2 ? C.rowAlt : C.white, borderBottom: `2px solid ${C.line}`, opacity: p, ...bump(s, `item:${i}`) }}>
+          <div key={i} style={{ ...row, width: INNER_W, height: rowH, background: isMarked(s, `item:${i}`, t) ? MARK_BG : i % 2 ? C.rowAlt : C.white, borderBottom: `2px solid ${C.line}`, opacity: p, ...bump(s, `item:${i}`) }}>
             {s.columns.map((_, j) => {
               const v = r.cells[j] ?? "";
               const em = (r.emphasis ?? s.emphasis)?.includes(j);
@@ -641,7 +664,7 @@ function Table({ s, t, reveal }: { s: TableScene; t: number; reveal: Record<stri
                 return <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX }}><Mark v={v.trim()} size={Math.round(cellFont * 1.15)} pop={pop} /></div>;
               }
               return (
-                <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX, fontSize: cellFont, fontWeight: em ? 900 : 500, color: em ? C.red : C.ink, whiteSpace: "nowrap" }}>{v}</div>
+                <div key={j} style={{ display: "flex", width: widths[j], paddingLeft: PADX, fontSize: cellFont, fontWeight: em ? 900 : 500, color: em ? C.red : C.ink, whiteSpace: "nowrap" }}>{j > 0 ? countUp(v, (s as { grow?: Record<string, number> }).grow?.[`item:${i}`] ?? 1) : v}</div>
               );
             })}
           </div>
@@ -664,7 +687,7 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
       {s.items.map((it, i) => {
         const p = shown(reveal, `item:${i}`, t);
         return (
-          <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p, borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
+          <div key={i} style={{ ...row, width: INNER_W, height: rowH, opacity: p, borderTop: i ? `2px solid ${C.line}` : "none", background: isMarked(s, `item:${i}`, t) ? MARK_BG : "transparent", borderRadius: 10, ...bump(s, `item:${i}`) }}>
             {(() => {
               // ✓（11/27〜 checks）: checkCue の秒か、項目に台詞が触れた最初の秒から。触れた瞬間に少し大きく
               const sc = s as ChecklistScene & { mention?: Record<string, number[]>; shake?: Record<string, number> };
@@ -674,7 +697,7 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
               const j = (sc as { pulse?: Record<string, number> }).pulse?.[`chk:${i}`];
               const pop = checked && j !== undefined ? 1 + 0.3 * (1 - Math.min(1, j / 8)) : 1;
               // ✓ は緑（赤の ✓ は日本では「まちがい」に見える。11/27 ユーザー）。✓ の前の番号は灰色
-              return <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: checked ? SITE.safe : sc.checks !== false ? C.sub : SITE.safe, color: C.white, fontSize: Math.round(NUM * (checked ? 0.66 : 0.58)), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0, paddingBottom: checked ? 0 : Math.round(NUM * 0.1), transform: `scale(${pop})` }}>{checked ? "✓" : String(i + 1)}</div>;
+              return <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: checked ? SITE.safe : sc.checks !== false && Object.keys(reveal).some((k) => k.startsWith("chk:")) ? C.sub : SITE.safe, color: C.white, fontSize: Math.round(NUM * (checked ? 0.66 : 0.58)), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0, paddingBottom: checked ? 0 : Math.round(NUM * 0.1), paddingLeft: checked ? 0 : Math.round(NUM * 0.06), transform: `scale(${pop})` }}>{checked ? "✓" : String(i + 1)}</div>;
             })()}
             <div style={{ ...col, width: textW, marginLeft: 32 }}>
               <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(56), Math.floor(rowH * 0.5)), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
@@ -709,7 +732,7 @@ function Checklist2({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Re
             const p = shown(reveal, `item:${i}`, t);
             return (
               <div key={c} style={{ ...row, width: cellW, marginLeft: c ? GAP : 0, alignItems: "center", opacity: p, ...bump(s, `item:${i}`) }}>
-                <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: Math.round(NUM * 0.58), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0, paddingBottom: Math.round(NUM * 0.1) }}>{String(i + 1)}</div>
+                <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: Math.round(NUM * 0.58), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0, paddingBottom: Math.round(NUM * 0.1), paddingLeft: Math.round(NUM * 0.06) }}>{String(i + 1)}</div>
                 <div style={{ ...col, width: textW, marginLeft: 24 }}>
                   <div style={{ display: "flex", fontSize: fit(it.text, textW, size, MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
                   {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, textW, cap(32), MIN_FOOT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
@@ -1134,7 +1157,7 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
     <div style={{ display: "flex", position: "relative", width: W, height: H, background: C.bg, fontFamily: "Noto Sans JP" }}>
       <ChapterBar ch={ch} count={tl.chapters.length} />
       <div style={{ display: "flex", position: "absolute", right: (L.headerX ?? 40) + 8, top: HEADER.y + 16, fontSize: MIN_FONT, fontWeight: 900, color: C.url }}>used.gadelog.com</div>
-      <div style={{ ...col, position: "absolute", left: CARD.x, top: CARD.y, width: CARD.w, height: CARD.h, padding: CARD.pad, background: C.white, borderRadius: 24, ...(opts.camera ? { overflow: "hidden" } : {}) }}>
+      <div style={{ ...col, position: "absolute", left: CARD.x, top: CARD.y, width: CARD.w, height: CARD.h, padding: CARD.pad, background: C.white, borderRadius: 24, ...(opts.camera ? { overflow: "hidden" } : {}), ...(() => { const f = slideFrame(ch, t); return f === undefined ? {} : { transform: `translateX(${Math.round(SLIDE_PX * (1 - easeOut(f / SLIDE_F)))}px)`, opacity: 0.35 + 0.65 * easeOut(f / SLIDE_F) }; })() }}>
         {opts.camera ? (
           <div style={{ ...col, width: "100%", height: "100%", transform: `translate(${opts.camera.x}px, ${opts.camera.y}px) scale(${opts.camera.scale})`, transformOrigin: "center center" }}>
             <SceneBody ch={scene} t={local} />

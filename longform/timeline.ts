@@ -232,6 +232,27 @@ function resolveMentions(scene: SceneData, lines: TimelineLine[], chStart: numbe
   return out;
 }
 
+/**
+ * 蛍光ペン（11/27〜）: 台詞の頭（10字以内）に項目の言葉がある台詞の間だけ、その行に色を敷く。1つの台詞に1行だけ（いちばん前に出る言葉）。
+ * 「Appleで256GBを買う値段より」のように後ろで触れただけの行は塗らない。値は章の頭からの [始め, 終わり]
+ */
+function resolveMarks(scene: SceneData, lines: TimelineLine[], chStart: number, reveal: Record<string, number>): Record<string, [number, number][]> {
+  const words = Object.entries(itemWords(scene)).filter((e): e is [string, string] => !!e[1]);
+  const out: Record<string, [number, number][]> = {};
+  for (const l of lines) {
+    let best: [string, number] | null = null;
+    for (const [key, w] of words) {
+      const idx = l.text.indexOf(w);
+      if (idx >= 0 && idx < 10 && (!best || idx < best[1])) best = [key, idx];
+    }
+    if (!best) continue;
+    const s0 = round(l.start - chStart), e0 = round(l.end - chStart);
+    if (s0 < (reveal[best[0]] ?? 0) + 0.3) continue; // 出たその台詞は塗らない
+    (out[best[0]] ??= []).push([s0, e0]);
+  }
+  return out;
+}
+
 export async function buildTimeline(dir: string, speed = DEFAULT_LONG_SPEED): Promise<{ timeline: Timeline; warnings: string[]; missing: number; staleCount: number }> {
   const md = readFileSync(join(dir, "script.md"), "utf8");
   const data = JSON.parse(readFileSync(join(dir, "data.json"), "utf8")) as LongData;
@@ -273,7 +294,8 @@ export async function buildTimeline(dir: string, speed = DEFAULT_LONG_SPEED): Pr
       const ts = d.scene.items.map((_, i) => reveal[`check:${i}`] ?? mention[`item:${i}`]?.[0]).filter((x): x is number => x !== undefined).sort((a, b) => a - b);
       ts.forEach((x, i) => (reveal[`chk:${i}`] = Math.max(x, reveal[`item:${i}`] ?? 0)));
     }
-    out.push({ index: ci + 1, title: ch.title, start: round(chStart), end: round(t), cues: ch.cues, scene: { ...d.scene, reveal, mention }, lines, stillAt });
+    const marks = resolveMarks(d.scene, lines, chStart, reveal);
+    out.push({ index: ci + 1, title: ch.title, start: round(chStart), end: round(t), cues: ch.cues, scene: { ...d.scene, reveal, mention, marks }, lines, stillAt });
   }
   const timeline: Timeline = { date: data.date, shops: data.shops, width: W, height: H, fps: FPS, speed, total: round(t), chapters: out };
   // 終了画面: 最後の章だけ・絵が出てから最後の台詞の終わりまでが END_SCREEN.sec 秒以内（超えると要素が出る前に台詞が始まる）
