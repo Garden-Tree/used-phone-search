@@ -319,6 +319,20 @@ function countUp(v: string, g: number): string {
   return `${Math.round(Number(m[1].replace(/,/g, "")) * g).toLocaleString("ja-JP")}${m[2]}`;
 }
 
+/** 写真の図解の寄り（11/27〜）: 最後に出た zoom つきの丸の、出てからのコマ（ZOOM_F まで。過ぎたら ZOOM_F） */
+export const ZOOM_F = 18;
+export function noteZoom(scene: PhotoScene, reveal: Record<string, number>, t: number, cur: number): { n: PhotoNote; f: number } | null {
+  let best: { n: PhotoNote; at: number } | null = null;
+  (scene.notes ?? []).forEach((n, i) => {
+    const at = reveal[`note:${i}`];
+    if (n.zoom && (n.img ?? 0) === cur && at !== undefined && t >= at && (!best || at >= best.at)) best = { n, at };
+  });
+  if (!best) return null;
+  const b = best as { n: PhotoNote; at: number };
+  return { n: b.n, f: Math.min(ZOOM_F, Math.floor((t - b.at) * FPS + 1e-6)) };
+}
+type PhotoNote = NonNullable<PhotoScene["notes"]>[number];
+
 /** 表のセルの ○・× を色つきの丸に（11/27〜） */
 function Mark({ v, size, pop = 1 }: { v: string; size: number; pop?: number }) {
   const ok = v === "○" || v === "◯" || v === "✓";
@@ -786,9 +800,22 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
   const creditFont = MIN_FOOT;
   const boxH = bodyH(s.heading, s.note) - Math.ceil(creditFont * 1.45) - 12;
   // crop: 見せたい所だけを拡大（画像の幅・高さに対する割合。11/23）
-  const cr = slides[cur].crop ?? { x: 0, y: 0, w: 1, h: 1 };
-  const k = Math.min(boxW / (img.w * cr.w), boxH / (img.h * cr.h));
-  const w = Math.round(img.w * cr.w * k), h = Math.round(img.h * cr.h * k);
+  const cr0 = slides[cur].crop ?? { x: 0, y: 0, w: 1, h: 1 };
+  const k0 = Math.min(boxW / (img.w * cr0.w), boxH / (img.h * cr0.h));
+  const w = Math.round(img.w * cr0.w * k0), h = Math.round(img.h * cr0.h * k0);
+  // 図解の寄り（11/27〜）: 丸の所を中心に zoom 倍へ、0.6 秒で寄る（枠の大きさは同じ）
+  const zm = noteZoom(s, (s as { revealRaw?: Record<string, number> }).revealRaw ?? reveal, t, cur);
+  let cr = cr0;
+  if (zm) {
+    const p = easeOut(zm.f / ZOOM_F);
+    const tw = cr0.w / zm.n.zoom!, th = cr0.h / zm.n.zoom!;
+    const tx = Math.min(Math.max(zm.n.x - tw / 2, 0), 1 - tw), ty = Math.min(Math.max(zm.n.y - th / 2, 0), 1 - th);
+    cr = { x: cr0.x + (tx - cr0.x) * p, y: cr0.y + (ty - cr0.y) * p, w: cr0.w + (tw - cr0.w) * p, h: cr0.h + (th - cr0.h) * p };
+  }
+  const k = Math.min(w / (img.w * cr.w), h / (img.h * cr.h));
+  // 画像の割合 → 枠の中の px
+  const toBox = (fx: number, fy: number) => ({ x: (fx - cr.x) * img.w * k, y: (fy - cr.y) * img.h * k });
+  const notesOn = (s.notes ?? []).map((n, i) => ({ n, i })).filter(({ n, i }) => (n.img ?? 0) === cur && reveal[`note:${i}`] !== undefined && t >= reveal[`note:${i}`]);
   const textW = INNER_W - boxW - GAP;
   const rowH = points.length ? Math.min(cap(170), Math.floor(boxH / points.length)) : 0;
   return (
@@ -800,6 +827,22 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
             {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
             <div style={{ display: "flex", position: "relative", width: w, height: h, overflow: "hidden", borderRadius: 12 }}>
               <img src={img.src} width={Math.round(img.w * k)} height={Math.round(img.h * k)} style={{ position: "absolute", left: -Math.round(cr.x * img.w * k), top: -Math.round(cr.y * img.h * k), width: Math.round(img.w * k), height: Math.round(img.h * k) }} />
+              {notesOn.map(({ n, i }) => {
+                const c = toBox(n.x, n.y);
+                const r = Math.max(24, (n.r ?? 0.06) * img.w * k);
+                const pk = (s as { pulse?: Record<string, number> }).pulse?.[`note:${i}`];
+                const pop = pk === undefined ? 1 : 0.6 + 0.6 * easeOut(Math.min(1, pk / 8)) - 0.2 * Math.max(0, (pk - 4) / 4);
+                // 札は丸の下（入らなければ上）。写真の枠は狭いので横には置かない
+                const labelW = Math.min(w - 16, Math.round(MIN_FONT * 1.0 * n.label.length + 40));
+                const lx = Math.min(w - labelW - 8, Math.max(8, c.x - labelW / 2));
+                const ly = c.y + r + 14 + 68 <= h - 8 ? c.y + r + 14 : Math.max(8, c.y - r - 14 - 68);
+                return (
+                  <div key={`n${i}`} style={{ display: "flex", position: "absolute", left: 0, top: 0, width: w, height: h }}>
+                    <div style={{ display: "flex", position: "absolute", left: Math.round(c.x - r), top: Math.round(c.y - r), width: Math.round(r * 2), height: Math.round(r * 2), borderRadius: 999, border: `7px solid ${C.red}`, transform: `scale(${pop})` }} />
+                    <div style={{ display: "flex", position: "absolute", left: Math.round(lx), top: Math.round(ly), height: 68, alignItems: "center", padding: "0 18px", borderRadius: 14, background: C.red, color: C.white, fontSize: MIN_FONT, fontWeight: 900, whiteSpace: "nowrap", boxShadow: "0 6px 16px rgba(0,0,0,0.3)", transform: `scale(${pop})` }}>{n.label}</div>
+                  </div>
+                );
+              })}
             </div>
           </div>
           {credit ? <div style={{ display: "flex", marginTop: 12, width: boxW, justifyContent: "center", fontSize: creditFont, fontWeight: 500, color: C.sub }}>{credit}</div> : null}
@@ -1149,7 +1192,7 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
   const shownSet = opts.instant ? new Set(revealedAt(ch.scene.reveal, local)) : null;
   const anim = animAt(tl, t);
   const base = shownSet ? { ...ch, scene: { ...ch.scene, reveal: Object.fromEntries(Object.keys(ch.scene.reveal).map((k) => [k, shownSet.has(k) ? -1000 : 1000])) } } : ch;
-  const scene = { ...base, scene: { ...base.scene, pulse: anim.items, shake: anim.shake, grow: anim.grow } };
+  const scene = { ...base, scene: { ...base.scene, pulse: anim.items, shake: anim.shake, grow: anim.grow, revealRaw: ch.scene.reveal } };
   const spkDy = speakerDy(anim.spk, opts.level ?? 0);
   // 土台（layer: "base"）では、話している人の立ち絵（立ち絵があるとき）と縁の線を描かない
   const base0 = opts.layer === "base";

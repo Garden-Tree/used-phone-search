@@ -91,6 +91,11 @@ export type PhotoScene = {
   images?: { src: string; credit: string; cue: string; crop?: { x: number; y: number; w: number; h: number } }[];
   /** 見せたい所だけ拡大（画像の幅・高さに対する割合 x・y・w・h） */
   crop?: { x: number; y: number; w: number; h: number };
+  /**
+   * 図解（11/27〜）: 写真の上に赤い丸と札を、cue の台詞で出す。img は何枚目の画像の上か（0＝src）。x・y・r は画像の幅・高さに対する割合（r は幅に対する半径）。
+   * zoom を付けると、出た瞬間に丸の所へ 0.6 秒で寄る（2＝2倍）
+   */
+  notes?: { img?: number; x: number; y: number; r?: number; label: string; cue?: string; zoom?: number; side?: "left" | "right" }[];
   note?: string;
 };
 

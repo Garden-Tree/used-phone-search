@@ -218,6 +218,28 @@
             "credit": "Sky Blue iPhone Air — Ahmad Ali Karim / CC0 / Wikimedia Commons",
             "cue": "後ろのカメラは"
           }
+        ],
+        "notes": [
+          {
+            "img": 0,
+            "x": 0.5,
+            "y": 0.3,
+            "r": 0.05,
+            "label": "厚さ 5.64mm",
+            "cue": "厚さは5.64ミリ",
+            "zoom": 2.2,
+            "side": "right"
+          },
+          {
+            "img": 1,
+            "x": 0.325,
+            "y": 0.195,
+            "r": 0.075,
+            "label": "カメラは1つ",
+            "cue": "後ろのカメラは",
+            "zoom": 2,
+            "side": "right"
+          }
         ]
       }
     },
