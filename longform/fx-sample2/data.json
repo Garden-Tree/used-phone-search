@@ -1,0 +1,72 @@
+{
+  "date": "2026-11-27",
+  "shops": 18,
+  "chapters": [
+    {
+      "title": "電池交換か、買い替えか",
+      "scene": {
+        "type": "versus",
+        "heading": "iPhone 11、あと1年使うなら",
+        "left": {
+          "title": "電池を替える",
+          "value": "15,600円",
+          "sub": "Apple の電池交換",
+          "cue": "まず電池交換"
+        },
+        "right": {
+          "title": "売って中古の13へ",
+          "value": "39,250円",
+          "sub": "差し引き（中古の相場）",
+          "cue": "11を売って"
+        },
+        "win": {
+          "side": "left",
+          "label": "2万円以上安い",
+          "cue": "交換のほうが"
+        },
+        "think": {
+          "text": "交換？ 買い替え？",
+          "cue": "迷うのだ"
+        },
+        "source": {
+          "text": "電池交換 15,600円（保証対象外）",
+          "from": "Apple サポート（2026年10月）",
+          "cue": "Appleだと"
+        }
+      }
+    },
+    {
+      "title": "予算別の3台",
+      "scene": {
+        "type": "lineup",
+        "heading": "電池が長持ちする中古（予算別）",
+        "items": [
+          {
+            "title": "4万円：iPhone 12",
+            "value": "17時間",
+            "sub": "相場 36,080円",
+            "cue": "4万円なら"
+          },
+          {
+            "title": "9万円：13 Pro Max",
+            "value": "28時間",
+            "sub": "相場 82,280円",
+            "cue": "9万円なら"
+          },
+          {
+            "title": "20万円：17 Pro Max",
+            "value": "39時間",
+            "sub": "相場 199,980円",
+            "cue": "20万円なら",
+            "pick": true,
+            "src": "longform/assets/commons/iphone17promax-orange-ahmadalikarim.jpg"
+          }
+        ],
+        "stamp": {
+          "text": "いちばん／長い",
+          "cue": "いちばん長いよ"
+        }
+      }
+    }
+  ]
+}

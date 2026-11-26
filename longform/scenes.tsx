@@ -16,7 +16,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { CHAPTER_LEAD, type Who } from "./script";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, GaugesScene, PairsScene, PhotoScene, ScreenScene, TableScene, Timeline, TimelineChapter } from "./types";
+import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, GaugesScene, LineupScene, PairsScene, PhotoScene, ScreenScene, TableScene, VersusScene, Timeline, TimelineChapter } from "./types";
 
 export const W = 1920;
 export const H = 1080;
@@ -1019,6 +1019,152 @@ function Screen({ s, t, reveal }: { s: ScreenScene; t: number; reveal: Record<st
   );
 }
 
+
+/** 2択のカード（11/27〜）。左右に1枚ずつ cue で出る。真ん中に VS。win の cue で勝った方に札と太い枠 */
+function Versus({ s, t, reveal }: { s: VersusScene; t: number; reveal: Record<string, number> }) {
+  const areaH = bodyH(s.heading, s.note);
+  const GAP = 140;
+  const cardW = Math.floor((INNER_W - GAP) / 2);
+  const winOn = s.win && reveal.win !== undefined && t >= reveal.win;
+  const wk = (s as { pulse?: Record<string, number> }).pulse?.win;
+  const winPop = wk === undefined ? 1 : 0.5 + 0.7 * easeOut(Math.min(1, wk / 8)) - 0.2 * Math.max(0, (wk - 4) / 4);
+  const card = (c: VersusScene["left"], i: number, side: "left" | "right") => {
+    const p = shown(reveal, `item:${i}`, t);
+    const won = winOn && s.win!.side === side;
+    const lost = winOn && s.win!.side !== side;
+    return (
+      <div style={{ ...col, position: "relative", width: cardW, height: areaH - 20, alignItems: "center", justifyContent: "center", background: won ? "#FFF5F5" : C.rowAlt, border: `${won ? 10 : 4}px solid ${won ? C.red : C.line}`, borderRadius: 28, opacity: p * (lost ? 0.55 : 1), ...bump(s, `item:${i}`) }}>
+        <div style={{ display: "flex", fontSize: fit(c.title, cardW - 60, cap(56), MIN_FONT, "2択の題"), fontWeight: 900, color: C.ink }}>{c.title}</div>
+        <div style={{ display: "flex", marginTop: 18, fontSize: fit(c.value, cardW - 60, cap(110), MIN_FONT, "2択の値"), fontWeight: 900, color: won ? C.red : C.ink, lineHeight: 1 }}>{c.value}</div>
+        {c.sub ? <div style={{ display: "flex", marginTop: 18, fontSize: fit(c.sub, cardW - 60, cap(36), MIN_FOOT, "2択の補足"), fontWeight: 500, color: C.sub }}>{c.sub}</div> : null}
+        {won ? <div style={{ display: "flex", position: "absolute", top: -34, padding: "6px 26px", borderRadius: 999, background: C.red, color: C.white, fontSize: cap(44), fontWeight: 900, transform: `scale(${winPop})` }}>{s.win!.label}</div> : null}
+      </div>
+    );
+  };
+  return (
+    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+      <Heading text={s.heading} />
+      <div style={{ ...row, position: "relative", width: INNER_W, height: areaH, alignItems: "flex-end" }}>
+        {card(s.left, 0, "left")}
+        <div style={{ display: "flex", width: GAP, justifyContent: "center", alignSelf: "center" }}>
+          <div style={{ display: "flex", width: 110, height: 110, borderRadius: 999, background: C.bar, color: C.white, fontSize: 52, fontWeight: 900, alignItems: "center", justifyContent: "center", opacity: shown(reveal, "item:1", t) > 0 ? 1 : 0.3 }}>VS</div>
+        </div>
+        {card(s.right, 1, "right")}
+      </div>
+      <Note text={s.note} />
+    </div>
+  );
+}
+
+/** 並べる（11/27〜）。cue で1枚ずつ。出たばかりの1枚は真ん中に大きく（次の1枚が出るか LINEUP_BIG 秒たつまで）、ほかは下に並ぶ */
+export const LINEUP_BIG = 2.2;
+function Lineup({ s, t, reveal }: { s: LineupScene; t: number; reveal: Record<string, number> }) {
+  const areaH = bodyH(s.heading, s.note);
+  const n = s.items.length;
+  const GAP = 24;
+  const cellW = Math.floor((INNER_W - GAP * (n - 1)) / n);
+  const shownIdx = s.items.map((_, i) => i).filter((i) => shown(reveal, `item:${i}`, t) > 0);
+  const latest = shownIdx[shownIdx.length - 1];
+  const raw = (s as { revealRaw?: Record<string, number> }).revealRaw ?? reveal;
+  const big = latest !== undefined && t - (raw[`item:${latest}`] ?? -99) < LINEUP_BIG ? latest : undefined;
+  const cell = (it: LineupScene["items"][number], i: number, w: number, h: number, scale: number) => {
+    const img = it.src ? loadImage(it.src) : null;
+    const imgH = img ? Math.round(h * (scale > 1 ? 0.38 : 0.3)) : 0;
+    const imgW = img ? Math.round((img.w * imgH) / img.h) : 0;
+    return (
+      <div style={{ ...col, width: w, height: h, alignItems: "center", justifyContent: "center", background: it.pick ? "#FFF5F5" : C.white, border: `${it.pick ? 8 : 4}px solid ${it.pick ? C.red : C.line}`, borderRadius: 24 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+        {img ? <img src={img.src} width={imgW} height={imgH} style={{ width: imgW, height: imgH, borderRadius: 12 }} /> : null}
+        <div style={{ display: "flex", marginTop: 10, fontSize: fit(it.title, w - 30, Math.round(cap(46) * scale), MIN_FONT, "並べる題"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{it.title}</div>
+        <div style={{ display: "flex", fontSize: fit(it.value, w - 30, Math.round(cap(54) * scale), MIN_FONT, "並べる値"), fontWeight: 900, color: it.pick ? C.red : C.ink, whiteSpace: "nowrap" }}>{it.value}</div>
+        {it.sub ? <div style={{ display: "flex", fontSize: fit(it.sub, w - 30, Math.round(cap(32) * scale), MIN_FOOT, "並べる補足"), fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
+      </div>
+    );
+  };
+  const smallH = Math.round(areaH * 0.62);
+  const bk = big !== undefined ? (s as { pulse?: Record<string, number> }).pulse?.[`item:${big}`] : undefined;
+  const bigPop = bk === undefined ? 1 : 0.7 + 0.3 * easeOut(Math.min(1, bk / 8));
+  return (
+    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+      <Heading text={s.heading} />
+      <div style={{ display: "flex", position: "relative", width: INNER_W, height: areaH }}>
+        <div style={{ ...row, position: "absolute", left: 0, top: areaH - smallH, width: INNER_W, height: smallH, alignItems: "flex-end" }}>
+          {s.items.map((it, i) => (
+            <div key={i} style={{ display: "flex", marginLeft: i ? GAP : 0, opacity: shown(reveal, `item:${i}`, t) > 0 && i !== big ? 1 : i === big ? 0.15 : 0.12 }}>
+              {cell(it, i, cellW, smallH, 1)}
+            </div>
+          ))}
+        </div>
+        {big !== undefined ? (
+          <div style={{ display: "flex", position: "absolute", left: Math.round(INNER_W * 0.2), top: 0, width: Math.round(INNER_W * 0.6), height: areaH - 10, transform: `scale(${bigPop})`, boxShadow: "0 18px 40px rgba(0,0,0,0.25)", borderRadius: 24 }}>
+            {cell(s.items[big], big, Math.round(INNER_W * 0.6), areaH - 10, 1.6)}
+          </div>
+        ) : null}
+      </div>
+      <Note text={s.note} />
+    </div>
+  );
+}
+
+/** カードの上に重ねるもの（11/27〜）: 出典カード（右下）・はんこ（右上に斜め） */
+function Overlays({ ch, t }: { ch: TimelineChapter; t: number }) {
+  const s = ch.scene as typeof ch.scene & { pulse?: Record<string, number> };
+  const r = s.reveal;
+  const src = s.source && r.source !== undefined && t >= r.source ? s.source : null;
+  const stp = s.stamp && r.stamp !== undefined && t >= r.stamp ? s.stamp : null;
+  const sk = s.pulse?.stamp;
+  // はんこ: 大きく出て 0.27 秒で押される（2.2 倍 → 1 倍）
+  const stampScale = sk === undefined ? 1 : 2.2 - 1.2 * easeOut(Math.min(1, sk / 8));
+  const srcK = s.pulse?.source;
+  const srcDy = srcK === undefined ? 0 : Math.round(40 * (1 - easeOut(Math.min(1, srcK / 8))));
+  if (!src && !stp) return null;
+  return (
+    <div style={{ display: "flex", position: "absolute", left: 0, top: 0, width: CARD.w, height: CARD.h }}>
+      {src ? (
+        <div style={{ ...col, position: "absolute", left: CARD.w - Math.round(CARD.w * 0.4) - 30, top: 22, width: Math.round(CARD.w * 0.4), padding: "14px 24px", background: C.white, border: `4px solid ${C.bar}`, borderRadius: 18, boxShadow: "0 10px 26px rgba(0,0,0,0.22)", transform: `translateY(${srcDy}px)` }}>
+          <div style={{ display: "flex", fontSize: MIN_FONT, fontWeight: 900, color: C.ink, lineHeight: 1.25 }}>{src.text}</div>
+          <div style={{ display: "flex", marginTop: 6, fontSize: MIN_FOOT, fontWeight: 500, color: C.sub }}>{`出典：${src.from}`}</div>
+        </div>
+      ) : null}
+      {stp ? (
+        <div style={{ display: "flex", position: "absolute", left: CARD.w - 250 - 70, top: 40, width: 250, height: 250, borderRadius: 999, border: `12px solid ${C.red}`, alignItems: "center", justifyContent: "center", transform: `rotate(-14deg) scale(${stampScale})`, opacity: 0.92 }}>
+          <div style={{ display: "flex", width: 206, height: 206, borderRadius: 999, border: `4px solid ${C.red}`, alignItems: "center", justifyContent: "center", textAlign: "center", padding: 10, color: C.red, fontSize: Math.max(...stp.text.split("／").map((x) => x.length)) > 4 ? 44 : 56, fontWeight: 900, lineHeight: 1.1, flexDirection: "column" }}>{stp.text.split("／").map((x, k) => <div key={k} style={{ display: "flex" }}>{x}</div>)}</div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** 思考の吹き出し（11/27〜）: 話し手の立ち絵の上に、もこもこの吹き出し（丸を重ねる）と小さい丸2つ。cue から、その台詞が終わるまで */
+export function thinkOn(ch: TimelineChapter, local: number): boolean {
+  const s = ch.scene;
+  if (!s.think || s.reveal.think === undefined || local < s.reveal.think) return false;
+  const l = ch.lines.find((x) => x.start - ch.start <= s.reveal.think! + 0.01 && x.end - ch.start > s.reveal.think!);
+  return l ? local < l.end - ch.start + 0.6 : local < s.reveal.think + 3;
+}
+function ThinkBubble({ ch, t }: { ch: TimelineChapter; t: number }) {
+  const s = ch.scene;
+  if (!s.think || !thinkOn(ch, t)) return null;
+  const left = (s.think.who ?? "ずんだもん") === "ずんだもん";
+  const W0 = 760, H0 = 220;
+  const x = left ? 40 : W - W0 - 40;
+  const y = L.art.y - H0 - 70;
+  const puff = [[0.08, 0.42, 0.34], [0.26, 0.2, 0.42], [0.5, 0.16, 0.44], [0.74, 0.22, 0.4], [0.9, 0.46, 0.32], [0.5, 0.62, 0.5], [0.24, 0.66, 0.36], [0.76, 0.66, 0.36]];
+  return (
+    <div style={{ display: "flex", position: "absolute", left: x, top: y, width: W0, height: H0 + 70 }}>
+      {puff.map(([px, py, pr], k) => (
+        <div key={k} style={{ display: "flex", position: "absolute", left: Math.round(px * W0 - pr * H0), top: Math.round(py * H0 - pr * H0), width: Math.round(pr * H0 * 2), height: Math.round(pr * H0 * 2), borderRadius: 999, background: C.white, border: `5px solid ${C.ink}` }} />
+      ))}
+      {puff.map(([px, py, pr], k) => (
+        <div key={`f${k}`} style={{ display: "flex", position: "absolute", left: Math.round(px * W0 - pr * H0) + 5, top: Math.round(py * H0 - pr * H0) + 5, width: Math.round(pr * H0 * 2) - 10, height: Math.round(pr * H0 * 2) - 10, borderRadius: 999, background: C.white }} />
+      ))}
+      <div style={{ display: "flex", position: "absolute", left: 0, top: 0, width: W0, height: H0, alignItems: "center", justifyContent: "center", fontSize: s.think.text.length > 12 ? 40 : 48, fontWeight: 900, color: C.ink, paddingTop: 10 }}>{s.think.text}</div>
+      <div style={{ display: "flex", position: "absolute", left: left ? 90 : W0 - 130, top: H0 + 6, width: 40, height: 40, borderRadius: 999, background: C.white, border: `5px solid ${C.ink}` }} />
+      <div style={{ display: "flex", position: "absolute", left: left ? 60 : W0 - 84, top: H0 + 46, width: 24, height: 24, borderRadius: 999, background: C.white, border: `4px solid ${C.ink}` }} />
+    </div>
+  );
+}
+
 function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
   const s = ch.scene;
   const reveal = s.reveal;
@@ -1041,6 +1187,10 @@ function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
       return <Gauges s={s} t={t} reveal={reveal} />;
     case "screen":
       return <Screen s={s} t={t} reveal={reveal} />;
+    case "versus":
+      return <Versus s={s} t={t} reveal={reveal} />;
+    case "lineup":
+      return <Lineup s={s} t={t} reveal={reveal} />;
   }
 }
 
@@ -1330,12 +1480,14 @@ export function frameAt(tl: Timeline, t: number, opts: FrameOpts = {}): ReactEle
         ) : (
           <SceneBody ch={scene} t={local} />
         )}
+        <Overlays ch={scene} t={local} />
         {burstOn(ch.scene.reveal, local) ? (
           // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
           <img src={burstImage(CARD.w, CARD.h)} width={CARD.w} height={CARD.h} style={{ position: "absolute", left: 0, top: 0, width: CARD.w, height: CARD.h, borderRadius: 24 }} />
         ) : null}
       </div>
       {ch.scene.type === "endScreen" ? <EndScreenSlots s={ch.scene} /> : null}
+      <ThinkBubble ch={ch} t={local} />
       {/* 立ち絵はカードの上に描く（d2 では立ち絵がカードの下の角に少し重なる） */}
       <SpeakerSlot who="ずんだもん" x={SLOT.left} active={who === "ずんだもん"} art={opts.art?.ずんだもん} mouthOpen={opts.mouthOpen} plate={plateOpacity(t)} dy={who === "ずんだもん" ? spkDy : 0} hideArt={base0 && who === "ずんだもん"} />
       <SpeakerSlot who="つむぎ" x={SLOT.right} active={who === "つむぎ"} art={opts.art?.つむぎ} mouthOpen={opts.mouthOpen} plate={plateOpacity(t)} dy={who === "つむぎ" ? spkDy : 0} hideArt={base0 && who === "つむぎ"} />

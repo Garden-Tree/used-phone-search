@@ -123,8 +123,34 @@ export type ScreenScene = {
 };
 
 /** どの場面にも付けられるもの（11/27〜）: burst＝この言葉を言う瞬間にカードのまわりへ集中線（約1.2秒）。11/27 ユーザー「微妙」で使わない */
-export type SceneExtras = { burst?: string };
-export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene | GaugesScene | ScreenScene) & SceneExtras;
+export type SceneExtras = {
+  burst?: string;
+  /** 出典カード（11/27〜）: カードの右下に「出典 …」を cue で出す（Apple の仕様・修理料金など） */
+  source?: { text: string; from: string; cue?: string };
+  /** 思考の吹き出し（11/27〜）: ずんだもんの上にもこもこの吹き出し（迷っていること）。cue から次の台詞まで */
+  think?: { text: string; cue?: string; who?: "ずんだもん" | "つむぎ" };
+  /** はんこ（11/27〜）: cue で赤い丸はんこが斜めに押される（結論・逆転） */
+  stamp?: { text: string; cue?: string };
+};
+
+/** 2択のカード（11/27〜）: 左右に1枚ずつ、cue で出る。win の cue で勝った方に札 */
+export type VersusScene = {
+  type: "versus";
+  heading: string;
+  left: { title: string; value: string; sub?: string; cue?: string };
+  right: { title: string; value: string; sub?: string; cue?: string };
+  win?: { side: "left" | "right"; label: string; cue?: string };
+  note?: string;
+};
+
+/** 並べる（11/27〜）: cue で1枚ずつ、まず真ん中に大きく出て、次の1枚が出たら自分の場所へ */
+export type LineupScene = {
+  type: "lineup";
+  heading: string;
+  items: { title: string; value: string; sub?: string; src?: string; cue?: string; pick?: boolean }[];
+  note?: string;
+};
+export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene | GaugesScene | ScreenScene | VersusScene | LineupScene) & SceneExtras;
 
 export type LongData = {
   date: string;

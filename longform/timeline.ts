@@ -208,6 +208,11 @@ function resolveReveal(scene: SceneData, lines: TimelineLine[], chStart: number,
   }
   // 集中線（11/27〜）: その言葉を言い始める秒
   if (scene.burst) { words.burst = scene.burst; find("burst", scene.burst); }
+  if (scene.source) { words.source = scene.source.cue ?? null; find("source", scene.source.cue); }
+  if (scene.think) { words.think = scene.think.cue ?? null; find("think", scene.think.cue); }
+  if (scene.stamp) { words.stamp = scene.stamp.cue ?? null; find("stamp", scene.stamp.cue); }
+  if (scene.type === "versus") { find("item:0", scene.left.cue); find("item:1", scene.right.cue); if (scene.win) { words.win = scene.win.cue ?? null; find("win", scene.win.cue); } }
+  if (scene.type === "lineup") scene.items.forEach((it, i) => find(`item:${i}`, it.cue));
   if (scene.type === "checklist") scene.items.forEach((it, i) => { if (it.checkCue) { words[`check:${i}`] = null; find(`check:${i}`, it.checkCue); } });
   // 同じ秒に出る項目が並んだら、0.2 秒ずつずらして上から順に出す（横棒が1本ずつ伸びる。11/23）
   if (scene.type === "bars") {
