@@ -227,7 +227,8 @@ iPhone 16 Plus の中古の在庫と最安値: https://used.gadelog.com/iphone/i
 iPhone 17 Pro Max の中古の在庫と最安値: https://used.gadelog.com/iphone/iphone-17-pro-max?utm_source=youtube&utm_medium=social&utm_campaign=long_20261128
 全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261128
 
-Amazon の新品（ブラックフライデー）【PR】値段は【日時】に見たもので、変わります。今の値段はリンク先で確かめてください。
+【PR】Amazon の新品（ブラックフライデー）
+値段は【日時】に見たもので、変わります。今の値段はリンク先で確かめてください。
 iPhone Air 256GB: https://www.amazon.co.jp/dp/B0FQG1QPLW?tag=gardentree06-22
 iPhone 16 Plus 128GB: https://www.amazon.co.jp/dp/B0DGJ6BK8C?tag=gardentree06-22
 iPhone 17 Pro Max 512GB: https://www.amazon.co.jp/dp/B0FQFJN864?tag=gardentree06-22

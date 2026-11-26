@@ -476,14 +476,16 @@ function youtubeText(dir: string, tl: Timeline, artFiles: string[]): string {
     // 結論・数字の箇条書き・※の注意書きは入れない（下書きにあっても落とす）
     const bodyLines = (creditAt < 0 ? lines : lines.slice(0, creditAt)).map((l) => l.trimEnd());
     const links = bodyLines.filter((l) => /^.+: https:\/\/used\.gadelog\.com/.test(l));
-    // PR: 楽天モバイル（回線）と Amazon アソシエイト（11/26 BF の回。見出し・リンク・アソシエイトの1文）
-    const pr = lines.filter((l) => l.startsWith("中古スマホにするなら回線も見直す") || l.includes("hb.afl.rakuten.co.jp") || /^Amazon の新品.*【PR】/.test(l) || /: https:\/\/www\.amazon\.co\.jp\//.test(l) || l.startsWith("Amazonのアソシエイトとして"));
+    const pr = lines.filter((l) => l.startsWith("中古スマホにするなら回線も見直す") || l.includes("hb.afl.rakuten.co.jp"));
+    // Amazon（11/26 ユーザー）: 【PR】の見出しとリンクをいちばん上に、値段の断り・アソシエイトの1文は下のほうにまとめる
+    const amazon = lines.filter((l) => /^【PR】Amazon/.test(l) || /: https:\/\/www\.amazon\.co\.jp\//.test(l));
+    const disclaimers = lines.filter((l) => l.startsWith("値段は") || l.startsWith("Amazonのアソシエイトとして"));
     const extraCredits = lines.filter((l) => /^(イラスト|動画素材|サムネイル画像)/.test(l));
-    let intro = bodyLines.find((l) => l && l !== CHAPTERS_PLACEHOLDER && !/^(※|結論|・|#|（)/.test(l) && !links.includes(l) && !pr.includes(l) && !extraCredits.includes(l)) ?? "";
+    let intro = bodyLines.find((l) => l && l !== CHAPTERS_PLACEHOLDER && !/^(※|結論|・|#|（)/.test(l) && !links.includes(l) && !pr.includes(l) && !amazon.includes(l) && !disclaimers.includes(l) && !extraCredits.includes(l)) ?? "";
     // データの日付と店の数は紹介の1文に（画面の最下行に出さないので、説明欄に必ず置く）
     if (!intro.includes(date)) intro += `（数字は ${date} 時点・大手中古ショップ${tl.shops}店の在庫）`;
     const tags = [...lines].reverse().find((l) => l.startsWith("#")) ?? "#中古iPhone #iPhone";
-    const parts = [links.join("\n"), intro, chaptersText(tl).trim(), [...extraCredits, ...credits].join("\n"), pr.join("\n"), tags];
+    const parts = [amazon.join("\n"), links.join("\n"), intro, chaptersText(tl).trim(), [...extraCredits, ...credits].join("\n"), pr.join("\n"), disclaimers.join("\n"), tags];
     return [title, "", parts.filter(Boolean).join("\n\n")].join("\n") + "\n";
   }
   return [
