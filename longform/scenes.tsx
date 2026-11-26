@@ -1121,14 +1121,14 @@ function Overlays({ ch, t }: { ch: TimelineChapter; t: number }) {
   return (
     <div style={{ display: "flex", position: "absolute", left: 0, top: 0, width: CARD.w, height: CARD.h }}>
       {src ? (
-        <div style={{ ...col, position: "absolute", left: CARD.w - Math.round(CARD.w * 0.4) - 30, top: 22, width: Math.round(CARD.w * 0.4), padding: "14px 24px", background: C.white, border: `4px solid ${C.bar}`, borderRadius: 18, boxShadow: "0 10px 26px rgba(0,0,0,0.22)", transform: `translateY(${srcDy}px)` }}>
+        <div style={{ ...col, position: "absolute", left: src.x !== undefined ? Math.round(CARD.w * src.x) : CARD.w - Math.round(CARD.w * 0.42) - 30, top: src.y !== undefined ? Math.round(CARD.h * src.y) : CARD.h - 150, width: Math.round(CARD.w * 0.42), padding: "14px 24px", background: C.white, border: `4px solid ${C.bar}`, borderRadius: 18, boxShadow: "0 10px 26px rgba(0,0,0,0.22)", transform: `translateY(${srcDy}px)` }}>
           <div style={{ display: "flex", fontSize: MIN_FONT, fontWeight: 900, color: C.ink, lineHeight: 1.25 }}>{src.text}</div>
           <div style={{ display: "flex", marginTop: 6, fontSize: MIN_FOOT, fontWeight: 500, color: C.sub }}>{`出典：${src.from}`}</div>
         </div>
       ) : null}
       {stp ? (
-        <div style={{ display: "flex", position: "absolute", left: CARD.w - 250 - 70, top: 40, width: 250, height: 250, borderRadius: 999, border: `12px solid ${C.red}`, alignItems: "center", justifyContent: "center", transform: `rotate(-14deg) scale(${stampScale})`, opacity: 0.92 }}>
-          <div style={{ display: "flex", width: 206, height: 206, borderRadius: 999, border: `4px solid ${C.red}`, alignItems: "center", justifyContent: "center", textAlign: "center", padding: 10, color: C.red, fontSize: Math.max(...stp.text.split("／").map((x) => x.length)) > 4 ? 44 : 56, fontWeight: 900, lineHeight: 1.1, flexDirection: "column" }}>{stp.text.split("／").map((x, k) => <div key={k} style={{ display: "flex" }}>{x}</div>)}</div>
+        <div style={{ display: "flex", position: "absolute", left: stp.x !== undefined ? Math.round(CARD.w * stp.x) : CARD.w - (stp.size ?? 250) - 70, top: stp.y !== undefined ? Math.round(CARD.h * stp.y) : 110, width: stp.size ?? 250, height: stp.size ?? 250, borderRadius: 999, border: `${Math.round((stp.size ?? 250) / 21)}px solid ${C.red}`, alignItems: "center", justifyContent: "center", transform: `rotate(-14deg) scale(${stampScale})`, opacity: 0.92 }}>
+          <div style={{ display: "flex", width: Math.round((stp.size ?? 250) * 0.82), height: Math.round((stp.size ?? 250) * 0.82), borderRadius: 999, border: `4px solid ${C.red}`, alignItems: "center", justifyContent: "center", textAlign: "center", padding: 6, color: C.red, fontSize: Math.min(60, Math.floor(((stp.size ?? 250) * 0.82 - 30) / Math.max(...stp.text.split("／").map((x) => x.length)))), fontWeight: 900, lineHeight: 1.1, flexDirection: "column" }}>{stp.text.split("／").map((x, k) => <div key={k} style={{ display: "flex" }}>{x}</div>)}</div>
         </div>
       ) : null}
     </div>
@@ -1158,7 +1158,7 @@ function ThinkBubble({ ch, t }: { ch: TimelineChapter; t: number }) {
       {puff.map(([px, py, pr], k) => (
         <div key={`f${k}`} style={{ display: "flex", position: "absolute", left: Math.round(px * W0 - pr * H0) + 5, top: Math.round(py * H0 - pr * H0) + 5, width: Math.round(pr * H0 * 2) - 10, height: Math.round(pr * H0 * 2) - 10, borderRadius: 999, background: C.white }} />
       ))}
-      <div style={{ display: "flex", position: "absolute", left: 0, top: 0, width: W0, height: H0, alignItems: "center", justifyContent: "center", fontSize: s.think.text.length > 12 ? 40 : 48, fontWeight: 900, color: C.ink, paddingTop: 10 }}>{s.think.text}</div>
+      <div style={{ display: "flex", position: "absolute", left: 0, top: 0, width: W0, height: H0, alignItems: "center", justifyContent: "center", paddingTop: 10 }}><div style={{ display: "flex", padding: "4px 18px", background: C.white, borderRadius: 16, fontSize: s.think.text.length > 12 ? 40 : 48, fontWeight: 900, color: C.ink }}>{s.think.text}</div></div>
       <div style={{ display: "flex", position: "absolute", left: left ? 90 : W0 - 130, top: H0 + 6, width: 40, height: 40, borderRadius: 999, background: C.white, border: `5px solid ${C.ink}` }} />
       <div style={{ display: "flex", position: "absolute", left: left ? 60 : W0 - 84, top: H0 + 46, width: 24, height: 24, borderRadius: 999, background: C.white, border: `4px solid ${C.ink}` }} />
     </div>

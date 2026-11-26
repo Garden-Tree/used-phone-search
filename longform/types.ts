@@ -126,11 +126,11 @@ export type ScreenScene = {
 export type SceneExtras = {
   burst?: string;
   /** 出典カード（11/27〜）: カードの右下に「出典 …」を cue で出す（Apple の仕様・修理料金など） */
-  source?: { text: string; from: string; cue?: string };
+  source?: { text: string; from: string; cue?: string; /** 置き場所（割合・左上）。なければ右下 */ x?: number; y?: number };
   /** 思考の吹き出し（11/27〜）: ずんだもんの上にもこもこの吹き出し（迷っていること）。cue から次の台詞まで */
   think?: { text: string; cue?: string; who?: "ずんだもん" | "つむぎ" };
   /** はんこ（11/27〜）: cue で赤い丸はんこが斜めに押される（結論・逆転） */
-  stamp?: { text: string; cue?: string };
+  stamp?: { text: string; cue?: string; /** 置き場所（カードの幅・高さに対する割合・左上）と大きさ px。なければ右上・250 */ x?: number; y?: number; size?: number };
 };
 
 /** 線グラフが左から描かれる（11/27〜）。points は [日付の札, 値]。draw の cue で描き始める。callout は描き終わりに出す札 */
