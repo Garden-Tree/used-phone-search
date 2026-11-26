@@ -24,6 +24,13 @@ EXPR = {
 }
 
 
+# 母音ごとの口（11/27〜・リップシンク）。ふだんの顔（pose）のまま口だけ替える
+MOUTHS = {
+    "zundamon": {"a": "*ほあ", "i": "*えへ", "u": "*お", "e": "*あは", "o": "*ほう"},
+    "tsumugi": {"a": "*あ", "i": "*い", "u": "*う", "e": "*え", "o": "*お"},
+}
+
+
 def comp(spec: dict, choice: dict) -> Image.Image:
     psd = PSDImage.open(spec["psd"])
     chara.select(psd, {**spec["pose"], **choice})
@@ -46,6 +53,13 @@ def main() -> None:
                 path = chara.OUT / f"{name}-{ex}{suffix}.png"
                 img.save(path, optimize=True)
                 print(path.name, img.size)
+        for v, mouth in MOUTHS[name].items():
+            img = comp(spec, {"!口": mouth}).crop(box)
+            w = round(img.width * chara.HEIGHT / img.height)
+            img = img.resize((w, chara.HEIGHT), Image.LANCZOS)
+            path = chara.OUT / f"{name}-m-{v}.png"
+            img.save(path, optimize=True)
+            print(path.name, img.size)
 
 
 if __name__ == "__main__":

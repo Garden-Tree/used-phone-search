@@ -821,7 +821,7 @@ function ChapterBar({ ch, count }: { ch: TimelineChapter; count: number }) {
 
 /** 立ち絵（longform/assets/chara/。video.tsx の loadCharaArt が読む）。src は data URI、w・h は元の画像の大きさ */
 export type ArtImage = { src: string; w: number; h: number };
-export type CharaArt = Partial<Record<Who, { closed: ArtImage; talk?: ArtImage; /** 表情違い（11/27〜・chara-video-expr.py） */ expr?: Partial<Record<Expr, { closed: ArtImage; talk?: ArtImage }>> }>>;
+export type CharaArt = Partial<Record<Who, { closed: ArtImage; talk?: ArtImage; /** 母音ごとの口（11/27〜） */ mouth?: Partial<Record<string, ArtImage>>; /** 表情違い（11/27〜・chara-video-expr.py） */ expr?: Partial<Record<Expr, { closed: ArtImage; talk?: ArtImage }>> }>>;
 export type Expr = "surprised" | "shock" | "wink";
 /**
  * 台詞から表情を決める（11/27〜・競合の調査: 合成音声の動画は表情・ポーズの切り替えがいちばん多い）。
@@ -1014,9 +1014,11 @@ export function spriteRegion(kind: Who | "ring"): { x: number; y: number; w: num
   return { x, y, w: even(Math.min(W, left + A.w + 2) - x, true), h: even(Math.min(H, A.y + A.h + 2) - y, true) };
 }
 /** 話している人の立ち絵だけ（spriteRegion の大きさの透明な紙） */
-export function speakerSprite(who: Who, art: NonNullable<CharaArt[Who]>, mouthOpen: boolean, dy: number, expr?: Expr): ReactElement {
+export function speakerSprite(who: Who, art: NonNullable<CharaArt[Who]>, mouthOpen: boolean, dy: number, expr?: Expr, vowel?: string): ReactElement {
   const R = spriteRegion(who);
-  const a = (expr && art.expr?.[expr]) || art;
+  // 母音の口（表情がないときだけ。表情のときは開く・閉じるの2つ）
+  const vm = !expr && vowel && vowel !== "_" ? art.mouth?.[vowel] : undefined;
+  const a = vm ? { closed: vm } : (expr && art.expr?.[expr]) || art;
   return (
     <div style={{ display: "flex", position: "relative", width: R.w, height: R.h }}>
       <SpeakerArt x={who === "ずんだもん" ? SLOT.left : SLOT.right} active art={a} mouthOpen={mouthOpen} dy={dy} ox={R.x} oy={R.y} />

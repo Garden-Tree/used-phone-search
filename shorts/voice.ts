@@ -905,3 +905,42 @@ export function cachedCharacter(clip: Clip): string | null {
 
 /** YouTube の説明文に入れるクレジット（VOICEVOX の各キャラクターの規約で求められる表記） */
 export const voiceCredit = (character: string) => `VOICEVOX:${character}`;
+
+/**
+ * 口の形の時刻表（11/27〜・横動画のリップシンク）。[秒, 母音（a i u e o）または "_"（閉じる）] の並び。
+ * キャッシュの WAV の横の JSON に visemes を足して覚える（なければエンジンで同じクエリを作り直す。合成はしない）。
+ * 時刻は合成と同じ長さ（モーラの長さ÷話速・pause×pauseLengthScale）で数え、WAV の長さに合わせて伸び縮みさせる
+ */
+export async function visemesOf(wav: string): Promise<[number, string][] | null> {
+  const jf = wav.replace(/\.wav$/, ".json");
+  if (!existsSync(jf)) return null;
+  const meta = JSON.parse(readFileSync(jf, "utf8")) as { text: string; kana?: string; speaker: { id: number }; params: (number | null)[]; visemes?: [number, string][] };
+  if (meta.visemes) return meta.visemes;
+  const [speedScale, volume, intonationScale, pitchScale, pauseLengthScale] = meta.params;
+  const cfg = { speedScale: speedScale ?? DEFAULT_SPEED, volume: volume ?? 1, intonationScale: intonationScale ?? undefined, pitchScale: pitchScale ?? undefined, pauseLengthScale: pauseLengthScale ?? DEFAULT_PAUSE } as VoiceConfig;
+  const { query } = await tunedQuery(meta.text, cfg, meta.speaker.id, meta.kana);
+  const sp = Number(query.speedScale) || 1;
+  const pauseScale = Number(query.pauseLengthScale) || 1;
+  const out: [number, string][] = [];
+  let t = (Number(query.prePhonemeLength) || 0) / sp;
+  out.push([0, "_"]);
+  for (const ap of query.accent_phrases as AccentPhrase[]) {
+    for (const m of ap.moras) {
+      t += (m.consonant_length ?? 0) / sp;
+      const v = m.vowel.toLowerCase();
+      out.push([t, v === "n" || v === "cl" ? "_" : v]);
+      t += m.vowel_length / sp;
+    }
+    if (ap.pause_mora) {
+      out.push([t, "_"]);
+      t += (ap.pause_mora.vowel_length * pauseScale) / sp;
+    }
+  }
+  out.push([t, "_"]);
+  const end = t + (Number(query.postPhonemeLength) || 0) / sp;
+  const real = probe(wav);
+  const k = end > 0 ? real / end : 1;
+  meta.visemes = out.map(([s, v]) => [Math.round(s * k * 1000) / 1000, v]);
+  writeFileSync(jf, JSON.stringify(meta, null, 2));
+  return meta.visemes;
+}

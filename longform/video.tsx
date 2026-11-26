@@ -27,6 +27,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
+import { visemesOf } from "../shorts/voice";
 import { ANIM_STEPS, END_SCREEN, FPS, H, LAYOUT_NAME, MIN_FONT, W, animAt, animEvents, chapterShownAt, emptySprite, growPoints, ringPx, ringSprite, speakerDy, speakerSprite, spriteRegion, subDy, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, lineExpr, type CharaArt, type Expr } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, ThumbnailData, Timeline } from "./types";
@@ -99,7 +100,7 @@ async function measure(file: string, extra = ""): Promise<Record<string, string>
  */
 type Job =
   | { f: string; k: "base"; t: number; level: number }
-  | { f: string; k: "spk"; who: Who; open: boolean; dy: number; expr?: Expr }
+  | { f: string; k: "spk"; who: Who; open: boolean; dy: number; expr?: Expr; vowel?: string }
   | { f: string; k: "ring"; who: Who; px: number; dy: number }
   | { f: string; k: "none"; w: number; h: number };
 /** 重ねる層（土台・左の立ち絵・右の立ち絵・縁の線）。層ごとに「何コマ目からどの絵か」の並び */
@@ -157,7 +158,15 @@ const sha = (v: unknown) => createHash("sha1").update(JSON.stringify(v)).digest(
  * 土台（1920x1080）は章・字幕・項目・揺れが変わるときだけ作り、毎コマ動く「話している人の立ち絵（声で揺れる・口）」と
  * 「字幕の縁の線（残り時間）」は小さな絵（数百枚）にして、ffmpeg が毎コマ重ねる（30fps のまま。PNG の枚数と ffmpeg の読み込みが減る）
  */
-function plan(tl: Timeline, art: CharaArt, levels: number[] = []): Plan {
+/** 台詞の時刻 → 母音（visemes は [秒, 母音] の並び） */
+function vowelAt(vis: [number, string][] | undefined, u: number): string | undefined {
+  if (!vis) return undefined;
+  let v = "_";
+  for (const [s0, x] of vis) { if (s0 > u) break; v = x; }
+  return v;
+}
+
+function plan(tl: Timeline, art: CharaArt, levels: number[] = [], vis: Map<string, [number, string][]> = new Map()): Plan {
   const code = codeHash();
   const chHash = new Map(tl.chapters.map((c) => [c.index, createHash("sha1").update(JSON.stringify([c.title, c.scene, c.lines.map((l) => [l.who, l.pages.map((p) => p.text)]), tl.chapters.length, tl.date])).digest("hex").slice(0, 12)]));
   const total = tl.total + tailOf(tl);
@@ -215,7 +224,9 @@ function plan(tl: Timeline, art: CharaArt, levels: number[] = []): Plan {
     const level = levels.length && st.talking && a ? levelAt(t) : 0;
     // 口: 声の波形があれば声の大きさで（0.5 以上で開く）。なければ話している間 MOUTH 秒ごとに開閉（揺れている間は閉じる）
     const lineFrame = st.line ? Math.round(st.line.start * FPS) : 0;
-    const open = !!(a?.talk && st.talking && (levels.length ? level >= 0.5 : !moving && Math.floor((frame - lineFrame) / step) % 2 === 0));
+    // リップシンク（11/27〜 LONGFORM_LIPSYNC=1）: 声の母音で口の形を選ぶ。開く・閉じるも母音で決める
+    const vowel = st.line && st.talking ? vowelAt(vis.get(st.line.audio ?? ""), t - st.line.start) : undefined;
+    const open = vowel !== undefined ? vowel !== "_" : !!(a?.talk && st.talking && (levels.length ? level >= 0.5 : !moving && Math.floor((frame - lineFrame) / step) % 2 === 0));
     // 土台: 話している人の立ち絵・縁の線・声の大きさ・口を含めない
     const { spk: _spk, ...animBase } = anim;
     const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), animBase, plateOpacity(t)]);
@@ -225,7 +236,7 @@ function plan(tl: Timeline, art: CharaArt, levels: number[] = []): Plan {
       if (who === side && a) {
         const dy = Math.round(speakerDy(anim.spk, level) * 1e6) / 1e6;
         const expr = EXPR_ON && st.line ? lineExpr(side, st.line.text) : undefined;
-        push(side, frame, { f: `s-${sha(["spk", code, side, open, dy, expr ?? ""])}`, k: "spk", who: side, open, dy, expr });
+        push(side, frame, { f: `s-${sha(["spk", code, side, open, dy, expr ?? "", vowel ?? ""])}`, k: "spk", who: side, open, dy, expr, vowel });
       } else push(side, frame, none(side));
     }
     const px = ringPx(who, subProgress(tl, t));
@@ -267,7 +278,7 @@ async function renderFrames(tl: Timeline, art: CharaArt, work: string, part?: { 
   for (const [n, j] of jobs.entries()) {
     const el =
       j.k === "base" ? frameAt(tl, j.t, { instant: true, art, level: j.level, layer: "base" })
-      : j.k === "spk" ? speakerSprite(j.who, art[j.who]!, j.open, j.dy, j.expr)
+      : j.k === "spk" ? speakerSprite(j.who, art[j.who]!, j.open, j.dy, j.expr, j.vowel)
       : j.k === "ring" ? ringSprite(j.who, j.px, j.dy)
       : emptySprite(j.w, j.h);
     const size = j.k === "base" ? { width: W, height: H } : j.k === "none" ? { width: j.w, height: j.h } : (({ w, h }) => ({ width: w, height: h }))(spriteRegion(j.k === "spk" ? j.who : "ring"));
@@ -657,7 +668,13 @@ async function check(dir: string, tl: Timeline) {
   const bad = tl.chapters.flatMap((c) => c.lines).filter((l) => l.stale || l.estimated);
   if (bad.length) throw new Error(`古い声・見積もりの行が ${bad.length} 行あります。voice-draft.ts → timeline.ts をやり直してください`);
 
-  const p = plan(tl, art, voiceLevels(dir));
+  // リップシンク（11/27〜 見本。LONGFORM_LIPSYNC=1 のときだけ）: 台詞の WAV ごとに母音の時刻表を読む（なければ VOICEVOX でクエリを作り直す）
+  const vis = new Map<string, [number, string][]>();
+  if (process.env.LONGFORM_LIPSYNC === "1") {
+    for (const ch of tl.chapters) for (const l of ch.lines) if (l.audio && !vis.has(l.audio)) { const v = await visemesOf(l.audio); if (v) vis.set(l.audio, v); }
+    console.log(`  リップシンク: ${vis.size} 本の声`);
+  }
+  const p = plan(tl, art, voiceLevels(dir), vis);
   const who = (Object.keys(art) as Who[]).map((w) => `${w}${art[w]?.talk ? "（口あり）" : ""}`).join("・") || "なし（名前の札）";
   const count = (k: Job["k"]) => [...p.jobs.values()].filter((j) => j.k === k).length;
   const es = endScreenWindow(tl);
