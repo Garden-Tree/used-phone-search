@@ -1,7 +1,7 @@
 {
   "date": "2026-11-25",
   "shops": 18,
-  "source": "script.md（data-query-1112.log・集計 2026/11/25 22:57 JST・18店）。公開の前日に取り直す",
+  "source": "script.md（data-query-1112.log・集計 2026/11/26 13:02 JST・18店）。公開の前日に取り直す",
   "thumbnail": {
     "lines": [
       "iPhone 12・11",
@@ -281,7 +281,7 @@
           },
           {
             "label": "中古の11",
-            "median": 29800,
+            "median": 29980,
             "cue": "11も、修理代は",
             "say": "中古の相場"
           }
