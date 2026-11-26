@@ -1,0 +1,97 @@
+{
+  "date": "2026-11-27",
+  "shops": 18,
+  "chapters": [
+    {
+      "title": "家のiPhone 11の困りごと",
+      "scene": {
+        "type": "problems",
+        "heading": "家のiPhone 11、替える？",
+        "who": "iPhone 11（7年目）",
+        "img": "longform/assets/irasutoya/old-smartphone.png",
+        "items": [
+          {
+            "text": "電池が夕方までもたない",
+            "cue": "電池が夕方まで"
+          },
+          {
+            "text": "写真で容量がいっぱい",
+            "cue": "写真で容量"
+          },
+          {
+            "text": "iOS 27 の通知が来た",
+            "cue": "iOS 27の通知"
+          }
+        ]
+      }
+    },
+    {
+      "title": "2年でいくら？",
+      "scene": {
+        "type": "costs",
+        "heading": "2年でいくら？（Apple・中古の相場・買取）",
+        "unit": "円",
+        "items": [
+          {
+            "label": "電池交換",
+            "parts": [
+              {
+                "label": "電池交換",
+                "value": 15600
+              }
+            ],
+            "cue": "電池交換で",
+            "pick": true
+          },
+          {
+            "label": "中古の13",
+            "parts": [
+              {
+                "label": "本体",
+                "value": 50800
+              },
+              {
+                "label": "11を売る",
+                "value": 11550,
+                "minus": true
+              }
+            ],
+            "cue": "中古の13に"
+          },
+          {
+            "label": "新品の17e",
+            "parts": [
+              {
+                "label": "本体",
+                "value": 124800
+              },
+              {
+                "label": "11を売る",
+                "value": 11550,
+                "minus": true
+              }
+            ],
+            "cue": "新品の17eだと"
+          }
+        ],
+        "diff": {
+          "from": 0,
+          "to": 2,
+          "label": "差 9万7,650円",
+          "cue": "売って戻る分"
+        },
+        "legend": [
+          {
+            "label": "払う",
+            "color": "#3E3BB8"
+          },
+          {
+            "label": "11を売って戻る",
+            "color": "#1E8A6E",
+            "minus": true
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -150,6 +150,29 @@ export type FlowScene = {
   heading: string;
   q: string;
   branches: { label: string; answer: string; sub?: string; cue?: string; pick?: boolean }[];
+  /** 次の答えが出ても前の答えを薄くしない（既定は今の答えだけ明るく） */
+  keepAll?: boolean;
+  note?: string;
+};
+
+/** 困りごとのカード（11/27〜・タコの冒頭の型）: 人の絵と名札＋困りごとが cue で1つずつ */
+export type ProblemsScene = {
+  type: "problems";
+  heading: string;
+  who: string;
+  img?: string;
+  items: { text: string; cue?: string }[];
+  note?: string;
+};
+
+/** 積み上げの総額（11/27〜・タコの「2年でいくら？」）。minus は斜線（下取り・売って戻る分）。diff は2本の差の点線と札 */
+export type CostsScene = {
+  type: "costs";
+  heading: string;
+  unit: string;
+  items: { label: string; parts: { label: string; value: number; minus?: boolean; color?: string }[]; cue?: string; pick?: boolean }[];
+  diff?: { from: number; to: number; label: string; cue?: string };
+  legend?: { label: string; color: string; minus?: boolean }[];
   note?: string;
 };
 
@@ -170,7 +193,7 @@ export type LineupScene = {
   items: { title: string; value: string; sub?: string; src?: string; cue?: string; pick?: boolean }[];
   note?: string;
 };
-export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene | GaugesScene | ScreenScene | VersusScene | LineupScene | TrendScene | FlowScene) & SceneExtras;
+export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene | GaugesScene | ScreenScene | VersusScene | LineupScene | TrendScene | FlowScene | ProblemsScene | CostsScene) & SceneExtras;
 
 export type LongData = {
   date: string;

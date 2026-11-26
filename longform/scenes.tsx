@@ -16,7 +16,7 @@ import { ON_DARK, SITE } from "@/lib/brandColors";
 import { CHAPTER_LEAD, type Who } from "./script";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, GaugesScene, LineupScene, PairsScene, PhotoScene, ScreenScene, TableScene, VersusScene, TrendScene, FlowScene, Timeline, TimelineChapter } from "./types";
+import type { BarsScene, BigNumberScene, ChecklistScene, EndScreenScene, GaugesScene, LineupScene, PairsScene, PhotoScene, ScreenScene, TableScene, VersusScene, TrendScene, FlowScene, ProblemsScene, CostsScene, Timeline, TimelineChapter } from "./types";
 
 export const W = 1920;
 export const H = 1080;
@@ -375,7 +375,7 @@ const GROW = 18;
 export function growPoints(tl: Timeline): number[] {
   const out: number[] = [];
   for (const ch of tl.chapters) {
-    if (ch.scene.type !== "bars" && ch.scene.type !== "table" && ch.scene.type !== "gauges") continue;
+    if (ch.scene.type !== "bars" && ch.scene.type !== "table" && ch.scene.type !== "gauges" && ch.scene.type !== "costs") continue;
     for (const [k, r] of Object.entries(ch.scene.reveal)) {
       if (!k.startsWith("item:")) continue;
       const base = r > 0 ? ch.start + r : chapterShownAt(ch);
@@ -416,7 +416,7 @@ export function animAt(tl: Timeline, t: number): { items: Record<string, number>
     }
   }
   const grow: Record<string, number> = {};
-  if (ch.scene.type === "bars" || ch.scene.type === "table" || ch.scene.type === "gauges") {
+  if (ch.scene.type === "bars" || ch.scene.type === "table" || ch.scene.type === "gauges" || ch.scene.type === "costs") {
     for (const [k, r] of Object.entries(ch.scene.reveal)) {
       if (!k.startsWith("item:")) continue;
       const base = r > 0 ? ch.start + r : chapterShownAt(ch);
@@ -1260,7 +1260,7 @@ function Flow({ s, t, reveal }: { s: FlowScene; t: number; reveal: Record<string
           const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${wS}" height="${hS}" viewBox="0 0 ${wS} ${hS}"><line x1="${x1 - minX}" y1="0" x2="${ex - Math.cos(ang) * ah * 0.8}" y2="${ey - Math.sin(ang) * ah * 0.8}" stroke="${C.red}" stroke-width="10" stroke-linecap="round"/><path d="M${ex},${ey} L${ex - Math.cos(ang - 0.45) * ah},${ey - Math.sin(ang - 0.45) * ah} L${ex - Math.cos(ang + 0.45) * ah},${ey - Math.sin(ang + 0.45) * ah} Z" fill="${C.red}"/></svg>`;
           void len;
           return (
-            <div key={i} style={{ display: "flex", position: "absolute", left: 0, top: 0, width: INNER_W, height: areaH, opacity: p }}>
+            <div key={i} style={{ display: "flex", position: "absolute", left: 0, top: 0, width: INNER_W, height: areaH, opacity: p * (s.branches.some((_, j) => j > i && shown(reveal, `item:${j}`, t) > 0) && !s.keepAll ? 0.35 : 1) }}>
               {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
               <img src={`data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`} width={wS} height={hS} style={{ position: "absolute", left: Math.round(minX), top: y1, width: wS, height: hS }} />
               <div style={{ display: "flex", position: "absolute", left: Math.round((x1 + x2) / 2 - 110), top: Math.round((y1 + y2) / 2 - 30), width: 220, height: 60, borderRadius: 999, background: C.white, border: `4px solid ${C.red}`, color: C.red, alignItems: "center", justifyContent: "center", fontSize: MIN_FONT, fontWeight: 900 }}>{b.label}</div>
@@ -1271,6 +1271,126 @@ function Flow({ s, t, reveal }: { s: FlowScene; t: number; reveal: Record<string
             </div>
           );
         })}
+      </div>
+      <Note text={s.note} />
+    </div>
+  );
+}
+
+
+/** 困りごとのカード（11/27〜・タコの冒頭の型）: 左に人（いらすとや）と名札、右に困りごとが cue で1つずつ */
+function Problems({ s, t, reveal }: { s: ProblemsScene; t: number; reveal: Record<string, number> }) {
+  const areaH = bodyH(s.heading, s.note);
+  const leftW = Math.round(INNER_W * 0.36);
+  const img = s.img ? loadImage(s.img) : null;
+  const ih = Math.round(areaH * 0.7);
+  const iw = img ? Math.round((img.w * ih) / img.h) : 0;
+  const textW = INNER_W - leftW - 40;
+  const rowH = Math.min(cap(130), Math.floor((areaH - 20) / Math.max(1, s.items.length)));
+  return (
+    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+      <Heading text={s.heading} />
+      <div style={{ ...row, width: INNER_W, height: areaH, alignItems: "flex-start" }}>
+        <div style={{ ...col, width: leftW, height: areaH, alignItems: "center", justifyContent: "center" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+          {img ? <img src={img.src} width={iw} height={ih} style={{ width: iw, height: ih }} /> : null}
+          <div style={{ display: "flex", marginTop: 10, padding: "8px 22px", borderRadius: 999, background: C.bar, color: C.white, fontSize: fit(s.who, leftW - 20, cap(40), MIN_FONT, "困りごとの名札"), fontWeight: 900, whiteSpace: "nowrap" }}>{s.who}</div>
+        </div>
+        <div style={{ ...col, width: textW, marginLeft: 40, height: areaH, justifyContent: "center" }}>
+          {s.items.map((it, i) => {
+            const p = shown(reveal, `item:${i}`, t);
+            return (
+              <div key={i} style={{ ...row, width: textW, height: rowH, opacity: p, ...bump(s, `item:${i}`) }}>
+                <div style={{ display: "flex", width: 56, height: 56, borderRadius: 999, background: C.red, color: C.white, fontSize: 36, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>!</div>
+                <div style={{ display: "flex", marginLeft: 22, fontSize: fit(it.text, textW - 90, Math.min(cap(60), Math.floor(rowH * 0.55)), MIN_FONT, "困りごと"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{it.text}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <Note text={s.note} />
+    </div>
+  );
+}
+
+/** 積み上げの総額（11/27〜・タコの「2年でいくら？」）: 縦の棒を部分ごとに積む。minus は斜線（下取り・売って戻る分）。diff の cue で2本の差に点線と札 */
+function Costs({ s, t, reveal }: { s: CostsScene; t: number; reveal: Record<string, number> }) {
+  const areaH = bodyH(s.heading, s.note);
+  const n = s.items.length;
+  const colW = Math.floor(INNER_W / n);
+  const barW = Math.min(260, Math.floor(colW * 0.5));
+  const labelH = cap(60), topPad = 80;
+  const plotH = areaH - labelH - topPad - 10;
+  const total = (it: CostsScene["items"][number]) => it.parts.filter((p) => !p.minus).reduce((a, p) => a + p.value, 0);
+  const max = Math.max(...s.items.map(total)) * 1.05;
+  const yOf = (v: number) => topPad + plotH * (1 - v / max);
+  const colors = [C.barFill, "#E08A1E", SITE.safe, "#7A5AF8"];
+  // 斜線（satori はくり返しのグラデーションを読めないので SVG の模様で）
+  const hatchImg = (w: number, h: number, c: string) => {
+    const W1 = Math.max(1, Math.round(w)), H1 = Math.max(1, Math.round(h));
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W1}" height="${H1}"><defs><pattern id="p" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="10" height="20" fill="${c}"/></pattern></defs><rect width="${W1}" height="${H1}" fill="#ffffff"/><rect width="${W1}" height="${H1}" fill="url(#p)"/></svg>`;
+    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  };
+  const diffOn = s.diff && reveal.diff !== undefined && t >= reveal.diff;
+  const dk = (s as { pulse?: Record<string, number> }).pulse?.diff;
+  const dPop = dk === undefined ? 1 : 0.6 + 0.4 * easeOut(Math.min(1, dk / 8));
+  return (
+    <div style={{ ...col, width: INNER_W, height: "100%" }}>
+      <Heading text={s.heading} />
+      <div style={{ display: "flex", position: "relative", width: INNER_W, height: areaH }}>
+        {s.items.map((it, i) => {
+          const p = shown(reveal, `item:${i}`, t);
+          const g = (s as { grow?: Record<string, number> }).grow?.[`item:${i}`] ?? 1;
+          const cx = colW * i + colW / 2;
+          let acc = 0;
+          const segs = it.parts.filter((q) => !q.minus).map((q, k) => {
+            const y1 = yOf((acc + q.value) * g), y0 = yOf(acc * g);
+            acc += q.value;
+            return <div key={k} style={{ display: "flex", position: "absolute", left: Math.round(cx - barW / 2), top: Math.round(y1), width: barW, height: Math.max(0, Math.round(y0 - y1)), background: q.color ?? colors[k % colors.length], borderTop: "3px solid #fff" }} />;
+          });
+          const tot = total(it);
+          const minus = it.parts.filter((q) => q.minus);
+          let macc = tot;
+          const msegs = minus.map((q, k) => {
+            const y0 = yOf(macc * g), y1 = yOf((macc - q.value) * g);
+            macc -= q.value;
+            const hh = Math.max(1, Math.round(y1 - y0));
+            // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+            return <img key={`m${k}`} src={hatchImg(barW - 16, hh, q.color ?? SITE.safe)} width={barW - 16} height={hh} style={{ position: "absolute", left: Math.round(cx - barW / 2) + 8, top: Math.round(y0), width: barW - 16, height: hh }} />;
+          });
+          return (
+            <div key={i} style={{ display: "flex", position: "absolute", left: 0, top: 0, width: INNER_W, height: areaH, opacity: p > 0 ? 1 : 0.18 }}>
+              {segs}
+              {msegs}
+              <div style={{ display: "flex", position: "absolute", left: Math.round(cx - 160), top: Math.round(yOf(tot * g)) - 78, width: 320, justifyContent: "center", fontSize: cap(48), fontWeight: 900, color: it.pick ? C.red : C.ink, whiteSpace: "nowrap" }}>{p > 0 ? `${Math.round(tot * g).toLocaleString("ja-JP")}${s.unit}` : ""}</div>
+              <div style={{ display: "flex", position: "absolute", left: Math.round(cx - colW / 2), top: areaH - labelH, width: colW, justifyContent: "center", fontSize: fit(it.label, colW - 20, cap(44), MIN_FONT, "総額の名前"), fontWeight: 900, color: C.ink }}>{it.label}</div>
+            </div>
+          );
+        })}
+        {diffOn ? (() => {
+          const a = s.items[s.diff!.from], b = s.items[s.diff!.to];
+          const ya = yOf(total(a)), yb = yOf(total(b));
+          const xa = colW * s.diff!.from + colW / 2 + barW / 2 + 20, xb = colW * s.diff!.to + colW / 2 - barW / 2 - 20;
+          const yTop = Math.min(ya, yb), yBot = Math.max(ya, yb);
+          return (
+            <div style={{ display: "flex", position: "absolute", left: 0, top: 0, width: INNER_W, height: areaH }}>
+              <div style={{ display: "flex", position: "absolute", left: Math.round(Math.min(xa, xb)), top: Math.round(ya), width: Math.round(Math.abs(xb - xa)), height: 0, borderTop: `5px dashed ${C.red}` }} />
+              <div style={{ display: "flex", position: "absolute", left: Math.round(xb - 4), top: Math.round(yTop), width: 0, height: Math.round(yBot - yTop), borderLeft: `5px dashed ${C.red}` }} />
+              <div style={{ display: "flex", position: "absolute", left: Math.round(colW * s.diff!.to + colW / 2 - (s.diff!.label.length * cap(46) * 0.62 + 44) / 2), top: Math.round(Math.max(yTop + 30, (yTop + yBot) / 2 - 36)), whiteSpace: "nowrap", padding: "8px 22px", borderRadius: 14, background: C.red, color: C.white, fontSize: cap(46), fontWeight: 900, transform: `scale(${dPop})` }}>{s.diff!.label}</div>
+            </div>
+          );
+        })() : null}
+        {s.legend ? (
+          <div style={{ ...row, position: "absolute", left: 0, top: 0, width: INNER_W, justifyContent: "flex-end" }}>
+            {s.legend.map((lg, k) => (
+              <div key={k} style={{ ...row, marginLeft: 28 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+                {lg.minus ? <img src={hatchImg(30, 30, lg.color)} width={30} height={30} style={{ width: 30, height: 30, borderRadius: 6 }} /> : <div style={{ display: "flex", width: 30, height: 30, borderRadius: 6, background: lg.color }} />}
+                <div style={{ display: "flex", marginLeft: 10, fontSize: MIN_FOOT, fontWeight: 700, color: C.sub }}>{lg.label}</div>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
       <Note text={s.note} />
     </div>
@@ -1307,6 +1427,10 @@ function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
       return <Trend s={s} t={t} reveal={reveal} />;
     case "flow":
       return <Flow s={s} t={t} reveal={reveal} />;
+    case "problems":
+      return <Problems s={s} t={t} reveal={reveal} />;
+    case "costs":
+      return <Costs s={s} t={t} reveal={reveal} />;
   }
 }
 
