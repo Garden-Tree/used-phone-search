@@ -476,7 +476,8 @@ function youtubeText(dir: string, tl: Timeline, artFiles: string[]): string {
     // 結論・数字の箇条書き・※の注意書きは入れない（下書きにあっても落とす）
     const bodyLines = (creditAt < 0 ? lines : lines.slice(0, creditAt)).map((l) => l.trimEnd());
     const links = bodyLines.filter((l) => /^.+: https:\/\/used\.gadelog\.com/.test(l));
-    const pr = lines.filter((l) => l.startsWith("中古スマホにするなら回線も見直す") || l.includes("hb.afl.rakuten.co.jp"));
+    // PR: 楽天モバイル（回線）と Amazon アソシエイト（11/26 BF の回。見出し・リンク・アソシエイトの1文）
+    const pr = lines.filter((l) => l.startsWith("中古スマホにするなら回線も見直す") || l.includes("hb.afl.rakuten.co.jp") || /^Amazon の新品.*【PR】/.test(l) || /: https:\/\/www\.amazon\.co\.jp\//.test(l) || l.startsWith("Amazonのアソシエイトとして"));
     const extraCredits = lines.filter((l) => /^(イラスト|動画素材|サムネイル画像)/.test(l));
     let intro = bodyLines.find((l) => l && l !== CHAPTERS_PLACEHOLDER && !/^(※|結論|・|#|（)/.test(l) && !links.includes(l) && !pr.includes(l) && !extraCredits.includes(l)) ?? "";
     // データの日付と店の数は紹介の1文に（画面の最下行に出さないので、説明欄に必ず置く）
