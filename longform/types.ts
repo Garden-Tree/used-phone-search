@@ -130,7 +130,7 @@ export type SceneExtras = {
   /** 思考の吹き出し（11/27〜）: ずんだもんの上にもこもこの吹き出し（迷っていること）。cue から次の台詞まで */
   think?: { text: string; cue?: string; who?: "ずんだもん" | "つむぎ" };
   /** はんこ（11/27〜）: cue で赤い丸はんこが斜めに押される（結論・逆転） */
-  stamp?: { text: string; cue?: string; /** 置き場所（カードの幅・高さに対する割合・左上）と大きさ px。なければ右上・250 */ x?: number; y?: number; size?: number };
+  stamp?: { text: string; cue?: string; /** 置き場所（カードの幅・高さに対する割合・左上）と大きさ px。なければ右上・250 */ x?: number; y?: number; size?: number; /** circle（丸・既定）・square（角はんこ）・ribbon（赤い札） */ style?: "circle" | "square" | "ribbon" };
 };
 
 /** 線グラフが左から描かれる（11/27〜）。points は [日付の札, 値]。draw の cue で描き始める。callout は描き終わりに出す札 */
@@ -172,6 +172,8 @@ export type CostsScene = {
   unit: string;
   items: { label: string; parts: { label: string; value: number; minus?: boolean; color?: string }[]; cue?: string; pick?: boolean }[];
   diff?: { from: number; to: number; label: string; cue?: string };
+  /** stack（今の積み上げ・既定）・net（縦棒＝払う額）・rows（横棒）・cards（カード＋内訳） */
+  style?: "stack" | "net" | "rows" | "cards";
   legend?: { label: string; color: string; minus?: boolean }[];
   note?: string;
 };
@@ -203,7 +205,9 @@ export type VersusScene = {
 export type LineupScene = {
   type: "lineup";
   heading: string;
-  items: { title: string; value: string; sub?: string; src?: string; cue?: string; pick?: boolean }[];
+  items: { title: string; value: string; sub?: string; src?: string; cue?: string; pick?: boolean; tag?: string }[];
+  /** plain（今のカード・既定）・tab（頭に帯）・steps（階段）・rows（横長の行） */
+  style?: "plain" | "tab" | "steps" | "rows";
   note?: string;
 };
 export type SceneData = (BigNumberScene | BarsScene | PairsScene | TableScene | ChecklistScene | PhotoScene | EndScreenScene | GaugesScene | ScreenScene | VersusScene | LineupScene | TrendScene | FlowScene | ProblemsScene | CostsScene | YearsScene) & SceneExtras;
