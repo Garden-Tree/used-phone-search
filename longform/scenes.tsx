@@ -1750,7 +1750,16 @@ function LineupStyled({ s, t, reveal }: { s: LineupScene; t: number; reveal: Rec
   const SLIDE = 0.45;
   const bigEnd = (i: number) => { const st = raw[`item:${i}`]; if (st === undefined) return undefined; const nx = raw[`item:${i + 1}`]; return Math.min(st + LINEUP_BIG, nx ?? Infinity); };
   const sliding = shownIdx.filter((i) => { const e = bigEnd(i); return i !== big && e !== undefined && t >= e && t < e + SLIDE; });
-  const op = (i: number) => (sliding.includes(i) ? 0 : shown(reveal, `item:${i}`, t) > 0 && i !== big ? 1 : 0.12);
+  const op = (i: number) => (sliding.includes(i) ? 0.12 : shown(reveal, `item:${i}`, t) > 0 && i !== big ? 1 : 0.12);
+  const TAB_H = 0.68;
+  const slot = (i: number): { l: number; t: number; w: number; h: number; cell: (w: number, h: number, sc: number) => React.ReactNode } => {
+    const it = s.items[i];
+    if (style === "rows") { const GAP = 18; const rh = Math.min(cap(170), Math.floor((areaH - 20 - GAP * (n - 1)) / n)); return { l: 0, t: 10 + i * (rh + GAP), w: INNER_W, h: rh, cell: (w, h, sc) => lineupTabCell(it, w, h, sc) }; }
+    if (style === "steps") { const GAP = 20; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const hh = Math.round(areaH * (0.74 + (0.24 * i) / Math.max(1, n - 1))); return { l: i * (cw + GAP), t: areaH - 6 - hh, w: cw, h: hh, cell: (w, h, sc) => lineupStepCell(it, w, h, sc) }; }
+    // 並んだカードは低め（大きく出すときに同じ形のまま 1.5 倍にできるように。11/27）。縦は真ん中
+    const GAP = 28; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const h = Math.round(areaH * TAB_H) + (it.pick ? 16 : 0);
+    return { l: i * (cw + GAP), t: Math.round((areaH - h) / 2), w: cw, h, cell: (w, h, sc) => lineupTabCell(it, w, h, sc) };
+  };
   let body: React.ReactNode;
   if (style === "rows") {
     const GAP = 18;
@@ -1771,23 +1780,25 @@ function LineupStyled({ s, t, reveal }: { s: LineupScene; t: number; reveal: Rec
       </div>
     );
   } else {
-    const GAP = 28;
-    const cw = Math.floor((INNER_W - GAP * (n - 1)) / n);
-    const h = areaH - 50;
-    body = s.items.map((it, i) => (
-      <div key={i} style={{ display: "flex", position: "absolute", left: i * (cw + GAP), top: areaH - h - 6 - (it.pick ? 20 : 0), opacity: op(i) }}>{lineupTabCell(it, cw, h + (it.pick ? 20 : 0), 1)}</div>
-    ));
+    body = s.items.map((it, i) => { const sl = slot(i); return (
+      <div key={i} style={{ display: "flex", position: "absolute", left: sl.l, top: sl.t, opacity: op(i) }}>{sl.cell(sl.w, sl.h, 1)}</div>
+    ); });
   }
-  const slot = (i: number): { l: number; t: number; w: number; h: number; cell: (w: number, h: number, sc: number) => React.ReactNode } => {
-    const it = s.items[i];
-    if (style === "rows") { const GAP = 18; const rh = Math.min(cap(170), Math.floor((areaH - 20 - GAP * (n - 1)) / n)); return { l: 0, t: 10 + i * (rh + GAP), w: INNER_W, h: rh, cell: (w, h, sc) => lineupTabCell(it, w, h, sc) }; }
-    if (style === "steps") { const GAP = 20; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const hh = Math.round(areaH * (0.74 + (0.24 * i) / Math.max(1, n - 1))); return { l: i * (cw + GAP), t: areaH - 6 - hh, w: cw, h: hh, cell: (w, h, sc) => lineupStepCell(it, w, h, sc) }; }
-    const GAP = 28; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const h = areaH - 50 + (it.pick ? 20 : 0);
-    return { l: i * (cw + GAP), t: areaH - h - 6, w: cw, h, cell: (w, h, sc) => lineupTabCell(it, w, h, sc) };
-  };
   const BL = Math.round(INNER_W * 0.22), BW = Math.round(INNER_W * 0.56), BH = areaH - 10;
+  // tab: 大きいカード＝並んだカードと同じ絵を 1.5 倍（真ん中）。スライドは場所と倍率だけ変える（形が変わらない）
+  const tabK = (i: number) => { const sl = slot(i); return Math.min(1.5, (areaH - 10) / sl.h, (INNER_W * 0.62) / sl.w); };
+  const tabCard = (i: number, cx: number, cy: number, k: number, shadow: number) => {
+    const sl = slot(i);
+    return <div key={`t${i}`} style={{ display: "flex", position: "absolute", left: Math.round(cx - sl.w / 2), top: Math.round(cy - sl.h / 2), width: sl.w, height: sl.h, transform: `scale(${k})`, boxShadow: `0 12px 28px rgba(0,0,0,${shadow})`, borderRadius: 24 }}>{sl.cell(sl.w, sl.h, 1)}</div>;
+  };
+  const isTab = style !== "rows" && style !== "steps";
   const slides = sliding.map((i) => {
     const sl = slot(i);
+    if (isTab) {
+      const p = easeOut(Math.min(1, (t - bigEnd(i)!) / SLIDE));
+      const k0 = tabK(i);
+      return tabCard(i, INNER_W / 2 + (sl.l + sl.w / 2 - INNER_W / 2) * p, areaH / 2 + (sl.t + sl.h / 2 - areaH / 2) * p, k0 + (1 - k0) * p, 0.28 * (1 - p));
+    }
     const p = easeOut(Math.min(1, (t - bigEnd(i)!) / SLIDE));
     // 大きいカードと同じ絵のまま、場所・幅・高さ・文字の倍率を少しずつ変える（途中で形が跳ばない）
     const L = BL + (sl.l - BL) * p, T = (sl.t - 0) * p, Wd = Math.round(BW + (sl.w - BW) * p), Hd = Math.round(BH + (sl.h - BH) * p);
@@ -1803,7 +1814,8 @@ function LineupStyled({ s, t, reveal }: { s: LineupScene; t: number; reveal: Rec
       <div style={{ display: "flex", position: "relative", width: INNER_W, height: areaH }}>
         {body}
         {slides}
-        {big !== undefined ? (
+        {big !== undefined && isTab ? tabCard(big, INNER_W / 2, areaH / 2, tabK(big) * bigPop, 0.28) : null}
+        {big !== undefined && !isTab ? (
           <div style={{ display: "flex", position: "absolute", left: Math.round(INNER_W * 0.22), top: 0, width: Math.round(INNER_W * 0.56), height: areaH - 10, transform: `scale(${bigPop})`, boxShadow: "0 18px 40px rgba(0,0,0,0.28)", borderRadius: 24 }}>
             {bigCell(s.items[big], Math.round(INNER_W * 0.56), areaH - 10)}
           </div>

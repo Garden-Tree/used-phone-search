@@ -106,6 +106,32 @@
       }
     },
     {
+      "title": "14の中身は、まだ古くない",
+      "scene": {
+        "type": "photo",
+        "heading": "14の中身は、まだ古くない",
+        "src": "longform/assets/commons/iphone14-blue-crop.png",
+        "credit": "iPhone 14 — KKPCW / CC BY-SA 4.0 / Wikimedia Commons",
+        "points": [
+          {
+            "text": "チップ A15",
+            "sub": "GPUは13より1コア多い",
+            "cue": "チップは13と同じ"
+          },
+          {
+            "text": "アクションモード",
+            "sub": "走りながらでも揺れにくい",
+            "cue": "走りながら撮っても"
+          },
+          {
+            "text": "ビデオ再生 20時間",
+            "sub": "1年あとの15と同じ",
+            "cue": "ビデオ再生は20時間で"
+          }
+        ]
+      }
+    },
+    {
       "title": "替えるといくら？14を売って足すお金",
       "scene": {
         "type": "costs",
@@ -485,9 +511,9 @@
         "stamp": {
           "text": "迷ったら／15",
           "cue": "迷ったら15かな",
-          "x": 0.245,
-          "y": 0.15,
-          "size": 190
+          "x": 0.25,
+          "y": 0.2,
+          "size": 180
         }
       }
     },

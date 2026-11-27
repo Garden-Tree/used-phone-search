@@ -9,6 +9,11 @@ ch.append({"title": "困りごとで分かれる", "scene": {"type": "flow", "he
 ch.append({"title": "14は5年目。iOS 27にも対応", "scene": {"type": "years", "heading": "発売から今日まで", "start": 2019, "end": 2028, "today": 2026.9, "todayLabel": "2026年11月",
   "rows": [{"label": "iPhone 11", "from": 2019.7, "cue": "11は、8年目"}, {"label": "iPhone 12", "from": 2020.8, "cue": "発売した年から"}, {"label": "iPhone 13", "from": 2021.7, "cue": "発売した年から"},
            {"label": "iPhone 14", "from": 2022.7, "cue": "発売した年から", "pick": True}, {"label": "iPhone 15", "from": 2023.7, "cue": "発売した年から"}], "sweep": "時計を進めると"}})
+C14 = "iPhone 14 — KKPCW / CC BY-SA 4.0 / Wikimedia Commons"
+ch.append({"title": "14の中身は、まだ古くない", "scene": {"type": "photo", "heading": "14の中身は、まだ古くない", "src": D+"commons/iphone14-blue-crop.png", "credit": C14,
+  "points": [{"text": "チップ A15", "sub": "GPUは13より1コア多い", "cue": "チップは13と同じ"},
+             {"text": "アクションモード", "sub": "走りながらでも揺れにくい", "cue": "走りながら撮っても"},
+             {"text": "ビデオ再生 20時間", "sub": "1年あとの15と同じ", "cue": "ビデオ再生は20時間で"}]}})
 sell = 42000
 def item(label, price, cue, pick=False):
     parts = [{"label": "本体", "value": price}, {"label": "14を売る", "value": sell, "minus": True}]
@@ -57,7 +62,7 @@ ch.append({"title": "替えるならこの3台", "scene": {"type": "lineup", "he
   "items": [{"title": "USB-C：中古の15", "value": "+49,700円", "sub": "A16・MagSafe・超広角", "cue": "USB-Cとカメラなら", "pick": True},
             {"title": "電池・AI：中古の16e", "value": "+64,980円", "sub": "MagSafe・超広角なし", "cue": "電池の長さとApple"},
             {"title": "全部：中古の17", "value": "+106,980円", "sub": "256GB・eSIMだけ", "cue": "電池も機能も全部"}],
-  "stamp": {"text": "迷ったら／15", "cue": "迷ったら15かな", "x": 0.245, "y": 0.15, "size": 190}}})
+  "stamp": {"text": "迷ったら／15", "cue": "迷ったら15かな", "x": 0.25, "y": 0.2, "size": 180}}})
 ch.append({"title": "答え：困りごと別", "scene": {"type": "flow", "heading": "iPhone 14、まだ使う？", "q": "何に困ってる？", "keepAll": True,
   "branches": [{"label": "電池だけ", "answer": "電池交換", "sub": "17,200円", "cue": "電池だけなら、電池交換"},
                {"label": "画面が割れた", "answer": "まず修理と比べる", "sub": "修理 45,800円", "cue": "画面が割れたら"},
