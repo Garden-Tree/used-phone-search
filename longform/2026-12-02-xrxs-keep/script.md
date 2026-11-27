@@ -231,6 +231,7 @@ iPhone 13 Pro の店ごとの在庫と最安値: https://used.gadelog.com/iphone
 全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261202
 
 イラスト：いらすとや
+サムネイル画像：iPhone XR Coral — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons
 
 VOICEVOX:春日部つむぎ
 VOICEVOX:ずんだもん

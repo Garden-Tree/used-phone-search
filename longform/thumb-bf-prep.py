@@ -51,6 +51,11 @@ SETS = {
     "14keep": dict(dir=HERE / "assets" / "commons", src="iphone14-blue-crop.png", cut="iphone14-blue-cut.png",
                    cutline="iphone14-blue-cutline.png", edges=(), layers="14keep-layers", shrink=8, bright=(1.6, 1.1), sat=1.15, glow=(150, 190, 255, 0.55, 45),
                    place={"14k-big": (380, -8, 850, 30)}),
+    # xrkeep（11/28 追加）: 横動画 2026-12-02-xrxs-keep（13・SE3・14 と同じ形）。iPhone XR（コーラル）の背面・机の上の端末全体
+    #   茅野ふたば / CC BY-SA 4.0（Commons「IPhone XR Coral.jpg」）。EXIF の向きで横になるので、右へ90度回した iphonexr-coral-rot.jpg を使う
+    "xrkeep": dict(dir=HERE / "assets" / "commons", src="iphonexr-coral-rot.jpg", cut="iphonexr-coral-cut.png",
+                   cutline="iphonexr-coral-cutline.png", edges=(), layers="xrkeep-layers", shrink=8, bright=(1.15, 1.05), sat=1.05,
+                   glow=(255, 190, 160, 0.45, 45), place={"xrk-big": (380, -8, 850, 30)}),
     # 13buy（11/27 追加）: 13 の今買い？。13keep と同じ iPhone 13（スターライト）の切り抜き（Tatsuo Yamashita / CC BY 2.0）を明るくした層
     "13buy": dict(dir=HERE / "assets" / "commons", src="iphone13-tora.jpg", cut="iphone13-tora-flat.png",
                   cutline="iphone13-tora-flat-cutline.png", edges=(), layers="13buy-layers", bright=(1.3, 1.12), sat=1.1,
