@@ -27,8 +27,8 @@ const EDGE = 60;
 const SET = process.argv.find((a) => a.startsWith("--set="))?.slice(6) ?? "bf";
 const ARGV = process.argv.slice(2).filter((a) => !a.startsWith("--set="));
 const CHECK = ARGV[0] === "--check";
-const DIR = SET === "14keep" ? "2026-11-28-iphone14-keep" : SET === "bfa" ? "2026-11-28-bf-amazon-iphone" : SET === "dec" ? "2026-12-01-monthly" : SET === "12keep" ? "2026-11-28-iphone12-keep" : SET === "se3keep" || SET === "se3keepB" ? "2026-12-01-iphonese3-keep" : SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-24-iphone15" : "2026-11-26-blackfriday";
-const LAYERS = SET === "14keep" ? "14keep-layers" : SET === "bfa" ? "bfa-layers" : SET === "dec" ? "dec-layers" : SET === "12keep" ? "12keep-layers" : SET === "se3keepB" ? "se3keepB-layers" : SET === "se3keep" ? "se3keep-layers" : SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
+const DIR = SET === "13buy" ? "2026-11-14-iphone13" : SET === "12buy" ? "2026-11-21-iphone12" : SET === "16buy" ? "2026-11-20-iphone16" : SET === "14keep" ? "2026-11-28-iphone14-keep" : SET === "bfa" ? "2026-11-28-bf-amazon-iphone" : SET === "dec" ? "2026-12-01-monthly" : SET === "12keep" ? "2026-11-28-iphone12-keep" : SET === "se3keep" || SET === "se3keepB" ? "2026-12-01-iphonese3-keep" : SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-24-iphone15" : "2026-11-26-blackfriday";
+const LAYERS = SET === "13buy" ? "13keep-layers" : SET === "12buy" ? "12buy-layers" : SET === "16buy" ? "16buy-layers" : SET === "14keep" ? "14keep-layers" : SET === "bfa" ? "bfa-layers" : SET === "dec" ? "dec-layers" : SET === "12keep" ? "12keep-layers" : SET === "se3keepB" ? "se3keepB-layers" : SET === "se3keep" ? "se3keep-layers" : SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
 const OUTC = (c: string) => (CHECK && c === BLACK ? "#808080" : c);
 
 function Layer({ name }: { name: string }) {
@@ -211,6 +211,19 @@ const n = (tag: string, size = 104) => (
 );
 const n1 = n("電池1.6万円"), n2 = n("12は○ 11は？");
 
+// ---- 今買い？の3本（13・12・16・11/27）: CTR 1.5〜3.4% だったので、15 の F1（4.9%）・まだ使う？と同じ形に寄せる。数字は各回の script.md のもの
+const buy = (layer: string, model: string, tag: string) => (
+  <Frame>
+    <Layer name={layer} />
+    <T x={EDGE + 6} y={60}><Outlined text={model} size={116} color={WHITE} w={6} spacing={-3} /></T>
+    <T x={EDGE + 9} y={204}><Outlined text="今買い？" size={172} color={YELLOW} w={9} spacing={-8} /></T>
+    <Tag x={EDGE} y={448} text={tag} size={104} color={RED} pad={16} spacing={-5} />
+  </Frame>
+);
+const i13a = buy("13k-big", "iPhone 13", "相場5.1万円"), i13b = buy("13k-big", "iPhone 13", "14と1.5万円差");
+const i12a = buy("12b-big", "iPhone 12", "相場3.6万円"), i12b = buy("12b-big", "iPhone 12", "画面修理4.6万円");
+const i16a = buy("16b-big", "iPhone 16", "新品と1.9万円差"), i16b = buy("16b-big", "iPhone 16", "相場12.1万円");
+
 // ---- 14keep（2026-11-28-iphone14-keep・11/27）: 13・SE3 と同じ形。iPhone 14（ブルー）の背面。A/B は札だけ変える
 //   数字は script.md のもの: 電池交換 17,200円・売って中古の 15 は +49,700円（91,700−42,000）・16e は MagSafe なし
 const a = (tag: string) => (
@@ -275,7 +288,7 @@ const f3 = (
 
 (async () => {
   const fonts = await notoSansJp(readFileSync(__filename, "utf8"));
-  const plans: [string, ReactNode][] = SET === "14keep" ? [["A1", a1], ["A2", a2]] : SET === "bfa" ? [["B1", b1], ["B2", b2]] : SET === "dec" ? [["D1", d1], ["D2", d2]] : SET === "12keep" ? [["N1", n1], ["N2", n2]] : SET === "se3keepB" ? [["S2", s2]] : SET === "se3keep" ? [["S1", s1]] : SET === "15" ? [["F1", f1], ["F2", f2], ["F3", f3]] : SET === "13keep" ? [["K1", k1], ["K2", k2], ["K3", k3]] : SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
+  const plans: [string, ReactNode][] = SET === "13buy" ? [["I1", i13a], ["I2", i13b]] : SET === "12buy" ? [["I1", i12a], ["I2", i12b]] : SET === "16buy" ? [["I1", i16a], ["I2", i16b]] : SET === "14keep" ? [["A1", a1], ["A2", a2]] : SET === "bfa" ? [["B1", b1], ["B2", b2]] : SET === "dec" ? [["D1", d1], ["D2", d2]] : SET === "12keep" ? [["N1", n1], ["N2", n2]] : SET === "se3keepB" ? [["S2", s2]] : SET === "se3keep" ? [["S1", s1]] : SET === "15" ? [["F1", f1], ["F2", f2], ["F3", f3]] : SET === "13keep" ? [["K1", k1], ["K2", k2], ["K3", k3]] : SET === "16e" ? [["R1", e1], ["R2", e2], ["R3", e3], ["R4", e4], ["R5", e5]] : [["R1", r1], ["R2", r2], ["R3", r3]];
   const checkDir = CHECK ? ARGV[1] : "";
   if (CHECK) mkdirSync(checkDir, { recursive: true });
   for (const [name, node] of plans) {

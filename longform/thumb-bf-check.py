@@ -13,6 +13,9 @@ SETS = {
     "bf": ("2026-11-26-blackfriday", "bf-layers", {"R1": "bf-bottom", "R2": "bf-bottom2", "R3": "bf-small"}),
     "15": ("2026-11-24-iphone15", "15-layers", {"F1": "15-big", "F2": "15-big", "F3": "15-big"}),
     "13keep": ("2026-11-22-iphone13-keep", "13keep-layers", {"K1": "13k-big", "K2": "13k-mid", "K3": "13k-big"}),
+    "13buy": ("2026-11-14-iphone13", "13keep-layers", {"I1": "13k-big", "I2": "13k-big"}),
+    "12buy": ("2026-11-21-iphone12", "12buy-layers", {"I1": "12b-big", "I2": "12b-big"}),
+    "16buy": ("2026-11-20-iphone16", "16buy-layers", {"I1": "16b-big", "I2": "16b-big"}),
     "14keep": ("2026-11-28-iphone14-keep", "14keep-layers", {"A1": "14k-big", "A2": "14k-big"}),
     "bfa": ("2026-11-28-bf-amazon-iphone", "bfa-layers", {"B1": "air", "B2": "air"}),
     "16e": ("2026-12-03-iphone16e-review", "16e-layers", {"R1": "16e-big", "R2": "16e-mid", "R3": "16e-small", "R4": "16e-r4", "R5": "16e-r5"}),
@@ -24,7 +27,7 @@ LAYERS = SETS[SET][1]
 NAMES = list(SETS[SET][2])
 LAYER = SETS[SET][2]
 # 一覧に並べる案（16e は 11/19 にユーザーが「iPhone 16e」を入れる案を求めたので R2 と比べる）
-CONTACT = {"15": ["F1", "F2", "F3"], "13keep": ["K1", "K2", "K3"], "bf": ["R1", "R2", "R3"], "16e": ["R2", "R4", "R5"], "bfa": ["B1", "B2"], "14keep": ["A1", "A2"]}[SET]
+CONTACT = {"13buy": ["I1", "I2"], "12buy": ["I1", "I2"], "16buy": ["I1", "I2"], "15": ["F1", "F2", "F3"], "13keep": ["K1", "K2", "K3"], "bf": ["R1", "R2", "R3"], "16e": ["R2", "R4", "R5"], "bfa": ["B1", "B2"], "14keep": ["A1", "A2"]}[SET]
 
 
 def contact():
