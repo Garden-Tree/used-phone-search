@@ -13,7 +13,7 @@ SETS = {
     "bf": ("2026-11-26-blackfriday", "bf-layers", {"R1": "bf-bottom", "R2": "bf-bottom2", "R3": "bf-small"}),
     "15": ("2026-11-24-iphone15", "15-layers", {"F1": "15-big", "F2": "15-big", "F3": "15-big"}),
     "13keep": ("2026-11-22-iphone13-keep", "13keep-layers", {"K1": "13k-big", "K2": "13k-mid", "K3": "13k-big"}),
-    "13buy": ("2026-11-14-iphone13", "13keep-layers", {"I1": "13k-big", "I2": "13k-big"}),
+    "13buy": ("2026-11-14-iphone13", "13buy-layers", {"I1": "13b-big", "I2": "13b-big"}),
     "12buy": ("2026-11-21-iphone12", "12buy-layers", {"I1": "12b-big", "I2": "12b-big"}),
     "16buy": ("2026-11-20-iphone16", "16buy-layers", {"I1": "16b-big", "I2": "16b-big"}),
     "14keep": ("2026-11-28-iphone14-keep", "14keep-layers", {"A1": "14k-big", "A2": "14k-big"}),

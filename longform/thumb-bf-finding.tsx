@@ -28,7 +28,7 @@ const SET = process.argv.find((a) => a.startsWith("--set="))?.slice(6) ?? "bf";
 const ARGV = process.argv.slice(2).filter((a) => !a.startsWith("--set="));
 const CHECK = ARGV[0] === "--check";
 const DIR = SET === "13buy" ? "2026-11-14-iphone13" : SET === "12buy" ? "2026-11-21-iphone12" : SET === "16buy" ? "2026-11-20-iphone16" : SET === "14keep" ? "2026-11-28-iphone14-keep" : SET === "bfa" ? "2026-11-28-bf-amazon-iphone" : SET === "dec" ? "2026-12-01-monthly" : SET === "12keep" ? "2026-11-28-iphone12-keep" : SET === "se3keep" || SET === "se3keepB" ? "2026-12-01-iphonese3-keep" : SET === "16e" ? "2026-12-03-iphone16e-review" : SET === "13keep" ? "2026-11-22-iphone13-keep" : SET === "15" ? "2026-11-24-iphone15" : "2026-11-26-blackfriday";
-const LAYERS = SET === "13buy" ? "13keep-layers" : SET === "12buy" ? "12buy-layers" : SET === "16buy" ? "16buy-layers" : SET === "14keep" ? "14keep-layers" : SET === "bfa" ? "bfa-layers" : SET === "dec" ? "dec-layers" : SET === "12keep" ? "12keep-layers" : SET === "se3keepB" ? "se3keepB-layers" : SET === "se3keep" ? "se3keep-layers" : SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
+const LAYERS = SET === "13buy" ? "13buy-layers" : SET === "12buy" ? "12buy-layers" : SET === "16buy" ? "16buy-layers" : SET === "14keep" ? "14keep-layers" : SET === "bfa" ? "bfa-layers" : SET === "dec" ? "dec-layers" : SET === "12keep" ? "12keep-layers" : SET === "se3keepB" ? "se3keepB-layers" : SET === "se3keep" ? "se3keep-layers" : SET === "16e" ? "16e-layers" : SET === "13keep" ? "13keep-layers" : SET === "15" ? "15-layers" : "bf-layers";
 const OUTC = (c: string) => (CHECK && c === BLACK ? "#808080" : c);
 
 function Layer({ name }: { name: string }) {
@@ -220,7 +220,7 @@ const buy = (layer: string, model: string, tag: string) => (
     <Tag x={EDGE} y={448} text={tag} size={104} color={RED} pad={16} spacing={-5} />
   </Frame>
 );
-const i13a = buy("13k-big", "iPhone 13", "相場5.1万円"), i13b = buy("13k-big", "iPhone 13", "14と1.5万円差");
+const i13a = buy("13b-big", "iPhone 13", "相場5.1万円"), i13b = buy("13b-big", "iPhone 13", "14と1.5万円差");
 const i12a = buy("12b-big", "iPhone 12", "相場3.6万円"), i12b = buy("12b-big", "iPhone 12", "画面修理4.6万円");
 const i16a = buy("16b-big", "iPhone 16", "新品と1.9万円差"), i16b = buy("16b-big", "iPhone 16", "相場12.1万円");
 

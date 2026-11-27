@@ -51,13 +51,17 @@ SETS = {
     "14keep": dict(dir=HERE / "assets" / "commons", src="iphone14-blue-crop.png", cut="iphone14-blue-cut.png",
                    cutline="iphone14-blue-cutline.png", edges=(), layers="14keep-layers", shrink=8, bright=(1.6, 1.1), sat=1.15, glow=(150, 190, 255, 0.55, 45),
                    place={"14k-big": (380, -8, 850, 30)}),
+    # 13buy（11/27 追加）: 13 の今買い？。13keep と同じ iPhone 13（スターライト）の切り抜き（Tatsuo Yamashita / CC BY 2.0）を明るくした層
+    "13buy": dict(dir=HERE / "assets" / "commons", src="iphone13-tora.jpg", cut="iphone13-tora-flat.png",
+                  cutline="iphone13-tora-flat-cutline.png", edges=(), layers="13buy-layers", bright=(1.3, 1.12), sat=1.1,
+                  glow=(200, 215, 255, 0.55, 45), place={"13b-big": (360, -8, 870, 40)}),
     # 12buy（11/27 追加）: 12 の今買い？。写真は今のサムネ（thumb-B）と同じ Unsplash の iPhone 12 パープル（Thai Nguyen・Unsplash License）の切り抜き
     "12buy": dict(dir=HERE / "assets" / "stock-photo", src="unsplash-IegLpS8Eay8-iphone12-purple.jpg", cut="iphone12-purple-cut2.png",
-                  cutline="iphone12-purple-cutline.png", edges=(), layers="12buy-layers", bright=(1.15, 1.05),
+                  cutline="iphone12-purple-cutline.png", edges=(), layers="12buy-layers", bright=(1.25, 1.08), sat=1.3,
                   glow=(170, 160, 255, 0.45, 45), place={"12b-big": (380, -8, 860, 40)}),
     # 16buy（11/27 追加）: 「今買い？」の16の回のサムネを 15 の F1 と同じ形に。写真は既存の iPhone 16 ウルトラマリンの切り抜き（v7 で作成・切り口なし）
     "16buy": dict(dir=HERE / "assets" / "commons", src="iphone16-ultramarine.png", cut="iphone16-ultramarine-cut.png",
-                  cutline="iphone16-ultramarine-cutline.png", edges=(), layers="16buy-layers", bright=(1.35, 1.08), sat=1.1,
+                  cutline="iphone16-ultramarine-cutline.png", edges=(), layers="16buy-layers", bright=(1.5, 1.1), sat=1.1,
                   glow=(150, 190, 255, 0.5, 45), place={"16b-big": (380, -8, 860, 40)}),
     # 12keep・11keep（11/25 追加）: 横動画 2026-11-28-iphone12-keep（12・11 まだ使う？）。2台を2つの層に。写真は先に端末のまわりだけに切った *-crop.png
     #   12 Green 茅野ふたば / CC BY-SA 4.0（店の札より上だけ・下の端が切り口）・11 Rberchie / CC BY-SA 4.0（Commons）
