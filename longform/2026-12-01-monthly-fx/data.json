@@ -82,25 +82,14 @@
             },
             "cue": "僕は10万円くらい"
           }
-        ],
-        "think": {
-          "text": "中古なら安い？",
-          "cue": "新品は高いから"
-        },
-        "source": {
-          "text": "17e 新品（256GB）124,800円",
-          "from": "Apple Store（2026年11月）",
-          "cue": "新品より高いんだよ",
-          "x": 0.55,
-          "y": 0.72
-        }
+        ]
       }
     },
     {
       "title": "11月から動いた値段",
       "scene": {
         "type": "table",
-        "heading": "相場の動き（11/1 → 11/26）",
+        "heading": "11/1から11/26で、相場はどう動いた？",
         "columns": [
           "機種",
           "11/1",
@@ -239,7 +228,7 @@
       "title": "7万円：iPhone 14",
       "scene": {
         "type": "table",
-        "heading": "14 と 13 Pro（どちらも 128GB・65,780円）",
+        "heading": "128GBで比べると、14と13 Pro はどちらも65,780円",
         "columns": [
           "",
           "14",
@@ -389,7 +378,7 @@
       "title": "13万円：iPhone 15 Pro",
       "scene": {
         "type": "photo",
-        "heading": "13万円：15 Pro（同じ値段の16も）",
+        "heading": "13万円：15 Pro と、同じ値段の16",
         "src": "longform/assets/commons/iphone15pro-back-naturaltitanium-meidoriyo.jpg",
         "credit": "Back view of iPhone 15 Pro Natural titanium — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
         "crop": {
@@ -554,7 +543,7 @@
       "title": "いま中古で買わない3台",
       "scene": {
         "type": "pairs",
-        "heading": "256GB の新品（Apple）と、中古の相場",
+        "heading": "256GBは、新品と中古のどちらが高い？",
         "unit": "円",
         "legend": [
           "新品",
@@ -605,32 +594,32 @@
           {
             "title": "4万円",
             "value": "iPhone 12",
-            "sub": "軽くて安く・85%以上 18%",
+            "sub": "軽い・電池18%",
             "cue": "4万円は12"
           },
           {
             "title": "7万円",
             "value": "iPhone 14",
-            "sub": "電池で選ぶ・85%以上 44%",
+            "sub": "電池で選ぶ",
             "cue": "7万円は14"
           },
           {
             "title": "10万円",
             "value": "iPhone 15",
-            "sub": "USB-C・85%以上 61%",
+            "sub": "USB-C・電池61%",
             "cue": "10万円は15",
             "pick": true
           },
           {
             "title": "13万円",
             "value": "15 Pro",
-            "sub": "望遠と120Hz・85%以上 25%",
+            "sub": "望遠・電池25%",
             "cue": "13万円は15 Pro"
           },
           {
             "title": "20万円",
             "value": "17 Pro Max",
-            "sub": "大画面と電池・85%以上 84%",
+            "sub": "大画面・電池84%",
             "cue": "20万円は17 Pro Max"
           }
         ]
