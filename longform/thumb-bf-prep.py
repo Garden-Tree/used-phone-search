@@ -61,7 +61,7 @@ SETS = {
                   glow=(170, 160, 255, 0.45, 45), place={"12b-big": (380, -8, 860, 40)}),
     # 16buy（11/27 追加）: 「今買い？」の16の回のサムネを 15 の F1 と同じ形に。写真は既存の iPhone 16 ウルトラマリンの切り抜き（v7 で作成・切り口なし）
     "16buy": dict(dir=HERE / "assets" / "commons", src="iphone16-ultramarine.png", cut="iphone16-ultramarine-cut.png",
-                  cutline="iphone16-ultramarine-cutline.png", edges=(), layers="16buy-layers", bright=(1.5, 1.1), sat=1.1,
+                  cutline="iphone16-ultramarine-cutline.png", edges=(), layers="16buy-layers", bright=(1.2, 1.08), sat=1.15,
                   glow=(150, 190, 255, 0.5, 45), place={"16b-big": (380, -8, 860, 40)}),
     # 12keep・11keep（11/25 追加）: 横動画 2026-11-28-iphone12-keep（12・11 まだ使う？）。2台を2つの層に。写真は先に端末のまわりだけに切った *-crop.png
     #   12 Green 茅野ふたば / CC BY-SA 4.0（店の札より上だけ・下の端が切り口）・11 Rberchie / CC BY-SA 4.0（Commons）
