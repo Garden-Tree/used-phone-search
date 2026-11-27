@@ -45,6 +45,12 @@ SETS = {
     "se3keepB": dict(dir=HERE / "assets" / "commons", src="iphone-se3-back-starlight-meidoriyo.jpg", cut="iphone-se3-starlight-back-cut.png",
                      cutline="iphone-se3-starlight-back-cutline.png", edges=(), layers="se3keepB-layers",
                      place={"se3kb-big": (420, -8, 800, 0)}),
+    # 14keep（11/27 追加）: 横動画 2026-11-28-iphone14-keep（13・SE3 と同じ形）。iPhone 14（ブルー）の背面を手に持った実写
+    #   KKPCW（Kyu3）/ CC BY-SA 4.0（Commons「IPhone 14 - 3.jpg」・Apple名古屋栄）。先に手・ケーブル・机を白で消し、
+    #   縁にかかる指を上下の画素で補った iphone14-blue-crop.png を作ってある（.claude/tmp/crop14.py <assets/commons> <出力先>）。端末全体なので切り口なし
+    "14keep": dict(dir=HERE / "assets" / "commons", src="iphone14-blue-crop.png", cut="iphone14-blue-cut.png",
+                   cutline="iphone14-blue-cutline.png", edges=(), layers="14keep-layers", shrink=8, bright=(1.35, 1.05),
+                   place={"14k-big": (380, -8, 850, 30)}),
     # 12keep・11keep（11/25 追加）: 横動画 2026-11-28-iphone12-keep（12・11 まだ使う？）。2台を2つの層に。写真は先に端末のまわりだけに切った *-crop.png
     #   12 Green 茅野ふたば / CC BY-SA 4.0（店の札より上だけ・下の端が切り口）・11 Rberchie / CC BY-SA 4.0（Commons）
     "12keep": dict(dir=HERE / "assets" / "commons", src="iphone12-green-crop.png", cut="iphone12-green-cut.png",
@@ -163,6 +169,11 @@ def place(img, w, rot, resample):
 def layer():
     out = HERE / "assets" / CFG["layers"]; out.mkdir(exist_ok=True)
     src = Image.open(CUT).convert("RGBA"); ln = Image.open(CUTLINE).convert("L")
+    if CFG.get("bright"):  # 端末だけ明るく（11/27〜・地は変えない）。(明るさ, コントラスト)
+        from PIL import ImageEnhance
+        br, ct = CFG["bright"]
+        rgb = ImageEnhance.Contrast(ImageEnhance.Brightness(src.convert("RGB")).enhance(br)).enhance(ct)
+        rgb.putalpha(src.getchannel("A")); src = rgb
     for name, (w, rot, x, y) in PLACE.items():
         if ONLY and name not in ONLY:
             continue
