@@ -16,7 +16,7 @@
         "red": true
       }
     ],
-    "footer": "替えるなら11・12・13【2026年12月】"
+    "footer": "替えるなら12・13 Pro・15【2026年12月】"
   },
   "chapters": [
     {
@@ -222,21 +222,6 @@
             "pick": true
           },
           {
-            "label": "中古の11",
-            "parts": [
-              {
-                "label": "本体",
-                "value": 29800
-              },
-              {
-                "label": "XRを売る",
-                "value": 7350,
-                "minus": true
-              }
-            ],
-            "cue": "中古の11なら"
-          },
-          {
             "label": "中古の12",
             "parts": [
               {
@@ -249,14 +234,14 @@
                 "minus": true
               }
             ],
-            "cue": "12なら約"
+            "cue": "中古の12なら"
           },
           {
-            "label": "中古の13",
+            "label": "中古の13 Pro",
             "parts": [
               {
                 "label": "本体",
-                "value": 50800
+                "value": 65780
               },
               {
                 "label": "XRを売る",
@@ -264,14 +249,29 @@
                 "minus": true
               }
             ],
-            "cue": "13なら約"
+            "cue": "13 Proなら約"
+          },
+          {
+            "label": "中古の15",
+            "parts": [
+              {
+                "label": "本体",
+                "value": 91700
+              },
+              {
+                "label": "XRを売る",
+                "value": 7350,
+                "minus": true
+              }
+            ],
+            "cue": "15なら約"
           }
         ],
         "diff": {
           "from": 0,
           "to": 1,
-          "label": "差 6,850円",
-          "cue": "差は7,000円くらい"
+          "label": "差 13,130円",
+          "cue": "差は1万3,000円くらい"
         },
         "legend": [
           {
@@ -323,7 +323,7 @@
           {
             "text": "足すお金 +28,730円",
             "sub": "XRを売って",
-            "cue": "替える先でいちばん"
+            "cue": "替える先の1つ目"
           }
         ],
         "images": [
@@ -415,10 +415,10 @@
       }
     },
     {
-      "title": "11と12、どっち？",
+      "title": "安い11じゃだめ？",
       "scene": {
         "type": "versus",
-        "heading": "中古の11と12、どっち？",
+        "heading": "中古の11じゃだめ？",
         "left": {
           "title": "中古の11",
           "value": "29,800円",
@@ -454,7 +454,7 @@
         "type": "gauges",
         "heading": "Appleの仕様のビデオ再生の時間",
         "unit": "時間",
-        "max": 21,
+        "max": 23,
         "items": [
           {
             "label": "iPhone XS",
@@ -467,70 +467,128 @@
             "cue": "XRは16時間"
           },
           {
-            "label": "iPhone 11",
-            "value": 17,
-            "cue": "11と12は"
-          },
-          {
             "label": "iPhone 12",
             "value": 17,
-            "cue": "11と12は"
+            "cue": "12は17時間"
           },
           {
-            "label": "iPhone 13",
-            "value": 19,
-            "cue": "13は19時間",
+            "label": "iPhone 15",
+            "value": 20,
+            "cue": "15は20時間"
+          },
+          {
+            "label": "iPhone 13 Pro",
+            "value": 22,
+            "cue": "13 Proは22時間",
             "pick": true
           }
         ]
       }
     },
     {
-      "title": "中古の13で変わること",
+      "title": "中古の13 Proで変わること",
       "scene": {
         "type": "photo",
-        "heading": "中古の13は電池とカメラで選ぶ",
-        "src": "longform/assets/commons/iphone13-front-meidoriyo.jpg",
-        "credit": "iPhone 13 — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
+        "heading": "中古の13 Proは望遠と電池で選ぶ",
+        "src": "longform/assets/commons/iphone13pro-camera-lens.jpg",
+        "credit": "iPhone 13 Pro camera lens group — 人工知能 / CC BY-SA 4.0 / Wikimedia Commons",
         "crop": {
-          "x": 0.08,
-          "y": 0.12,
-          "w": 0.84,
-          "h": 0.66
+          "x": 0.22,
+          "y": 0.2,
+          "w": 0.6,
+          "h": 0.6
         },
         "points": [
           {
-            "text": "ビデオ再生 19時間",
-            "sub": "XRは16時間",
-            "cue": "3つ目の13は"
+            "text": "3倍の望遠",
+            "sub": "XSは2倍",
+            "cue": "望遠は3倍"
           },
           {
-            "text": "センサーシフトの手ぶれ補正",
-            "sub": "歩きながらでもぶれにくい",
-            "cue": "カメラは、センサー"
+            "text": "最大120Hzの画面",
+            "sub": "スクロールがなめらか",
+            "cue": "最大120Hzの画面"
           },
           {
-            "text": "シネマティックモード",
-            "sub": "背景をぼかした動画",
-            "cue": "背景をぼかした"
+            "text": "マクロ撮影",
+            "sub": "近くに寄って撮れる",
+            "cue": "近くに寄って撮れる"
           },
           {
-            "text": "足すお金 +43,450円",
-            "sub": "12より約1.5万円多い",
-            "cue": "12より約1万5,000円"
+            "text": "ビデオ再生 22時間",
+            "sub": "3台でいちばん長い",
+            "cue": "ビデオ再生は22時間"
+          },
+          {
+            "text": "足すお金 +58,430円",
+            "sub": "12より約3万円多い",
+            "cue": "約5万8,000円。12より"
+          }
+        ]
+      }
+    },
+    {
+      "title": "中古の15で変わること",
+      "scene": {
+        "type": "photo",
+        "heading": "中古の15は3台でいちばん新しい",
+        "src": "longform/assets/commons/iphone15-back-blue-meidoriyo.jpg",
+        "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
+        "crop": {
+          "x": 0.18,
+          "y": 0.1,
+          "w": 0.6,
+          "h": 0.42
+        },
+        "points": [
+          {
+            "text": "2023年発売",
+            "sub": "3台でいちばん新しい",
+            "cue": "3つ目は、中古の15"
+          },
+          {
+            "text": "USB-C",
+            "sub": "MacやiPadと同じケーブル",
+            "cue": "充電はUSB-C"
+          },
+          {
+            "text": "48MP・2倍の光学ズームイン",
+            "sub": "XRは12MP",
+            "cue": "カメラは48MP"
+          },
+          {
+            "text": "Dynamic Island",
+            "sub": "タイマーや音楽が出る",
+            "cue": "上の黒い部分に"
+          },
+          {
+            "text": "足すお金 +84,350円",
+            "sub": "XRを売って",
+            "cue": "足すのは約8万4,000円"
           }
         ],
         "images": [
           {
-            "src": "longform/assets/commons/iphone13-white-chinofutaba.jpg",
-            "credit": "iPhone 13 White — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
+            "src": "longform/assets/commons/iphone15-usbc-port-kyu3.jpg",
+            "credit": "USB-C port of iPhone 15 — Kyu3 / CC BY-SA 4.0 / Wikimedia Commons",
             "crop": {
-              "x": 0.2,
-              "y": 0.18,
+              "x": 0.25,
+              "y": 0.28,
               "w": 0.5,
-              "h": 0.31
+              "h": 0.36
             },
-            "cue": "カメラは、センサー"
+            "cue": "充電はUSB-C"
+          },
+          {
+            "src": "longform/assets/commons/iphone15-pd.jpg",
+            "credit": "Apple iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons",
+            "crop": {
+              "x": 0.0,
+              "y": 0.12,
+              "w": 0.3,
+              "h": 0.76
+            },
+            "cue": "上の黒い部分に"
           }
         ]
       }
@@ -571,34 +629,31 @@
         "heading": "XR・XSから替えるなら",
         "items": [
           {
-            "title": "安さ：中古の11",
-            "value": "+22,450円",
-            "crosses": [
-              "5G",
-              "MagSafe"
-            ],
-            "cue": "とにかく安く替える"
-          },
-          {
-            "title": "長く：中古の12",
+            "title": "安さ：中古の12",
             "value": "+28,730円",
             "sub": "5G・有機EL・MagSafe",
-            "cue": "長く使うなら、中古の12",
+            "cue": "安く替えるなら"
+          },
+          {
+            "title": "望遠：中古の13 Pro",
+            "value": "+58,430円",
+            "sub": "3倍望遠・120Hz・22時間",
+            "cue": "望遠と電池なら",
             "pick": true
           },
           {
-            "title": "電池：中古の13",
-            "value": "+43,450円",
-            "sub": "ビデオ再生 19時間",
-            "cue": "電池をいちばん長く"
+            "title": "新しさ：中古の15",
+            "value": "+84,350円",
+            "sub": "USB-C・48MP",
+            "cue": "いちばん新しい機種なら"
           }
         ],
         "stamp": {
-          "text": "迷ったら／12",
-          "cue": "迷ったら12かな",
-          "x": 0.585,
-          "y": 0.15,
-          "size": 190
+          "text": "迷ったら／13 Pro",
+          "cue": "迷ったら13 Proかな",
+          "x": 0.57,
+          "y": 0.1,
+          "size": 240
         }
       }
     },
@@ -612,22 +667,22 @@
         "branches": [
           {
             "label": "安く",
-            "answer": "中古の11",
-            "sub": "+22,450円",
-            "cue": "安く済ませるなら11"
-          },
-          {
-            "label": "長く",
             "answer": "中古の12",
             "sub": "+28,730円",
-            "cue": "長く使うなら12",
+            "cue": "安く済ませるなら12"
+          },
+          {
+            "label": "望遠・電池",
+            "answer": "中古の13 Pro",
+            "sub": "+58,430円",
+            "cue": "望遠と電池なら13 Pro",
             "pick": true
           },
           {
-            "label": "電池も",
-            "answer": "中古の13",
-            "sub": "+43,450円",
-            "cue": "電池も伸ばすなら13"
+            "label": "新しさ",
+            "answer": "中古の15",
+            "sub": "+84,350円",
+            "cue": "新しさなら15"
           }
         ]
       }

@@ -1159,7 +1159,7 @@ function Overlays({ ch, t }: { ch: TimelineChapter; t: number }) {
         const left = stp.x !== undefined ? Math.round(CARD.w * stp.x) : CARD.w - size - 70;
         const top = stp.y !== undefined ? Math.round(CARD.h * stp.y) : 110;
         const lines = stp.text.split("／");
-        const longest = Math.max(...lines.map((x) => x.length));
+        const longest = Math.max(...lines.map((x) => textEm(x)));
         if (stp.style === "square") {
           const w = Math.round(size * 1.25), h = Math.round(size * 0.78);
           return (
