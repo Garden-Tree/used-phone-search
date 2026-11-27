@@ -205,7 +205,7 @@ export type VersusScene = {
 export type LineupScene = {
   type: "lineup";
   heading: string;
-  items: { title: string; value: string; sub?: string; src?: string; cue?: string; pick?: boolean; tag?: string }[];
+  items: { title: string; value: string; sub?: string; src?: string; cue?: string; pick?: boolean; tag?: string; /** ない機能（言葉に赤い ✕・sub の代わり） */ crosses?: string[] }[];
   /** tab（頭に帯・既定 11/27〜）・plain（前のカード）・steps（階段）・rows（横長の行） */
   style?: "plain" | "tab" | "steps" | "rows";
   note?: string;

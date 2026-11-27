@@ -19,9 +19,9 @@ def item(label, price, cue, pick=False):
     parts = [{"label": "本体", "value": price}, {"label": "14を売る", "value": sell, "minus": True}]
     return {"label": label, "parts": parts, "cue": cue}
 ch.append({"title": "替えるといくら？14を売って足すお金", "scene": {"type": "costs", "heading": "14を美品で売って替えると、いくら？", "unit": "円",
-  "items": [{"label": "電池交換", "parts": [{"label": "電池交換", "value": 17200}], "cue": "電池交換は、1万", "pick": True},
-            item("中古の15", 91700, "中古の15は"), item("中古の16e", 106980, "中古の16eだと"), item("中古の17", 148980, "中古の17は")],
-  "diff": {"from": 0, "to": 1, "label": "差 3万2,500円", "cue": "3万2,500円の差"},
+  "items": [{"label": "電池交換", "parts": [{"label": "電池交換", "value": 17200}], "cue": "いちばん少ないのは", "pick": True},
+            item("中古の15", 91700, "中古の15は、足す"), item("中古の16e", 106980, "16eなら約"), item("中古の17", 148980, "17は約10万")],
+  "diff": {"from": 0, "to": 1, "label": "差 3万2,500円", "cue": "3万円くらい違う"},
   "legend": [{"label": "払う", "color": "#3E3BB8"}, {"label": "14を売って戻る", "color": "#1E8A6E", "minus": True}]}})
 ch.append({"title": "電池交換で何が変わる？", "scene": {"type": "screen", "heading": "設定のバッテリーの画面はこんなイメージ", "title": "バッテリーの状態と充電",
   "rows": [{"label": "バッテリーの状態", "value": "サービス"}, {"label": "最大容量", "value": "79%"}, {"label": "充電の最適化", "value": "オン"}],
@@ -29,10 +29,10 @@ ch.append({"title": "電池交換で何が変わる？", "scene": {"type": "scre
              {"row": 1, "text": "交換すると新しい電池の値に", "sub": "データ・設定はそのまま", "cue": "電池を替えると、この"}]}})
 ch.append({"title": "画面が割れていたら", "scene": {"type": "bars", "heading": "画面が割れた14、直す？買い直す？", "unit": "円",
   "rows": [{"label": "そのまま直す", "median": 45800, "sub": "Appleで修理", "cue": "Appleの画面修理は", "say": "画面修理"},
-           {"label": "売って中古の14", "median": 53780, "sub": "割れたまま売って", "cue": "それで中古の14", "say": "中古の14"},
-           {"label": "売って中古の15", "median": 79700, "sub": "割れたまま売って", "cue": "割れたまま売って中古の15", "say": "中古の15"}]}})
+           {"label": "売って中古の14", "median": 53780, "sub": "割れたまま売って", "cue": "中古の14を買い直す", "say": "中古の14"},
+           {"label": "売って中古の15", "median": 79700, "sub": "割れたまま売って", "cue": "中古の15に買い直す", "say": "中古の15"}]}})
 C15 = "iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons"
-ch.append({"title": "替えるなら① 中古の15", "scene": {"type": "photo", "heading": "中古の15で変わるのはUSB-Cとカメラ", "src": D+"commons/iphone15-pd.jpg", "credit": "Apple " + C15,
+ch.append({"title": "替えるなら① 中古の15", "scene": {"type": "photo", "heading": "中古の15で変わるのはUSB-Cとカメラ", "src": D+"commons/iphone15-pd.jpg", "credit": "Apple " + C15, "crop": {"x": 0.0, "y": 0.2, "w": 1.0, "h": 0.6},
   "points": [{"text": "USB-C", "sub": "MacやiPadと同じケーブル", "cue": "いちばん大きいのは"},
              {"text": "48MP・2倍の光学ズームイン", "sub": "14は12MP", "cue": "カメラも変わるの"},
              {"text": "Dynamic Island", "sub": "タイマー・音楽", "cue": "上の黒い部分に"},
@@ -42,32 +42,32 @@ ch.append({"title": "替えるなら① 中古の15", "scene": {"type": "photo",
              {"src": D+"commons/lightning-usbc-cable-kyu3a.jpg", "credit": "Lightning USB type C cable — Kyu3a / CC BY-SA 4.0 / Wikimedia Commons", "cue": "MacやiPad、ゲーム機"},
              {"src": D+"commons/iphone15-back-blue-meidoriyo.jpg", "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons", "crop": {"x": 0.18, "y": 0.1, "w": 0.6, "h": 0.42}, "cue": "カメラも変わるの"},
              {"src": D+"irasutoya/photo-taking.png", "credit": "", "cue": "14で大きく撮るときは"},
-             {"src": D+"commons/iphone15-pd.jpg", "credit": "Apple " + C15, "cue": "上の黒い部分に"}]}})
+             {"src": D+"commons/iphone15-pd.jpg", "credit": "Apple " + C15, "crop": {"x": 0.0, "y": 0.2, "w": 1.0, "h": 0.6}, "cue": "上の黒い部分に"}]}})
 ch.append({"title": "替えるなら② 中古の16e、15と比べると", "scene": {"type": "versus", "heading": "中古の15と16e、どっち？",
-  "left": {"title": "中古の15", "value": "91,700円", "sub": "MagSafe・超広角あり", "cue": "中古の15は9万"},
-  "right": {"title": "中古の16e", "value": "106,980円", "sub": "A18・ビデオ再生 26時間", "cue": "16eは10万", "crosses": [{"text": "MagSafe", "cue": "16eに、MagSafeは"}, {"text": "超広角", "cue": "2つ目は、超広角"}]},
+  "left": {"title": "中古の15", "value": "91,700円", "sub": "MagSafe・超広角あり", "cue": "中古の相場だと"},
+  "right": {"title": "中古の16e", "value": "106,980円", "sub": "A18・ビデオ再生 26時間", "cue": "16eは15より", "crosses": [{"text": "MagSafe", "cue": "16eに、MagSafeは"}, {"text": "超広角", "cue": "2つ目は、超広角"}]},
   "win": {"side": "right", "label": "電池は6時間長い", "cue": "6時間長いの"}}})
-ch.append({"title": "替えるなら③ 中古の17、電池の長さ", "scene": {"type": "gauges", "heading": "Appleの仕様のビデオ再生の時間", "unit": "時間", "max": 33,
-  "items": [{"label": "iPhone 14", "value": 20, "cue": "14は20時間"}, {"label": "iPhone 15", "value": 20, "cue": "15も20時間"},
-            {"label": "16e", "value": 26, "cue": "16eは26時間"}, {"label": "中古の17", "value": 30, "cue": "17は30時間", "pick": True}]}})
-ch.append({"title": "中古の17は全部入り", "scene": {"type": "photo", "heading": "中古の17は、16eにないものも全部ある", "src": D+"commons/iphone17-back-lavender-azuresaturn.jpg", "credit": "iPhone 17 (Lavender) — AzureSaturn / CC0 / Wikimedia Commons", "crop": {"x": 0.08, "y": 0.1, "w": 0.84, "h": 0.62},
+ch.append({"title": "替えるなら③ iPhone 17、電池の長さ", "scene": {"type": "gauges", "heading": "Appleの仕様のビデオ再生の時間", "unit": "時間", "max": 33,
+  "items": [{"label": "iPhone 14", "value": 20, "cue": "14と15は"}, {"label": "iPhone 15", "value": 20, "cue": "14と15は"},
+            {"label": "iPhone 16e", "value": 26, "cue": "16eは26時間"}, {"label": "iPhone 17", "value": 30, "cue": "17は30時間", "pick": True}]}})
+ch.append({"title": "17は全部入り", "scene": {"type": "photo", "heading": "17は、16eにないものも全部ある", "src": D+"commons/iphone17-back-lavender-azuresaturn.jpg", "credit": "iPhone 17 (Lavender) — AzureSaturn / CC0 / Wikimedia Commons", "crop": {"x": 0.08, "y": 0.1, "w": 0.84, "h": 0.62},
   "points": [{"text": "MagSafe・48MPの超広角", "sub": "16eにない2つ", "cue": "しかも17には"},
              {"text": "6.3インチ・120Hz", "sub": "ロック中も時計が見える", "cue": "画面は6.3インチ"},
              {"text": "256GBから", "sub": "128GBの2倍", "cue": "17は、いちばん小さくても"},
-             {"text": "足すお金 +106,980円", "sub": "新品より10,820円安い", "cue": "中古の相場は、256GB"},
+             {"text": "足すお金 +106,980円", "sub": "中古なら新品より約1万円安い", "cue": "中古でも、14を売って"},
              {"text": "SIMカードは使えない", "sub": "eSIMだけ", "cue": "気をつけるのは、SIM"}],
   "images": [{"src": D+"commons/iphone17-black-ahmadalikarim.jpg", "credit": "Black iPhone 17 — Ahmad Ali Karim / CC0 / Wikimedia Commons", "crop": {"x": 0.1, "y": 0.1, "w": 0.8, "h": 0.6}, "cue": "画面は6.3インチ"},
              {"src": D+"commons/sim-card-multisize-izzzyy.jpg", "credit": "Multi-size T-Mobile SIM card — Izzzyy / CC0 / Wikimedia Commons", "cue": "気をつけるのは、SIM"}]}})
 ch.append({"title": "替えるならこの3台", "scene": {"type": "lineup", "heading": "14から替えるなら",
   "items": [{"title": "USB-C：中古の15", "value": "+49,700円", "sub": "A16・MagSafe・超広角", "cue": "USB-Cとカメラなら", "pick": True},
-            {"title": "電池・AI：中古の16e", "value": "+64,980円", "sub": "MagSafe・超広角なし", "cue": "電池の長さとApple"},
-            {"title": "全部：中古の17", "value": "+106,980円", "sub": "256GB・eSIMだけ", "cue": "電池も機能も全部"}],
+            {"title": "電池・AI：中古の16e", "value": "+64,980円", "crosses": ["MagSafe", "超広角"], "cue": "電池の長さとApple"},
+            {"title": "全部：iPhone 17", "value": "+106,980円", "sub": "256GB・eSIMだけ", "cue": "電池も機能も全部"}],
   "stamp": {"text": "迷ったら／15", "cue": "迷ったら15かな", "x": 0.25, "y": 0.2, "size": 180}}})
 ch.append({"title": "答え：困りごと別", "scene": {"type": "flow", "heading": "iPhone 14、まだ使う？", "q": "何に困ってる？", "keepAll": True,
   "branches": [{"label": "電池だけ", "answer": "電池交換", "sub": "17,200円", "cue": "電池だけなら、電池交換"},
                {"label": "画面が割れた", "answer": "まず修理と比べる", "sub": "修理 45,800円", "cue": "画面が割れたら"},
                {"label": "ケーブル", "answer": "中古の15", "sub": "+49,700円", "cue": "ケーブルと写真も", "pick": True},
-               {"label": "全部ほしい", "answer": "中古の17", "sub": "+106,980円", "cue": "電池も機能も全部"}]}})
+               {"label": "全部ほしい", "answer": "iPhone 17", "sub": "+106,980円", "cue": "電池も機能も全部"}]}})
 ch.append({"title": "次におすすめの動画", "scene": {"type": "endScreen", "heading": "次はこちらの動画がおすすめ",
   "videos": [{"id": "vzlNKTznOTY", "title": "iPhone 13、まだ使う？電池交換は1万5,600円｜売って中古の15なら+5万9,100円"},
              {"id": "70oYNTqwgRU", "title": "iPhone 12・11、まだ使う？電池交換は同じ1万5,600円、答えは逆"}]}})

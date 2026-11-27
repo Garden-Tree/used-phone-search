@@ -146,7 +146,7 @@
                 "value": 17200
               }
             ],
-            "cue": "電池交換は、1万",
+            "cue": "いちばん少ないのは",
             "pick": true
           },
           {
@@ -162,7 +162,7 @@
                 "minus": true
               }
             ],
-            "cue": "中古の15は"
+            "cue": "中古の15は、足す"
           },
           {
             "label": "中古の16e",
@@ -177,7 +177,7 @@
                 "minus": true
               }
             ],
-            "cue": "中古の16eだと"
+            "cue": "16eなら約"
           },
           {
             "label": "中古の17",
@@ -192,14 +192,14 @@
                 "minus": true
               }
             ],
-            "cue": "中古の17は"
+            "cue": "17は約10万"
           }
         ],
         "diff": {
           "from": 0,
           "to": 1,
           "label": "差 3万2,500円",
-          "cue": "3万2,500円の差"
+          "cue": "3万円くらい違う"
         },
         "legend": [
           {
@@ -268,14 +268,14 @@
             "label": "売って中古の14",
             "median": 53780,
             "sub": "割れたまま売って",
-            "cue": "それで中古の14",
+            "cue": "中古の14を買い直す",
             "say": "中古の14"
           },
           {
             "label": "売って中古の15",
             "median": 79700,
             "sub": "割れたまま売って",
-            "cue": "割れたまま売って中古の15",
+            "cue": "中古の15に買い直す",
             "say": "中古の15"
           }
         ]
@@ -288,6 +288,12 @@
         "heading": "中古の15で変わるのはUSB-Cとカメラ",
         "src": "longform/assets/commons/iphone15-pd.jpg",
         "credit": "Apple iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons",
+        "crop": {
+          "x": 0.0,
+          "y": 0.2,
+          "w": 1.0,
+          "h": 0.6
+        },
         "points": [
           {
             "text": "USB-C",
@@ -351,6 +357,12 @@
           {
             "src": "longform/assets/commons/iphone15-pd.jpg",
             "credit": "Apple iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons",
+            "crop": {
+              "x": 0.0,
+              "y": 0.2,
+              "w": 1.0,
+              "h": 0.6
+            },
             "cue": "上の黒い部分に"
           }
         ]
@@ -365,13 +377,13 @@
           "title": "中古の15",
           "value": "91,700円",
           "sub": "MagSafe・超広角あり",
-          "cue": "中古の15は9万"
+          "cue": "中古の相場だと"
         },
         "right": {
           "title": "中古の16e",
           "value": "106,980円",
           "sub": "A18・ビデオ再生 26時間",
-          "cue": "16eは10万",
+          "cue": "16eは15より",
           "crosses": [
             {
               "text": "MagSafe",
@@ -391,7 +403,7 @@
       }
     },
     {
-      "title": "替えるなら③ 中古の17、電池の長さ",
+      "title": "替えるなら③ iPhone 17、電池の長さ",
       "scene": {
         "type": "gauges",
         "heading": "Appleの仕様のビデオ再生の時間",
@@ -401,20 +413,20 @@
           {
             "label": "iPhone 14",
             "value": 20,
-            "cue": "14は20時間"
+            "cue": "14と15は"
           },
           {
             "label": "iPhone 15",
             "value": 20,
-            "cue": "15も20時間"
+            "cue": "14と15は"
           },
           {
-            "label": "16e",
+            "label": "iPhone 16e",
             "value": 26,
             "cue": "16eは26時間"
           },
           {
-            "label": "中古の17",
+            "label": "iPhone 17",
             "value": 30,
             "cue": "17は30時間",
             "pick": true
@@ -423,10 +435,10 @@
       }
     },
     {
-      "title": "中古の17は全部入り",
+      "title": "17は全部入り",
       "scene": {
         "type": "photo",
-        "heading": "中古の17は、16eにないものも全部ある",
+        "heading": "17は、16eにないものも全部ある",
         "src": "longform/assets/commons/iphone17-back-lavender-azuresaturn.jpg",
         "credit": "iPhone 17 (Lavender) — AzureSaturn / CC0 / Wikimedia Commons",
         "crop": {
@@ -453,8 +465,8 @@
           },
           {
             "text": "足すお金 +106,980円",
-            "sub": "新品より10,820円安い",
-            "cue": "中古の相場は、256GB"
+            "sub": "中古なら新品より約1万円安い",
+            "cue": "中古でも、14を売って"
           },
           {
             "text": "SIMカードは使えない",
@@ -498,11 +510,14 @@
           {
             "title": "電池・AI：中古の16e",
             "value": "+64,980円",
-            "sub": "MagSafe・超広角なし",
+            "crosses": [
+              "MagSafe",
+              "超広角"
+            ],
             "cue": "電池の長さとApple"
           },
           {
-            "title": "全部：中古の17",
+            "title": "全部：iPhone 17",
             "value": "+106,980円",
             "sub": "256GB・eSIMだけ",
             "cue": "電池も機能も全部"
@@ -546,7 +561,7 @@
           },
           {
             "label": "全部ほしい",
-            "answer": "中古の17",
+            "answer": "iPhone 17",
             "sub": "+106,980円",
             "cue": "電池も機能も全部"
           }

@@ -973,9 +973,10 @@ function Gauges({ s, t, reveal }: { s: GaugesScene; t: number; reveal: Record<st
 /** スマホの画面の絵（11/27〜・図解）。左にスマホの枠と行、cue でその行に赤い枠と矢印、右に説明 */
 function Screen({ s, t, reveal }: { s: ScreenScene; t: number; reveal: Record<string, number> }) {
   const areaH = bodyH(s.heading, s.note);
-  const phoneH = areaH - 10, phoneW = Math.round(INNER_W * 0.4);
-  const HEAD = 120;
-  const rowH = Math.min(96, Math.floor((phoneH - HEAD - 40) / Math.max(1, s.rows.length)));
+  // 縦長のスマホ（11/27 ユーザー「横幅を小さく、もっと縦長に」）
+  const phoneH = areaH - 10, phoneW = Math.round(phoneH * 0.62);
+  const HEAD = 150;
+  const rowH = Math.min(120, Math.floor((phoneH - HEAD - 40) / Math.max(1, s.rows.length)));
   const points = s.points ?? [];
   const on = points.map((pt, i) => ({ pt, i, p: shown(reveal, `item:${i}`, t) })).filter((x) => x.p > 0);
   const last = on[on.length - 1];
@@ -989,14 +990,12 @@ function Screen({ s, t, reveal }: { s: ScreenScene; t: number; reveal: Record<st
       <div style={{ display: "flex", position: "relative", width: INNER_W, height: areaH }}>
         <div style={{ ...col, position: "absolute", left: PX, top: 0, width: phoneW, height: phoneH, background: "#F2F2F7", border: `${BORDER}px solid ${C.ink}`, borderRadius: 48, overflow: "hidden" }}>
           <div style={{ display: "flex", alignSelf: "center", width: 110, height: 26, marginTop: 12, background: C.ink, borderRadius: 20 }} />
-          <div style={{ display: "flex", height: HEAD - 38, alignItems: "center", padding: "0 24px", fontSize: 36, fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{s.title}</div>
+          <div style={{ display: "flex", height: HEAD - 38, alignItems: "center", padding: "0 24px", fontSize: Math.min(36, Math.floor((phoneW - BORDER * 2 - 48) / textEm(s.title))), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{s.title}</div>
           {s.rows.map((r, j) => (
-            <div key={j} style={{ ...row, height: rowH, margin: "0 14px", padding: "0 18px", background: C.white, borderTop: j ? `1px solid ${C.line}` : "none", justifyContent: "space-between" }}>
-              <div style={{ ...col }}>
-                <div style={{ display: "flex", fontSize: 30, fontWeight: 500, color: C.ink, whiteSpace: "nowrap" }}>{r.label}</div>
-                {r.sub ? <div style={{ display: "flex", fontSize: 20, color: C.sub, whiteSpace: "nowrap" }}>{r.sub}</div> : null}
-              </div>
+            <div key={j} style={{ ...col, height: rowH, margin: "0 14px", padding: "0 18px", background: C.white, borderTop: j ? `1px solid ${C.line}` : "none", justifyContent: "center" }}>
+              <div style={{ display: "flex", fontSize: Math.min(30, Math.floor((phoneW - BORDER * 2 - 64) / textEm(r.label))), fontWeight: 500, color: C.ink, whiteSpace: "nowrap" }}>{r.label}</div>
               {r.value ? <div style={{ display: "flex", fontSize: 32, fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{r.value}</div> : null}
+              {r.sub ? <div style={{ display: "flex", fontSize: 20, color: C.sub, whiteSpace: "nowrap" }}>{r.sub}</div> : null}
             </div>
           ))}
         </div>
@@ -1040,7 +1039,7 @@ function Versus({ s, t, reveal }: { s: VersusScene; t: number; reveal: Record<st
         {c.crosses?.length ? (
           <div style={{ ...row, marginTop: 14, gap: 24 }}>
             {c.crosses.map((x, k) => {
-              // 言葉はカードと一緒に出しておき、cue で ✕ だけを上から付ける（場所は最初から最後まで同じ）
+              // 場所は最初から取っておき、cue で ✕ つきの言葉を出す（それまでは見せない・11/27 ユーザー）
               const at = reveal[`cross:${side}:${k}`];
               const on = at !== undefined && t >= at;
               const f = on ? Math.min(1, (t - at!) / 0.25) : 0;
@@ -1049,7 +1048,7 @@ function Versus({ s, t, reveal }: { s: VersusScene; t: number; reveal: Record<st
               const len = Math.round(Math.hypot(ww, hh) * 0.92);
               const bar = (deg: number) => ({ display: "flex", position: "absolute", left: Math.round(ww / 2 - len / 2), top: Math.round(hh / 2 - 6), width: len, height: 12, borderRadius: 6, background: C.red, transform: `rotate(${deg}deg) scale(${0.4 + 0.6 * easeOut(f)})` }) as const;
               return (
-                <div key={k} style={{ display: "flex", position: "relative", width: ww, height: hh, alignItems: "center", justifyContent: "center", background: C.white, border: `3px solid ${C.line}`, borderRadius: 14 }}>
+                <div key={k} style={{ display: "flex", position: "relative", width: ww, height: hh, alignItems: "center", justifyContent: "center", background: C.white, border: `3px solid ${C.line}`, borderRadius: 14, opacity: on ? 1 : 0 }}>
                   <div style={{ display: "flex", fontSize: fs, fontWeight: 900, color: C.sub }}>{x.text}</div>
                   {on ? <div style={bar(Math.atan2(hh, ww) * 180 / Math.PI)} /> : null}
                   {on ? <div style={bar(-Math.atan2(hh, ww) * 180 / Math.PI)} /> : null}
@@ -1605,7 +1604,7 @@ function CostsRows({ s, t, reveal }: { s: CostsScene; t: number; reveal: Record<
               ) : null}
               <div style={{ ...col, position: "absolute", left: LABEL + Math.round(wn + wm) + 24, top: 0, height: rowH, justifyContent: "center" }}>
                 <div style={{ display: "flex", fontSize: cap(56), fontWeight: 900, color: it.pick ? SITE.safe : C.ink, whiteSpace: "nowrap", lineHeight: 1.05 }}>{p > 0 ? `${yen(net * g)}${s.unit}` : ""}</div>
-                {minus > 0 && p > 0 ? <div style={{ display: "flex", marginTop: 6, fontSize: MIN_FONT, fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{`${yen(gross)} − 売る ${yen(minus)}`}</div> : null}
+                {minus > 0 && p > 0 ? <div style={{ display: "flex", marginTop: 16, fontSize: MIN_FONT, fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{`${yen(gross)} − 売る ${yen(minus)}`}</div> : null}
               </div>
             </div>
           );
@@ -1680,6 +1679,20 @@ const splitTag = (it: LineupScene["items"][number]) => {
   return m.length > 1 ? { tag: m[0], name: m.slice(1).join("：") } : { tag: "", name: it.title };
 };
 /** 案A（tab）: カードの頭に色の帯（予算）。中は 名前→大きい値→補足。選んだ1枚は赤い帯で少し大きく */
+/** 言葉の上に赤い ✕（ない機能。11/27〜） */
+function crossWord(text: string, fs: number, key: number) {
+  const ww = Math.round(fs * textEm(text) + 26), hh = Math.round(fs * 1.4);
+  const len = Math.round(Math.hypot(ww, hh) * 0.92), th = Math.max(6, Math.round(fs / 5));
+  const deg = (Math.atan2(hh, ww) * 180) / Math.PI;
+  const bar = (d: number) => ({ display: "flex", position: "absolute", left: Math.round(ww / 2 - len / 2), top: Math.round(hh / 2 - th / 2), width: len, height: th, borderRadius: th, background: C.red, transform: `rotate(${d}deg)` }) as const;
+  return (
+    <div key={key} style={{ display: "flex", position: "relative", width: ww, height: hh, alignItems: "center", justifyContent: "center", background: C.white, border: `2px solid ${C.line}`, borderRadius: 10 }}>
+      <div style={{ display: "flex", fontSize: fs, fontWeight: 900, color: C.sub }}>{text}</div>
+      <div style={bar(deg)} />
+      <div style={bar(-deg)} />
+    </div>
+  );
+}
 function lineupTabCell(it: LineupScene["items"][number], w: number, h: number, scale: number) {
   const { tag, name } = splitTag(it);
   const img = it.src ? loadImage(it.src) : null;
@@ -1694,7 +1707,7 @@ function lineupTabCell(it: LineupScene["items"][number], w: number, h: number, s
         {img ? <img src={img.src} width={imgW} height={imgH} style={{ width: imgW, height: imgH, borderRadius: 12, marginBottom: 6 }} /> : null}
         <div style={{ display: "flex", fontSize: fit(name, w - 40, Math.round(cap(44) * scale), MIN_FONT, "並べる題"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{name}</div>
         <div style={{ display: "flex", fontSize: fit(it.value, w - 40, Math.round(cap(76) * scale), MIN_FONT, "並べる値"), fontWeight: 900, color: it.pick ? C.red : C.ink, whiteSpace: "nowrap", lineHeight: 1.1 }}>{it.value}</div>
-        {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, w - 40, Math.max(MIN_FONT + 4, Math.round(cap(32) * scale)), MIN_FONT, "並べる補足"), fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
+        {it.crosses?.length ? <div style={{ ...row, marginTop: 8, gap: 14 }}>{it.crosses.map((x, k) => crossWord(x, Math.round(MIN_FONT * Math.min(scale, 1.3)), k))}</div> : it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, w - 40, Math.max(MIN_FONT + 4, Math.round(cap(32) * scale)), MIN_FONT, "並べる補足"), fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
       </div>
     </div>
   );
@@ -1751,13 +1764,13 @@ function LineupStyled({ s, t, reveal }: { s: LineupScene; t: number; reveal: Rec
   const bigEnd = (i: number) => { const st = raw[`item:${i}`]; if (st === undefined) return undefined; const nx = raw[`item:${i + 1}`]; return Math.min(st + LINEUP_BIG, nx ?? Infinity); };
   const sliding = shownIdx.filter((i) => { const e = bigEnd(i); return i !== big && e !== undefined && t >= e && t < e + SLIDE; });
   const op = (i: number) => (sliding.includes(i) ? 0.12 : shown(reveal, `item:${i}`, t) > 0 && i !== big ? 1 : 0.12);
-  const TAB_H = 0.68;
+  const TAB_H = 0.72;
   const slot = (i: number): { l: number; t: number; w: number; h: number; cell: (w: number, h: number, sc: number) => React.ReactNode } => {
     const it = s.items[i];
     if (style === "rows") { const GAP = 18; const rh = Math.min(cap(170), Math.floor((areaH - 20 - GAP * (n - 1)) / n)); return { l: 0, t: 10 + i * (rh + GAP), w: INNER_W, h: rh, cell: (w, h, sc) => lineupTabCell(it, w, h, sc) }; }
     if (style === "steps") { const GAP = 20; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const hh = Math.round(areaH * (0.74 + (0.24 * i) / Math.max(1, n - 1))); return { l: i * (cw + GAP), t: areaH - 6 - hh, w: cw, h: hh, cell: (w, h, sc) => lineupStepCell(it, w, h, sc) }; }
     // 並んだカードは低め（大きく出すときに同じ形のまま 1.5 倍にできるように。11/27）。縦は真ん中
-    const GAP = 28; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const h = Math.round(areaH * TAB_H) + (it.pick ? 16 : 0);
+    const GAP = 28; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const h = Math.round(areaH * TAB_H);
     return { l: i * (cw + GAP), t: Math.round((areaH - h) / 2), w: cw, h, cell: (w, h, sc) => lineupTabCell(it, w, h, sc) };
   };
   let body: React.ReactNode;
@@ -1814,7 +1827,7 @@ function LineupStyled({ s, t, reveal }: { s: LineupScene; t: number; reveal: Rec
       <div style={{ display: "flex", position: "relative", width: INNER_W, height: areaH }}>
         {body}
         {slides}
-        {big !== undefined && isTab ? tabCard(big, INNER_W / 2, areaH / 2, tabK(big) * bigPop, 0.28) : null}
+        {big !== undefined && isTab ? tabCard(big, INNER_W / 2, areaH / 2, tabK(big), 0.28) : null}
         {big !== undefined && !isTab ? (
           <div style={{ display: "flex", position: "absolute", left: Math.round(INNER_W * 0.22), top: 0, width: Math.round(INNER_W * 0.56), height: areaH - 10, transform: `scale(${bigPop})`, boxShadow: "0 18px 40px rgba(0,0,0,0.28)", borderRadius: 24 }}>
             {bigCell(s.items[big], Math.round(INNER_W * 0.56), areaH - 10)}
