@@ -1491,6 +1491,14 @@ function Years({ s, t, reveal }: { s: YearsScene; t: number; reveal: Record<stri
             </div>
           );
         })}
+        {s.divider && (!s.divider.cue || shown(reveal, "divider", t) > 0) ? (() => {
+          const yd = 10 + (s.divider.after + 1) * rowH;
+          return (
+            <div style={{ display: "flex", position: "absolute", left: 0, top: yd - 3, width: INNER_W, height: 0, borderTop: `6px dashed ${C.red}` }}>
+              {s.divider.label ? <div style={{ display: "flex", position: "absolute", left: 0, top: -Math.round(MIN_FONT * 0.75) - 3, padding: "2px 16px", borderRadius: 999, background: C.red, color: C.white, fontSize: MIN_FONT, fontWeight: 900, whiteSpace: "nowrap" }}>{s.divider.label}</div> : null}
+            </div>
+          );
+        })() : null}
         {sw > 0 ? (
           <div style={{ display: "flex", position: "absolute", left: Math.round(xOf(nowY)) - 4, top: 0, width: 8, height: areaH - axisH, background: "#F4B400", boxShadow: "0 0 18px rgba(244,180,0,0.8)" }} />
         ) : null}

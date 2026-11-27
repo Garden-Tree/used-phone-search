@@ -188,6 +188,8 @@ export type YearsScene = {
   todayLabel?: string;
   rows: { label: string; from: number; to?: number; cue?: string; pick?: boolean }[];
   sweep?: string;
+  /** 行 after と次の行のあいだの点線（11/27〜）。label は右端の札・cue で出る（無ければ最初から） */
+  divider?: { after: number; label?: string; cue?: string };
   note?: string;
 };
 

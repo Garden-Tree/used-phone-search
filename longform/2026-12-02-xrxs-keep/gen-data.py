@@ -8,18 +8,18 @@ ch.append({"title": "困りごとで分かれる…はずが", "scene": {"type":
                {"label": "XR・XS", "answer": "替えるほう", "sub": "理由は2つ", "cue": "XRとXSは、今回は", "pick": True}]}})
 ch.append({"title": "XR・XSは9年目。iOS 27は11から", "scene": {"type": "years", "heading": "発売から今日まで", "start": 2018, "end": 2028, "today": 2026.9, "todayLabel": "2026年11月",
   "rows": [{"label": "iPhone XR・XS", "from": 2018.7, "cue": "どちらも2018年", "pick": True}, {"label": "iPhone 11", "from": 2019.7, "cue": "11は、8年目"},
-           {"label": "iPhone 12", "from": 2020.8, "cue": "どちらも2018年"}, {"label": "iPhone 13", "from": 2021.7, "cue": "どちらも2018年"}], "sweep": "時計を進めると"}})
+           {"label": "iPhone 12", "from": 2020.8, "cue": "どちらも2018年"}, {"label": "iPhone 13", "from": 2021.7, "cue": "どちらも2018年"}], "sweep": "時計を進めると", "divider": {"after": 0, "label": "iOS 27 はここから", "cue": "ここに大きな線"}}})
 ch.append({"title": "アップデートしても、iOS 27にはならない", "scene": {"type": "screen", "heading": "ソフトウェアアップデートの画面はこんなイメージ", "title": "ソフトウェアアップデート",
   "rows": [{"label": "自動アップデート", "value": "オン"}, {"label": "今のバージョン", "value": "iOS 18"}, {"label": "iOS 27", "value": "対象外"}],
   "points": [{"row": 2, "text": "iOS 27 は届かない", "sub": "XR・XSは対象外", "cue": "iOS 27は出てこない"},
              {"row": 1, "text": "新しい機能は来ない", "sub": "アプリも少しずつ外していく", "cue": "新しい機能は来ないし"}]}})
 ch.append({"title": "電池交換は、売った値段の2倍", "scene": {"type": "bars", "heading": "電池交換と、売った値段", "unit": "円",
-  "rows": [{"label": "電池交換", "median": 15600, "sub": "XR・Appleで", "cue": "Appleで替えると", "say": "1万5,600円", "pick": True, "pickLabel": "売値の2倍"},
-           {"label": "XRを売る", "median": 7350, "sub": "64GB・美品", "cue": "XRの64GBを", "say": "7,350円"},
-           {"label": "XSを売る", "median": 8400, "sub": "64GB・美品", "cue": "XSの64GBでも", "say": "8,400円"}]}})
+  "rows": [{"label": "電池交換", "median": 15600, "sub": "XR・Appleで", "cue": "Appleで替えると", "say": "約1万6,000円", "pick": True, "pickLabel": "売値の2倍"},
+           {"label": "XRを売る", "median": 7350, "sub": "64GB・美品", "cue": "XRを傷の少ない", "say": "約7,000円"},
+           {"label": "XSを売る", "median": 8400, "sub": "64GB・美品", "cue": "XSでも約", "say": "約8,000円"}]}})
 ch.append({"title": "XRを売るといくら？傷で変わる", "scene": {"type": "bars", "heading": "XRを売ると、傷でいくら変わる？", "unit": "円",
   "rows": [{"label": "美品", "median": 7350, "sub": "64GB", "cue": "傷の少ない美品"},
-           {"label": "使用感小", "median": 5250, "sub": "64GB", "cue": "小さな傷があると"},
+           {"label": "使用感小", "median": 5250, "sub": "64GB", "cue": "傷が増えるほど"},
            {"label": "キズあり", "median": 3150, "sub": "64GB", "cue": "キズありだと"},
            {"label": "本体割れ", "median": 1200, "sub": "64GB", "cue": "画面が割れていると"}]}})
 sell = 7350
@@ -28,12 +28,12 @@ def item(label, price, cue):
 ch.append({"title": "替えるといくら？XRを売って足すお金", "scene": {"type": "costs", "heading": "XRを美品で売って替えると、いくら？", "unit": "円",
   "items": [{"label": "電池交換", "parts": [{"label": "電池交換", "value": 15600}], "cue": "XRを売ったお金を引いて", "pick": True},
             item("中古の12", 36080, "中古の12なら"), item("中古の13 Pro", 65780, "13 Proなら約"), item("中古の15", 91700, "15なら約")],
-  "diff": {"from": 0, "to": 1, "label": "差 13,130円", "cue": "差は1万3,000円くらい"},
+  "diff": {"from": 0, "to": 1, "label": "差 13,130円", "cue": "差は1万円ちょっと"},
   "legend": [{"label": "払う", "color": "#3E3BB8"}, {"label": "XRを売って戻る", "color": "#1E8A6E", "minus": True}]}})
 C12 = "iPhone 12 Green — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons"
 ch.append({"title": "替えるなら 中古の12", "scene": {"type": "photo", "heading": "中古の12でXR・XSにないものがそろう", "src": D+"commons/iphone12-green-back-chinofutaba.jpg", "credit": C12, "crop": {"x": 0.24, "y": 0.165, "w": 0.52, "h": 0.335},
   "points": [{"text": "5G", "sub": "XR・XSはLTEまで", "cue": "まず通信"},
-             {"text": "有機EL", "sub": "XRは液晶", "cue": "画面は有機EL"},
+             {"text": "有機EL", "sub": "XRは液晶", "cue": "画面も、12からは"},
              {"text": "MagSafe", "sub": "磁石でくっつく充電", "cue": "そのかわり、充電が"},
              {"text": "超広角・ナイトモード", "sub": "XR・XSにはない", "cue": "カメラには、超広角"},
              {"text": "足すお金 +28,730円", "sub": "XRを売って", "cue": "替える先の1つ目"}],
@@ -52,30 +52,25 @@ ch.append({"title": "安い11じゃだめ？", "scene": {"type": "versus", "head
   "right": {"title": "中古の12", "value": "36,080円", "sub": "5G・有機EL・MagSafe", "cue": "11と12の差は"},
   "win": {"side": "right", "label": "差は6,280円", "cue": "6,000円で、1年"}}})
 ch.append({"title": "電池の長さで比べると", "scene": {"type": "gauges", "heading": "Appleの仕様のビデオ再生の時間", "unit": "時間", "max": 23,
-  "items": [{"label": "iPhone XS", "value": 14, "cue": "XSは14時間"}, {"label": "iPhone XR", "value": 16, "cue": "XRは16時間"},
-            {"label": "iPhone 12", "value": 17, "cue": "12は17時間"}, {"label": "iPhone 15", "value": 20, "cue": "15は20時間"},
-            {"label": "iPhone 13 Pro", "value": 22, "cue": "13 Proは22時間", "pick": True}]}})
+  "items": [{"label": "XS", "value": 14, "cue": "ビデオ再生で並べる"}, {"label": "XR", "value": 16, "cue": "ビデオ再生で並べる"},
+            {"label": "12", "value": 17, "cue": "どれも、XRやXSより"}, {"label": "15", "value": 20, "cue": "どれも、XRやXSより"},
+            {"label": "13 Pro", "value": 22, "cue": "いちばん長いのは13 Pro", "pick": True}]}})
 C13P = "iPhone 13 Pro camera lens group — 人工知能 / CC BY-SA 4.0 / Wikimedia Commons"
 ch.append({"title": "中古の13 Proで変わること", "scene": {"type": "photo", "heading": "中古の13 Proは望遠と電池で選ぶ", "src": D+"commons/iphone13pro-camera-lens.jpg", "credit": C13P, "crop": {"x": 0.22, "y": 0.2, "w": 0.6, "h": 0.6},
   "points": [{"text": "3倍の望遠", "sub": "XSは2倍", "cue": "望遠は3倍"},
              {"text": "最大120Hzの画面", "sub": "スクロールがなめらか", "cue": "最大120Hzの画面"},
              {"text": "マクロ撮影", "sub": "近くに寄って撮れる", "cue": "近くに寄って撮れる"},
              {"text": "ビデオ再生 22時間", "sub": "3台でいちばん長い", "cue": "ビデオ再生は22時間"},
-             {"text": "足すお金 +58,430円", "sub": "12より約3万円多い", "cue": "約5万8,000円。12より"}]}})
+             {"text": "足すお金 +58,430円", "sub": "12より約3万円多い", "cue": "約6万円。12より"}]}})
 C15 = "iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons"
 ch.append({"title": "中古の15で変わること", "scene": {"type": "photo", "heading": "中古の15は3台でいちばん新しい", "src": D+"commons/iphone15-back-blue-meidoriyo.jpg", "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons", "crop": {"x": 0.18, "y": 0.1, "w": 0.6, "h": 0.42},
   "points": [{"text": "2023年発売", "sub": "3台でいちばん新しい", "cue": "3つ目は、中古の15"},
              {"text": "USB-C", "sub": "MacやiPadと同じケーブル", "cue": "充電はUSB-C"},
              {"text": "48MP・2倍の光学ズームイン", "sub": "XRは12MP", "cue": "カメラは48MP"},
              {"text": "Dynamic Island", "sub": "タイマーや音楽が出る", "cue": "上の黒い部分に"},
-             {"text": "足すお金 +84,350円", "sub": "XRを売って", "cue": "足すのは約8万4,000円"}],
+             {"text": "足すお金 +84,350円", "sub": "XRを売って", "cue": "足すのは約8万円"}],
   "images": [{"src": D+"commons/iphone15-usbc-port-kyu3.jpg", "credit": "USB-C port of iPhone 15 — Kyu3 / CC BY-SA 4.0 / Wikimedia Commons", "crop": {"x": 0.25, "y": 0.28, "w": 0.5, "h": 0.36}, "cue": "充電はUSB-C"},
              {"src": D+"commons/iphone15-pd.jpg", "credit": "Apple " + C15, "crop": {"x": 0.0, "y": 0.12, "w": 0.3, "h": 0.76}, "cue": "上の黒い部分に"}]}})
-ch.append({"title": "替える前にやること", "scene": {"type": "checklist", "heading": "替える前にやる4つ",
-  "items": [{"text": "iCloudにバックアップ", "sub": "設定のいちばん上の名前から", "cue": "1つ目は、iCloud"},
-            {"text": "新しいiPhoneへ移す", "sub": "XRを近くに置くクイックスタート", "cue": "2つ目は、新しい"},
-            {"text": "SIMカードを差し替える", "sub": "XRから抜いて入れる", "cue": "3つ目は、SIMカード"},
-            {"text": "XRを消去してから売る", "sub": "移し終わったあと", "cue": "4つ目に、移し終わったら"}]}})
 ch.append({"title": "替えるならこの3台", "scene": {"type": "lineup", "heading": "XR・XSから替えるなら",
   "items": [{"title": "安さ：中古の12", "value": "+28,730円", "sub": "5G・有機EL・MagSafe", "cue": "安く替えるなら"},
             {"title": "望遠：中古の13 Pro", "value": "+58,430円", "sub": "3倍望遠・120Hz・22時間", "cue": "望遠と電池なら", "pick": True},
