@@ -1033,16 +1033,17 @@ function Versus({ s, t, reveal }: { s: VersusScene; t: number; reveal: Record<st
     const won = winOn && s.win!.side === side;
     const lost = winOn && s.win!.side !== side;
     return (
-      <div style={{ ...col, position: "relative", width: cardW, height: areaH - 20, alignItems: "center", justifyContent: "center", paddingTop: c.crosses?.length ? 40 : 0, background: won ? "#FFF5F5" : C.rowAlt, border: `${won ? 10 : 4}px solid ${won ? C.red : C.line}`, borderRadius: 28, opacity: p * (lost ? 0.55 : 1), ...bump(s, `item:${i}`) }}>
+      <div style={{ ...col, position: "relative", width: cardW, height: areaH - 20, alignItems: "center", justifyContent: "center", paddingTop: c.crosses?.length ? 40 : 0, background: won ? "#FFF5F5" : C.rowAlt, border: `4px solid ${won ? C.red : C.line}`, boxShadow: won ? `0 0 0 6px ${C.red}` : "none", borderRadius: 28, opacity: p * (lost ? 0.55 : 1), ...bump(s, `item:${i}`) }}>
         <div style={{ display: "flex", fontSize: fit(c.title, cardW - 60, cap(56), MIN_FONT, "2択の題"), fontWeight: 900, color: C.ink }}>{c.title}</div>
         <div style={{ display: "flex", marginTop: 18, fontSize: fit(c.value, cardW - 60, cap(110), MIN_FONT, "2択の値"), fontWeight: 900, color: won ? C.red : C.ink, lineHeight: 1 }}>{c.value}</div>
         {c.sub ? <div style={{ display: "flex", marginTop: 18, fontSize: fit(c.sub, cardW - 60, Math.max(MIN_FONT + 4, cap(36)), MIN_FONT, "2択の補足"), fontWeight: 500, color: C.sub }}>{c.sub}</div> : null}
         {c.crosses?.length ? (
           <div style={{ ...row, marginTop: 14, gap: 24 }}>
             {c.crosses.map((x, k) => {
+              // 言葉はカードと一緒に出しておき、cue で ✕ だけを上から付ける（場所は最初から最後まで同じ）
               const at = reveal[`cross:${side}:${k}`];
-              if (at === undefined || t < at) return <div key={k} style={{ display: "flex" }} />;
-              const f = Math.min(1, (t - at) / 0.25);
+              const on = at !== undefined && t >= at;
+              const f = on ? Math.min(1, (t - at!) / 0.25) : 0;
               const fs = cap(40);
               const ww = Math.round(fs * textEm(x.text) + 30), hh = Math.round(fs * 1.4);
               const len = Math.round(Math.hypot(ww, hh) * 0.92);
@@ -1050,8 +1051,8 @@ function Versus({ s, t, reveal }: { s: VersusScene; t: number; reveal: Record<st
               return (
                 <div key={k} style={{ display: "flex", position: "relative", width: ww, height: hh, alignItems: "center", justifyContent: "center", background: C.white, border: `3px solid ${C.line}`, borderRadius: 14 }}>
                   <div style={{ display: "flex", fontSize: fs, fontWeight: 900, color: C.sub }}>{x.text}</div>
-                  <div style={bar(Math.atan2(hh, ww) * 180 / Math.PI)} />
-                  <div style={bar(-Math.atan2(hh, ww) * 180 / Math.PI)} />
+                  {on ? <div style={bar(Math.atan2(hh, ww) * 180 / Math.PI)} /> : null}
+                  {on ? <div style={bar(-Math.atan2(hh, ww) * 180 / Math.PI)} /> : null}
                 </div>
               );
             })}
@@ -1777,21 +1778,22 @@ function LineupStyled({ s, t, reveal }: { s: LineupScene; t: number; reveal: Rec
       <div key={i} style={{ display: "flex", position: "absolute", left: i * (cw + GAP), top: areaH - h - 6 - (it.pick ? 20 : 0), opacity: op(i) }}>{lineupTabCell(it, cw, h + (it.pick ? 20 : 0), 1)}</div>
     ));
   }
-  const slot = (i: number): { l: number; t: number; w: number; h: number; cell: React.ReactNode } => {
+  const slot = (i: number): { l: number; t: number; w: number; h: number; cell: (w: number, h: number, sc: number) => React.ReactNode } => {
     const it = s.items[i];
-    if (style === "rows") { const GAP = 18; const rh = Math.min(cap(170), Math.floor((areaH - 20 - GAP * (n - 1)) / n)); return { l: 0, t: 10 + i * (rh + GAP), w: INNER_W, h: rh, cell: lineupRowCell(it, INNER_W, rh, 1) }; }
-    if (style === "steps") { const GAP = 20; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const hh = Math.round(areaH * (0.74 + (0.24 * i) / Math.max(1, n - 1))); return { l: i * (cw + GAP), t: areaH - 6 - hh, w: cw, h: hh, cell: lineupStepCell(it, cw, hh, 1) }; }
+    if (style === "rows") { const GAP = 18; const rh = Math.min(cap(170), Math.floor((areaH - 20 - GAP * (n - 1)) / n)); return { l: 0, t: 10 + i * (rh + GAP), w: INNER_W, h: rh, cell: (w, h, sc) => lineupTabCell(it, w, h, sc) }; }
+    if (style === "steps") { const GAP = 20; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const hh = Math.round(areaH * (0.74 + (0.24 * i) / Math.max(1, n - 1))); return { l: i * (cw + GAP), t: areaH - 6 - hh, w: cw, h: hh, cell: (w, h, sc) => lineupStepCell(it, w, h, sc) }; }
     const GAP = 28; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const h = areaH - 50 + (it.pick ? 20 : 0);
-    return { l: i * (cw + GAP), t: areaH - h - 6, w: cw, h, cell: lineupTabCell(it, cw, h, 1) };
+    return { l: i * (cw + GAP), t: areaH - h - 6, w: cw, h, cell: (w, h, sc) => lineupTabCell(it, w, h, sc) };
   };
   const BL = Math.round(INNER_W * 0.22), BW = Math.round(INNER_W * 0.56), BH = areaH - 10;
   const slides = sliding.map((i) => {
     const sl = slot(i);
     const p = easeOut(Math.min(1, (t - bigEnd(i)!) / SLIDE));
-    const k = BW / sl.w + (1 - BW / sl.w) * p;
-    const cx = BL + BW / 2 + (sl.l + sl.w / 2 - (BL + BW / 2)) * p, cy = BH / 2 + (sl.t + sl.h / 2 - BH / 2) * p;
+    // 大きいカードと同じ絵のまま、場所・幅・高さ・文字の倍率を少しずつ変える（途中で形が跳ばない）
+    const L = BL + (sl.l - BL) * p, T = (sl.t - 0) * p, Wd = Math.round(BW + (sl.w - BW) * p), Hd = Math.round(BH + (sl.h - BH) * p);
+    const sc = 1.5 + (1 - 1.5) * p;
     return (
-      <div key={`s${i}`} style={{ display: "flex", position: "absolute", left: Math.round(cx - sl.w / 2), top: Math.round(cy - sl.h / 2), width: sl.w, height: sl.h, transform: `scale(${k})`, boxShadow: `0 18px 40px rgba(0,0,0,${0.28 * (1 - p)})`, borderRadius: 24 }}>{sl.cell}</div>
+      <div key={`s${i}`} style={{ display: "flex", position: "absolute", left: Math.round(L), top: Math.round(T), width: Wd, height: Hd, boxShadow: `0 18px 40px rgba(0,0,0,${0.28 * (1 - p)})`, borderRadius: 24 }}>{sl.cell(Wd, Hd, sc)}</div>
     );
   });
   const bigCell = (it: LineupScene["items"][number], w: number, h: number) => (style === "steps" ? lineupStepCell(it, w, h, 1.5) : style === "rows" ? lineupTabCell(it, w, h, 1.5) : lineupTabCell(it, w, h, 1.5));
