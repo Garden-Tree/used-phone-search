@@ -66,10 +66,10 @@ SETS = {
     # 12keep・11keep（11/25 追加）: 横動画 2026-11-28-iphone12-keep（12・11 まだ使う？）。2台を2つの層に。写真は先に端末のまわりだけに切った *-crop.png
     #   12 Green 茅野ふたば / CC BY-SA 4.0（店の札より上だけ・下の端が切り口）・11 Rberchie / CC BY-SA 4.0（Commons）
     "12keep": dict(dir=HERE / "assets" / "commons", src="iphone12-green-crop.png", cut="iphone12-green-cut.png",
-                   cutline="iphone12-green-cutline.png", edges=("bottom",), layers="12keep-layers", shrink=8,
+                   cutline="iphone12-green-cutline.png", edges=("bottom",), layers="12keep-layers", shrink=8, bright=(1.3, 1.08), sat=1.15,
                    place={"12k-front": (380, 0, 910, 362)}),
     "11keep": dict(dir=HERE / "assets" / "commons", src="iphone11-purple-crop.png", cut="iphone11-purple-cut.png",
-                   cutline="iphone11-purple-cutline.png", edges=(), layers="12keep-layers",
+                   cutline="iphone11-purple-cutline.png", edges=(), layers="12keep-layers", bright=(1.3, 1.08), sat=1.15,
                    place={"11k-back": (330, -8, 870, 24)}),
     # dec（11/26 追加）: 横動画 2026-12-01-monthly。17 Pro Max オレンジ（Ahmad Ali Karim / CC0・Commons）。台の上だけ（下の端が切り口）
     "dec": dict(dir=HERE / "assets" / "commons", src="iphone17promax-orange-crop.png", cut="iphone17promax-orange-cut.png",
@@ -81,7 +81,7 @@ SETS = {
                place={"15-big": (340, -8, 880, 50)}),
     # BF・Amazon（11/26 追加）: 横動画 2026-11-28-bf-amazon-iphone。写真は iPhone Air スカイブルーの背面・Ahmad Ali Karim / CC0（Commons）
     "bfa": dict(dir=HERE / "assets" / "commons", src="iphoneair-skyblue-ahmadalikarim.jpg", cut="iphoneair-skyblue-cut.png",
-                cutline="iphoneair-skyblue-cutline.png", edges=("bottom",), layers="bfa-layers",
+                cutline="iphoneair-skyblue-cutline.png", edges=("bottom",), layers="bfa-layers", bright=(1.9, 1.15), sat=1.6, glow=(150, 200, 255, 0.5, 45),
                 place={"air": (400, 6, 870, 185)}),
 }
 SET = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--set=")), "bf")
