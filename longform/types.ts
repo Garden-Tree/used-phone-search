@@ -172,7 +172,7 @@ export type CostsScene = {
   unit: string;
   items: { label: string; parts: { label: string; value: number; minus?: boolean; color?: string }[]; cue?: string; pick?: boolean }[];
   diff?: { from: number; to: number; label: string; cue?: string };
-  /** stack（今の積み上げ・既定）・net（縦棒＝払う額）・rows（横棒）・cards（カード＋内訳） */
+  /** rows（横棒・既定 11/27〜）・stack（前の積み上げ）・net（縦棒＝払う額）・cards（カード＋内訳） */
   style?: "stack" | "net" | "rows" | "cards";
   legend?: { label: string; color: string; minus?: boolean }[];
   note?: string;
@@ -206,7 +206,7 @@ export type LineupScene = {
   type: "lineup";
   heading: string;
   items: { title: string; value: string; sub?: string; src?: string; cue?: string; pick?: boolean; tag?: string }[];
-  /** plain（今のカード・既定）・tab（頭に帯）・steps（階段）・rows（横長の行） */
+  /** tab（頭に帯・既定 11/27〜）・plain（前のカード）・steps（階段）・rows（横長の行） */
   style?: "plain" | "tab" | "steps" | "rows";
   note?: string;
 };

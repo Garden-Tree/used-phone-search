@@ -1795,7 +1795,7 @@ function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
     case "versus":
       return <Versus s={s} t={t} reveal={reveal} />;
     case "lineup":
-      return s.style && s.style !== "plain" ? <LineupStyled s={s} t={t} reveal={reveal} /> : <Lineup s={s} t={t} reveal={reveal} />;
+      return s.style === "plain" ? <Lineup s={s} t={t} reveal={reveal} /> : <LineupStyled s={{ ...s, style: s.style ?? "tab" }} t={t} reveal={reveal} />;
     case "trend":
       return <Trend s={s} t={t} reveal={reveal} />;
     case "flow":
@@ -1803,7 +1803,7 @@ function SceneBody({ ch, t }: { ch: TimelineChapter; t: number }) {
     case "problems":
       return <Problems s={s} t={t} reveal={reveal} />;
     case "costs":
-      return s.style === "net" ? <CostsNet s={s} t={t} reveal={reveal} /> : s.style === "rows" ? <CostsRows s={s} t={t} reveal={reveal} /> : s.style === "cards" ? <CostsCards s={s} t={t} reveal={reveal} /> : <Costs s={s} t={t} reveal={reveal} />;
+      return s.style === "net" ? <CostsNet s={s} t={t} reveal={reveal} /> : s.style === "rows" ? <CostsRows s={s} t={t} reveal={reveal} /> : s.style === "cards" ? <CostsCards s={s} t={t} reveal={reveal} /> : s.style === "stack" ? <Costs s={s} t={t} reveal={reveal} /> : <CostsRows s={s} t={t} reveal={reveal} />;
     case "years":
       return <Years s={s} t={t} reveal={reveal} />;
   }
