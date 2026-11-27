@@ -15,7 +15,7 @@ def item(label, price, cue, pick=False):
     return {"label": label, "parts": parts, "cue": cue}
 ch.append({"title": "替えるといくら？14を売って足すお金", "scene": {"type": "costs", "heading": "替えるといくら？（14 128GB を美品で売った場合）", "unit": "円",
   "items": [{"label": "電池交換", "parts": [{"label": "電池交換", "value": 17200}], "cue": "電池交換は、1万", "pick": True},
-            item("中古の15", 91700, "中古の15は"), item("中古の16e", 106980, "中古の16eだと"), item("新品の17e", 124800, "新品の17eは")],
+            item("中古の15", 91700, "中古の15は"), item("中古の16e", 106980, "中古の16eだと"), item("中古の17", 148980, "中古の17は")],
   "diff": {"from": 0, "to": 1, "label": "差 3万2,500円", "cue": "3万2,500円の差"},
   "legend": [{"label": "払う", "color": "#3E3BB8"}, {"label": "14を売って戻る", "color": "#1E8A6E", "minus": True}]}})
 ch.append({"title": "電池交換で何が変わる？", "scene": {"type": "screen", "heading": "設定 → バッテリー（イメージ）", "title": "バッテリーの状態と充電",
@@ -43,24 +43,24 @@ ch.append({"title": "替えるなら② 中古の16e、15と比べると", "scen
   "right": {"title": "中古の16e", "value": "106,980円", "sub": "A18・ビデオ再生 26時間", "cue": "16eは10万"},
   "win": {"side": "right", "label": "電池は6時間長い", "cue": "6時間長いの"},
   "stamp": {"text": "16eにMagSafeはない", "cue": "16eに、MagSafeは", "style": "ribbon", "x": 0.52, "y": 0.85, "size": 180}}})
-ch.append({"title": "替えるなら③ 新品の17e、電池の長さ", "scene": {"type": "gauges", "heading": "ビデオ再生（Apple 公式の仕様）", "unit": "時間", "max": 30,
+ch.append({"title": "替えるなら③ 中古の17、全部入り", "scene": {"type": "gauges", "heading": "ビデオ再生（Apple 公式の仕様）", "unit": "時間", "max": 33,
   "items": [{"label": "iPhone 14", "value": 20, "cue": "14は20時間"}, {"label": "iPhone 15", "value": 20, "cue": "15も20時間"},
-            {"label": "16e", "value": 26, "cue": "16eと17eは"}, {"label": "新品の17e", "value": 26, "cue": "16eと17eは", "pick": True}]}})
+            {"label": "16e", "value": 26, "cue": "16eは26時間"}, {"label": "中古の17", "value": 30, "cue": "17は30時間", "pick": True}]}})
 ch.append({"title": "替えるならこの3台", "scene": {"type": "lineup", "heading": "14から替えるなら（足すお金）",
   "items": [{"title": "USB-C：中古の15", "value": "+49,700円", "sub": "A16・MagSafe・超広角", "cue": "USB-Cとカメラなら", "pick": True},
             {"title": "電池・AI：中古の16e", "value": "+64,980円", "sub": "MagSafe・超広角なし", "cue": "電池の長さとApple"},
-            {"title": "新品：新品の17e", "value": "+82,800円", "sub": "超広角なし・eSIMだけ", "cue": "新品で電池から"}],
+            {"title": "全部：中古の17", "value": "+106,980円", "sub": "256GB・eSIMだけ", "cue": "電池も機能も全部"}],
   "stamp": {"text": "迷ったら／15", "cue": "迷ったら15かな", "x": 0.245, "y": 0.15, "size": 190}}})
 ch.append({"title": "答え：困りごと別", "scene": {"type": "flow", "heading": "iPhone 14、まだ使う？", "q": "何に困ってる？", "keepAll": True,
   "branches": [{"label": "電池だけ", "answer": "電池交換", "sub": "17,200円", "cue": "電池だけなら、電池交換"},
                {"label": "画面が割れた", "answer": "まず修理と比べる", "sub": "修理 45,800円", "cue": "画面が割れたら"},
                {"label": "ケーブル", "answer": "中古の15", "sub": "+49,700円", "cue": "ケーブルと写真も", "pick": True},
-               {"label": "電池の長さ", "answer": "新品の17e", "sub": "+82,800円", "cue": "電池の長さをいちばん"}]}})
+               {"label": "全部ほしい", "answer": "中古の17", "sub": "+106,980円", "cue": "電池も機能も全部"}]}})
 ch.append({"title": "次におすすめの動画", "scene": {"type": "endScreen", "heading": "次はこちらの動画がおすすめ",
   "videos": [{"id": "vzlNKTznOTY", "title": "iPhone 13、まだ使う？電池交換は1万5,600円｜売って中古の15なら+5万9,100円"},
              {"id": "70oYNTqwgRU", "title": "iPhone 12・11、まだ使う？電池交換は同じ1万5,600円、答えは逆"}]}})
 data = {"date": "2026-11-27", "shops": 18, "source": "script.md（data-query.log・集計 2026/11/27 12:38 JST・18店）。公開の前日に取り直す",
-  "thumbnail": {"lines": ["iPhone 14", "まだ使う？"], "badge": [{"text": "電池交換"}, {"text": "1.7万円", "red": True}], "footer": "替えるなら15・16e・17e【2026年11月】"},
+  "thumbnail": {"lines": ["iPhone 14", "まだ使う？"], "badge": [{"text": "電池交換"}, {"text": "1.7万円", "red": True}], "footer": "替えるなら15・16e・17【2026年11月】"},
   "chapters": ch}
 json.dump(data, open("longform/2026-11-28-iphone14-keep/data.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 print(len(ch))
