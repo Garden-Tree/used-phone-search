@@ -974,7 +974,7 @@ function Gauges({ s, t, reveal }: { s: GaugesScene; t: number; reveal: Record<st
 function Screen({ s, t, reveal }: { s: ScreenScene; t: number; reveal: Record<string, number> }) {
   const areaH = bodyH(s.heading, s.note);
   // 縦長のスマホ（11/27 ユーザー「横幅を小さく、もっと縦長に」）
-  const phoneH = areaH - 10, phoneW = Math.round(phoneH * 0.62);
+  const phoneH = areaH - 10, phoneW = Math.round(phoneH * 0.74);
   const HEAD = 150;
   const rowH = Math.min(120, Math.floor((phoneH - HEAD - 40) / Math.max(1, s.rows.length)));
   const points = s.points ?? [];
@@ -991,13 +991,19 @@ function Screen({ s, t, reveal }: { s: ScreenScene; t: number; reveal: Record<st
         <div style={{ ...col, position: "absolute", left: PX, top: 0, width: phoneW, height: phoneH, background: "#F2F2F7", border: `${BORDER}px solid ${C.ink}`, borderRadius: 48, overflow: "hidden" }}>
           <div style={{ display: "flex", alignSelf: "center", width: 110, height: 26, marginTop: 12, background: C.ink, borderRadius: 20 }} />
           <div style={{ display: "flex", height: HEAD - 38, alignItems: "center", padding: "0 24px", fontSize: Math.min(36, Math.floor((phoneW - BORDER * 2 - 48) / textEm(s.title))), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{s.title}</div>
-          {s.rows.map((r, j) => (
-            <div key={j} style={{ ...col, height: rowH, margin: "0 14px", padding: "0 18px", background: C.white, borderTop: j ? `1px solid ${C.line}` : "none", justifyContent: "center" }}>
-              <div style={{ display: "flex", fontSize: Math.min(30, Math.floor((phoneW - BORDER * 2 - 64) / textEm(r.label))), fontWeight: 500, color: C.ink, whiteSpace: "nowrap" }}>{r.label}</div>
-              {r.value ? <div style={{ display: "flex", fontSize: 32, fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{r.value}</div> : null}
-              {r.sub ? <div style={{ display: "flex", fontSize: 20, color: C.sub, whiteSpace: "nowrap" }}>{r.sub}</div> : null}
-            </div>
-          ))}
+          {s.rows.map((r, j) => {
+            const vf = 30, vw = r.value ? textEm(r.value) * vf + 14 : 0;
+            const lf = Math.min(30, Math.floor((phoneW - BORDER * 2 - 64 - vw) / textEm(r.label)));
+            return (
+              <div key={j} style={{ ...row, height: rowH, margin: "0 14px", padding: "0 18px", background: C.white, borderTop: j ? `1px solid ${C.line}` : "none", justifyContent: "space-between" }}>
+                <div style={{ ...col }}>
+                  <div style={{ display: "flex", fontSize: lf, fontWeight: 500, color: C.ink, whiteSpace: "nowrap" }}>{r.label}</div>
+                  {r.sub ? <div style={{ display: "flex", fontSize: 20, color: C.sub, whiteSpace: "nowrap" }}>{r.sub}</div> : null}
+                </div>
+                {r.value ? <div style={{ display: "flex", fontSize: vf, fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{r.value}</div> : null}
+              </div>
+            );
+          })}
         </div>
         {on.map(({ pt, i, p }) => (
           <div key={`m${i}`} style={{ display: "flex", position: "absolute", left: PX + BORDER + 6, top: rowTop(pt.row) - 6, width: phoneW - BORDER * 2 - 12, height: rowH + 12, border: `6px solid ${C.red}`, borderRadius: 16, opacity: p }} />
@@ -1288,7 +1294,7 @@ function Flow({ s, t, reveal }: { s: FlowScene; t: number; reveal: Record<string
     <div style={{ ...col, width: INNER_W, height: "100%" }}>
       <Heading text={s.heading} />
       <div style={{ display: "flex", position: "relative", width: INNER_W, height: areaH }}>
-        <div style={{ display: "flex", position: "absolute", left: qX, top: 0, width: qW, height: qH, borderRadius: 24, background: C.bar, color: C.white, alignItems: "center", justifyContent: "center", fontSize: fit(s.q, qW - 40, cap(56), MIN_FONT, "分かれ道の問い"), fontWeight: 900 }}>{s.q}</div>
+        <div style={{ display: "flex", position: "absolute", left: qX, top: 0, width: qW, height: qH, borderRadius: 24, background: C.bar, color: C.white, alignItems: "center", justifyContent: "center", fontSize: fit(s.q, qW - 40, cap(56), MIN_FONT, "分かれ道の問い"), fontWeight: 900 }}><div style={{ display: "flex", marginLeft: optShift(s.q, fit(s.q, qW - 40, cap(56), MIN_FONT, "分かれ道の問い")) * 2 }}>{s.q}</div></div>
         {s.branches.map((b, i) => {
           const p = shown(reveal, `item:${i}`, t);
           const bx = i * (bW + GAP);
@@ -1338,15 +1344,18 @@ function Problems({ s, t, reveal }: { s: ProblemsScene; t: number; reveal: Recor
         <div style={{ ...col, width: leftW, height: areaH, alignItems: "center", justifyContent: "center" }}>
           {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
           {img ? <img src={img.src} width={iw} height={ih} style={{ width: iw, height: ih }} /> : null}
-          <div style={{ display: "flex", marginTop: 10, padding: "8px 22px", borderRadius: 999, background: C.bar, color: C.white, fontSize: fit(s.who, leftW - 20, cap(40), MIN_FONT, "困りごとの名札"), fontWeight: 900, whiteSpace: "nowrap" }}>{s.who}</div>
+          {(() => { const fs = fit(s.who, leftW - 20, cap(40), MIN_FONT, "困りごとの名札"); const sh = optShift(s.who, fs); return <div style={{ display: "flex", marginTop: 10, padding: `8px ${22 + Math.max(0, -sh)}px 8px ${22 + Math.max(0, sh) * 2}px`, borderRadius: 999, background: C.bar, color: C.white, fontSize: fs, fontWeight: 900, whiteSpace: "nowrap" }}>{s.who}</div>; })()}
         </div>
         <div style={{ ...col, width: textW, marginLeft: 40, height: areaH, justifyContent: "center" }}>
           {s.items.map((it, i) => {
             const p = shown(reveal, `item:${i}`, t);
             return (
               <div key={i} style={{ ...row, width: textW, height: rowH, opacity: p, ...bump(s, `item:${i}`) }}>
-                <div style={{ display: "flex", width: 56, height: 56, borderRadius: 999, background: C.red, color: C.white, fontSize: 36, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>!</div>
-                <div style={{ display: "flex", marginLeft: 22, fontSize: fit(it.text, textW - 90, Math.min(cap(60), Math.floor(rowH * 0.55)), MIN_FONT, "困りごと"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{it.text}</div>
+                <div style={{ ...col, width: 78, height: 78, borderRadius: 999, background: C.red, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ display: "flex", width: 11, height: 32, borderRadius: 6, background: C.white }} />
+                  <div style={{ display: "flex", width: 11, height: 11, marginTop: 6, borderRadius: 999, background: C.white }} />
+                </div>
+                <div style={{ display: "flex", marginLeft: 26, fontSize: fit(it.text, textW - 110, Math.min(cap(60), Math.floor(rowH * 0.55)), MIN_FONT, "困りごと"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{it.text}</div>
               </div>
             );
           })}
@@ -1679,6 +1688,8 @@ const splitTag = (it: LineupScene["items"][number]) => {
   return m.length > 1 ? { tag: m[0], name: m.slice(1).join("：") } : { tag: "", name: it.title };
 };
 /** 案A（tab）: カードの頭に色の帯（予算）。中は 名前→大きい値→補足。選んだ1枚は赤い帯で少し大きく */
+/** 全角の「）」「？」などで終わる文字は右に余白があるぶん左に寄って見える。その分だけ右へずらす量（px・11/27） */
+const optShift = (text: string, fs: number) => (/[）」？！。、]$/.test(text) ? Math.round(fs * 0.22) : 0) - (/^[（「]/.test(text) ? Math.round(fs * 0.22) : 0);
 /** 言葉の上に赤い ✕（ない機能。11/27〜） */
 function crossWord(text: string, fs: number, key: number) {
   const ww = Math.round(fs * textEm(text) + 26), hh = Math.round(fs * 1.4);
@@ -1763,7 +1774,8 @@ function LineupStyled({ s, t, reveal }: { s: LineupScene; t: number; reveal: Rec
   const SLIDE = 0.45;
   const bigEnd = (i: number) => { const st = raw[`item:${i}`]; if (st === undefined) return undefined; const nx = raw[`item:${i + 1}`]; return Math.min(st + LINEUP_BIG, nx ?? Infinity); };
   const sliding = shownIdx.filter((i) => { const e = bigEnd(i); return i !== big && e !== undefined && t >= e && t < e + SLIDE; });
-  const op = (i: number) => (sliding.includes(i) ? 0.12 : shown(reveal, `item:${i}`, t) > 0 && i !== big ? 1 : 0.12);
+  // スライド中は後ろの薄いカードを少しずつ消す（動くカードの縁から二重に見えないように・11/27）
+  const op = (i: number) => (sliding.includes(i) ? 0.12 * Math.max(0, 1 - (t - bigEnd(i)!) / (SLIDE * 0.5)) : shown(reveal, `item:${i}`, t) > 0 && i !== big ? 1 : 0.12);
   const TAB_H = 0.72;
   const slot = (i: number): { l: number; t: number; w: number; h: number; cell: (w: number, h: number, sc: number) => React.ReactNode } => {
     const it = s.items[i];

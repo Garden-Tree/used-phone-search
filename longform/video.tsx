@@ -58,8 +58,11 @@ const BGM_CREDIT = existsSync(BGM_LONG) ? "BGM: Cyber Society by のる（OpenTr
  */
 const SE_DIR = join(ROOT, "shorts/assets/se");
 /** 種類 → 音量（dB）。長い音は 0.7 秒で切る */
-const SE_DB: Record<string, number> = { pop: -15, shake1: -17, shake2: -17, shake3: -19, mark1: -17, mark2: -17, mark3: -20 };
+const SE_DB: Record<string, number> = { buzzer: -13, dodon: -9, pop: -15, shake1: -17, shake2: -17, shake3: -19, mark1: -17, mark2: -17, mark3: -20 };
 const SE_MAX = 0.7;
+/** 欠点（✕・「ない」の行）＝buzzer（ブブー）、はんこ＝dodon（ドドン）。どちらも ffmpeg で作った音（11/27 ユーザー）。dodon は 0.9 秒まで */
+const seMax = (k: string) => (k === "dodon" ? 0.9 : SE_MAX);
+const BAD = /ない|使えない|なし/;
 type SeEv = { at: number; kind: string };
 function seEvents(tl: Timeline): SeEv[] {
   if (process.env.LONGFORM_SE === "0") return [];
@@ -67,7 +70,15 @@ function seEvents(tl: Timeline): SeEv[] {
   const raw: SeEv[] = [];
   for (const ch of tl.chapters) {
     if (ch.scene.type === "endScreen") continue;
-    for (const [k, r] of Object.entries(ch.scene.reveal)) if (r > 0.05 && /^(item|img|chk):/.test(k)) raw.push({ at: ch.start + r, kind: "pop" });
+    const pts = (ch.scene as { points?: { text: string }[] }).points;
+    for (const [k, r] of Object.entries(ch.scene.reveal)) {
+      if (r <= 0.05) continue;
+      if (/^cross:/.test(k)) raw.push({ at: ch.start + r, kind: "buzzer" });
+      else if (k === "stamp") raw.push({ at: ch.start + r, kind: "dodon" });
+      else if (/^item:/.test(k) && ch.scene.type === "photo" && pts && BAD.test(pts[Number(k.slice(5))]?.text ?? "")) raw.push({ at: ch.start + r, kind: "buzzer" });
+      else if (/^item:/.test(k) && ch.scene.type === "problems") raw.push({ at: ch.start + r, kind: "buzzer" });
+      else if (/^(item|img|chk):/.test(k)) raw.push({ at: ch.start + r, kind: "pop" });
+    }
     for (const ts of Object.values(ch.scene.mention ?? {})) if (ts.length) raw.push({ at: ch.start + ts[0], kind: "shake" });
     for (const rs of Object.values(ch.scene.marks ?? {})) for (const [a] of rs) raw.push({ at: ch.start + a + 0.05, kind: "mark" });
   }
@@ -78,7 +89,7 @@ function seEvents(tl: Timeline): SeEv[] {
     if (jingles.some((j) => Math.abs(j - e.at) < 0.8)) continue;
     const prev = kept[kept.length - 1];
     if (prev && e.at - prev.at < 0.7) {
-      if (e.kind === "mark" && prev.kind === "shake") kept[kept.length - 1] = e;
+      if ((e.kind === "mark" && prev.kind === "shake") || ((e.kind === "buzzer" || e.kind === "dodon") && prev.kind !== "buzzer" && prev.kind !== "dodon")) kept[kept.length - 1] = e;
       continue;
     }
     kept.push(e);
@@ -491,7 +502,7 @@ async function audio(dir: string, tl: Timeline, work: string) {
   const seLabels: string[] = [];
   kinds.forEach((k, ki) => {
     const list = ses.filter((e) => e.kind === k);
-    seGraph += `[${3 + ki}:a]${stereo},atrim=0:${SE_MAX},afade=t=out:st=${SE_MAX - 0.15}:d=0.15,volume=${SE_DB[k] ?? -18}dB,asplit=${list.length}${list.map((_, i) => `[s${ki}_${i}]`).join("")};`;
+    seGraph += `[${3 + ki}:a]${stereo},atrim=0:${seMax(k)},afade=t=out:st=${seMax(k) - 0.15}:d=0.15,volume=${SE_DB[k] ?? -18}dB,asplit=${list.length}${list.map((_, i) => `[s${ki}_${i}]`).join("")};`;
     list.forEach((e, i) => { const ms = Math.round(e.at * 1000); seGraph += `[s${ki}_${i}]adelay=${ms}|${ms}[e${ki}_${i}];`; seLabels.push(`[e${ki}_${i}]`); });
   });
   if (ses.length) console.log(`  効果音 ${ses.length} か所（${kinds.map((k) => `${k} ${ses.filter((e) => e.kind === k).length}`).join("・")}）`);
