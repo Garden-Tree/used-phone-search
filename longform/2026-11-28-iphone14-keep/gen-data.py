@@ -6,33 +6,33 @@ ch.append({"title": "家のiPhone 14、5年目の困りごと", "scene": {"type"
 ch.append({"title": "困りごとで分かれる", "scene": {"type": "flow", "heading": "電池交換か、買い替えか", "q": "何に困ってる？",
   "branches": [{"label": "電池だけ", "answer": "電池交換", "sub": "Apple 17,200円", "cue": "電池だけなら", "pick": True},
                {"label": "ケーブル", "answer": "3台から選ぶ", "sub": "この先で", "cue": "それなら、売って"}]}})
-ch.append({"title": "14は5年目。iOS 27にも対応", "scene": {"type": "years", "heading": "発売から今日まで（Apple は年数を約束していない）", "start": 2019, "end": 2028, "today": 2026.9, "todayLabel": "2026年11月",
+ch.append({"title": "14は5年目。iOS 27にも対応", "scene": {"type": "years", "heading": "発売から今日まで", "start": 2019, "end": 2028, "today": 2026.9, "todayLabel": "2026年11月",
   "rows": [{"label": "iPhone 11", "from": 2019.7, "cue": "11は、8年目"}, {"label": "iPhone 12", "from": 2020.8, "cue": "発売した年から"}, {"label": "iPhone 13", "from": 2021.7, "cue": "発売した年から"},
            {"label": "iPhone 14", "from": 2022.7, "cue": "発売した年から", "pick": True}, {"label": "iPhone 15", "from": 2023.7, "cue": "発売した年から"}], "sweep": "時計を進めると"}})
 sell = 42000
 def item(label, price, cue, pick=False):
     parts = [{"label": "本体", "value": price}, {"label": "14を売る", "value": sell, "minus": True}]
     return {"label": label, "parts": parts, "cue": cue}
-ch.append({"title": "替えるといくら？14を売って足すお金", "scene": {"type": "costs", "heading": "替えるといくら？（14 128GB を美品で売った場合）", "unit": "円",
+ch.append({"title": "替えるといくら？14を売って足すお金", "scene": {"type": "costs", "heading": "14を美品で売って替えると、いくら？", "unit": "円",
   "items": [{"label": "電池交換", "parts": [{"label": "電池交換", "value": 17200}], "cue": "電池交換は、1万", "pick": True},
             item("中古の15", 91700, "中古の15は"), item("中古の16e", 106980, "中古の16eだと"), item("中古の17", 148980, "中古の17は")],
   "diff": {"from": 0, "to": 1, "label": "差 3万2,500円", "cue": "3万2,500円の差"},
   "legend": [{"label": "払う", "color": "#3E3BB8"}, {"label": "14を売って戻る", "color": "#1E8A6E", "minus": True}]}})
-ch.append({"title": "電池交換で何が変わる？", "scene": {"type": "screen", "heading": "設定 → バッテリー（イメージ）", "title": "バッテリーの状態と充電",
+ch.append({"title": "電池交換で何が変わる？", "scene": {"type": "screen", "heading": "設定のバッテリーの画面はこんなイメージ", "title": "バッテリーの状態と充電",
   "rows": [{"label": "バッテリーの状態", "value": "サービス"}, {"label": "最大容量", "value": "79%"}, {"label": "充電の最適化", "value": "オン"}],
   "points": [{"row": 1, "text": "最大容量", "sub": "新品のときの何%残っているか", "cue": "最大容量っていう"},
              {"row": 1, "text": "交換すると新しい電池の値に", "sub": "データ・設定はそのまま", "cue": "電池を替えると、この"}]}})
-ch.append({"title": "画面が割れていたら", "scene": {"type": "bars", "heading": "画面が割れた 14（128GB）", "unit": "円",
-  "rows": [{"label": "そのまま直す", "median": 45800, "sub": "Apple の画面修理", "cue": "Appleの画面修理は", "say": "画面修理"},
-           {"label": "売って中古の14", "median": 53780, "sub": "割れたまま 12,000円で売る", "cue": "それで中古の14", "say": "中古の14"},
-           {"label": "売って中古の15", "median": 79700, "sub": "割れたまま 12,000円で売る", "cue": "割れたまま売って中古の15", "say": "中古の15"}]}})
+ch.append({"title": "画面が割れていたら", "scene": {"type": "bars", "heading": "画面が割れた14、直す？買い直す？", "unit": "円",
+  "rows": [{"label": "そのまま直す", "median": 45800, "sub": "Appleで修理", "cue": "Appleの画面修理は", "say": "画面修理"},
+           {"label": "売って中古の14", "median": 53780, "sub": "割れたまま売って", "cue": "それで中古の14", "say": "中古の14"},
+           {"label": "売って中古の15", "median": 79700, "sub": "割れたまま売って", "cue": "割れたまま売って中古の15", "say": "中古の15"}]}})
 C15 = "iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons"
-ch.append({"title": "替えるなら① 中古の15", "scene": {"type": "photo", "heading": "中古の15（USB-C とカメラ）", "src": D+"commons/iphone15-pd.jpg", "credit": "Apple " + C15,
-  "points": [{"text": "USB-C", "sub": "Mac や iPad と同じケーブル", "cue": "いちばん大きいのは"},
-             {"text": "48MP・2倍の光学ズームイン", "sub": "14 は12MP・デジタルズーム", "cue": "カメラも変わるの"},
+ch.append({"title": "替えるなら① 中古の15", "scene": {"type": "photo", "heading": "中古の15で変わるのはUSB-Cとカメラ", "src": D+"commons/iphone15-pd.jpg", "credit": "Apple " + C15,
+  "points": [{"text": "USB-C", "sub": "MacやiPadと同じケーブル", "cue": "いちばん大きいのは"},
+             {"text": "48MP・2倍の光学ズームイン", "sub": "14は12MP", "cue": "カメラも変わるの"},
              {"text": "Dynamic Island", "sub": "タイマー・音楽", "cue": "上の黒い部分に"},
-             {"text": "ビデオ再生 20時間", "sub": "14 と同じ・画面も同じ 6.1インチ", "cue": "画面の大きさは"},
-             {"text": "足すお金 +49,700円", "sub": "14 128GB 美品を売って", "cue": "替える先の1つ目は"}],
+             {"text": "ビデオ再生 20時間", "sub": "14と同じ", "cue": "画面の大きさは"},
+             {"text": "足すお金 +49,700円", "sub": "14を売って", "cue": "替える先の1つ目は"}],
   "images": [{"src": D+"commons/iphone15-usbc-port-kyu3.jpg", "credit": "USB-C port of iPhone 15 — Kyu3 / CC BY-SA 4.0 / Wikimedia Commons", "crop": {"x": 0.25, "y": 0.28, "w": 0.5, "h": 0.36}, "cue": "いちばん大きいのは"},
              {"src": D+"commons/lightning-usbc-cable-kyu3a.jpg", "credit": "Lightning USB type C cable — Kyu3a / CC BY-SA 4.0 / Wikimedia Commons", "cue": "MacやiPad、ゲーム機"},
              {"src": D+"commons/iphone15-back-blue-meidoriyo.jpg", "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons", "crop": {"x": 0.18, "y": 0.1, "w": 0.6, "h": 0.42}, "cue": "カメラも変わるの"},
@@ -40,13 +40,12 @@ ch.append({"title": "替えるなら① 中古の15", "scene": {"type": "photo",
              {"src": D+"commons/iphone15-pd.jpg", "credit": "Apple " + C15, "cue": "上の黒い部分に"}]}})
 ch.append({"title": "替えるなら② 中古の16e、15と比べると", "scene": {"type": "versus", "heading": "中古の15と16e、どっち？",
   "left": {"title": "中古の15", "value": "91,700円", "sub": "MagSafe・超広角あり", "cue": "中古の15は9万"},
-  "right": {"title": "中古の16e", "value": "106,980円", "sub": "A18・ビデオ再生 26時間", "cue": "16eは10万"},
-  "win": {"side": "right", "label": "電池は6時間長い", "cue": "6時間長いの"},
-  "stamp": {"text": "16eにMagSafeはない", "cue": "16eに、MagSafeは", "style": "ribbon", "x": 0.52, "y": 0.85, "size": 180}}})
-ch.append({"title": "替えるなら③ 中古の17、全部入り", "scene": {"type": "gauges", "heading": "ビデオ再生（Apple 公式の仕様）", "unit": "時間", "max": 33,
+  "right": {"title": "中古の16e", "value": "106,980円", "sub": "A18・ビデオ再生 26時間", "cue": "16eは10万", "crosses": [{"text": "MagSafe", "cue": "16eに、MagSafeは"}, {"text": "超広角", "cue": "2つ目は、超広角"}]},
+  "win": {"side": "right", "label": "電池は6時間長い", "cue": "6時間長いの"}}})
+ch.append({"title": "替えるなら③ 中古の17、全部入り", "scene": {"type": "gauges", "heading": "Appleの仕様のビデオ再生の時間", "unit": "時間", "max": 33,
   "items": [{"label": "iPhone 14", "value": 20, "cue": "14は20時間"}, {"label": "iPhone 15", "value": 20, "cue": "15も20時間"},
             {"label": "16e", "value": 26, "cue": "16eは26時間"}, {"label": "中古の17", "value": 30, "cue": "17は30時間", "pick": True}]}})
-ch.append({"title": "替えるならこの3台", "scene": {"type": "lineup", "heading": "14から替えるなら（足すお金）",
+ch.append({"title": "替えるならこの3台", "scene": {"type": "lineup", "heading": "14から替えるなら",
   "items": [{"title": "USB-C：中古の15", "value": "+49,700円", "sub": "A16・MagSafe・超広角", "cue": "USB-Cとカメラなら", "pick": True},
             {"title": "電池・AI：中古の16e", "value": "+64,980円", "sub": "MagSafe・超広角なし", "cue": "電池の長さとApple"},
             {"title": "全部：中古の17", "value": "+106,980円", "sub": "256GB・eSIMだけ", "cue": "電池も機能も全部"}],

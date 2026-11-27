@@ -726,7 +726,7 @@ function Checklist({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Rec
             })()}
             <div style={{ ...col, width: textW, marginLeft: 32 }}>
               <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(56), Math.floor(rowH * 0.5)), MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
-              {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.min(cap(38), Math.floor(rowH * 0.28)), MIN_FOOT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
+              {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.max(MIN_FONT + 4, Math.min(cap(38), Math.floor(rowH * 0.28))), MIN_FONT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
             </div>
           </div>
         );
@@ -760,7 +760,7 @@ function Checklist2({ s, t, reveal }: { s: ChecklistScene; t: number; reveal: Re
                 <div style={{ display: "flex", width: NUM, height: NUM, borderRadius: 999, background: SITE.safe, color: C.white, fontSize: Math.round(NUM * 0.58), lineHeight: 1, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0, paddingBottom: Math.round(NUM * 0.1), paddingLeft: Math.round(NUM * 0.06) }}>{String(i + 1)}</div>
                 <div style={{ ...col, width: textW, marginLeft: 24 }}>
                   <div style={{ display: "flex", fontSize: fit(it.text, textW, size, MIN_FONT, "リストの行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
-                  {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, textW, cap(32), MIN_FOOT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
+                  {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, textW, Math.max(MIN_FONT + 4, cap(32)), MIN_FONT, "リストの補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
                 </div>
               </div>
             );
@@ -881,7 +881,7 @@ function Photo({ s, t, reveal }: { s: PhotoScene; t: number; reveal: Record<stri
             {points.map((it, i) => (
               <div key={i} style={{ ...col, width: textW, height: rowH, justifyContent: "center", opacity: shown(reveal, `item:${i}`, t), borderTop: i ? `2px solid ${C.line}` : "none", ...bump(s, `item:${i}`) }}>
                 <div style={{ display: "flex", fontSize: fit(it.text, textW, Math.min(cap(56), Math.floor(rowH * 0.5)), MIN_FONT, "写真の横の行"), fontWeight: 900, color: C.ink, lineHeight: 1.2 }}>{it.text}</div>
-                {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.min(cap(36), Math.floor(rowH * 0.28)), MIN_FOOT, "写真の横の補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
+                {it.sub ? <div style={{ display: "flex", marginTop: 2, fontSize: fit(it.sub, textW, Math.max(MIN_FONT + 4, Math.min(cap(46), Math.floor(rowH * 0.33))), MIN_FONT, "写真の横の補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{it.sub}</div> : null}
               </div>
             ))}
           </div>
@@ -959,7 +959,7 @@ function Gauges({ s, t, reveal }: { s: GaugesScene; t: number; reveal: Record<st
               </div>
               <div style={{ ...col, height: labelH, marginTop: 12, alignItems: "center" }}>
                 <div style={{ display: "flex", fontSize: fit(it.label, colW - 16, cap(44), MIN_FONT, "ゲージの名前"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{it.label}</div>
-                {it.sub ? <div style={{ display: "flex", fontSize: MIN_FOOT, fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
+                {it.sub ? <div style={{ display: "flex", fontSize: MIN_FONT, fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
               </div>
             </div>
           );
@@ -1009,7 +1009,7 @@ function Screen({ s, t, reveal }: { s: ScreenScene; t: number; reveal: Record<st
           {on.map(({ pt, i, p }) => (
             <div key={`t${i}`} style={{ ...col, marginBottom: 28, opacity: p, ...bump(s, `item:${i}`) }}>
               <div style={{ display: "flex", fontSize: fit(pt.text, textW, cap(56), MIN_FONT, "画面の説明"), fontWeight: 900, color: i === last?.i ? C.red : C.ink, lineHeight: 1.2 }}>{pt.text}</div>
-              {pt.sub ? <div style={{ display: "flex", fontSize: fit(pt.sub, textW, cap(36), MIN_FOOT, "画面の説明の補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{pt.sub}</div> : null}
+              {pt.sub ? <div style={{ display: "flex", fontSize: fit(pt.sub, textW, Math.max(MIN_FONT + 4, cap(36)), MIN_FONT, "画面の説明の補足"), fontWeight: 500, color: C.sub, lineHeight: 1.2 }}>{pt.sub}</div> : null}
             </div>
           ))}
         </div>
@@ -1033,10 +1033,30 @@ function Versus({ s, t, reveal }: { s: VersusScene; t: number; reveal: Record<st
     const won = winOn && s.win!.side === side;
     const lost = winOn && s.win!.side !== side;
     return (
-      <div style={{ ...col, position: "relative", width: cardW, height: areaH - 20, alignItems: "center", justifyContent: "center", background: won ? "#FFF5F5" : C.rowAlt, border: `${won ? 10 : 4}px solid ${won ? C.red : C.line}`, borderRadius: 28, opacity: p * (lost ? 0.55 : 1), ...bump(s, `item:${i}`) }}>
+      <div style={{ ...col, position: "relative", width: cardW, height: areaH - 20, alignItems: "center", justifyContent: "center", paddingTop: c.crosses?.length ? 40 : 0, background: won ? "#FFF5F5" : C.rowAlt, border: `${won ? 10 : 4}px solid ${won ? C.red : C.line}`, borderRadius: 28, opacity: p * (lost ? 0.55 : 1), ...bump(s, `item:${i}`) }}>
         <div style={{ display: "flex", fontSize: fit(c.title, cardW - 60, cap(56), MIN_FONT, "2択の題"), fontWeight: 900, color: C.ink }}>{c.title}</div>
         <div style={{ display: "flex", marginTop: 18, fontSize: fit(c.value, cardW - 60, cap(110), MIN_FONT, "2択の値"), fontWeight: 900, color: won ? C.red : C.ink, lineHeight: 1 }}>{c.value}</div>
-        {c.sub ? <div style={{ display: "flex", marginTop: 18, fontSize: fit(c.sub, cardW - 60, cap(36), MIN_FOOT, "2択の補足"), fontWeight: 500, color: C.sub }}>{c.sub}</div> : null}
+        {c.sub ? <div style={{ display: "flex", marginTop: 18, fontSize: fit(c.sub, cardW - 60, Math.max(MIN_FONT + 4, cap(36)), MIN_FONT, "2択の補足"), fontWeight: 500, color: C.sub }}>{c.sub}</div> : null}
+        {c.crosses?.length ? (
+          <div style={{ ...row, marginTop: 14, gap: 24 }}>
+            {c.crosses.map((x, k) => {
+              const at = reveal[`cross:${side}:${k}`];
+              if (at === undefined || t < at) return <div key={k} style={{ display: "flex" }} />;
+              const f = Math.min(1, (t - at) / 0.25);
+              const fs = cap(40);
+              const ww = Math.round(fs * textEm(x.text) + 30), hh = Math.round(fs * 1.4);
+              const len = Math.round(Math.hypot(ww, hh) * 0.92);
+              const bar = (deg: number) => ({ display: "flex", position: "absolute", left: Math.round(ww / 2 - len / 2), top: Math.round(hh / 2 - 6), width: len, height: 12, borderRadius: 6, background: C.red, transform: `rotate(${deg}deg) scale(${0.4 + 0.6 * easeOut(f)})` }) as const;
+              return (
+                <div key={k} style={{ display: "flex", position: "relative", width: ww, height: hh, alignItems: "center", justifyContent: "center", background: C.white, border: `3px solid ${C.line}`, borderRadius: 14 }}>
+                  <div style={{ display: "flex", fontSize: fs, fontWeight: 900, color: C.sub }}>{x.text}</div>
+                  <div style={bar(Math.atan2(hh, ww) * 180 / Math.PI)} />
+                  <div style={bar(-Math.atan2(hh, ww) * 180 / Math.PI)} />
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
         {won ? <div style={{ display: "flex", position: "absolute", top: -34, padding: "6px 26px", borderRadius: 999, background: C.red, color: C.white, fontSize: cap(44), fontWeight: 900, transform: `scale(${winPop})` }}>{s.win!.label}</div> : null}
       </div>
     );
@@ -1077,7 +1097,7 @@ function Lineup({ s, t, reveal }: { s: LineupScene; t: number; reveal: Record<st
         {img ? <img src={img.src} width={imgW} height={imgH} style={{ width: imgW, height: imgH, borderRadius: 12 }} /> : null}
         <div style={{ display: "flex", marginTop: 10, fontSize: fit(it.title, w - 30, Math.round(cap(46) * scale), MIN_FONT, "並べる題"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{it.title}</div>
         <div style={{ display: "flex", fontSize: fit(it.value, w - 30, Math.round(cap(54) * scale), MIN_FONT, "並べる値"), fontWeight: 900, color: it.pick ? C.red : C.ink, whiteSpace: "nowrap" }}>{it.value}</div>
-        {it.sub ? <div style={{ display: "flex", fontSize: fit(it.sub, w - 30, Math.round(cap(32) * scale), MIN_FOOT, "並べる補足"), fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
+        {it.sub ? <div style={{ display: "flex", fontSize: fit(it.sub, w - 30, Math.max(MIN_FONT + 4, Math.round(cap(32) * scale)), MIN_FONT, "並べる補足"), fontWeight: 500, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
       </div>
     );
   };
@@ -1290,7 +1310,7 @@ function Flow({ s, t, reveal }: { s: FlowScene; t: number; reveal: Record<string
               <div style={{ display: "flex", position: "absolute", left: Math.round((x1 + x2) / 2 - 110), top: Math.round((y1 + y2) / 2 - 30), width: 220, height: 60, borderRadius: 999, background: C.white, border: `4px solid ${C.red}`, color: C.red, alignItems: "center", justifyContent: "center", fontSize: MIN_FONT, fontWeight: 900 }}>{b.label}</div>
               <div style={{ ...col, position: "absolute", left: bx, top: bY, width: bW, height: bH, borderRadius: 24, border: `6px solid ${b.pick ? C.red : C.line}`, background: b.pick ? "#FFF5F5" : C.rowAlt, alignItems: "center", justifyContent: "center", ...bump(s, `item:${i}`) }}>
                 <div style={{ display: "flex", fontSize: fit(b.answer, bW - 40, cap(64), MIN_FONT, "分かれ道の答え"), fontWeight: 900, color: b.pick ? C.red : C.ink }}>{b.answer}</div>
-                {b.sub ? <div style={{ display: "flex", marginTop: 10, fontSize: fit(b.sub, bW - 40, cap(36), MIN_FOOT, "分かれ道の補足"), fontWeight: 500, color: C.sub }}>{b.sub}</div> : null}
+                {b.sub ? <div style={{ display: "flex", marginTop: 10, fontSize: fit(b.sub, bW - 40, Math.max(MIN_FONT + 4, cap(36)), MIN_FONT, "分かれ道の補足"), fontWeight: 500, color: C.sub }}>{b.sub}</div> : null}
               </div>
             </div>
           );
@@ -1584,7 +1604,7 @@ function CostsRows({ s, t, reveal }: { s: CostsScene; t: number; reveal: Record<
               ) : null}
               <div style={{ ...col, position: "absolute", left: LABEL + Math.round(wn + wm) + 24, top: 0, height: rowH, justifyContent: "center" }}>
                 <div style={{ display: "flex", fontSize: cap(56), fontWeight: 900, color: it.pick ? SITE.safe : C.ink, whiteSpace: "nowrap", lineHeight: 1.05 }}>{p > 0 ? `${yen(net * g)}${s.unit}` : ""}</div>
-                {minus > 0 && p > 0 ? <div style={{ display: "flex", marginTop: 10, fontSize: MIN_FOOT + 2, fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{`${yen(gross)} − 売る ${yen(minus)}`}</div> : null}
+                {minus > 0 && p > 0 ? <div style={{ display: "flex", marginTop: 6, fontSize: MIN_FONT, fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{`${yen(gross)} − 売る ${yen(minus)}`}</div> : null}
               </div>
             </div>
           );
@@ -1673,7 +1693,7 @@ function lineupTabCell(it: LineupScene["items"][number], w: number, h: number, s
         {img ? <img src={img.src} width={imgW} height={imgH} style={{ width: imgW, height: imgH, borderRadius: 12, marginBottom: 6 }} /> : null}
         <div style={{ display: "flex", fontSize: fit(name, w - 40, Math.round(cap(44) * scale), MIN_FONT, "並べる題"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{name}</div>
         <div style={{ display: "flex", fontSize: fit(it.value, w - 40, Math.round(cap(76) * scale), MIN_FONT, "並べる値"), fontWeight: 900, color: it.pick ? C.red : C.ink, whiteSpace: "nowrap", lineHeight: 1.1 }}>{it.value}</div>
-        {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, w - 40, Math.round(cap(32) * scale), MIN_FOOT, "並べる補足"), fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
+        {it.sub ? <div style={{ display: "flex", marginTop: 4, fontSize: fit(it.sub, w - 40, Math.max(MIN_FONT + 4, Math.round(cap(32) * scale)), MIN_FONT, "並べる補足"), fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
       </div>
     </div>
   );
@@ -1691,7 +1711,7 @@ function lineupStepCell(it: LineupScene["items"][number], w: number, h: number, 
       {img ? <img src={img.src} width={imgW} height={imgH} style={{ width: imgW, height: imgH, borderRadius: 12, marginTop: 8 }} /> : null}
       <div style={{ display: "flex", marginTop: 8, fontSize: fit(name, w - 30, Math.round(cap(42) * scale), MIN_FONT, "並べる題"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{name}</div>
       <div style={{ display: "flex", fontSize: fit(it.value, w - 30, Math.round(cap(72) * scale), MIN_FONT, "並べる値"), fontWeight: 900, color: it.pick ? C.red : C.ink, whiteSpace: "nowrap", lineHeight: 1.1 }}>{it.value}</div>
-      {it.sub ? <div style={{ display: "flex", fontSize: fit(it.sub, w - 30, Math.round(cap(30) * scale), MIN_FOOT, "並べる補足"), fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
+      {it.sub ? <div style={{ display: "flex", fontSize: fit(it.sub, w - 30, Math.max(MIN_FONT + 4, Math.round(cap(30) * scale)), MIN_FONT, "並べる補足"), fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
     </div>
   );
 }
@@ -1709,7 +1729,7 @@ function lineupRowCell(it: LineupScene["items"][number], w: number, h: number, s
       {img ? <img src={img.src} width={imgW} height={imgH} style={{ width: imgW, height: imgH, borderRadius: 10, marginLeft: 18 }} /> : null}
       <div style={{ ...col, marginLeft: 26, flex: 1 }}>
         <div style={{ display: "flex", fontSize: fit(name, w * 0.4, Math.round(cap(46) * scale), MIN_FONT, "並べる題"), fontWeight: 900, color: C.ink, whiteSpace: "nowrap" }}>{name}</div>
-        {it.sub ? <div style={{ display: "flex", fontSize: fit(it.sub, w * 0.4, Math.round(cap(30) * scale), MIN_FOOT, "並べる補足"), fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
+        {it.sub ? <div style={{ display: "flex", fontSize: fit(it.sub, w * 0.4, Math.max(MIN_FONT + 4, Math.round(cap(30) * scale)), MIN_FONT, "並べる補足"), fontWeight: 700, color: C.sub, whiteSpace: "nowrap" }}>{it.sub}</div> : null}
       </div>
       <div style={{ display: "flex", marginRight: 34, fontSize: fit(it.value, w * 0.32, Math.round(cap(72) * scale), MIN_FONT, "並べる値"), fontWeight: 900, color: it.pick ? C.red : C.ink, whiteSpace: "nowrap" }}>{it.value}</div>
     </div>
@@ -1725,7 +1745,11 @@ function LineupStyled({ s, t, reveal }: { s: LineupScene; t: number; reveal: Rec
   const big = latest !== undefined && t - (raw[`item:${latest}`] ?? -99) < LINEUP_BIG ? latest : undefined;
   const bk = big !== undefined ? (s as { pulse?: Record<string, number> }).pulse?.[`item:${big}`] : undefined;
   const bigPop = bk === undefined ? 1 : 0.7 + 0.3 * easeOut(Math.min(1, bk / 8));
-  const op = (i: number) => (shown(reveal, `item:${i}`, t) > 0 && i !== big ? 1 : 0.12);
+  // 大きく出したあと、自分の場所へ SLIDE 秒でスライド（11/27 ユーザー）。終わり＝LINEUP_BIG 秒か次の1枚が出たときの早い方
+  const SLIDE = 0.45;
+  const bigEnd = (i: number) => { const st = raw[`item:${i}`]; if (st === undefined) return undefined; const nx = raw[`item:${i + 1}`]; return Math.min(st + LINEUP_BIG, nx ?? Infinity); };
+  const sliding = shownIdx.filter((i) => { const e = bigEnd(i); return i !== big && e !== undefined && t >= e && t < e + SLIDE; });
+  const op = (i: number) => (sliding.includes(i) ? 0 : shown(reveal, `item:${i}`, t) > 0 && i !== big ? 1 : 0.12);
   let body: React.ReactNode;
   if (style === "rows") {
     const GAP = 18;
@@ -1753,12 +1777,30 @@ function LineupStyled({ s, t, reveal }: { s: LineupScene; t: number; reveal: Rec
       <div key={i} style={{ display: "flex", position: "absolute", left: i * (cw + GAP), top: areaH - h - 6 - (it.pick ? 20 : 0), opacity: op(i) }}>{lineupTabCell(it, cw, h + (it.pick ? 20 : 0), 1)}</div>
     ));
   }
+  const slot = (i: number): { l: number; t: number; w: number; h: number; cell: React.ReactNode } => {
+    const it = s.items[i];
+    if (style === "rows") { const GAP = 18; const rh = Math.min(cap(170), Math.floor((areaH - 20 - GAP * (n - 1)) / n)); return { l: 0, t: 10 + i * (rh + GAP), w: INNER_W, h: rh, cell: lineupRowCell(it, INNER_W, rh, 1) }; }
+    if (style === "steps") { const GAP = 20; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const hh = Math.round(areaH * (0.74 + (0.24 * i) / Math.max(1, n - 1))); return { l: i * (cw + GAP), t: areaH - 6 - hh, w: cw, h: hh, cell: lineupStepCell(it, cw, hh, 1) }; }
+    const GAP = 28; const cw = Math.floor((INNER_W - GAP * (n - 1)) / n); const h = areaH - 50 + (it.pick ? 20 : 0);
+    return { l: i * (cw + GAP), t: areaH - h - 6, w: cw, h, cell: lineupTabCell(it, cw, h, 1) };
+  };
+  const BL = Math.round(INNER_W * 0.22), BW = Math.round(INNER_W * 0.56), BH = areaH - 10;
+  const slides = sliding.map((i) => {
+    const sl = slot(i);
+    const p = easeOut(Math.min(1, (t - bigEnd(i)!) / SLIDE));
+    const k = BW / sl.w + (1 - BW / sl.w) * p;
+    const cx = BL + BW / 2 + (sl.l + sl.w / 2 - (BL + BW / 2)) * p, cy = BH / 2 + (sl.t + sl.h / 2 - BH / 2) * p;
+    return (
+      <div key={`s${i}`} style={{ display: "flex", position: "absolute", left: Math.round(cx - sl.w / 2), top: Math.round(cy - sl.h / 2), width: sl.w, height: sl.h, transform: `scale(${k})`, boxShadow: `0 18px 40px rgba(0,0,0,${0.28 * (1 - p)})`, borderRadius: 24 }}>{sl.cell}</div>
+    );
+  });
   const bigCell = (it: LineupScene["items"][number], w: number, h: number) => (style === "steps" ? lineupStepCell(it, w, h, 1.5) : style === "rows" ? lineupTabCell(it, w, h, 1.5) : lineupTabCell(it, w, h, 1.5));
   return (
     <div style={{ ...col, width: INNER_W, height: "100%" }}>
       <Heading text={s.heading} />
       <div style={{ display: "flex", position: "relative", width: INNER_W, height: areaH }}>
         {body}
+        {slides}
         {big !== undefined ? (
           <div style={{ display: "flex", position: "absolute", left: Math.round(INNER_W * 0.22), top: 0, width: Math.round(INNER_W * 0.56), height: areaH - 10, transform: `scale(${bigPop})`, boxShadow: "0 18px 40px rgba(0,0,0,0.28)", borderRadius: 24 }}>
             {bigCell(s.items[big], Math.round(INNER_W * 0.56), areaH - 10)}

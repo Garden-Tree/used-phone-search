@@ -195,8 +195,8 @@ export type YearsScene = {
 export type VersusScene = {
   type: "versus";
   heading: string;
-  left: { title: string; value: string; sub?: string; cue?: string };
-  right: { title: string; value: string; sub?: string; cue?: string };
+  left: { title: string; value: string; sub?: string; cue?: string; /** ない機能: 言葉の上に赤い ✕（cue で出る・11/27〜） */ crosses?: { text: string; cue?: string }[] };
+  right: { title: string; value: string; sub?: string; cue?: string; crosses?: { text: string; cue?: string }[] };
   win?: { side: "left" | "right"; label: string; cue?: string };
   note?: string;
 };

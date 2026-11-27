@@ -69,7 +69,7 @@
       "title": "14は5年目。iOS 27にも対応",
       "scene": {
         "type": "years",
-        "heading": "発売から今日まで（Apple は年数を約束していない）",
+        "heading": "発売から今日まで",
         "start": 2019,
         "end": 2028,
         "today": 2026.9,
@@ -109,7 +109,7 @@
       "title": "替えるといくら？14を売って足すお金",
       "scene": {
         "type": "costs",
-        "heading": "替えるといくら？（14 128GB を美品で売った場合）",
+        "heading": "14を美品で売って替えると、いくら？",
         "unit": "円",
         "items": [
           {
@@ -192,7 +192,7 @@
       "title": "電池交換で何が変わる？",
       "scene": {
         "type": "screen",
-        "heading": "設定 → バッテリー（イメージ）",
+        "heading": "設定のバッテリーの画面はこんなイメージ",
         "title": "バッテリーの状態と充電",
         "rows": [
           {
@@ -228,27 +228,27 @@
       "title": "画面が割れていたら",
       "scene": {
         "type": "bars",
-        "heading": "画面が割れた 14（128GB）",
+        "heading": "画面が割れた14、直す？買い直す？",
         "unit": "円",
         "rows": [
           {
             "label": "そのまま直す",
             "median": 45800,
-            "sub": "Apple の画面修理",
+            "sub": "Appleで修理",
             "cue": "Appleの画面修理は",
             "say": "画面修理"
           },
           {
             "label": "売って中古の14",
             "median": 53780,
-            "sub": "割れたまま 12,000円で売る",
+            "sub": "割れたまま売って",
             "cue": "それで中古の14",
             "say": "中古の14"
           },
           {
             "label": "売って中古の15",
             "median": 79700,
-            "sub": "割れたまま 12,000円で売る",
+            "sub": "割れたまま売って",
             "cue": "割れたまま売って中古の15",
             "say": "中古の15"
           }
@@ -259,18 +259,18 @@
       "title": "替えるなら① 中古の15",
       "scene": {
         "type": "photo",
-        "heading": "中古の15（USB-C とカメラ）",
+        "heading": "中古の15で変わるのはUSB-Cとカメラ",
         "src": "longform/assets/commons/iphone15-pd.jpg",
         "credit": "Apple iPhone 15 — Ka Kit Pang / Public domain / Wikimedia Commons",
         "points": [
           {
             "text": "USB-C",
-            "sub": "Mac や iPad と同じケーブル",
+            "sub": "MacやiPadと同じケーブル",
             "cue": "いちばん大きいのは"
           },
           {
             "text": "48MP・2倍の光学ズームイン",
-            "sub": "14 は12MP・デジタルズーム",
+            "sub": "14は12MP",
             "cue": "カメラも変わるの"
           },
           {
@@ -280,12 +280,12 @@
           },
           {
             "text": "ビデオ再生 20時間",
-            "sub": "14 と同じ・画面も同じ 6.1インチ",
+            "sub": "14と同じ",
             "cue": "画面の大きさは"
           },
           {
             "text": "足すお金 +49,700円",
-            "sub": "14 128GB 美品を売って",
+            "sub": "14を売って",
             "cue": "替える先の1つ目は"
           }
         ],
@@ -345,20 +345,22 @@
           "title": "中古の16e",
           "value": "106,980円",
           "sub": "A18・ビデオ再生 26時間",
-          "cue": "16eは10万"
+          "cue": "16eは10万",
+          "crosses": [
+            {
+              "text": "MagSafe",
+              "cue": "16eに、MagSafeは"
+            },
+            {
+              "text": "超広角",
+              "cue": "2つ目は、超広角"
+            }
+          ]
         },
         "win": {
           "side": "right",
           "label": "電池は6時間長い",
           "cue": "6時間長いの"
-        },
-        "stamp": {
-          "text": "16eにMagSafeはない",
-          "cue": "16eに、MagSafeは",
-          "style": "ribbon",
-          "x": 0.52,
-          "y": 0.85,
-          "size": 180
         }
       }
     },
@@ -366,7 +368,7 @@
       "title": "替えるなら③ 中古の17、全部入り",
       "scene": {
         "type": "gauges",
-        "heading": "ビデオ再生（Apple 公式の仕様）",
+        "heading": "Appleの仕様のビデオ再生の時間",
         "unit": "時間",
         "max": 33,
         "items": [
@@ -398,7 +400,7 @@
       "title": "替えるならこの3台",
       "scene": {
         "type": "lineup",
-        "heading": "14から替えるなら（足すお金）",
+        "heading": "14から替えるなら",
         "items": [
           {
             "title": "USB-C：中古の15",
