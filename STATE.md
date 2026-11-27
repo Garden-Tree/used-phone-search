@@ -27,12 +27,11 @@
 - **収益の枠**: 回線（`SimTile`・`/sim`）・買取（機種ごと `/kaitori`・resale/battery から 11/5〜）・「直す？買い替える？」（`RepairOrReplace.tsx`）
 - **買取価格**: ネットオフ・にこスマ・モバステ 週1・`/iphone/kaitori`
 - **相場レポート** `/iphone/report/<月>`（毎月1日）・`/how-long`・選び方 `/<種類>/guide`（6種）・`/resale-value`・電池 `/iphone/battery`
-- **YouTube 予約は2日後まで**・ショートの声はずんだもん（比べる型は青山）・横動画はつむぎ＋ずんだもん
+- **YouTube 予約は2日後まで**・横動画はつむぎ＋ずんだもん
 - **X**: 12/1 まで触らない（手で1日1本・URLなし）
 - **ショート**: 新しく作らない（11/23 判定・切り抜きは可）
 - **横動画**: 週2〜3。「まだ使う？」は続ける・「今買い？」やめる・月1は BEST5 型
-- **Watch・Galaxy の表**: 残すが広げない
-- **掲載機種**: iPhone・iPad・Pixel・Galaxy・Mac（据え置き 11/15〜）・Xperia・AQUOS・OPPO・Xiaomi・Apple／Galaxy／Pixel Watch（storage＝mm・ケーブルなしは札）
+- **掲載機種**（Watch・Galaxy の表は広げない）: iPhone・iPad・Pixel・Galaxy・Mac（据え置き 11/15〜）・Xperia・AQUOS・OPPO・Xiaomi・Apple／Galaxy／Pixel Watch（storage＝mm・ケーブルなしは札）
 - **中古パソコン** `/pc`。PC WRAP・Qualit・PC next・Be-Stock は A8、他は楽天
 
 ## 確認台帳（計測・判定）
