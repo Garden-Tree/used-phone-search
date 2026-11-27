@@ -28,7 +28,7 @@ import { modelPagePath } from "@/lib/catalog";
 import { longFonts } from "./fonts";
 import { loadCharaArt } from "./art";
 import { visemesOf } from "../shorts/voice";
-import { ANIM_STEPS, END_SCREEN, FPS, H, LAYOUT_NAME, MIN_FONT, W, animAt, animEvents, chapterShownAt, emptySprite, growPoints, ringPx, ringSprite, speakerDy, speakerSprite, spriteRegion, subDy, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, lineExpr, burstOn, BURST_SEC, markedKeys, slideFrame, SLIDE_F, ZOOM_F, noteZoom, thinkOn, LINEUP_BIG, TREND_SEC, YEARS_SEC, type CharaArt, type Expr } from "./scenes";
+import { ANIM_STEPS, END_SCREEN, FPS, H, LAYOUT_NAME, MIN_FONT, W, animAt, animEvents, chapterShownAt, emptySprite, growPoints, ringPx, ringSprite, speakerDy, speakerSprite, spriteRegion, subDy, subProgress, plateOpacity, plateFadePoints, fontProblems, endScreenWindow, frameAt, localAt, revealedAt, stateAt, tailOf, lineExpr, burstOn, BURST_SEC, markedKeys, slideFrame, SLIDE_F, ZOOM_F, noteZoom, thinkOn, LINEUP_BIG, LINEUP_SLIDE, TREND_SEC, YEARS_SEC, type CharaArt, type Expr } from "./scenes";
 import type { Who } from "./script";
 import type { LongData, ThumbnailData, Timeline } from "./types";
 
@@ -60,8 +60,8 @@ const SE_DIR = join(ROOT, "shorts/assets/se");
 /** 種類 → 音量（dB）。長い音は 0.7 秒で切る */
 const SE_DB: Record<string, number> = { buzzer: -13, dodon: -9, pop: -15, shake1: -17, shake2: -17, shake3: -19, mark1: -17, mark2: -17, mark3: -20 };
 const SE_MAX = 0.7;
-/** 欠点（✕・「ない」の行）＝buzzer（ブブー）、はんこ＝dodon（ドドン）。どちらも ffmpeg で作った音（11/27 ユーザー）。dodon は 0.9 秒まで */
-const seMax = (k: string) => (k === "dodon" ? 0.9 : SE_MAX);
+/** 欠点（✕・「ない」の行・困りごと）＝buzzer（効果音ラボ「クイズ不正解1」incorrect1.mp3）、はんこ＝dodon（効果音ラボ「和太鼓でドドン」drum-japanese2.mp3）。11/27 ユーザー。dodon は 1.3 秒まで */
+const seMax = (k: string) => (k === "dodon" ? 1.3 : SE_MAX);
 const BAD = /ない|使えない|なし/;
 type SeEv = { at: number; kind: string };
 function seEvents(tl: Timeline): SeEv[] {
@@ -216,6 +216,20 @@ function vowelAt(vis: [number, string][] | undefined, u: number): string | undef
 
 const round3 = (x: number) => Math.round(x * 1000) / 1000;
 /** 並べるの「大きく出ている1枚」（絵の使い回しの鍵に入れる） */
+/** 並べる: 1枚ずつの「大きく出す」が終わる秒（章の頭から）＝LINEUP_BIG 秒後か次の1枚が出た秒の早い方 */
+function lineupEnds(ch: Timeline["chapters"][number]): number[] {
+  const r = ch.scene.reveal;
+  const n = Object.keys(r).filter((k) => k.startsWith("item:")).length;
+  const out: number[] = [];
+  for (let i = 0; i < n; i++) { const st = r[`item:${i}`]; if (st === undefined) continue; const nx = r[`item:${i + 1}`]; out.push(Math.min(st + LINEUP_BIG, nx ?? Infinity)); }
+  return out;
+}
+/** スライド中なら何コマ目か（土台の絵を分けるキー）。なければ -1 */
+function lineupSlideKey(ch: Timeline["chapters"][number], local: number): number {
+  if (ch.scene.type !== "lineup") return -1;
+  for (const e of lineupEnds(ch)) if (local >= e && local < e + LINEUP_SLIDE) return Math.floor((local - e) * FPS + 1e-6) + Math.round(e * 1000) * 100;
+  return -1;
+}
 function lineupBig(ch: Timeline["chapters"][number], local: number): number {
   if (ch.scene.type !== "lineup") return -1;
   const r = ch.scene.reveal;
@@ -250,6 +264,8 @@ function plan(tl: Timeline, art: CharaArt, levels: number[] = [], vis: Map<strin
     for (const [k, r] of Object.entries(ch.scene.reveal)) if (k.startsWith("note:") && r > 0) for (let j = 1; j <= ZOOM_F; j++) points.add(Math.round((ch.start + r + j / FPS) * 1000) / 1000);
     // 並べる（大きく出ていた1枚が戻る秒）・思考の吹き出しが消える秒
     if (ch.scene.type === "lineup") for (const [k, r] of Object.entries(ch.scene.reveal)) if (k.startsWith("item:")) points.add(Math.round((ch.start + r + LINEUP_BIG) * 1000) / 1000);
+    // 並べる: 大きい1枚が自分の場所へ戻るスライドの間（毎コマ・11/27）。前は終わりの1コマしか書き出していなかった
+    if (ch.scene.type === "lineup") for (const e of lineupEnds(ch)) { const f0 = Math.ceil((ch.start + e) * FPS - 1e-6); for (let j = 0; j <= Math.ceil(LINEUP_SLIDE * FPS) + 1; j++) points.add((f0 + j) / FPS); }
     if (ch.scene.think && ch.scene.reveal.think !== undefined) { const th = ch.scene.reveal.think; const l = ch.lines.find((x) => x.start - ch.start <= th + 0.01 && x.end - ch.start > th); points.add(Math.round((l ? l.end + 0.6 : ch.start + th + 3) * 1000) / 1000); }
     // 年表の「今日」の線が進む間（毎コマ）
     if (ch.scene.type === "years" && ch.scene.reveal.sweep !== undefined) { const d0 = ch.start + ch.scene.reveal.sweep; for (let j = 1; j <= Math.round(YEARS_SEC * FPS); j++) points.add(Math.round((d0 + j / FPS) * 1000) / 1000); }
@@ -310,7 +326,7 @@ function plan(tl: Timeline, art: CharaArt, levels: number[] = [], vis: Map<strin
     const open = vowel !== undefined ? vowel !== "_" : !!(a?.talk && st.talking && (levels.length ? level >= 0.5 : !moving && Math.floor((frame - lineFrame) / step) % 2 === 0));
     // 土台: 話している人の立ち絵・縁の線・声の大きさ・口を含めない
     const { spk: _spk, ...animBase } = anim;
-    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), animBase, plateOpacity(t), burstOn(st.ch.scene.reveal, localAt(st.ch, t)), markedKeys(st.ch.scene, localAt(st.ch, t)), slideFrame(st.ch, t) ?? -1, zoomKey(st.ch, localAt(st.ch, t)), thinkOn(st.ch, localAt(st.ch, t)), lineupBig(st.ch, localAt(st.ch, t)), st.ch.scene.type === "trend" ? Math.min(Math.round(TREND_SEC * FPS), Math.max(-1, Math.floor((localAt(st.ch, t) - (st.ch.scene.reveal.draw ?? 0)) * FPS))) : -1, st.ch.scene.type === "years" && st.ch.scene.reveal.sweep !== undefined ? Math.min(Math.round(YEARS_SEC * FPS), Math.max(-1, Math.floor((localAt(st.ch, t) - st.ch.scene.reveal.sweep) * FPS))) : -1]);
+    const key = JSON.stringify([st.ch.index, st.li, st.pi, revealedAt(st.ch.scene.reveal, localAt(st.ch, t)).sort(), animBase, plateOpacity(t), burstOn(st.ch.scene.reveal, localAt(st.ch, t)), markedKeys(st.ch.scene, localAt(st.ch, t)), slideFrame(st.ch, t) ?? -1, zoomKey(st.ch, localAt(st.ch, t)), thinkOn(st.ch, localAt(st.ch, t)), lineupBig(st.ch, localAt(st.ch, t)), lineupSlideKey(st.ch, localAt(st.ch, t)), st.ch.scene.type === "trend" ? Math.min(Math.round(TREND_SEC * FPS), Math.max(-1, Math.floor((localAt(st.ch, t) - (st.ch.scene.reveal.draw ?? 0)) * FPS))) : -1, st.ch.scene.type === "years" && st.ch.scene.reveal.sweep !== undefined ? Math.min(Math.round(YEARS_SEC * FPS), Math.max(-1, Math.floor((localAt(st.ch, t) - st.ch.scene.reveal.sweep) * FPS))) : -1]);
     const plate = t <= 10;
     push("base", frame, { f: `c-${sha(["layers1", code, chHash.get(st.ch.index), key, plate, artKeys])}`, k: "base", t, level });
     for (const side of ["ずんだもん", "つむぎ"] as const) {
@@ -474,7 +490,7 @@ async function audio(dir: string, tl: Timeline, work: string) {
   const at0 = tl.chapters.slice(1).map((c) => Math.round(chapterShownAt(c) * 1000));
   const fileKey = (f: string) => (existsSync(f) ? createHash("sha1").update(readFileSync(f)).digest("hex") : "none");
   const ses = seEvents(tl).filter((e) => existsSync(join(SE_DIR, `${e.kind}.mp3`)));
-  const akey = createHash("sha1").update(JSON.stringify([fileKey(voice), fileKey(BGM), fileKey(JINGLE_FILE), total, at0, VOICE_LUFS, BGM_VOLUME, "audio-v1", ses, SE_DB])).digest("hex").slice(0, 16);
+  const akey = createHash("sha1").update(JSON.stringify([fileKey(voice), fileKey(BGM), fileKey(JINGLE_FILE), total, at0, VOICE_LUFS, BGM_VOLUME, "audio-v1", ses, SE_DB, [...new Set(ses.map((e) => e.kind))].sort().map((k) => [k, fileKey(join(SE_DIR, `${k}.mp3`)), seMax(k)])])).digest("hex").slice(0, 16);
   const cached = join(work, `audio-${akey}.m4a`);
   if (existsSync(cached)) {
     copyFileSync(cached, join(work, "audio.m4a"));

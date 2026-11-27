@@ -1084,6 +1084,8 @@ function Versus({ s, t, reveal }: { s: VersusScene; t: number; reveal: Record<st
 
 /** 並べる（11/27〜）。cue で1枚ずつ。出たばかりの1枚は真ん中に大きく（次の1枚が出るか LINEUP_BIG 秒たつまで）、ほかは下に並ぶ */
 export const LINEUP_BIG = 2.2;
+/** 大きく出した1枚が自分の場所へ戻るスライドの秒（video.tsx はこの間を毎コマ書き出す） */
+export const LINEUP_SLIDE = 0.45;
 function Lineup({ s, t, reveal }: { s: LineupScene; t: number; reveal: Record<string, number> }) {
   const areaH = bodyH(s.heading, s.note);
   const n = s.items.length;
@@ -1771,7 +1773,7 @@ function LineupStyled({ s, t, reveal }: { s: LineupScene; t: number; reveal: Rec
   const bk = big !== undefined ? (s as { pulse?: Record<string, number> }).pulse?.[`item:${big}`] : undefined;
   const bigPop = bk === undefined ? 1 : 0.7 + 0.3 * easeOut(Math.min(1, bk / 8));
   // 大きく出したあと、自分の場所へ SLIDE 秒でスライド（11/27 ユーザー）。終わり＝LINEUP_BIG 秒か次の1枚が出たときの早い方
-  const SLIDE = 0.45;
+  const SLIDE = LINEUP_SLIDE;
   const bigEnd = (i: number) => { const st = raw[`item:${i}`]; if (st === undefined) return undefined; const nx = raw[`item:${i + 1}`]; return Math.min(st + LINEUP_BIG, nx ?? Infinity); };
   const sliding = shownIdx.filter((i) => { const e = bigEnd(i); return i !== big && e !== undefined && t >= e && t < e + SLIDE; });
   // スライド中は後ろの薄いカードを少しずつ消す（動くカードの縁から二重に見えないように・11/27）
