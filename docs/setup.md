@@ -83,7 +83,7 @@ pip install -r requirements.txt
 python run_all_scrapers.py
 ```
 
-※ 個別に実行したい場合は `python iosis_scraper.py` など各ファイルを直接実行してください。
+※ 個別に実行したい場合は `python nicosuma_scraper.py` など各ファイルを直接実行してください。
 
 ## 6. トラブルシューティング
 

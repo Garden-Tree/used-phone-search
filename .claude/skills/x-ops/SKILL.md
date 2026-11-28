@@ -47,7 +47,7 @@ description: used.gadelog.com の X（@used_gadelog）の日々の運用。通�
 
 1. ツールは `mcp__claude-in-chrome__*`。まとめて読み込む:
    `select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__computer,mcp__claude-in-chrome__read_page,mcp__claude-in-chrome__find,mcp__claude-in-chrome__javascript_tool,mcp__claude-in-chrome__get_page_text,mcp__claude-in-chrome__tabs_create_mcp,mcp__claude-in-chrome__file_upload,mcp__claude-in-chrome__upload_image`
-2. 拡張がつながらない → Chrome が閉じている。PowerShell で `Start-Process chrome` してからもう一度。
+2. Chrome は専用プロファイル「used」（list_connected_browsers の Browser 1 を select_browser。11/28〜）。拡張がつながらない → 「used」のプロファイルの Chrome が閉じている。ユーザーに開いて Connect を押してもらう（`Start-Process chrome` はふだんのプロファイルが開く）。
 3. 打鍵の前に必ず `document.visibilityState === 'visible'` を確かめる。`hidden` なら Chrome を前に出す（PowerShell）:
    ```powershell
    Add-Type @"

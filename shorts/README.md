@@ -3,6 +3,7 @@
 サイトの相場と同じ数字から、縦 1080x1920・約40秒のショート動画（mp4）を作る。方針と根拠は `ideas/youtube-shorts.md`。
 
 - このファイルは**コードの仕組み**（コマンド・テーマごとの選び方・声・見た目・締め）。**作って投稿する手順**（頻度・ネタ・確認・Studio・固定コメント・記録）は `.claude/skills/youtube-shorts/SKILL.md`
+- **11/23〜 新しく作らない**（いまのショートは横動画の切り抜き＝`longform/clip-short.tsx`）。下は再開するときの決まり
 - **11/23〜 は週2本・7:00・在庫数（stock 系）／電池（battery・batteryswap）／1世代前（gen・fold・watchgen・macgen・ipadgen・pixelgen）だけ**（`STATE.md`）。ここには続けるテーマだけを書く
 - やめたテーマ（値下がり・予算別・状態ランク・2機種の差・新品／新型との比較・買取・広告の回・トーク型）の仕組みは `shorts/README-retired.md`（コードは残っていて動く）
 

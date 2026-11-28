@@ -1,7 +1,7 @@
 # 競合の動画のまとめ（ネタ・構成・画面・動き）
 
 伸びているスマホ系の動画から学んだ「型」と、うちで採ったもの・やめたもの。**題・構成・サムネは写さない**（型だけを取る。数字と中身はうちのデータ）。
-元の表と画面: `.claude/tmp/yt-competitors-1123.md`（12チャンネルの題と再生数）・`.claude/tmp/yt-structure-1123.md` と `.claude/tmp/yt-structure-1123/`（6本の組み立てと画面の写真）。ネタ出しの手順はスキル `video-ideas`。最終更新 2026-11-23。
+元の表と画面: `.claude/tmp/yt-competitors-1123.md`（12チャンネルの題と再生数）・`.claude/tmp/yt-structure-1123.md` と `.claude/tmp/yt-structure-1123/`（6本の組み立てと画面の写真）。ネタ出しの手順はスキル `video-ideas`。最終更新 2026-11-27。
 
 ## 1. チャンネル（11/23）
 

@@ -9,8 +9,9 @@
 | GA4 測定ID | **`G-YV3ZR0N6B1`**（2026-09-27〜） | ワークフロー（`.github/workflows/scraper.yaml`）の `NEXT_PUBLIC_GA_ID`。`@next/third-parties` で読み込み。変えたら次の書き出しから反映 |
 | GA4 プロパティ | **556047315「used.gadelog.com（中古スマホ一括検索）」**（アカウント 207926838 GardenTree・ストリーム 15850141203） | used 専用。タイムゾーン日本・通貨 円・拡張計測オン（離脱クリック含む） |
 | 内部トラフィック | 自宅の IP（値は `docs/private.local.md`、git 外）を除外（データフィルタ 有効） | IP が変わったら GA4 の管理 → データストリーム → タグ設定 → 内部トラフィックの定義を直す |
-| Search Console | URL プレフィックス `https://used.gadelog.com/`（HTML タグで所有権確認・2026-09-27） | sitemap `https://used.gadelog.com/sitemap.xml` 送信済み（初回 41 URL → 9/27 再送信・現在 134） |
+| Search Console | URL プレフィックス `https://used.gadelog.com/`（HTML タグで所有権確認・2026-09-27） | sitemap `https://used.gadelog.com/sitemap.xml` 送信済み（初回 41 URL → 9/27 再送信・11/22 に約512） |
 | 構造化データ | 機種別: Product（AggregateOffer）+ BreadcrumbList／比較: BreadcrumbList | リッチリザルトテストで確認可能 |
+| Microsoft Clarity | 11/26〜・本番だけ・lazyOnload（ID は private.local.md） | 止まる所は STATE の確認台帳 |
 | OGP | 機種別・比較などは専用画像（書き出しのたびに作る＝1日4回）、その他は共通画像 | X の投稿画面に URL を貼ると確認できる |
 
 ### GA4 プロパティの経緯（2026-09-27）
@@ -98,4 +99,4 @@ const rows=[...document.querySelectorAll('table tbody tr')].map(r=>[...r.querySe
 const re=/いつ|値下がり|下が|比較|vs|どっち|どれ|おすすめ|寿命|バッテリー|電池|買うべき|違い|予算|万円|推移|相場|どこ|買取|いくら|新品|一覧|コスパ|\?|？/i;
 rows.filter(r=>re.test(r[0])).map(r=>r[0]+'|'+r[2]+'|'+r[4]).join('\n') // 問い|表示|順位
 ```
-判断: 同じ問いが2週続けて出て、答えるページがない（または順位20位より下）なら作る候補。比較の組は `lib/compare.ts`、店は `/iphone/where-to-buy`、値下がりは `/iphone/price-drop`、値段の差は `/iphone/price-factors`。
+判断: 同じ問いが2週続けて出て、答えるページがない（または順位20位より下）なら作る候補。比較の組は `lib/compare.ts`、店は `/iphone/where-to-buy`、値下がりは `/iphone/resale-value#last-30-days`、値段の差は `/iphone/price-factors`。

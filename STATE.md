@@ -7,7 +7,7 @@
 | `app/layout.tsx` の `verification.google` | GSC の所有権確認 |
 | ゲオ公式ECへのスクレイピング | Akamai が拒否。**回避策は取らない**。ゲオは楽天API経由のみ |
 | 楽天APIで取った商品のリンク先 | 規約上、楽天アフィリエイト以外へ張らない（A8 等なし） |
-| `rakuten-sync/config.php`・`RAKUTEN_INGEST_SECRET` | 秘密情報 |
+| `rakuten-sync/config.php`（dispatch トークン） | 秘密情報 |
 | 在庫の全件取得（`findMany`） | Neon の転送量。集計は DB 側で |
 | ID・IP・メール | 公開。`docs/private.local.md` だけ |
 | サーバーの cron（2:40/8:40/14:40/20:40・10:00） | 取り込みと監視 |
@@ -68,7 +68,7 @@
 ## 次にやる（順序）
 
 ```
-1. 競合の薄い機種群を足す（ideas/11-13）
+1. 競合の薄い機種群（Galaxy Tab・Pixel Tablet・Surface・AirPods。ideas/11-13）
 2. 11/29 切り抜き→12/1 買う5台→12/3 XR・XS（12/2 数字・予約）→12/5 次
 ```
 

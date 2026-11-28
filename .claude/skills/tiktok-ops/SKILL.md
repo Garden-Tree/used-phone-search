@@ -1,6 +1,6 @@
 ---
 name: tiktok-ops
-description: used.gadelog.com の TikTok（@used_gadelog「中古スマホ一括検索」・個人アカウント・10/26 開設）に、YouTube ショートの BGM なし版を1本ずつ手で投稿する。BGM なしの書き出し → キャプション（tiktok.txt）→ ユーザーの Chrome の TikTok Studio でアップロード・キャプション・カバー・公開 → 記録とコミットまで。ユーザーが「TikTokに投稿」「TikTokやって」「TikTokにあげて」「ティックトック」などと言ったときに使う。
+description: 【11/1〜 停止中。再開をはっきり頼まれたときだけ】used.gadelog.com の TikTok（@used_gadelog「中古スマホ一括検索」・個人アカウント・10/26 開設）に、YouTube ショートの BGM なし版を1本ずつ手で投稿する。BGM なしの書き出し → キャプション（tiktok.txt）→ ユーザーの Chrome の TikTok Studio でアップロード・キャプション・カバー・公開 → 記録とコミットまで。ユーザーが「TikTokに投稿」「TikTokやって」「TikTokにあげて」「ティックトック」などと言ったときに使う。
 ---
 
 > **2026/11/1 停止**（ユーザーの決定）。5本とも再生0〜1で配信されていない（ideas/2026-11-01-analysis.md）。再開の指示があるまで使わない。

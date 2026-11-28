@@ -9,7 +9,7 @@ description: used.gadelog.com に中古スマホの店（楽天市場店・Yahoo
 
 ## 守ること
 
-- **サーバーの fetch.php を変えるのはユーザーと決めてから**（`rakuten-sync/config.php`・`RAKUTEN_INGEST_SECRET` は触らない）
+- **サーバーの fetch.php を変えるのはユーザーと決めてから**（`rakuten-sync/config.php` は触らない）
 - 楽天APIで取った商品は**楽天アフィリエイト以外へリンクしない**。ゲオ公式ECはスクレイピングしない
 - 在庫の全件取得（findMany）はしない。確かめは groupBy・count
 - 店の情報（保証・赤ロム・電池表記）は店のページで確かめた値だけ。`lib/shops.ts` だけに書く

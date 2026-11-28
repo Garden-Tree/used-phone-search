@@ -9,7 +9,7 @@
    └→ 全店終わったら GitHub の workflow_dispatch で Actions を起動（config.php の github_dispatch_token）
                                    ↓
 [GitHub Actions scraper.yaml]  起動: 上の workflow_dispatch／定期実行 0:00/6:00/12:00/18:00 UTC（＝9/15/21/3時。数時間遅れ・取りこぼしあり）
- 1. 4店のスクレイプ（イオシス・にこスマ・エムモバ・ダイワン）→ Neon（店ごとに洗い替え）
+ 1. スクレイプ（にこスマ・エムモバ。イオシス・ダイワンは 11/2〜3 から停止中）→ Neon（店ごとに洗い替え）
  2. 楽天の店の json.gz を HTTPS で取得（Secrets の RAKUTEN_DATA_URL）→ scripts/ingest-rakuten.ts → Neon
  3. iPad の機種名をそろえる → 公式とモール店（イオシス楽天・エムコム Yahoo）の突き合わせ（scripts/link-duplicate-shops.ts）→ 価格推移の記録 → scripts/check-health.ts
  4. next build（output: "export"）→ out/ → scripts/ci-deploy.sh deploy（wrangler pages deploy）
@@ -82,8 +82,8 @@
 2. **書き出しが止まっている／全店が止まっている** → GitHub の Actions タブ
    - 実行が無い: ワークフローが無効（disabled）なら有効化 → 「Run workflow」で手動実行。`fetch.log` の `dispatch:` が 204 以外ならトークン（期限・権限）
    - 失敗している: ログを見る。「Cloudflare Pages へ配置」の失敗は API トークン・Pages の上限（ファイル数2万・月500デプロイ）
-3. **楽天3店以外**（イオシス・にこスマ・エムモバ・ダイワン）だけが止まっている → Actions のログで該当ショップ（サイト構造の変更が多い）
-4. **楽天3店**だけが止まっている → サーバーの `~/rakuten-sync/fetch.log`
+3. **スクレイパーの店**（にこスマ・エムモバ）だけが止まっている → Actions のログで該当ショップ（サイト構造の変更が多い）
+4. **楽天の店**だけが止まっている → サーバーの `~/rakuten-sync/fetch.log`
    - `HTTP 401/403`：楽天アプリの有効期限・許可IP・Access Key
    - `saved: ... FAILED`：フォルダの書き込み権限・容量
    - Actions 側の「楽天市場店の在庫を取り込む」のログ: `ファイルが ... 時間前のもの` は fetch.php が動いていない、`件数が ... 50%未満` は楽天側の不調（続くなら確認）、`curl: (28) ... gadelog.com` が続くのは GitHub からシンに届かない事象（10/11・10/12・10/16。別の実行環境で自動でやり直す。2回やり直しても駄目なら失敗＝通知）
@@ -152,7 +152,7 @@
 - 店の数・一覧には数えない（`lib/shops.ts` の `ALIAS_SHOPS`。絞り込みの「イオシス」に含める）
 
 ### iPad の機種名
-- 楽天3店の iPad は `lib/ipadCatalog.ts` の `canonicalIpadModel` で Apple の正式名にそろえる（チップ⇔世代の対応表込み）。
+- 楽天の店の iPad は `lib/ipadCatalog.ts` の `canonicalIpadModel` で Apple の正式名にそろえる（チップ⇔世代の対応表込み）。
   カタログにない機種・画面サイズが書かれていない M 系 Air は取り込まない。新しい iPad が出たら `IPAD_CATALOG` に追加
 - 検索は機種の指定がなければ iPhone のみ（`buildWhere`）。iPad は `/ipad` と機種別ページから
 
@@ -163,8 +163,8 @@
 - Xperia・AQUOS（2026-10-15〜）: ゲオ・じゃんぱら・ソフマップ・イオシスだけ `fetch.php` の ANDROID_SHOP_CODES で「Xperia」「AQUOS」も引く（ゲオで約+85要求）。読み取りは `lib/rakutenAndroid.ts`（機種は型番優先で `lib/xperiaCatalog.ts`・`aquosCatalog.ts`）。イオシスは名前に容量がないので、ドコモの型番の表（ROM を公式で確認）にある機種だけ行にする。Amazon の検索には含めない。テストは `npm run test:android`
 - OPPO・Xiaomi（Redmi・POCO 含む。2026-11-12〜）: 同じ4店の ANDROID_KEYWORDS に「OPPO」「Xiaomi」（ゲオで約+73要求）。読み取りは `lib/rakutenAndroid.ts`（機種は型番→名前の順で `lib/oppoCatalog.ts`・`xiaomiCatalog.ts`。機種名は "OPPO "・"Xiaomi " で始める）。イオシスは名前に容量がない商品（OPPO の多く）を行にしない。タブレット・Leitzphone・カタログ外（Ultra・Find N など）は取らない。Amazon の検索には含めない。テストは `npm run test:oppo-xiaomi`（商品名は `scripts/fixtures/rakuten-oppo-xiaomi-titles.json`）
 - Apple Watch（2026-10-15〜）: ゲオ・じゃんぱら・ソフマップ・イオシス・ニューズドテック（1号店・2号店）の6店だけ `fetch.php` の WATCH_SHOP_CODES で「Apple Watch」も引く（ゲオは約6,000件＝約210要求。1店あたりの要求数は約650で MAX_REQUESTS=1500 に収まる見込み）。読み取りは `lib/rakutenWatch.ts`（機種は `lib/watchCatalog.ts`。世代・ケースのサイズ（mm）・通信方式がそろったものだけ行にし、バンド・充電器・Series 5 以前・世代の分からない SE は取らない）。DB は modelName＝世代、storage＝mm、carrier＝GPS／GPS+Cellular。Amazon の検索には含めない。テストは `npm run test:watch`。新しい Apple Watch が出たら `WATCH_CATALOG`・`WATCH_INFO`（公式のサイズ・watchOS の対応・モデル番号）に足す
-- Galaxy Watch・Pixel Watch（2026-11-13〜）: **`fetch.php` は変えていない**（検索語「Galaxy」「Pixel」で取得済みの商品に入っている。今まではスマホ用の読み取りが落としていた＝要求数は増えない）。読むのはじゃんぱら・イオシスだけ（ゲオ・ソフマップ・ニューズドテック・エムティーエムは 11/13 の店内検索で0件）。`lib/rakutenShops.ts` が商品名に Galaxy Watch・Pixel Watch を含むものを先に `lib/rakutenWatch.ts` の `normalizeJanparaWear`・`normalizeIosysWear` へ回し、行にならなければ今までの振り分けに回す（今まで行になっていた商品は変わらない）。機種は `lib/galaxyWatchCatalog.ts`・`pixelWatchCatalog.ts`（Samsung のサポートページの型番の題・Google の技術仕様で確かめたサイズ・通信方式だけ）。**機種名は "Samsung Galaxy Watch…"・"Google Pixel Watch…" で始める**（スマホの Galaxy・Pixel は機種名の頭で見分けているので、頭をそろえると /galaxy・/pixel の一覧・店の数・検索に混ざる）。持ち方は Apple Watch と同じ（storage＝mm、carrier＝Bluetooth／Wi-Fi／LTE）。行にしないもの: バンド・ケース・充電器、充電ケーブル・充電ホルダーが欠けている個体（「欠品」）、海外版（名前・型番の末尾）、カタログ外（初代・Watch3・FE）、Galaxy Watch4 Classic の 42mm（公式でサイズ未確認）、年が分からない Galaxy Watch Ultra、名前と型番の食い違い。Amazon の検索には含めない。テストは `npm run test:galaxy-pixel-watch`（商品名は `scripts/fixtures/rakuten-galaxy-pixel-watch-titles.json`）（ブランチ watch-missing-charger: 充電器が付かない個体は行にして networkStatus に "充電ケーブルなし"／"充電ホルダーなし" を入れ、画面で札を出す。`lib/watchCatalog.ts` の `missingCharger`）
-- 楽天3店: `fetch.php` の KEYWORDS に `Pixel`、読み取りは `lib/rakutenPixel.ts`（`lib/rakutenShops.ts` の byDevice で振り分け）。キャリア版も SIM フリー扱い（Pixel 6 以降は SIM ロック原則禁止の後の発売）
+- Galaxy Watch・Pixel Watch（2026-11-13〜）: **`fetch.php` は変えていない**（検索語「Galaxy」「Pixel」で取得済みの商品に入っている。今まではスマホ用の読み取りが落としていた＝要求数は増えない）。読むのはじゃんぱら・イオシスだけ（ゲオ・ソフマップ・ニューズドテック・エムティーエムは 11/13 の店内検索で0件）。`lib/rakutenShops.ts` が商品名に Galaxy Watch・Pixel Watch を含むものを先に `lib/rakutenWatch.ts` の `normalizeJanparaWear`・`normalizeIosysWear` へ回し、行にならなければ今までの振り分けに回す（今まで行になっていた商品は変わらない）。機種は `lib/galaxyWatchCatalog.ts`・`pixelWatchCatalog.ts`（Samsung のサポートページの型番の題・Google の技術仕様で確かめたサイズ・通信方式だけ）。**機種名は "Samsung Galaxy Watch…"・"Google Pixel Watch…" で始める**（スマホの Galaxy・Pixel は機種名の頭で見分けているので、頭をそろえると /galaxy・/pixel の一覧・店の数・検索に混ざる）。持ち方は Apple Watch と同じ（storage＝mm、carrier＝Bluetooth／Wi-Fi／LTE）。行にしないもの: バンド・ケース・充電器、充電ケーブル・充電ホルダーが欠けている個体（「欠品」）、海外版（名前・型番の末尾）、カタログ外（初代・Watch3・FE）、Galaxy Watch4 Classic の 42mm（公式でサイズ未確認）、年が分からない Galaxy Watch Ultra、名前と型番の食い違い。Amazon の検索には含めない。テストは `npm run test:galaxy-pixel-watch`（商品名は `scripts/fixtures/rakuten-galaxy-pixel-watch-titles.json`）（充電器が付かない個体は行にして networkStatus に "充電ケーブルなし"／"充電ホルダーなし" を入れ、画面で札を出す。`lib/watchCatalog.ts` の `missingCharger`）
+- 楽天の店: `fetch.php` の KEYWORDS に `Pixel`、読み取りは `lib/rakutenPixel.ts`（`lib/rakutenShops.ts` の byDevice で振り分け）。キャリア版も SIM フリー扱い（Pixel 6 以降は SIM ロック原則禁止の後の発売）
 - エムモバは Pixel の一覧がなく、検索ページでも Pixel 6 以降は1件（9/30）なので取り込まない
 - サーバーパネル・ファイルマネージャは 2026-09 から `https://secure.wpx.ne.jp/`（シンクラウド）。旧 `secure.shin-server.jp` は名前解決できない
 - 洗い替えは店ごと（iPhone・iPad・Pixel をまとめて入れ直す）。ある回に Pixel の一覧だけ取れなかったときは、その店の Pixel が次の回まで消える。安全装置（店の合計件数が半分未満なら入れ直さない）は iPhone が多いので効かない
@@ -227,7 +227,7 @@
   ③価格に「○時点」と注意書き（`DeviceCard` の「価格は M/D HH:mm 時点」＝サイトを書き出した時刻、`AdDisclosure`）④取得データを誘導以外に使わない → **価格推移（`lib/priceHistory.ts`）から Amazon を除外**している
 - 古い価格を出さない: `fetch-amazon.ts` が失敗するとファイルは書かれない → 取り込みが、最後の取り込みから20時間を過ぎた Amazon の在庫を売り切れ扱いにして隠す（ファイルがない・古いどちらも）。ジョブは失敗として通知される
 - 有効にする手順: ①Secrets・Variables を登録 ②`npx tsx scripts/fetch-amazon.ts --debug --dry`（応答の形・タイトルの形・`condition` の値を確かめる）→ `lib/amazonRenewed.ts`・`scripts/test-normalizers.ts` の CORPUS を実物に合わせる
-  ③初回の取り込みが通ったら `lib/shops.ts` のコメントアウトした Amazon の行を有効にする（保証・赤ロムは Amazon の公式ページで確かめてから）
+  ③初回の取り込みが通ったら `lib/shops.ts` のコメントアウトした Amazon の行を有効にする（保証・赤ロムは Amazon の公式ページで確かめてから）（済み）
 - ランクは特徴欄の「プレミアム→A・優良→B・良い→C」、バッテリーは「90%以上」「80%以上」の表記があるときだけ（`fetch-amazon.ts` の `extract`）。実物の書き方に合わせて直す
 
 ### 楽天の取得スクリプトを更新する

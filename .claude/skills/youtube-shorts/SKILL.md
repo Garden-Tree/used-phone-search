@@ -1,6 +1,6 @@
 ---
 name: youtube-shorts
-description: used.gadelog.com の YouTube ショート（@used_gadelog「中古スマホ一括検索」）を作って投稿する。台本の作成（DB の相場）→ VOICEVOX のナレーション → BGM・音圧 → 書き出し → ユーザー確認 → YouTube Studio で投稿（説明欄に utm 付きリンクとクレジット）まで。ユーザーが「ショート作って」「動画作って」「YouTube にあげて」「今週のショート」などと言ったときに使う。
+description: 【11/23〜 停止中。切り抜きショートは longform-video】used.gadelog.com の YouTube ショート（@used_gadelog「中古スマホ一括検索」）を作って投稿する。台本の作成（DB の相場）→ VOICEVOX のナレーション → BGM・音圧 → 書き出し → ユーザー確認 → YouTube Studio で投稿（説明欄に utm 付きリンクとクレジット）まで。ユーザーがオリジナルのショートの再開をはっきり頼んだときだけ使う。
 ---
 
 # YouTube ショートの作り方（@used_gadelog）

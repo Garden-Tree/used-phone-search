@@ -5,7 +5,7 @@ description: used.gadelog.com の数字（GA4 の PV・訪問・入口・店ク�
 
 # 数字の取得と分析（11/23 まとめ）
 
-報告は日本語・表を使って短く。分析の本文は `ideas/YYYY-MM-DD.md` に書いてコミット。前回の分析（ideas の最新の growth-analysis・shorts など）と比べる。
+報告は日本語・表を使って短く。ブラウザの作業（Studio・GSC・収益の画面）は Chrome は専用プロファイル「used」（list_connected_browsers の Browser 1 を select_browser。11/28〜）。分析の本文は `ideas/YYYY-MM-DD.md` に書いてコミット。前回の分析（ideas の最新の growth-analysis・shorts など）と比べる。
 
 ## 取り方
 
