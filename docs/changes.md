@@ -397,3 +397,4 @@
 - 11/28 12/1 月1を図解版で作り直し（第2稿・8:22）: 11/28 の数字で 7万円 14→13 Pro・10万円 15→16e（1か月で −9,200円）に入れ替わり、章を「選ばれた機種とすぐ下の機種の2択」に。15 Pro と 16 256GB の2択を足した。11/30 に取り直し
 - 11/28 12/1 月1: 11/30 からの Amazon BF（16 Plus・17 Pro Max・ユーザー）を 11/30 に Amazon で確かめて、20万円の章に足すか決める
 - 11/28 ドキュメント棚卸し（27件を直した）: 楽天アプリIDを config.example.php から外す・RAKUTEN_INGEST_SECRET（10/6 廃止）を STATE・add-shop から外す・ショート停止と毎日交互を video-ideas・shorts/README・youtube-shorts に・TikTok も停止中と description に・Chrome の used プロファイルを各スキルに・切り抜きの手順（サムネ引数・59秒未満・18:00）を longform/README に・operations の「楽天3店」「4店のスクレイプ」・measurement の price-drop・Clarity・sitemap 数・setup の例。残りの判断は ideas/2026-11-28.md
+- 11/28 ドキュメントを削る（ユーザー「読む必要がないなら消してOK」）: 約20万→約6万バイト。消した: スキル youtube-shorts・tiktok-ops、shorts/README-retired.md、docs/shorts-design.md。今買い？は一旦やめる（サムネの型から外す）。運用は main に直接 push。STATE から Student 特典・サーバー期限（更新済み）を消した

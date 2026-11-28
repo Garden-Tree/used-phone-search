@@ -1,102 +1,50 @@
-# 計測（GA4 / Search Console）と確認の進め方
+# 計測（GA4 / Search Console）
 
-確認の予定日と判断基準は `STATE.md` の「確認台帳」が正。このファイルは設定と見方。
+確認の予定と基準は `STATE.md` の確認台帳。ここは設定と見方。
 
 ## 設定
 
-| 項目 | 値 | 備考 |
-| --- | --- | --- |
-| GA4 測定ID | **`G-YV3ZR0N6B1`**（2026-09-27〜） | ワークフロー（`.github/workflows/scraper.yaml`）の `NEXT_PUBLIC_GA_ID`。`@next/third-parties` で読み込み。変えたら次の書き出しから反映 |
-| GA4 プロパティ | **556047315「used.gadelog.com（中古スマホ一括検索）」**（アカウント 207926838 GardenTree・ストリーム 15850141203） | used 専用。タイムゾーン日本・通貨 円・拡張計測オン（離脱クリック含む） |
-| 内部トラフィック | 自宅の IP（値は `docs/private.local.md`、git 外）を除外（データフィルタ 有効） | IP が変わったら GA4 の管理 → データストリーム → タグ設定 → 内部トラフィックの定義を直す |
-| Search Console | URL プレフィックス `https://used.gadelog.com/`（HTML タグで所有権確認・2026-09-27） | sitemap `https://used.gadelog.com/sitemap.xml` 送信済み（初回 41 URL → 9/27 再送信・11/22 に約512） |
-| 構造化データ | 機種別: Product（AggregateOffer）+ BreadcrumbList／比較: BreadcrumbList | リッチリザルトテストで確認可能 |
-| Microsoft Clarity | 11/26〜・本番だけ・lazyOnload（ID は private.local.md） | 止まる所は STATE の確認台帳 |
-| OGP | 機種別・比較などは専用画像（書き出しのたびに作る＝1日4回）、その他は共通画像 | X の投稿画面に URL を貼ると確認できる |
+- GA4: プロパティ 556047315（used 専用）・測定ID `G-YV3ZR0N6B1`（ワークフローの `NEXT_PUBLIC_GA_ID`）。内部トラフィック（自宅 IP・値は `docs/private.local.md`）を除外。IP が変わったらタグ設定の内部トラフィックの定義を直す
+- ブログのプロパティとは別。Google タグ設定で「ウェブサイトで検出された Google タグを使用」を選ばない（ブログと混ざる）
+- Search Console: URL プレフィックス `https://used.gadelog.com/`（HTML タグで確認）・sitemap 送信済み
+- 構造化データ: 機種別 Product（AggregateOffer）+ BreadcrumbList／比較 BreadcrumbList
+- Clarity: 本番だけ・lazyOnload（ID は private.local.md）
+- 監視: `/health.json`（書き出しごと）＋サーバー cron（`operations.md`）
 
-### GA4 プロパティの経緯（2026-09-27）
+## Search Console の見方
 
-| プロパティ | 名前 | 測定ID | 状態 |
-| --- | --- | --- | --- |
-| 343220884 | gadelog.com | `G-B9JJ58M3KX` | **ブログ本体**（Site Kit の Google タグ `GT-NN6ZF72` 経由）。ブログの `.env.local` の `GA4_PROPERTY_ID` もこれ |
-| 346953485 | gadelog.com - GA4 | `G-7955FRXN7V` | **一度もデータを受信していない空のプロパティ**（ブログの `docs/measurement-setup.md` の誤記は 9/27 訂正済み） |
-| 556047315 | used.gadelog.com（中古スマホ一括検索） | `G-YV3ZR0N6B1` | **used 専用**（9/27 作成） |
+- **順位ではなく CTR を目標に。タイトルにクエリ語を入れる**
+- **判定は最低2週間。7日200表示未満は判定しない**
+- 一行で答えが済むクエリはクリックされない
 
-- 公開直後（9/26〜27）は used もブログと同じ `G-B9JJ58M3KX` に送っていた。ブログの sync はホスト名で絞らないため、
-  PV・流入元・アフィリエイトのクリック（linkClicks）が混ざる。used 専用プロパティに分離した
-- 9/26〜27 の used のデータはブログのプロパティ（343220884）に残っている（ホスト名 used.gadelog.com で見られる）
-- Google タグ設定では「ウェブサイトで検出された Google タグを使用」を選ばない（ブログのタグと統合され、ブログの PV まで入る）
+## 店へのクリック `shop_click`
 
-## 見方
+- `app/components/ShopClickTracker.tsx` がカードの `data-*` を送る: `shop_name`・`model_name`・`storage`・`condition_rank`・`price`・`link_type`（`rakuten`／`a8`／`vc`／`moshimo`／`amazon`／`direct`）・`placement`（枠: `good_pick`・`warranty_pick`・`first_*` など。リンク近くの `data-placement`）
+- 買取は `shop_name` 末尾に「（買取）」、回線は「（回線）」
+- **判定は28日分と「押したユーザー数」で**（数人の連打で週の回数が倍・半分に動く）
+- **A8 のクリック数は人数に使わない**（クローラー分が多い）。成約率は GA の shop_click で割る
+- 楽天のアフィリエイト ID はブログと共通なので楽天側ではサイトを分けられない
 
-### GA4
-- used 専用プロパティなので絞り込みは不要
-- 見るもの：ページ別 PV（`/iphone/*`・`/ipad/*`・`/compare/*`・`/pick/*`・`/budget/*`・`/search`）、流入元（organic / X / gadelog.com からの参照）、
-  アフィリエイトのクリック（外部リンクのクリック。GA4 の拡張計測「離脱クリック」で `hb.afl.rakuten.co.jp`・`px.a8.net`）
+## AI からの集客（毎週月曜）
 
-### Search Console
-- **カバレッジ**：sitemap の「検出」と「インデックス登録済み」。新サイトは数日〜数週間かかる
-- **検索パフォーマンス**：ページ別・クエリ別の表示回数／クリック／CTR／平均順位
-- ブログで確立済みの教義（`../blog-surporter/STATE.md`）をそのまま使う
-  - **順位ではなく CTR を目標にする。タイトルにクエリ語を入れる**
-  - **判定は最低2週間。7日200表示未満は判定しない**
-  - 一行で答えが済むクエリはクリックされない
+答えるページがない問いに節かページを足す。記録は `ideas/YYYY-MM-DD.md`。
 
-## 確認のタイミング
-
-| 時期 | 目的 |
+| 見る場所 | 記録 |
 | --- | --- |
-| 公開翌日（9/28） | 自動処理が動いたか（Actions・楽天・監視）と GA プロパティの確認 |
-| 1週間後（10/4） | インデックスが始まったか・GA4 に PV が入っているか |
-| 2週間後（10/11） | どのページ・クエリで表示されているか → タイトル調整の対象を決める |
-| 1か月後（10/26） | 価格推移が30日分たまる → グラフの見え方・値下がり投稿の検討 |
-| 以降は毎月1日 | 出典（iOS 対応機種・新機種・楽天API・各社規約）の開き直し、月次の PV・収益の振り返り |
+| GSC「検索の生成 AI 機能のパフォーマンス」 | 合計表示・上位10ページ |
+| GSC 検索結果（28日・500行） | 会話の形・比較・推移・店・予算の問い（下の JS） |
+| Bing「AI Performance」 | 引用回数・grounding query・引用ページ |
+| GA4 ランディング × チャネル「AI Assistant」 | 入口と shop_click |
+| ChatGPT 一時チャット（`chatgpt.com/?temporary-chat=true`・ログインなし） | 下の問いで引用されるか・並ぶサイト・数字の出どころ |
 
-## 店へのクリック（2026-10-07〜）
+問い: ①iPad 第9世代の中古相場とどこが安いか ②MacBook Air M4 中古の相場と最安値 ③iPhone 中古 相場 一覧 ④iPhone 16 中古 価格 ⑤iPad Air 第5世代 中古 ⑥2万円以下のおすすめ中古スマホ ⑦5万円以下の中古iPhone ⑧Galaxy S24 Ultra 中古相場 ⑨Galaxy S25 Ultra 中古相場 ⑩iPad Pro 11 M4 中古 ⑪iPad Air M4 と Pro M4 中古ならどっち ⑫Apple Watch 中古ならどれ ⑬iPhone 15 Pro 中古相場 ⑭iPhone 18 Pro Max 中古最安値
 
-- 商品カードを押すと GA4 に **`shop_click`** イベントを送る（`app/components/ShopClickTracker.tsx`。カードの `data-*` を読む）
-  - パラメータ: `shop_name`・`model_name`・`storage`・`condition_rank`・`price`・`link_type`（`rakuten`／`a8`／`vc`＝Yahoo!ショッピングの ValueCommerce／`moshimo`＝Yahoo!ショッピングのもしもアフィリエイト／`amazon`／`direct`＝収益にならない直リンク）
-  - 5つ（price 以外）をカスタムディメンション（イベント）に登録済み。レポートに出るのは登録した日（10/7）以降のデータだけ
-  - `placement`（どの枠から押されたか。good_pick・battery-calc など）も 2026-11-01 にカスタムディメンション（イベント）に登録。レポートに出るのは 11/1 以降
-- **店へのクリックの判定は28日分と「押したユーザー数」で見る**（2026-11-01〜）。1週に押す人は10人前後で、数人が十数回押すだけで週の回数が倍・半分に動く（10/18〜24 のにこスマ 39回のうち22回は5人。ideas/2026-11-01-analysis.md）
-- 買取リンク（モデルページの「今のスマホを売るなら」。`lib/buyback.ts`）のクリックも同じ `shop_click`。`shop_name` は「モバゾウ（買取）」のように末尾に **（買取）** が付き、`link_type` は `a8`、`model_name` は表示中の機種（容量・ランク・価格は空／0）
-- 回線リンク（スマホの機種ページの「回線も見直すなら」。`lib/simPlans.ts`・2026-10-15〜）も `shop_click`。`shop_name` は「ahamo（回線）」「楽天モバイル（回線）」、`link_type` は `a8`／`rakuten`
-- **枠の印 `placement`**（10/31〜）: リンクの近くの `data-placement` を送る。`good_pick`（機種ページの「ランクB以上・電池85%以上でいちばん安い1台」）・`good_pick_search`（/search の同じ1台）・`good_pick_list`（/pixel・/galaxy）・`good_pick_budget`（Pixel・Galaxy の予算別）・`warranty_pick`（機種ページの「保証が1年ある店でいちばん安い1台」。11/1〜）・`warranty_pick_search`（/search の同じ1台。11/2〜）。ほかの枠は空。GA の管理 → カスタム定義でイベントスコープのディメンション `placement` を登録すると、レポートで分けられる
-- 見方: レポート → エンゲージメント → イベント → `shop_click`、または探索で 行=shop_name／link_type／ページパス、値=イベント数
-- アフィリエイト側の数字（A8 のサイト別「中古スマホ一括検索」・楽天アフィリエイト）とも突き合わせる。楽天のアフィリエイト ID はブログと共通なので、楽天側ではサイトを分けられない
-- **A8 のクリック数は人の数として使わない**（11/13〜）。にこスマは A8 が GA の約5倍で、GA が0の日も毎日 20前後ある。リンクの数が多い店ほど差が大きい（買取は約1.5倍）＝クローラーがリンクをたどった分と読む（px.a8.net は robots.txt なし）。成約率は GA の shop_click で割る（ideas/2026-11-12-growth.md）
-- 拡張計測の「離脱クリック」（`click`・リンクドメイン）も引き続き取れるが、楽天とブログが混ざる・店が分からないので、店ごとの判断は shop_click で行う
+- 引用は実行ごとに揺れる。出なかった問いは新しい一時チャットでもう1回流し、2回とも出ないものだけ候補に
 
-## 監視（計測ではなくデータ鮮度）
-
-- `https://used.gadelog.com/health.json`：書き出しのたびに作る。`ok`・`checkedAt`（書き出した時刻）・店ごとの最終更新（24時間以上止まると問題）・価格推移の最終記録日
-  （10/6 まであった `/api/health` は Vercel 版の API で、廃止）
-- サーバーの cron が毎日10:00に確認し、問題時のみメール（詳細は `operations.md`）
-
-## AI からの集客の週次記録（2026-10-28〜・毎週月曜）
-
-AI（ChatGPT・Copilot・Google の AI モード／AI による概要）が実際に調べた問いを見て、答えるページがない問いに節かページを足す。記録は `ideas/YYYY-MM-DD.md`（初回 `ideas/2026-10-28-ai.md`）。
-
-| 見る場所 | 何を記録するか |
-| --- | --- |
-| Search Console「検索の生成 AI 機能のパフォーマンス」（`/performance/search-analytics/ai`） | 合計表示回数・上位10ページ（クエリは出ない） |
-| Search Console 検索結果（28日・クエリ・500行） | **会話の形の問い**（「11プロは？」「中古だと？」＝ AI モードの続きの質問）・比較（vs・比較・違い）・推移・店（どこ・どっち）・予算（○万円）。下の JS で絞る |
-| Bing Webmaster Tools「AI Performance」 | 引用回数・grounding query・引用されたページ（データは数日遅れ・サンプル） |
-| GA4 ランディングページ × チャネル「AI Assistant」 | AI から来た人の入口と shop_click |
-| ChatGPT に直接聞く（11/3〜・ログインなし・一時チャット `chatgpt.com/?temporary-chat=true`） | 決まった8問（下）で、うちが引用されるか・並ぶサイト・使われた数字。引用元は答えの中の「サイト名 +N」と `main a[href^=http]` |
-
-決まった8問: ①中古のiPad 第9世代の相場はいくら？どこで買うのが安い？ ②MacBook Air M4 中古の相場と最安値は？ ③iPhone 中古 相場 一覧を教えて ④iPhone 16 中古 価格はいくら？ ⑤iPad Air 第5世代 中古だといくら？ ⑥2万円以下で買える中古スマホのおすすめは？ ⑦5万円以下で買える中古iPhoneはどれ？ ⑧Galaxy S24 Ultra 中古相場は？（「どこで買う」「15と15 Plusの違い」は ChatGPT が検索せずに答えたので外した）
-
-追加の4問（11/12〜・高い機種と比較。収益はにこスマに在庫がある高い機種のページから出ていた）: ⑨Galaxy S25 Ultra 中古の相場は？ ⑩iPad Pro 11インチ M4 中古だといくら？ ⑪iPad Air M4 と iPad Pro M4、中古ならどっちが得？ ⑫Apple Watch 中古で買うならどれ？
-
-数え方（11/16〜）: ChatGPT の引用は実行ごとに揺れる（同じ問いでも出たり出なかったり）。引用されなかった問いは新しい一時チャットでもう1回流し、「2回とも出ない」ものだけを候補にする
-
-追加の2問（11/15〜・Bing の grounding query に出たのに上の問いになかった）: ⑬iPhone 15 Pro 中古の相場は？ ⑭iPhone 18 Pro Max 中古の最安値は？ 記録は「引用されたか・並んだサイト・答えの数字の出どころ（うちの値か他社か）」を分けて書く
-
-Search Console で「1ページあたりの行数」を 500 にしてから、コンソールで:
+GSC で行数を 500 にしてコンソールで:
 ```js
 const rows=[...document.querySelectorAll('table tbody tr')].map(r=>[...r.querySelectorAll('td')].map(t=>t.innerText.trim()));
 const re=/いつ|値下がり|下が|比較|vs|どっち|どれ|おすすめ|寿命|バッテリー|電池|買うべき|違い|予算|万円|推移|相場|どこ|買取|いくら|新品|一覧|コスパ|\?|？/i;
 rows.filter(r=>re.test(r[0])).map(r=>r[0]+'|'+r[2]+'|'+r[4]).join('\n') // 問い|表示|順位
 ```
-判断: 同じ問いが2週続けて出て、答えるページがない（または順位20位より下）なら作る候補。比較の組は `lib/compare.ts`、店は `/iphone/where-to-buy`、値下がりは `/iphone/resale-value#last-30-days`、値段の差は `/iphone/price-factors`。
+判断: 同じ問いが2週続き、答えるページがない（または20位より下）なら作る。比較の組は `lib/compare.ts`、店は `/iphone/where-to-buy`、値下がりは `/iphone/resale-value#last-30-days`、値段の差は `/iphone/price-factors`。
