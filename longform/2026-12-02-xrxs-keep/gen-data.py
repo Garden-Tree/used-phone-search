@@ -4,8 +4,8 @@ ch = []
 ch.append({"title": "家のiPhone XR、9年目の困りごと", "scene": {"type": "problems", "heading": "家のiPhone XR、替える？", "who": "iPhone XR（9年目）", "img": D+"irasutoya/old-smartphone.png",
   "items": [{"text": "電池が昼までもたない", "cue": "電池が、お昼まで"}, {"text": "iOSの更新が来ない", "cue": "新しいiOSの通知"}, {"text": "夜の写真が暗い", "cue": "夜に撮ると"}]}})
 ch.append({"title": "困りごとで分かれる…はずが", "scene": {"type": "flow", "heading": "電池交換か、買い替えか", "q": "XR・XSは？",
-  "branches": [{"label": "いつもなら", "answer": "電池交換", "sub": "電池だけの困りごと", "cue": "いつもなら"},
-               {"label": "XR・XS", "answer": "替えるほう", "sub": "理由は2つ", "cue": "XRとXSは、今回は", "pick": True}]}})
+  "branches": [{"label": "いつもなら", "answer": "電池交換", "sub": "電池だけの困りごと", "cue": "いつもは電池交換"},
+               {"label": "XR・XS", "answer": "替えるほう", "sub": "理由は2つ", "cue": "でもXRとXSは", "pick": True}]}})
 ch.append({"title": "XR・XSは9年目。iOS 27は11から", "scene": {"type": "years", "heading": "発売から今日まで", "start": 2018, "end": 2028, "today": 2026.9, "todayLabel": "2026年11月",
   "rows": [{"label": "iPhone XR・XS", "from": 2018.7, "cue": "どちらも2018年", "pick": True}, {"label": "iPhone 11", "from": 2019.7, "cue": "11は、8年目"},
            {"label": "iPhone 12", "from": 2020.8, "cue": "どちらも2018年"}, {"label": "iPhone 13", "from": 2021.7, "cue": "どちらも2018年"}], "sweep": "時計を進めると", "divider": {"after": 0, "label": "iOS 27 はここから", "cue": "ここに大きな線"}}})

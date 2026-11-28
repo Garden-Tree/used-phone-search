@@ -53,13 +53,13 @@
             "label": "いつもなら",
             "answer": "電池交換",
             "sub": "電池だけの困りごと",
-            "cue": "いつもなら"
+            "cue": "いつもは電池交換"
           },
           {
             "label": "XR・XS",
             "answer": "替えるほう",
             "sub": "理由は2つ",
-            "cue": "XRとXSは、今回は",
+            "cue": "でもXRとXSは",
             "pick": true
           }
         ]
