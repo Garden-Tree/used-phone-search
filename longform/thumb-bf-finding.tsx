@@ -190,15 +190,15 @@ const d2 = (
   </Frame>
 );
 // BEST5 型（11/28・題を「中古iPhoneおすすめBEST5【2026年12月】」に。11月の BEST5 は CTR 7.8%）。違いは札だけ
-const d34 = (tag: string, size = 120) => (
+const d34 = (tag: string, size = 120, top = "中古iPhone") => (
   <Frame>
     <Layer name="17pm" />
-    <T x={EDGE + 8} y={64}><Outlined text="2026年12月" size={128} color={WHITE} w={7} spacing={-6} /></T>
+    <T x={EDGE + 8} y={64}><Outlined text={top} size={128} color={WHITE} w={7} spacing={-6} /></T>
     <T x={EDGE + 4} y={214}><Outlined text="BEST5" size={236} color={YELLOW} w={11} spacing={-6} /></T>
     <Tag x={EDGE + 4} y={492} text={tag} size={size} color={RED} pad={22} spacing={-5} />
   </Frame>
 );
-const d3 = d34("4万〜20万円"), d4 = d34("16e −9200円", 112);
+const d3 = d34("2026年12月"), d4 = d34("16e −9200円", 112);
 // ---- bfa（2026-11-28-bf-amazon-iphone・11/26）: Air の写真を右に。札はセール価格を見てから（11/27 0時〜）
 const bfa = (tag: string, size = 112, top = "ブラックフライデー") => (
   <Frame>
