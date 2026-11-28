@@ -399,3 +399,4 @@
 - 11/28 ドキュメント棚卸し（27件を直した）: 楽天アプリIDを config.example.php から外す・RAKUTEN_INGEST_SECRET（10/6 廃止）を STATE・add-shop から外す・ショート停止と毎日交互を video-ideas・shorts/README・youtube-shorts に・TikTok も停止中と description に・Chrome の used プロファイルを各スキルに・切り抜きの手順（サムネ引数・59秒未満・18:00）を longform/README に・operations の「楽天3店」「4店のスクレイプ」・measurement の price-drop・Clarity・sitemap 数・setup の例。残りの判断は ideas/2026-11-28.md
 - 11/28 ドキュメントを削る（ユーザー「読む必要がないなら消してOK」）: 約20万→約6万バイト。消した: スキル youtube-shorts・tiktok-ops、shorts/README-retired.md、docs/shorts-design.md。今買い？は一旦やめる（サムネの型から外す）。運用は main に直接 push。STATE から Student 特典・サーバー期限（更新済み）を消した
 - 11/28 登録のお願いを2分台に前倒し（XR・XS と月1・平均視聴 2:29〜3:07 より前に）・月1のタイトルを BEST5 型に。Bing の手送り（台帳 11/29）は知る URL 184→302・インデックス 258 で判定済み。Copilot の引用 週 382→527
+- 11/28 月1のサムネに BEST5 型 D3（4万〜20万円）・D4（16e −9200円）を足した（題の変更に合わせる・暗い地・17 Pro Max）。11/30 の切り抜き: 12・11 から「11をあと1年使うといくら？」47.5秒（clip-year11・208.89-245.82,256.33-266.93）
