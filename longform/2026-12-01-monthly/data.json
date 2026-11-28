@@ -1,7 +1,7 @@
 {
-  "date": "2026-11-26",
+  "date": "2026-11-28",
   "shops": 18,
-  "source": "script.md（data-query.log・11/26 3時・18店）。11/30 に取り直す",
+  "source": "script.md（data-query.log・2026/11/28 16時ごろ・18店）。11/30 に取り直す",
   "thumbnail": {
     "lines": [
       "12月の中古iPhone",
@@ -9,10 +9,10 @@
     ],
     "badge": [
       {
-        "text": "17 Pro Max"
+        "text": "16e"
       },
       {
-        "text": "−8,800円",
+        "text": "−9,200円",
         "red": true
       }
     ],
@@ -22,65 +22,25 @@
     {
       "title": "中古なのに、新品より高いiPhone",
       "scene": {
-        "type": "photo",
-        "heading": "12月の中古iPhone",
-        "src": "longform/assets/irasutoya/crossroads-undecided.png",
-        "credit": "",
-        "points": [
+        "type": "bars",
+        "heading": "iPhone 17e 256GB、新品と中古",
+        "unit": "円",
+        "rows": [
           {
-            "text": "17e は中古 ＞ 新品",
-            "sub": "どちらも 256GB",
-            "cue": "17eの中古は"
+            "label": "Appleの新品",
+            "median": 124800,
+            "sub": "apple.com",
+            "cue": "Appleの新品より高い",
+            "say": "新品"
           },
           {
-            "text": "いま中古で買わない3台",
-            "sub": "新品より高い",
-            "cue": "同じような機種が"
-          },
-          {
-            "text": "買っていい5台",
-            "sub": "4万・7万・10万・13万・20万円",
-            "cue": "逆に、いま選びやすい"
-          },
-          {
-            "text": "10万円の弱点",
-            "sub": "あとで話すよ",
-            "cue": "じゃあ、10万円の前後"
-          }
-        ],
-        "images": [
-          {
-            "src": "longform/assets/commons/iphone17e-back-chinofutaba.jpg",
-            "credit": "iPhone 17e backside — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
-            "crop": {
-              "x": 0.1,
-              "y": 0.02,
-              "w": 0.8,
-              "h": 0.96
-            },
-            "cue": "17eの中古は"
-          },
-          {
-            "src": "longform/assets/commons/iphone17promax-orange-ahmadalikarim.jpg",
-            "credit": "Cosmic Orange iPhone 17 Pro Max — Ahmad Ali Karim / CC0 / Wikimedia Commons",
-            "crop": {
-              "x": 0.1,
-              "y": 0.04,
-              "w": 0.82,
-              "h": 0.9
-            },
-            "cue": "逆に、いま選びやすい"
-          },
-          {
-            "src": "longform/assets/commons/iphone15-back-blue-meidoriyo.jpg",
-            "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
-            "crop": {
-              "x": 0.18,
-              "y": 0.1,
-              "w": 0.6,
-              "h": 0.42
-            },
-            "cue": "僕は10万円くらい"
+            "label": "中古の真ん中",
+            "median": 126819,
+            "sub": "489件",
+            "cue": "17eの中古は",
+            "say": "中古",
+            "pick": true,
+            "pickLabel": "中古が高い"
           }
         ]
       }
@@ -88,80 +48,45 @@
     {
       "title": "11月から動いた値段",
       "scene": {
-        "type": "table",
-        "heading": "相場の動き（11/1 → 11/26）",
-        "columns": [
-          "機種",
-          "11/1",
-          "11/26",
-          "差"
-        ],
-        "emphasis": [
-          3
-        ],
+        "type": "bars",
+        "heading": "この1か月で下がった額",
+        "unit": "円",
         "rows": [
           {
-            "cells": [
-              "17 Pro Max",
-              "208,780",
-              "199,980",
-              "−8,800円"
-            ],
-            "cue": "いちばん下がったのは"
+            "label": "17 Pro Max",
+            "median": 9800,
+            "sub": "256GB",
+            "cue": "下がった額がいちばん",
+            "say": "17 Pro Max"
           },
           {
-            "cells": [
-              "16 Pro Max",
-              "183,280",
-              "175,780",
-              "−7,500円"
-            ],
-            "cue": "8,800円も下がってる"
+            "label": "16e",
+            "median": 9200,
+            "sub": "128GB・−8.6%",
+            "cue": "16eも、ほとんど",
+            "say": "16e"
           },
           {
-            "cells": [
-              "15 Pro Max",
-              "146,680",
-              "140,866",
-              "−5,814円"
-            ],
-            "cue": "8,800円も下がってる"
+            "label": "14 Pro",
+            "median": 5500,
+            "sub": "128GB",
+            "cue": "ぜんぶ下がった"
           },
           {
-            "cells": [
-              "14 Pro",
-              "87,780",
-              "82,280",
-              "−5,500円"
-            ],
-            "cue": "8,800円も下がってる"
-          },
-          {
-            "cells": [
-              "16 Pro",
-              "161,230",
-              "165,781",
-              "+4,551円"
-            ],
-            "cue": "高い機種ほど下がった"
-          },
-          {
-            "cells": [
-              "12",
-              "34,276",
-              "36,080",
-              "+1,804円"
-            ],
-            "cue": "高い機種ほど下がった"
+            "label": "16",
+            "median": 4520,
+            "sub": "128GB",
+            "cue": "ぜんぶ下がった"
           }
-        ]
+        ],
+        "note": "10/29→11/28・相場の容量どうし。店は16→18に増えた"
       }
     },
     {
       "title": "4万円：iPhone 12",
       "scene": {
         "type": "photo",
-        "heading": "4万円：iPhone 12",
+        "heading": "4万円なら iPhone 12",
         "src": "longform/assets/commons/iphone12-green-back-chinofutaba.jpg",
         "credit": "iPhone 12 Green — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons",
         "crop": {
@@ -173,7 +98,7 @@
         "points": [
           {
             "text": "有機EL・5G・MagSafe",
-            "sub": "Face ID",
+            "sub": "相場 36,080円（64GB）",
             "cue": "画面は有機ELで"
           },
           {
@@ -182,33 +107,26 @@
             "cue": "162グラム"
           },
           {
-            "text": "電池85%以上 18%",
-            "sub": "705件中 128件",
-            "cue": "85%以上と書いてある在庫は、5台に",
-            "say": "85%"
+            "text": "電池85%以上は5台に1台",
+            "sub": "書いてある在庫 18%",
+            "cue": "85%以上と書いてある"
           },
           {
-            "text": "64GB 36,080円",
-            "sub": "128GB は 40,980円",
-            "cue": "128GBとの差は",
-            "say": "128GB"
+            "text": "128GBでも +5,500円",
+            "sub": "41,580円",
+            "cue": "128GBとの差"
           }
         ],
         "images": [
           {
             "src": "longform/assets/commons/magsafe-charger-hand-trendingreviews.png",
             "credit": "MagSafe (iPhone) — Trending Reviews / CC BY 3.0 / Wikimedia Commons",
-            "cue": "画面は有機ELで"
-          },
-          {
-            "src": "longform/assets/commons/iphone12-blue-camera-kkpcw.jpg",
-            "credit": "iPhone 12 — KKPCW / CC BY-SA 4.0 / Wikimedia Commons",
-            "cue": "軽いのだ？"
+            "cue": "背中に磁石で"
           },
           {
             "src": "longform/assets/irasutoya/battery-low.png",
             "credit": "",
-            "cue": "気をつけるところは"
+            "cue": "85%以上と書いてある"
           },
           {
             "src": "longform/assets/commons/iphone12-green-back-chinofutaba.jpg",
@@ -219,166 +137,74 @@
               "w": 0.52,
               "h": 0.335
             },
-            "cue": "64GBで足りるのだ"
+            "cue": "64GBで足りる"
           }
         ]
       }
     },
     {
-      "title": "7万円：iPhone 14",
+      "title": "7万円：13 Proと14",
       "scene": {
-        "type": "table",
-        "heading": "14 と 13 Pro（どちらも 128GB・65,780円）",
-        "columns": [
-          "",
-          "14",
-          "13 Pro"
-        ],
-        "emphasis": [],
-        "rows": [
-          {
-            "cells": [
-              "120Hzの画面",
-              "×",
-              "○"
-            ],
-            "cue": "13 Proは120Hzだから"
-          },
-          {
-            "cells": [
-              "3倍の望遠",
-              "×",
-              "○"
-            ],
-            "cue": "13 Proは120Hzだから"
-          },
-          {
-            "cells": [
-              "電池85%以上",
-              "44%",
-              "16%"
-            ],
-            "cue": "電池が85%以上と書いて"
-          },
-          {
-            "cells": [
-              "ビデオ再生",
-              "20時間",
-              "22時間"
-            ],
-            "cue": "仕様のビデオ再生は"
-          },
-          {
-            "cells": [
-              "アクションモード",
-              "○",
-              "×"
-            ],
-            "cue": "14にしかないのが"
-          },
-          {
-            "cells": [
-              "衝突事故検出",
-              "○",
-              "×"
-            ],
-            "cue": "車の大きな事故"
-          },
-          {
-            "cells": [
-              "重さ",
-              "172g",
-              "203g"
-            ],
-            "cue": "重さも30グラム"
-          }
-        ]
-      }
-    },
-    {
-      "title": "10万円：iPhone 15",
-      "scene": {
-        "type": "photo",
-        "heading": "10万円：iPhone 15",
-        "src": "longform/assets/commons/iphone15-back-blue-meidoriyo.jpg",
-        "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
-        "crop": {
-          "x": 0.18,
-          "y": 0.1,
-          "w": 0.6,
-          "h": 0.42
+        "type": "versus",
+        "heading": "7万円なら、13 Pro？14？",
+        "left": {
+          "title": "中古の14",
+          "value": "64,300円",
+          "sub": "電池85%以上が4割",
+          "cue": "14がほとんど同じ"
         },
-        "points": [
-          {
-            "text": "USB-C",
-            "sub": "パソコンと同じケーブル",
-            "cue": "いちばん変わるのは"
-          },
-          {
-            "text": "48MP・2倍ズーム",
-            "sub": "屋外は最大2,000ニト",
-            "cue": "カメラは48MPで"
-          },
-          {
-            "text": "電池85%以上 61%",
-            "sub": "2,058件中 1,249件",
-            "cue": "85%以上と書いてある在庫が6割",
-            "say": "85%"
-          },
-          {
-            "text": "Apple Intelligence ×",
-            "sub": "15 Pro・16 からは ○",
-            "cue": "Apple Intelligenceに対応していない"
-          },
-          {
-            "text": "128GB 91,700円",
-            "sub": "256GB は 96,980円",
-            "cue": "その機能を使わない人なら",
-            "say": "256GB"
-          }
-        ],
-        "images": [
-          {
-            "src": "longform/assets/commons/iphone15-usbc-port-kyu3.jpg",
-            "credit": "USB-C port of iPhone 15 — Kyu3 / CC BY-SA 4.0 / Wikimedia Commons",
-            "crop": {
-              "x": 0.25,
-              "y": 0.28,
-              "w": 0.5,
-              "h": 0.36
+        "right": {
+          "title": "中古の13 Pro",
+          "value": "65,780円",
+          "sub": "120Hz・3倍の望遠",
+          "cue": "決まりで選ぶと、13 Pro"
+        },
+        "win": {
+          "side": "left",
+          "label": "電池は14が選びやすい",
+          "cue": "14が4割以上"
+        }
+      }
+    },
+    {
+      "title": "10万円：16eと15",
+      "scene": {
+        "type": "versus",
+        "heading": "10万円なら、16e？15？",
+        "left": {
+          "title": "中古の15",
+          "value": "91,700円",
+          "sub": "MagSafe・超広角あり",
+          "cue": "15は、16eより"
+        },
+        "right": {
+          "title": "中古の16e",
+          "value": "97,980円",
+          "sub": "A18・ビデオ再生 26時間",
+          "cue": "決まりで選ぶと16e",
+          "crosses": [
+            {
+              "text": "MagSafe",
+              "cue": "1つ目は、MagSafe"
             },
-            "cue": "いちばん変わるのは"
-          },
-          {
-            "src": "longform/assets/commons/iphone15-back-blue-meidoriyo.jpg",
-            "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
-            "crop": {
-              "x": 0.18,
-              "y": 0.1,
-              "w": 0.6,
-              "h": 0.42
-            },
-            "cue": "カメラは48MPで"
-          },
-          {
-            "src": "longform/assets/commons/iphone15-back-blue-meidoriyo.jpg",
-            "credit": "Back view of iPhone 15 Blue — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
-            "crop": {
-              "x": 0.18,
-              "y": 0.1,
-              "w": 0.6,
-              "h": 0.42
-            },
-            "cue": "電池は？"
-          }
-        ]
+            {
+              "text": "超広角",
+              "cue": "2つ目は、超広角"
+            }
+          ]
+        },
+        "win": {
+          "side": "right",
+          "label": "電池は6時間長い",
+          "cue": "6時間長いの"
+        }
       }
     },
     {
       "title": "13万円：iPhone 15 Pro",
       "scene": {
         "type": "photo",
-        "heading": "13万円：15 Pro（同じ値段の16も）",
+        "heading": "13万円なら iPhone 15 Pro",
         "src": "longform/assets/commons/iphone15pro-back-naturaltitanium-meidoriyo.jpg",
         "credit": "Back view of iPhone 15 Pro Natural titanium — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
         "crop": {
@@ -390,39 +216,30 @@
         "points": [
           {
             "text": "A17 Pro・Apple Intelligence",
-            "sub": "15 では使えない",
-            "cue": "チップがA17 Proで"
+            "sub": "相場 129,180円（256GB）",
+            "cue": "16eと同じで"
           },
           {
             "text": "120Hz・3倍の望遠",
-            "sub": "16 にはない",
-            "cue": "120Hzの画面と、3倍",
-            "say": "120Hz"
+            "sub": "超広角・MagSafeもある",
+            "cue": "そのうえ、120Hz"
           },
           {
-            "text": "アクションボタン・USB 3",
-            "sub": "最大10Gb/s",
-            "cue": "横のアクションボタンは",
-            "say": "アクションボタン"
+            "text": "アクションボタン",
+            "sub": "カメラやライトをすぐ出せる",
+            "cue": "横のアクションボタン"
           },
           {
-            "text": "電池85%以上 25%",
-            "sub": "748件中 184件",
-            "cue": "85%以上と書いてある在庫は、4台に",
-            "say": "85%"
-          },
-          {
-            "text": "16 256GB も 128,980円",
-            "sub": "電池85%以上 69%",
-            "cue": "16の256GBが",
-            "say": "16の256GB"
+            "text": "電池85%以上は4台に1台",
+            "sub": "書いてある在庫 25%",
+            "cue": "85%以上と書いてある"
           }
         ],
         "images": [
           {
             "src": "longform/assets/commons/iphone15pro-front-dynamicisland-sploopydoppy.jpg",
             "credit": "iPhone Dynamic Island — SploopyDoppy / CC0 / Wikimedia Commons（iPhone 15 Pro）",
-            "cue": "120Hzの画面と、3倍"
+            "cue": "横のアクションボタン"
           },
           {
             "src": "longform/assets/commons/iphone15pro-back-naturaltitanium-meidoriyo.jpg",
@@ -433,32 +250,50 @@
               "w": 0.36,
               "h": 0.3
             },
-            "cue": "完ぺきなのだ"
-          },
-          {
-            "src": "longform/assets/commons/iphone16-ultramarine.png",
-            "credit": "iPhone 16 Ultramarine Rear — Padgriffin / CC BY 4.0 / Wikimedia Commons",
-            "cue": "16の256GBが"
-          },
-          {
-            "src": "longform/assets/commons/iphone15pro-back-naturaltitanium-meidoriyo.jpg",
-            "credit": "Back view of iPhone 15 Pro Natural titanium — メイド理世 / CC BY-SA 4.0 / Wikimedia Commons",
-            "crop": {
-              "x": 0.29,
-              "y": 0.155,
-              "w": 0.36,
-              "h": 0.3
-            },
-            "cue": "望遠と120Hzなら"
+            "cue": "85%以上と書いてある"
           }
         ]
+      }
+    },
+    {
+      "title": "13万円のもう1台：16の256GB",
+      "scene": {
+        "type": "versus",
+        "heading": "13万円なら、15 Pro？16？",
+        "left": {
+          "title": "中古の15 Pro",
+          "value": "129,180円",
+          "sub": "120Hz・3倍の望遠",
+          "cue": "15 Proで、電池"
+        },
+        "right": {
+          "title": "中古の16 256GB",
+          "value": "133,180円",
+          "sub": "電池85%以上が7割",
+          "cue": "16の256GBもある",
+          "crosses": [
+            {
+              "text": "120Hz",
+              "cue": "16の画面は120Hz"
+            },
+            {
+              "text": "3倍の望遠",
+              "cue": "3倍の望遠もない"
+            }
+          ]
+        },
+        "win": {
+          "side": "right",
+          "label": "電池は16が選びやすい",
+          "cue": "7割近いの"
+        }
       }
     },
     {
       "title": "20万円：iPhone 17 Pro Max",
       "scene": {
         "type": "photo",
-        "heading": "20万円：iPhone 17 Pro Max",
+        "heading": "20万円なら iPhone 17 Pro Max",
         "src": "longform/assets/commons/iphone17promax-orange-ahmadalikarim.jpg",
         "credit": "Cosmic Orange iPhone 17 Pro Max — Ahmad Ali Karim / CC0 / Wikimedia Commons",
         "crop": {
@@ -469,32 +304,24 @@
         },
         "points": [
           {
-            "text": "256GB 199,980円",
-            "sub": "11/1 は 208,780円",
-            "cue": "256GBの真ん中の値段が"
+            "text": "6.9インチ・4倍と8倍",
+            "sub": "相場 198,980円（256GB）",
+            "cue": "画面は6.9インチ"
           },
           {
-            "text": "ビデオ再生 39時間",
-            "sub": "15 は 20時間",
-            "cue": "まず電池。Appleの"
+            "text": "電池85%以上は8割以上",
+            "sub": "書いてある在庫 85%",
+            "cue": "85%以上と書いてある"
           },
           {
-            "text": "4倍・8倍ズーム",
-            "sub": "離れた舞台も大きく",
-            "cue": "カメラは4倍と8倍",
-            "say": "カメラ"
+            "text": "233g",
+            "sub": "12より約70g重い",
+            "cue": "重さが233"
           },
           {
-            "text": "電池85%以上 84%",
-            "sub": "1,003件中 839件",
-            "cue": "85%以上と書いてある在庫が、8割",
-            "say": "85%"
-          },
-          {
-            "text": "233g・eSIMだけ",
-            "sub": "SIMカードは使えない",
-            "cue": "重さが233グラム",
-            "say": "重さ"
+            "text": "SIMカードは使えない",
+            "sub": "eSIMだけ",
+            "cue": "SIMカードは使えなくて"
           }
         ],
         "images": [
@@ -518,23 +345,49 @@
               "w": 0.82,
               "h": 0.9
             },
-            "cue": "中古の電池は、どう"
+            "cue": "85%以上と書いてある"
           },
           {
             "src": "longform/assets/commons/sim-card-multisize-izzzyy.jpg",
             "credit": "Multi-size T-Mobile SIM card — Izzzyy / CC0 / Wikimedia Commons",
-            "cue": "もう1つ、SIMカードは"
+            "cue": "SIMカードは使えなくて"
+          }
+        ]
+      }
+    },
+    {
+      "title": "電池の長さで5台を比べると",
+      "scene": {
+        "type": "gauges",
+        "heading": "Appleの仕様のビデオ再生の時間",
+        "unit": "時間",
+        "max": 42,
+        "items": [
+          {
+            "label": "12",
+            "value": 17,
+            "cue": "12は17時間"
           },
           {
-            "src": "longform/assets/commons/iphone17promax-orange-ahmadalikarim.jpg",
-            "credit": "Cosmic Orange iPhone 17 Pro Max — Ahmad Ali Karim / CC0 / Wikimedia Commons",
-            "crop": {
-              "x": 0.1,
-              "y": 0.04,
-              "w": 0.82,
-              "h": 0.9
-            },
-            "cue": "大きい画面と電池に"
+            "label": "13 Pro",
+            "value": 22,
+            "cue": "13 Proと15 Pro"
+          },
+          {
+            "label": "15 Pro",
+            "value": 23,
+            "cue": "13 Proと15 Pro"
+          },
+          {
+            "label": "16e",
+            "value": 26,
+            "cue": "16eは26時間"
+          },
+          {
+            "label": "17 Pro Max",
+            "value": 39,
+            "cue": "17 Pro Maxは39時間",
+            "pick": true
           }
         ]
       }
@@ -543,11 +396,11 @@
       "title": "いま中古で買わない3台",
       "scene": {
         "type": "pairs",
-        "heading": "256GB の新品（Apple）と、中古の相場",
+        "heading": "256GB、Appleの新品と中古の真ん中",
         "unit": "円",
         "legend": [
-          "新品",
-          "中古"
+          "Appleの新品",
+          "中古の真ん中"
         ],
         "colors": [
           "inkMute",
@@ -557,96 +410,97 @@
           {
             "label": "17e",
             "a": 124800,
-            "b": 125980,
-            "diffLabel": "+1,180円",
-            "cue": "17e、18 Pro、18 Pro Max"
+            "b": 126819,
+            "diffLabel": "+2,019円",
+            "cue": "17e、18 Pro"
           },
           {
             "label": "18 Pro",
             "a": 219800,
-            "b": 224980,
-            "diffLabel": "+5,180円",
-            "cue": "17e、18 Pro、18 Pro Max"
+            "b": 224480,
+            "diffLabel": "+4,680円",
+            "cue": "17e、18 Pro"
           },
           {
             "label": "18 Pro Max",
             "a": 239800,
-            "b": 249980,
-            "diffLabel": "+10,180円",
-            "cue": "17e、18 Pro、18 Pro Max"
+            "b": 247780,
+            "diffLabel": "+7,980円",
+            "cue": "18 Pro Maxは"
           }
-        ]
+        ],
+        "note": "新品は apple.com・中古は 2026/11/28 の中央値"
       }
     },
     {
-      "title": "早見表と、年末の買い方",
+      "title": "予算ごとの5台",
       "scene": {
-        "type": "table",
-        "heading": "12月に買っていい5台",
-        "columns": [
-          "予算",
-          "機種",
-          "向いている人",
-          "電池85%以上"
+        "type": "lineup",
+        "heading": "12月の中古iPhone、予算ごとの5台",
+        "style": "steps",
+        "items": [
+          {
+            "title": "4万円",
+            "value": "iPhone 12",
+            "sub": "軽くて安い",
+            "cue": "4万円は12"
+          },
+          {
+            "title": "7万円",
+            "value": "13 Pro",
+            "sub": "14もほぼ同じ値段",
+            "cue": "7万円は13 Pro"
+          },
+          {
+            "title": "10万円",
+            "value": "16e",
+            "sub": "15なら MagSafe",
+            "cue": "10万円は16e",
+            "pick": true
+          },
+          {
+            "title": "13万円",
+            "value": "15 Pro",
+            "sub": "望遠とAI",
+            "cue": "13万円は15 Pro"
+          },
+          {
+            "title": "20万円",
+            "value": "17 Pro Max",
+            "sub": "大画面と電池",
+            "cue": "20万円は17 Pro Max"
+          }
         ],
-        "emphasis": [
-          3
-        ],
-        "rows": [
+        "stamp": {
+          "text": "ずんだもんは 15",
+          "cue": "15にするのだ",
+          "x": 0.33,
+          "y": 0.76,
+          "size": 240,
+          "style": "ribbon"
+        }
+      }
+    },
+    {
+      "title": "買う前に見る3つ",
+      "scene": {
+        "type": "checklist",
+        "heading": "買う前に見る3つ",
+        "items": [
           {
-            "cells": [
-              "4万円",
-              "12",
-              "軽さ",
-              "18%"
-            ],
-            "cue": "まとめるね"
+            "text": "電池の数字",
+            "sub": "85%以上か",
+            "cue": "最初に電池の数字"
           },
           {
-            "cells": [
-              "7万円",
-              "14",
-              "電池のいい1台",
-              "44%"
-            ],
-            "cue": "まとめるね"
+            "text": "ネットワーク利用制限が ○",
+            "sub": "△・× は避ける",
+            "cue": "ネットワーク利用制限"
           },
           {
-            "cells": [
-              "10万円",
-              "15",
-              "USB-C",
-              "61%"
-            ],
-            "cue": "まとめるね"
-          },
-          {
-            "cells": [
-              "13万円",
-              "15 Pro",
-              "望遠・120Hz",
-              "25%"
-            ],
-            "cue": "まとめるね"
-          },
-          {
-            "cells": [
-              "20万円",
-              "17 Pro Max",
-              "大画面・電池",
-              "84%"
-            ],
-            "cue": "まとめるね"
-          },
-          {
-            "cells": [
-              "見る順",
-              "電池の数字",
-              "利用制限 ○",
-              "保証の長さ"
-            ],
-            "cue": "最初に電池の数字",
-            "emphasis": []
+            "text": "お店の保証の長さ",
+            "sub": "同じ値段なら長いほう",
+            "cue": "お店の保証の長さ"
           }
         ]
       }
@@ -662,8 +516,8 @@
             "title": "17eを新品で買う？同じ12.5万円で中古の15 Pro・16？"
           },
           {
-            "id": "4P5c1LG_57s",
-            "title": "中古iPhone 15は今買い？相場9万980円"
+            "id": "wfkUgsa8R_o",
+            "title": "iPhone 14、まだ使う？電池交換は1万7,200円｜替えるなら15・16e・17"
           }
         ]
       }
