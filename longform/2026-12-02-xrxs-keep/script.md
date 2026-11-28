@@ -224,9 +224,9 @@ iPhone XR・XS を使っている人向けに、電池交換で使い続ける�
 
 （チャプターは書き出し後の実測）
 
-iPhone XR の買取価格: https://used.gadelog.com/iphone/iphone-xr/kaitori?utm_source=youtube&utm_medium=social&utm_campaign=long_20261202
-iPhone 13 Pro の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-13-pro?utm_source=youtube&utm_medium=social&utm_campaign=long_20261202
-全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261202
+iPhone XR の買取価格: https://used.gadelog.com/iphone/iphone-xr/kaitori?utm_source=youtube&utm_medium=social&utm_campaign=long_20261203
+iPhone 13 Pro の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-13-pro?utm_source=youtube&utm_medium=social&utm_campaign=long_20261203
+全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long_20261203
 
 イラスト：いらすとや
 サムネイル画像：iPhone XR Coral — 茅野ふたば / CC BY-SA 4.0 / Wikimedia Commons
