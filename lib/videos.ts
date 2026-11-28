@@ -51,6 +51,8 @@ export const VIDEOS = {
   keep1211: { id: "70oYNTqwgRU", title: "iPhone 12・11、まだ使う？電池交換は同じ1万5,600円、答えは逆｜替えるなら13・15・17e【2026年11月】", minutes: 8, asOf: "2026-11-26", heading: "iPhone 11 をまだ使うか・替えるかを動画で見る" },
   // 11/27 0時台公開（Amazon ブラックフライデーの新品 Air と中古。1TB はセールの新品が中古より安い。/iphone/iphone-air に）
   bfAir: { id: "HCX_rp7YzvQ", title: "ブラックフライデー、Amazonの新品iPhone Airと中古どっちが安い？1TBは新品が安い【2026年11月】", minutes: 8, asOf: "2026-11-27", heading: "セールの新品 Air と中古の比較を動画で見る" },
+  // 11/28 12:00 公開（14 まだ使う？電池交換か、15・16e・17 に替えるか。/iphone/iphone-14 に）
+  keep14: { id: "wfkUgsa8R_o", title: "iPhone 14、まだ使う？電池交換は1万7,200円｜替えるなら15・16e・17で何が増えて、何が減る？【2026年11月】", minutes: 8, asOf: "2026-11-27", heading: "iPhone 14 をまだ使うか・替えるかを動画で見る" },
 } satisfies Record<string, Video>;
 
 /**
@@ -67,6 +69,7 @@ export function videoForModel(model: string): Video | null {
   if (model === "iPhone 15") return VIDEOS.iphone15Now;
   if (model === "iPhone SE (第3世代)") return VIDEOS.se3Keep;
   if (model === "iPhone 11") return VIDEOS.keep1211;
+  if (model === "iPhone 14") return VIDEOS.keep14;
   if (model === "iPhone Air") return VIDEOS.bfAir;
   if (model === "iPhone 17e" || model === "iPhone 15 Pro") return VIDEOS.e17VsUsed;
   if (/^iPhone 1[3-7]( Pro( Max)?)?$/.test(model)) return VIDEOS.proOrStandard;

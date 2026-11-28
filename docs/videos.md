@@ -113,7 +113,7 @@
 | 2026-11-24 | stockipad | 春日部つむぎ | 実写 | 中古でいちばん多いiPadはiPad（第9世代）！在庫2,534件ランキング |  |  |  |  |
 | 2026-11-25 | stockup | ずんだもん | AI | 先週から在庫がいちばん増えた中古iPhoneはAir！+53件ランキング |  |  |  |  |
 
-## 横動画（39本・台本だけの回を含む）
+## 横動画（42本・台本だけの回を含む）
 
 | 日付 | フォルダ | タイトル | 要約 | 視聴 | ID |
 |---|---|---|---|---|---|
@@ -151,8 +151,11 @@
 | 2026-11-27 | 17e-vs-used | 17eを新品で買う？同じ12.5万円で中古の15 Pro・16？｜増える機能と、新品にしかないもの【2026年11月】 | iPhone 15 Pro の店ごとの在庫と最安値: https://used.gadelog.com/iphone/iphone-15-pro?utm_source=youtub |  |  |
 | 2026-11-28 | bf-amazon-iphone | ブラックフライデー、Amazonの新品iPhone Airと中古どっちが安い？1TBは新品が安い【2026年11月】 | 【PR】Amazon の新品（ブラックフライデー） iPhone Air 256GB: https://www.amazon.co.jp/dp/B0FQG1QPLW?tag=gar |  |  |
 | 2026-11-28 | iphone12-keep | iPhone 12・11、まだ使う？電池交換は同じ1万5,600円、答えは逆｜替えるなら13・15・17e【2026年11月】 | iPhone 12 の買取価格: https://used.gadelog.com/iphone/iphone-12/kaitori?utm_source=youtube&utm_ |  |  |
+| 2026-11-28 | iphone14-keep | iPhone 14、まだ使う？電池交換は1万7,200円｜替えるなら15・16e・17で何が増えて、何が減る？【2026年11月】 | iPhone 14 の買取価格: https://used.gadelog.com/iphone/iphone-14/kaitori?utm_source=youtube&utm_ |  |  |
 | 2026-12-01 | iphonese3-keep | iPhone SE（第3世代）、まだ使う？電池交換は1万2,000円｜替えるなら14 Pro・15・17eで何が増える？【2026年11月】 | iPhone SE（第3世代）の買取価格: https://used.gadelog.com/iphone/iphone-se-3rd-gen/kaitori?utm_source |  |  |
 | 2026-12-01 | monthly | 【2026年12月】中古iPhone、買っていい5台・いま買わない3台｜17 Pro Maxが1か月で8,800円下がった | 全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long |  |  |
+| 2026-12-01 | monthly-fx | 【2026年12月】中古iPhone、買っていい5台・いま買わない3台｜17 Pro Maxが1か月で8,800円下がった | 全機種の中古相場: https://used.gadelog.com/?utm_source=youtube&utm_medium=social&utm_campaign=long |  |  |
+| 2026-12-02 | xrxs-keep | iPhone XR・XS、まだ使う？電池交換は売値の2倍｜iOS 27が来ない今、替えるなら12・13 Pro・15【2026年12月】 | iPhone XR の買取価格: https://used.gadelog.com/iphone/iphone-xr/kaitori?utm_source=youtube&utm_ |  |  |
 | 2026-12-03 | iphone16e-review | （youtube.txt なし・台本／構成案のみ） | | | |
 | 2026-12-04 | battery-long | （youtube.txt なし・台本／構成案のみ） | | | |
 | 2026-12-05 | iphone-guide | （youtube.txt なし・台本／構成案のみ） | | | |
